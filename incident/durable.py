@@ -12,6 +12,21 @@ class RunStore:
         self.db = sqlite3.connect(path, isolation_level=None, check_same_thread=False)
         self.db.execute("CREATE TABLE IF NOT EXISTS runs (tenant TEXT, id TEXT, status TEXT, body TEXT, PRIMARY KEY(tenant,id))")
         self.db.execute("CREATE TABLE IF NOT EXISTS approvals (tenant TEXT, run_id TEXT, key TEXT, expires REAL, decision TEXT, PRIMARY KEY(tenant,run_id,key))")
+        self.db.execute("CREATE TABLE IF NOT EXISTS leases (tenant TEXT, run_id TEXT, owner TEXT, expires REAL, PRIMARY KEY(tenant,run_id))")
+
+    def claim(self, tenant, run_id, owner, seconds=30):
+        self.db.execute("BEGIN IMMEDIATE")
+        try:
+            row = self.db.execute("SELECT owner,expires FROM leases WHERE tenant=? AND run_id=?", (tenant,run_id)).fetchone()
+            if row and row[1] > time.time():
+                raise ValueError("run_already_owned")
+            self.db.execute("INSERT OR REPLACE INTO leases VALUES (?,?,?,?)", (tenant,run_id,owner,time.time()+seconds))
+            self.db.execute("COMMIT")
+        except BaseException:
+            self.db.execute("ROLLBACK"); raise
+
+    def release(self, tenant, run_id, owner):
+        self.db.execute("DELETE FROM leases WHERE tenant=? AND run_id=? AND owner=?", (tenant,run_id,owner))
 
     def save(self, run):
         self.db.execute("INSERT OR REPLACE INTO runs VALUES (?,?,?,?)",
@@ -54,4 +69,3 @@ async def resume_run(store, tenant, run_id, provider, tools):
     task = next(m["content"] for m in run.messages if m["role"] == "user")
     return await run_agent(provider, tools.execute, tools.available(run.context), task,
                            initial=run, checkpoint=store.save)
-

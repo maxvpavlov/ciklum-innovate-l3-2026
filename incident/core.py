@@ -45,6 +45,7 @@ class Run:
     answer: dict | None = None
     events: list[dict] = field(default_factory=list)
     error: str | None = None
+    configuration: dict = field(default_factory=dict)
 
     def event(self, kind, **data):
         self.events.append({"kind": kind, "run_id": self.context.run_id,
