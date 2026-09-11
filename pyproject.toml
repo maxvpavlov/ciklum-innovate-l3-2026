@@ -1,0 +1,17 @@
+[project]
+name = "incident-platform-course"
+version = "0.1.0"
+description = "An incremental, inspectable agentic platform for a sandbox incident investigation course"
+requires-python = ">=3.12,<3.15"
+dependencies = [
+  "httpx==0.28.1", "jsonschema==4.26.0", "mcp==2.2.0",
+  "a2a-sdk==1.1.2", "fastapi==0.141.1", "uvicorn==0.52.4",
+]
+
+[dependency-groups]
+dev = ["pytest==9.1.1", "pytest-asyncio==1.4.0"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
