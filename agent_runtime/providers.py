@@ -3,7 +3,7 @@ import json
 import os
 import re
 import httpx
-from incident.core import Reply
+from agent_runtime.core import Reply
 
 
 class MockProvider:

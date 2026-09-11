@@ -1,6 +1,6 @@
-from incident.core import Limits, run_agent
-from incident.fixtures import SCHEMAS, simple_tools
-from incident.providers import MockProvider, provider_from_env
+from agent_runtime.core import Limits, run_agent
+from course.fixtures import SCHEMAS, simple_tools
+from agent_runtime.providers import MockProvider, provider_from_env
 
 
 async def demo():
