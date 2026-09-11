@@ -8,12 +8,21 @@ function eventLine(event) {
     h("b", {}, event.kind), " ", h("span", { class: "mono muted" }, detail));
 }
 
+// Model events name the model that answered and its host; only the offline mock reports fixture tokens.
+function usage(run) {
+  const calls = run.events.filter((e) => e.kind === "model");
+  const live = calls.find((e) => e.host && e.host !== "offline");
+  if (!live) return `${run.tokens} fixture tokens`;
+  const seconds = calls.reduce((sum, e) => sum + (e.elapsed_ms ?? 0), 0) / 1000;
+  return `${run.tokens} tokens from ${live.model} at ${live.host} · ${calls.length} model calls in ${seconds.toFixed(1)} s`;
+}
+
 async function detail(id) {
   const run = await api(`/runs/${encodeURIComponent(id)}`);
   return h("section", {},
     h("p", {}, h("a", { href: "#runs" }, "All runs")),
     h("h1", {}, "Run ", h("span", { class: "mono" }, short(run.id, 16)), " ", badge(run.status)),
-    h("p", { class: "lede" }, `${run.incident} · role ${run.role} · ${run.tokens} fixture tokens`),
+    h("p", { class: "lede" }, `${run.incident} · role ${run.role} · ${usage(run)}`),
     run.error ? h("div", { class: "error" }, `Failure code: ${run.error}`) : "",
     h("div", { class: "row" },
       h("div", {}, h("h2", {}, "Answer"), h("pre", {}, JSON.stringify(run.answer, null, 2))),
