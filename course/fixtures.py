@@ -36,14 +36,21 @@ async def simple_tools(name, args, context):
     return {"ok": False, "error": "unknown_tool"}
 
 
+# What the model reads about each tool: what it returns, and every argument with a description and an
+# example. Real models write malformed calls far more often without them (Session 03).
 SCHEMAS = [
     {"type": "function", "function": {"name": "log_lookup",
-     "description": "Read diagnostic evidence for one incident in the current tenant.",
-     "parameters": {"type": "object", "properties": {"incident_id": {"type": "string"}},
+     "description": "Read the diagnostic log record of one incident in the current tenant. It returns "
+                    "the record's source_id, service, cause and signal, or not_found.",
+     "parameters": {"type": "object", "properties": {"incident_id": {"type": "string",
+                    "description": "The incident ID exactly as the task writes it, for example INC-007."}},
                     "required": ["incident_id"], "additionalProperties": False}}},
     {"type": "function", "function": {"name": "runbook_search",
-     "description": "Find tenant-scoped runbook evidence for a diagnostic query.",
-     "parameters": {"type": "object", "properties": {"query": {"type": "string"}},
+     "description": "Search the current tenant's runbooks by keywords. It returns up to two matching "
+                    "runbooks, each with its source_id, the cause it describes and a suggested action.",
+     "parameters": {"type": "object", "properties": {"query": {"type": "string",
+                    "description": "A few plain keywords taken from the log, such as the service and "
+                                   "the cause, for example: checkout disk full."}},
                     "required": ["query"], "additionalProperties": False}}},
 ]
 
