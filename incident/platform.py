@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import sqlite3
 import uuid
+from incident.operations import Admission
 from incident.core import Context, Run, SYSTEM, run_agent
 from incident.context import EvidenceStore, context_tools, select_context
 from incident.durable import RunStore, resume_run
@@ -20,6 +21,7 @@ class Definitions:
     def __init__(self, path):
         self.db = sqlite3.connect(path, isolation_level=None, check_same_thread=False)
         self.db.execute("CREATE TABLE IF NOT EXISTS definitions (name TEXT, version INT, body TEXT, hash TEXT, PRIMARY KEY(name,version))")
+        self.db.execute("CREATE TABLE IF NOT EXISTS active_versions (name TEXT PRIMARY KEY, version INT)")
 
     def put(self, name, version, spec):
         body = json.dumps(spec, sort_keys=True)
@@ -28,12 +30,22 @@ class Definitions:
         if old and old[0] != digest:
             raise ValueError("immutable_definition")
         self.db.execute("INSERT OR IGNORE INTO definitions VALUES (?,?,?,?)", (name,version,body,digest))
+        self.db.execute("INSERT OR IGNORE INTO active_versions VALUES (?,?)", (name, version))
 
-    def get(self, name, version=1):
+    def get(self, name, version=None):
+        if version is None:
+            active = self.db.execute("SELECT version FROM active_versions WHERE name=?", (name,)).fetchone()
+            if not active:
+                raise KeyError("unknown_agent")
+            version = active[0]
         row = self.db.execute("SELECT body,hash FROM definitions WHERE name=? AND version=?", (name,version)).fetchone()
         if not row:
             raise KeyError("unknown_agent_version")
         return {"name": name, "version": version, "spec": json.loads(row[0]), "sha256": row[1]}
+
+    def activate(self, name, version):
+        self.get(name, version)
+        self.db.execute("UPDATE active_versions SET version=? WHERE name=?", (version,name))
 
 
 class HybridSupervisor(Supervisor):
@@ -72,11 +84,14 @@ class HybridSupervisor(Supervisor):
 
 
 class Platform:
-    def __init__(self, path="var/platform.db", remote_url=None, factory=provider_from_env):
+    def __init__(self, path="var/platform.db", remote_url=None, factory=provider_from_env,
+                 admission=None, workers=2, total_token_budget=6000):
         Path(path).parent.mkdir(parents=True, exist_ok=True)
         self.path, self.factory = path, factory
         self.store, self.evidence, self.definitions = RunStore(path), EvidenceStore(path), Definitions(path)
         self.remote_url = remote_url
+        self.admission, self.semaphore = admission or Admission(), asyncio.Semaphore(workers)
+        self.total_token_budget = total_token_budget
         self.tasks, self.owner = {}, uuid.uuid4().hex
         for name, kind, allowed in [
             ("single", "single", ["log_lookup", "runbook_search"]),
@@ -86,7 +101,7 @@ class Platform:
             self.definitions.put(name, 1, {"kind": kind, "allowed": allowed,
                                           "prompt": SYSTEM, "context_chars": 6000})
 
-    def submit(self, tenant, role, incident_id, agent="single", version=1):
+    def submit(self, tenant, role, incident_id, agent="single", version=None):
         config = self.definitions.get(agent, version)
         if config["spec"]["kind"] == "remediator" and role != "operator":
             raise PermissionError("operator_required")
@@ -99,10 +114,23 @@ class Platform:
         return context.run_id
 
     def launch(self, tenant, run_id):
-        self.store.claim(tenant, run_id, self.owner)
+        self.admission.enter(tenant)
+        try:
+            self.store.claim(tenant, run_id, self.owner)
+        except BaseException:
+            self.admission.leave(); raise
         key = (tenant, run_id)
-        self.tasks[key] = asyncio.create_task(self._execute(tenant, run_id))
+        self.tasks[key] = asyncio.create_task(self._worker(tenant, run_id))
         return self.tasks[key]
+
+    async def _worker(self, tenant, run_id):
+        try:
+            async with self.semaphore:
+                return await self._execute(tenant, run_id)
+        finally:
+            self.admission.leave()
+            self.store.release(tenant, run_id, self.owner)
+            self.tasks.pop((tenant,run_id), None)
 
     async def _execute(self, tenant, run_id):
         run = self.store.load(tenant, run_id)
@@ -111,7 +139,9 @@ class Platform:
             kind = run.configuration["spec"]["kind"]
             if kind == "team":
                 async with stdio_client(tenant) as client:
-                    kwargs = {"worker_factory": self.factory, "read_handler": MCPReadAdapter(client)}
+                    from incident.supervisor import SharedBudget
+                    kwargs = {"worker_factory": self.factory, "read_handler": MCPReadAdapter(client),
+                              "budget": SharedBudget(remaining=self.total_token_budget)}
                     if self.remote_url:
                         from incident.a2a_client import RemoteSpecialist
                         supervisor = HybridSupervisor(RemoteSpecialist(self.remote_url, os.getenv("A2A_TOKEN", "demo-specialist-token")), **kwargs)
@@ -170,4 +200,3 @@ class Platform:
             await asyncio.gather(task, return_exceptions=True)
         run = self.store.load(tenant, run_id)
         run.status = "cancelled"; self.store.save(run)
-

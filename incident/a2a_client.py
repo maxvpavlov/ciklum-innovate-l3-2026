@@ -14,7 +14,8 @@ async def discover_client(http, url, streaming=True, polling=False):
     validate_endpoint(url, set(os.getenv("A2A_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")), allow_loopback=True)
     card = await A2ACardResolver(http, base_url=url).get_agent_card()
     # Discovery metadata must not redirect an authenticated client to another host.
-    if any(urlparse(i.url).netloc != urlparse(url).netloc for i in card.supported_interfaces):
+    if any((urlparse(i.url).scheme, urlparse(i.url).netloc) !=
+           (urlparse(url).scheme, urlparse(url).netloc) for i in card.supported_interfaces):
         raise ValueError("untrusted_agent_interface")
     if not any(skill.id == "runbooks" for skill in card.skills):
         raise ValueError("unsupported_capability")

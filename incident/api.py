@@ -5,6 +5,8 @@ from fastapi import Depends, FastAPI, HTTPException, Request
 from pydantic import BaseModel, Field, ConfigDict
 from incident.platform import Platform
 from incident.tools import action_key
+from incident.operations import CapacityError, build_trace, trace_html
+from starlette.responses import HTMLResponse
 
 DEMO_IDENTITIES = {
     "demo-acme": {"tenant": "acme", "role": "analyst"},
@@ -17,7 +19,7 @@ class Submit(BaseModel):
     model_config = ConfigDict(extra="forbid")
     incident_id: str = Field(pattern=r"^INC-\d{3}$")
     agent: str = "single"
-    version: int = 1
+    version: int | None = None
 
 
 class Decision(BaseModel):
@@ -55,6 +57,8 @@ def create_app(platform=None, identities=None):
             return {"id": run_id, "status": "queued"}
         except PermissionError as exc:
             raise HTTPException(403, str(exc)) from None
+        except CapacityError as exc:
+            raise HTTPException(429 if str(exc) == "rate_limited" else 503, str(exc)) from None
         except (KeyError, ValueError) as exc:
             raise HTTPException(400, str(exc)) from None
 
@@ -102,7 +106,19 @@ def create_app(platform=None, identities=None):
             platform.launch(who["tenant"], run_id)
         except ValueError as exc:
             raise HTTPException(409, str(exc)) from None
+        except CapacityError as exc:
+            raise HTTPException(429, str(exc)) from None
         return {"id": run_id, "status": "queued"}
+
+    @app.get("/runs/{run_id}/trace")
+    def trace(run_id: str, who=Depends(identity)):
+        load(who, run_id)
+        return build_trace(platform.store, who["tenant"], run_id)
+
+    @app.get("/runs/{run_id}/trace/view", response_class=HTMLResponse)
+    def trace_view(run_id: str, who=Depends(identity)):
+        load(who, run_id)
+        return trace_html(build_trace(platform.store, who["tenant"], run_id))
 
     return app
 
