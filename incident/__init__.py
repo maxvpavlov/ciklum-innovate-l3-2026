@@ -1,2 +1,2 @@
 """Course platform. Each Git tag adds one tested capability."""
-LESSON = 3
+LESSON = 4

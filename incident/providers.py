@@ -33,6 +33,11 @@ class MockProvider:
                         evidence.append(item["source_id"])
                         causes.append(item.get("cause", "unknown"))
             cause = next((c for c in causes if c != "unknown"), "unknown")
+            # A generic runbook is not proof that an incident has that cause.
+            if "log_lookup" in names:
+                first = observations[0].get("data") if observations else None
+                if not isinstance(first, dict) or first.get("cause") == "unknown":
+                    cause = "unknown"
             answer = {"status": "complete" if cause != "unknown" else "insufficient_evidence",
                       "cause": cause, "summary": f"{incident}: {cause}", "evidence": evidence}
             return Reply({"role": "assistant", "content": json.dumps(answer)}, 35)
@@ -115,4 +120,3 @@ def provider_from_env():
     return HTTPProvider(kind, model, key, os.getenv("MODEL_BASE_URL"),
                         input_rate=float(os.getenv("MODEL_INPUT_USD_PER_MILLION", "0")),
                         output_rate=float(os.getenv("MODEL_OUTPUT_USD_PER_MILLION", "0")))
-
