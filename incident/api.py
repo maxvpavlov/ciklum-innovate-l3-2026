@@ -35,7 +35,10 @@ def create_app(platform=None, identities=None):
     app.state.platform = platform
 
     def identity(request: Request):
-        token = request.headers.get("authorization", "").removeprefix("Bearer ")
+        header = request.headers.get("authorization", "")
+        if not header.startswith("Bearer "):
+            raise HTTPException(401, "bearer_required")
+        token = header.removeprefix("Bearer ")
         if token not in identities:
             raise HTTPException(401, "unauthorized")
         return identities[token]

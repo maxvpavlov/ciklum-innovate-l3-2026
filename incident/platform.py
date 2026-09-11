@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 import sqlite3
 import uuid
-from incident.operations import Admission
+from incident.operations import Admission, CapacityError
 from incident.core import Context, Run, SYSTEM, run_agent
 from incident.context import EvidenceStore, context_tools, select_context
 from incident.durable import RunStore, resume_run
@@ -110,7 +110,12 @@ class Platform:
                            {"role": "user", "content": f"Investigate {incident_id} payments latency"}],
                   status="queued", configuration=config)
         self.store.save(run)
-        self.launch(tenant, context.run_id)
+        try:
+            self.launch(tenant, context.run_id)
+        except CapacityError as exc:
+            run.status, run.error = "rejected", str(exc)
+            self.store.save(run)
+            raise
         return context.run_id
 
     def launch(self, tenant, run_id):
@@ -154,7 +159,7 @@ class Platform:
                         parallel=True, initial=run, checkpoint=self.store.save)
                     for child in supervisor.children:
                         self.store.save(child)
-                    run.event("delegation_summary", child_tokens=supervisor.budget.spent,
+                    run.event("delegation_summary", shared_tokens_spent=supervisor.budget.spent,
                               children=[c.context.run_id for c in supervisor.children])
             else:
                 if kind == "remediator":
@@ -162,6 +167,9 @@ class Platform:
                     provider = RemediationProvider()
                 else:
                     provider = self.factory()
+                    if isinstance(provider, MockProvider) and run.configuration["spec"].get("provider_profile") == "efficient":
+                        from incident.tuning import EfficientMockProvider
+                        provider = EfficientMockProvider()
                 if run.status == "waiting_approval" or run.pending:
                     run = await resume_run(self.store, tenant, run_id, provider, tools)
                 else:
