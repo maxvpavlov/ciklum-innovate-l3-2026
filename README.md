@@ -1,45 +1,39 @@
 # Incident platform course
 
-An evolving Python reference implementation for the 12-session instructor-led
-course. Work in your own repository while following the guided demonstrations.
-The default model is an offline deterministic fixture provider. It tests system
-behavior, not the reasoning quality of a live language model.
+A Python reference implementation for the 12-session agentic platform course.
+Participants guide their own coding agents to prepare, extend and verify a
+learner project. The coding agent handles repository operations, dependency
+setup, command execution and tests. Participants define the scope, inspect the
+changes and explain the evidence.
 
-## Setup
+The coding agent used for development is separate from the incident-investigation
+agents that the project implements. The default investigation provider is an
+offline deterministic fixture, so the course can run without paid model access.
 
-Use Python 3.12 and uv. From this directory:
+## Start with a coding agent prompt
 
-```sh
-uv sync --python 3.12 --frozen
-uv run python -m pytest -q
-```
+Give your coding agent access to this repository and your learner workspace.
+Use this brief to begin:
 
-Git tags `lesson-00` through `lesson-12` are runnable checkpoints. To start a
-lesson without altering your work, create a separate worktree:
+> Prepare my Python learner project for Lesson 01, starting from lesson-00. Locate the supplied reference repository and my existing work; ask for their locations if needed. Preserve my changes and handle repository setup, dependency installation and environment configuration yourself. Use the pinned Python 3.12 environment and offline mock provider. Establish the starting checkpoint without adding this lesson yet. Run the baseline checks and report the workspace, checkpoint, results and any missing prerequisites. Do not ask me to run terminal commands.
 
-```sh
-git worktree add ../lesson01-start lesson-00
-cd ../lesson01-start
-uv sync --frozen
-```
+Continue with the lesson-specific prompts in [LEARNER_PROMPTS.md](LEARNER_PROMPTS.md).
+They cover preparation, incremental implementation, verification, review and
+targeted recovery for every lesson. Use the current prompts while inspecting
+earlier code checkpoints. The agent may manage branches or isolated snapshots
+internally; participants do not need to issue those commands themselves.
 
-To inspect what the instructor will add:
-
-```sh
-git diff lesson-00 lesson-01 -- incident tests
-```
-
-The final README and guides describe all services, demonstrations, and limits.
-No external systems are modified: remediation only writes to a local mock ledger.
-
-## Instructor documents
+## Instructor materials
 
 The destination for the twelve Google Docs is the
 [instructor materials folder](https://drive.google.com/drive/u/0/folders/1wos8PjyC0mTDQxrcZ89b9mG0yYV57Zr3).
-Native publication is pending browser upload access. The prepared guides are
-also available in the companion instructor-guides.zip archive.
-Each guide names its starting and ending checkpoint, exact source files,
-demonstration commands, learner pauses, expected outcomes and failure exercises.
+Native publication is pending browser upload access or a connected Drive
+connector. Prepared guides are available in the companion instructor-guides.zip.
+
+Each guide contains instructor narration, copyable coding-agent prompts,
+reference Python excerpts, expected results, review questions and troubleshooting.
+The Python excerpts support code review; the agent carries out the implementation.
+A completion message alone does not establish that a learner's code works.
 
 ## Checkpoint sequence
 
@@ -58,136 +52,114 @@ demonstration commands, learner pauses, expected outcomes and failure exercises.
 | lesson-11 | End-to-end platform, traces, admission controls and evaluated releases | 120 |
 | lesson-12 | Tuning, before/after comparison and presentation evidence | 90 |
 
+
 Total: 12 sessions and 20 contact hours. Preparation and practice are additional.
-At each checkpoint, run that lesson with `uv run python -m incident.lab 7`
-(replace 7 with the lesson number). The checkpoint includes earlier lessons.
-Use a fresh worktree for comparisons rather than discarding your learner branch.
+The reference tags preserve the implementation at each lesson. Your coding agent
+should compare against the relevant tag while preserving your existing work.
+It should not copy the entire completed course into an early learner checkpoint.
 
-## Run the complete platform
+## Demonstrate the complete platform
 
-Terminal one starts the optional independent specialist:
+Give the coding agent this prompt after Session 11:
 
-```sh
-uv run uvicorn incident.a2a_service:app --host 127.0.0.1 --port 8010
-```
+> Use my completed platform to demonstrate INC-001 with the team configuration.
+> Select the offline provider, start the local platform and the independent A2A
+> specialist on loopback using the existing project entry points, and configure
+> their connection. Handle process and environment setup yourself without
+> disturbing unrelated services. Submit the investigation, wait for its actual
+> outcome and show the parent, local MCP-backed worker and remote specialist.
+> Export and open the correlated trace, explain the cited evidence and report
+> failures honestly. Stop only the temporary services you started when finished.
 
-Terminal two starts the platform. Set `A2A_URL` to use the remote specialist in a
-team run. Without it, both workers remain local and use MCP tools.
+The normal platform API exposes health, run lifecycle and authenticated trace
+operations. The self-contained lab demonstrations provide the same reference
+scenarios with automatic local-service cleanup. The coding agent can inspect
+the existing entry points to choose how to execute them.
 
-```sh
-export MODEL_PROVIDER=mock
-export A2A_URL=http://127.0.0.1:8010
-uv run uvicorn incident.api:app --host 127.0.0.1 --port 8000
-```
+## Practice approval and recovery
 
-Terminal three:
+Use this prompt for a manually controlled mock-remediation demonstration:
 
-```sh
-uv run python -m incident.client submit INC-001 --agent team --wait
-uv run python -m incident.client inspect RUN_ID
-uv run python -m incident.client trace RUN_ID --output var/trace.html
-```
+> Prepare the operator-owned mock-remediation scenario for INC-001 using the
+> existing local fixture. Show me the exact proposed action, arguments and
+> approval key, and confirm that the run is waiting with no new effect.
+> Do not approve the proposal on my behalf. Wait for my explicit approve or deny
+> decision, then carry it out and show the resulting run state. For recovery
+> testing, run the labelled automated crash fixture separately and demonstrate
+> that resume leaves one mock effect. Explain why that local guarantee does not
+> automatically apply to external APIs.
 
-Replace RUN_ID with the returned identifier. Open the generated HTML in a
-browser. The API also exposes `/docs`, `/health`, and authenticated run endpoints.
-For a self-contained end-to-end demonstration with automatic local-service
-cleanup, run `uv run python -m incident.lab 11`.
+No real systems are modified. The remediation configuration uses a scripted
+fixture and writes only to the local SQLite effect ledger.
 
-## Approval and recovery
+## Configure live model access only when needed
 
-The default analyst identity cannot submit the remediation configuration.
-Use the deliberately named local operator identity for the simulated exercise:
+The adapters support tool-capable OpenAI-compatible Chat Completions and
+Anthropic Messages. Live services are optional and were not exercised for the
+reference verification.
 
-```sh
-export PLATFORM_TOKEN=demo-operator
-uv run python -m incident.client submit INC-001 --agent remediator --wait
-uv run python -m incident.client inspect RUN_ID
-uv run python -m incident.client approve RUN_ID
-uv run python -m incident.client resume RUN_ID
-```
+> Help me configure the existing model adapter for a provider and model I am
+> authorized to use. Inspect the configuration interface, identify required
+> environment values and check credential availability without revealing
+> secrets. Keep credentials out of chat, source files and reports. Use the exact
+> approved endpoint and preserve TLS and host restrictions. Run a small live
+> check only after I explicitly authorize the provider use and its cost; otherwise
+> keep the offline provider. Report what was actually tested and any missing
+> prerequisite.
 
-The approve command prints and submits the exact currently pending action key.
-`deny`, `cancel`, and `inspect` are also available. The remediation configuration
-uses a scripted fixture to reach the approval branch. It does not recommend or
-perform a real rollback. Session 05 deliberately crashes after a committed mock
-effect and proves that resume does not create a duplicate.
+For the coding agent's reference, provider selection uses MODEL_PROVIDER,
+MODEL_NAME, MODEL_API_KEY and optionally MODEL_BASE_URL and MODEL_ALLOWED_HOSTS.
+Pricing uses MODEL_INPUT_USD_PER_MILLION and MODEL_OUTPUT_USD_PER_MILLION.
+The project does not automatically load a .env file. Unknown live pricing
+remains unavailable in evaluation reports.
 
-## Model configuration
+## Evaluate and tune the platform
 
-Default: `MODEL_PROVIDER=mock`. No model credentials are needed for the labs.
-HTTP adapters support OpenAI-compatible Chat Completions and Anthropic Messages.
-Choose a tool-capable model you are authorized to use:
+> Preserve my current baseline and evaluate the completed platform on the
+> existing development and held-out cases. Retain per-case rows and the dataset
+> identity. Apply one bounded tuning change as a new version or isolated patch,
+> rerun the same conditions and compare quality, latency and usage. Keep failures
+> visible and do not alter the expected outcomes to obtain a pass. Report cold
+> and warm caching separately. Explain the adoption decision and prepare the
+> evidence for my capstone presentation.
 
-```sh
-export MODEL_PROVIDER=openai
-export MODEL_NAME=YOUR_TOOL_CAPABLE_MODEL
-export MODEL_API_KEY=YOUR_KEY
-uv run python -m incident.lab 1
-```
+The reference capstone writes a comparison report to var/capstone-comparison.json.
+On its deterministic fixtures, the candidate preserves success on five cases
+and reduces mean simulated usage from 75 to 63, a 16% reduction. Those fixture
+measurements are not a claim about live model quality or actual API savings.
 
-For Anthropic, use `MODEL_PROVIDER=anthropic`. For an OpenAI-compatible endpoint,
-use `MODEL_PROVIDER=openai-compatible`, set `MODEL_BASE_URL` to its API root and
-set `MODEL_ALLOWED_HOSTS` to the exact trusted hostname. This is not a universal
-adapter for every vendor-specific API. Public endpoints require HTTPS; explicit
-loopback endpoints may use HTTP for local teaching.
+## Verify the restricted container demonstration
 
-Optional pricing: `MODEL_INPUT_USD_PER_MILLION` and
-`MODEL_OUTPUT_USD_PER_MILLION`. Live cost remains unavailable in evaluation
-reports if rates are not configured. Credentials are not read from `.env`
-automatically; export environment variables or use your normal secret-management
-workflow. Do not commit keys. PowerShell uses `$env:NAME='value'` instead of
-`export NAME=value`.
+> Inspect the repository's existing container recipe and, if this environment
+> supports it, build and run the end-to-end offline demonstration in its
+> restricted container. Preserve the non-root user, read-only filesystem,
+> temporary writable directories, network restrictions and dropped capabilities.
+> Show the observed result and explain the storage lifecycle. Do not weaken
+> protections to make a failing check pass. If the environment cannot run it,
+> report that limitation and continue with the local offline checks.
 
-The self-contained MCP/A2A and end-to-end lab helpers intentionally select the
-offline fixture provider. To exercise live models across services, start the
-services manually with the intended environment and run an explicit benchmark.
-
-## Evaluation and capstone
-
-```sh
-uv run python -m incident.evaluate --trials 3 --output var/baseline.json
-uv run python -m incident.evaluate --split held_out --trials 3
-uv run python -m incident.lab 12
-```
-
-Session 12 writes `var/capstone-comparison.json`. In the deterministic fixture,
-the candidate preserves success on five cases and reduces mean simulated usage
-from 75 to 63 (16%). Cold and warm cache results are reported separately.
-These are fixture-policy measurements, not live model-quality or cost claims.
-Use `--live` on the evaluator only after configuring the provider and accepting
-the costs of those calls. The optional model judge must be calibrated against
-human labels on representative cases.
-
-## Container demonstration
-
-```sh
-docker build -t l3-incident-course:local .
-docker run --rm --network none --read-only --tmpfs /tmp \
-  --tmpfs /app/var:uid=1000,gid=1000 --cap-drop ALL \
-  --security-opt no-new-privileges:true \
-  l3-incident-course:local python -m incident.lab 11
-```
-
-The image and restricted end-to-end demo were tested on Linux ARM64. The
-Compose recipe binds only loopback, uses an internal network and temporary
-writable state. That temporary container sandbox is intentionally ephemeral.
-Use the normal local SQLite file for durable worker-recovery demonstrations.
-A persistent deployment requires a provisioned volume, real identity, secrets,
-storage protection and infrastructure-specific validation. The course's path
-and capability checks do not sandbox arbitrary Python execution.
+The Linux ARM64 image and restricted end-to-end demonstration were tested.
+The supplied Compose sandbox has temporary writable state, so container
+replacement discards that sandbox data. The normal local SQLite file supports
+worker recovery. Persistent deployment storage, real identity, secrets and
+infrastructure controls require deliberate configuration and validation.
 
 ## Verification and limits
 
-See [TESTING.md](TESTING.md) for exact verification scope. The final suite has
-39 tests. Every tag from lesson-00 through lesson-12 was independently unpacked
-and tested, and each lesson demo was run at its own tag. MCP and A2A transport
-tests use actual local connections. Live model accounts, third-party MCP/A2A
-services, OAuth identity providers and production cloud deployment were not
-tested. SQLite state is not an encrypted secret store. The A2A specialist's
-remote task store is in memory. Local demo bearer tokens are deliberately public
-fixtures and must not be used to secure an exposed deployment.
+See [TESTING.md](TESTING.md) for the reference verification record. Every code
+checkpoint was independently unpacked and tested, with 39 tests passing at the
+final checkpoint. Actual local MCP stdio and A2A HTTP transport, streaming,
+authentication rejection and cancellation were exercised.
 
-The native macOS test environment used packaged Python 3.12.14 with the pinned
-SDKs and packaged native dependencies after a local binary-wheel loading issue.
-The Linux Docker build separately installed dependencies from package indexes
-and successfully ran the end-to-end and capstone demos.
+The reference implementation is unchanged by the prompt-based teaching revision.
+A learner coding agent must still run and report checks against its own output;
+these prompts are instructions, not a guarantee of a correct implementation.
+Live model accounts, third-party MCP/A2A services, remote OAuth, enterprise
+identity, production cloud rollout and an external observability collector were
+not tested. SQLite is not an encrypted secret store, the remote specialist's
+task store is in memory, and public demo credentials must not secure an exposed
+deployment.
+
+The project retains executable CLI tools, lab runners and tests for coding
+agents to operate. Learner-facing preparation and walkthrough instructions are
+provided as prompts rather than terminal command snippets.
