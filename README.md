@@ -34,8 +34,10 @@ No external systems are modified: remediation only writes to a local mock ledger
 
 ## Instructor documents
 
-The twelve Google Docs are organized in the
+The destination for the twelve Google Docs is the
 [instructor materials folder](https://drive.google.com/drive/u/0/folders/1wos8PjyC0mTDQxrcZ89b9mG0yYV57Zr3).
+Native publication is pending browser upload access. The prepared guides are
+also available in the companion instructor-guides.zip archive.
 Each guide names its starting and ending checkpoint, exact source files,
 demonstration commands, learner pauses, expected outcomes and failure exercises.
 
