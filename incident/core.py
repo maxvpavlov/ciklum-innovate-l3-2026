@@ -70,7 +70,7 @@ SYSTEM = (
 
 async def run_agent(provider, execute: Callable, schemas: list, task: str,
                     context=None, limits=None, initial=None,
-                    checkpoint: Callable | None = None) -> Run:
+                    checkpoint: Callable | None = None, select_messages=None) -> Run:
     """Tool calls are persisted before dispatch so a paused call can resume."""
     limits = limits or Limits()
     run = initial or Run(context or Context(), [
@@ -108,10 +108,11 @@ async def run_agent(provider, execute: Callable, schemas: list, task: str,
                     run.pending.pop(0)
                     save()
                 # Reserve the requested maximum completion before dispatch.
-                estimated_input = len(json.dumps(run.messages)) // 3
+                model_messages = select_messages(run.messages) if select_messages else run.messages
+                estimated_input = len(json.dumps(model_messages)) // 3
                 if run.tokens + estimated_input + limits.max_output_tokens > limits.tokens:
                     raise ValueError("token_budget")
-                reply = await provider.complete(run.messages, schemas,
+                reply = await provider.complete(model_messages, schemas,
                                                 limits.max_output_tokens)
                 run.steps += 1
                 run.tokens += reply.tokens
@@ -149,4 +150,3 @@ async def run_agent(provider, execute: Callable, schemas: list, task: str,
         run.event("failure", code=run.error)
         save()
         return run
-
