@@ -1,6 +1,8 @@
 """Client adapter: discovery, capability checks, streaming and cancellation."""
 import json
 import uuid
+import os
+from urllib.parse import urlparse
 import httpx
 from a2a.client import A2ACardResolver, ClientFactory, ClientConfig
 from a2a.types import a2a_pb2 as p
@@ -8,7 +10,12 @@ from google.protobuf.json_format import MessageToDict
 
 
 async def discover_client(http, url, streaming=True, polling=False):
+    from incident.security import validate_endpoint
+    validate_endpoint(url, set(os.getenv("A2A_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")), allow_loopback=True)
     card = await A2ACardResolver(http, base_url=url).get_agent_card()
+    # Discovery metadata must not redirect an authenticated client to another host.
+    if any(urlparse(i.url).netloc != urlparse(url).netloc for i in card.supported_interfaces):
+        raise ValueError("untrusted_agent_interface")
     if not any(skill.id == "runbooks" for skill in card.skills):
         raise ValueError("unsupported_capability")
     return ClientFactory(ClientConfig(httpx_client=http, streaming=streaming, polling=polling)).create(card)
@@ -57,4 +64,3 @@ async def cancel_slow_task(url):
             return p.TaskState.Name(task.status.state)
         finally:
             await client.close()
-

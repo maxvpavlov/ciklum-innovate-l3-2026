@@ -55,6 +55,9 @@ class HTTPProvider:
                                      else "https://api.openai.com/v1")).rstrip("/")
         self.transport = transport
         self.input_rate, self.output_rate = input_rate, output_rate
+        from incident.security import validate_endpoint
+        hosts = set(os.getenv("MODEL_ALLOWED_HOSTS", "api.openai.com,api.anthropic.com").split(","))
+        validate_endpoint(self.base_url, hosts, allow_loopback=True)
 
     async def complete(self, messages, tools, max_tokens=500):
         headers = {"Authorization": f"Bearer {self.key}"}

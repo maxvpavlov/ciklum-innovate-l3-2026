@@ -2,7 +2,7 @@
 import os
 import json
 from fastapi import Depends, FastAPI, HTTPException, Request
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from incident.platform import Platform
 from incident.tools import action_key
 
@@ -14,12 +14,14 @@ DEMO_IDENTITIES = {
 
 
 class Submit(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     incident_id: str = Field(pattern=r"^INC-\d{3}$")
     agent: str = "single"
     version: int = 1
 
 
 class Decision(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     key: str
     decision: str = "approve"
 
@@ -106,4 +108,3 @@ def create_app(platform=None, identities=None):
 
 
 app = create_app()
-
