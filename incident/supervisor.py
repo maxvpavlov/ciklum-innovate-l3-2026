@@ -107,8 +107,18 @@ class Supervisor:
         finally:
             await self.budget.settle(reserved, run.tokens if run else reserved)
 
-    async def investigate(self, task="Investigate INC-001 payments latency", context=None, provider=None):
+    async def batch(self, calls, parent):
+        from incident.coordination import WorkItem, schedule
+        async def runner(item):
+            call = item.payload
+            return await self.delegate(call["name"], call["args"], parent)
+        report = await schedule([WorkItem(c["id"], c) for c in calls], runner)
+        return {key: value.get("data", {"ok": False, "error": value.get("error", "incomplete")})
+                for key, value in report["results"].items()}
+
+    async def investigate(self, task="Investigate INC-001 payments latency", context=None, provider=None,
+                          parallel=False):
         parent = context or Context()
         return await run_agent(provider or SupervisorProvider(), self.delegate,
-                               [DELEGATE_SCHEMA], task, parent)
-
+                               [DELEGATE_SCHEMA], task, parent,
+                               execute_batch=self.batch if parallel else None)
