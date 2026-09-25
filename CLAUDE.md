@@ -10,7 +10,14 @@ Authoring workspace for the Ciklum internal course **Innovate: Building Agentic 
 |---|---|
 | `L3 Update.xlsx` | Curriculum workbook (see "Curriculum workbook" below) |
 | `L3 2026 Agentic Platform Instructor Materials/instructor-guides/NN <title>.docx` | One instructor guide per session (01–12) |
-| `L3 2026 Agentic Platform Instructor Materials/incident-platform/` | Python reference implementation. It is a **separate git repo**; the workspace root is not a git repo |
+| `L3 2026 Agentic Platform Instructor Materials/incident-platform/` | Python reference implementation (see "Git layout" below) |
+
+## Git layout
+
+- The whole workspace is one repo: `github.com/maxvpavlov/ciklum-innovate-l3-2026` (private).
+- `incident-platform` used to be a standalone repo. Its history was subtree-merged in, and its tags (`lesson-00`…`lesson-12`, `course-complete`) now live in this repo.
+- Those tags point at the original standalone commits, where the platform files sit at the tree root. So `git archive lesson-05` produces the platform checkpoint alone, not the whole course.
+- To compare a tag with the current platform subdirectory, compare trees: `git diff lesson-12 "HEAD:L3 2026 Agentic Platform Instructor Materials/incident-platform"`.
 
 The xlsx/docx files are binary. Read them with the docx/xlsx skills, `textutil -convert txt` (macOS), or `uv run --with openpyxl` / `--with python-docx`. Convert into the scratchpad, never next to the originals.
 
@@ -56,7 +63,7 @@ docker compose up --build                            # restricted container: rea
 - Git tags `lesson-00` … `lesson-12` mark the end state of each session. `course-complete` sits on top; the commits after it change only `README.md` and `LEARNER_PROMPTS.md`. Each lesson adds one module/lab plus `tests/test_lessonNN.py`.
 - `incident/__init__.py` sets `LESSON = N`. `incident.lab` refuses any lesson above it, and learners raise it only when the capability is verified.
 - `TESTING.md` records the expected passing-test count per tag (1, 7, 10, 13, 15, 17, 20, 24, 26, 29, 32, 36, 39). To check a checkpoint in isolation, unpack it the way the reference was verified: `git archive lesson-05 | tar -x -C <tmpdir>`, then run the suite there.
-- **Treat the reference as frozen unless the user explicitly wants to change it.** A code change in lesson N has to reach the `lesson-N` tag and every later tag, plus the guide excerpts (see "Guide–repo coupling" below). It also has to reach the numbers quoted in README, TESTING and the guides: the 39 tests, and a capstone mean usage drop from 75 to 63 (16%).
+- **Treat the reference as frozen unless the user explicitly wants to change it.** A code change in lesson N has to reach the `lesson-N` tag and every later tag (they sit on the standalone line, so this means rebuilding that line and re-tagging), plus the guide excerpts (see "Guide–repo coupling" below). It also has to reach the numbers quoted in README, TESTING and the guides: the 39 tests, and a capstone mean usage drop from 75 to 63 (16%).
 
 ## incident-platform: architecture
 
