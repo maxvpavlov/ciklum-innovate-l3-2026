@@ -9,6 +9,7 @@ Authoring workspace for the Ciklum internal course **Innovate: Building Agentic 
 | Path | What it is |
 |---|---|
 | `L3 Update.xlsx` | Curriculum workbook (see "Curriculum workbook" below) |
+| `L3 Content Development.docx` | L&D per-topic content-development template (overview, objectives, agenda, activities, wrap-up, e-learning, assets); partly filled for session 01 "Agent foundations" |
 | `L3 2026 Agentic Platform Instructor Materials/instructor-guides/NN <title>.docx` | One instructor guide per session (01–12) |
 | `L3 2026 Agentic Platform Instructor Materials/incident-platform/` | Python reference implementation (see "Git layout" below) |
 
