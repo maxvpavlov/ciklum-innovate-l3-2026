@@ -55,6 +55,9 @@ class HTTPProvider:
                                      else "https://api.openai.com/v1")).rstrip("/")
         self.transport = transport
         self.input_rate, self.output_rate = input_rate, output_rate
+        from incident.security import validate_endpoint
+        hosts = set(os.getenv("MODEL_ALLOWED_HOSTS", "api.openai.com,api.anthropic.com").split(","))
+        validate_endpoint(self.base_url, hosts, allow_loopback=True)
 
     async def complete(self, messages, tools, max_tokens=500):
         headers = {"Authorization": f"Bearer {self.key}"}
@@ -108,13 +111,18 @@ class HTTPProvider:
         return Reply(message, ins+outs, (ins*self.input_rate+outs*self.output_rate)/1_000_000)
 
 
-def provider_from_env():
+def provider_from_env(credentials=None):
     kind = os.getenv("MODEL_PROVIDER", "mock")
     if kind == "mock":
         return MockProvider()
     if kind not in {"openai", "openai-compatible", "anthropic"}:
         raise ValueError("Unsupported MODEL_PROVIDER")
-    key, model = os.getenv("MODEL_API_KEY"), os.getenv("MODEL_NAME")
+    model = os.getenv("MODEL_NAME")
+    if credentials is not None:
+        # The platform releases the key to the adapter by reference; runs never hold it.
+        key = credentials.lease("secret://model/api-key", "model-adapter").reveal()
+    else:
+        key = os.getenv("MODEL_API_KEY")
     if not key or not model:
         raise ValueError("Live mode requires MODEL_API_KEY and MODEL_NAME")
     return HTTPProvider(kind, model, key, os.getenv("MODEL_BASE_URL"),
