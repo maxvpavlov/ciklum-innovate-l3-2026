@@ -1,5 +1,6 @@
 """Run, registry and console API. Demo bearer identities are explicit and intended for loopback use."""
 from contextlib import asynccontextmanager
+from dataclasses import asdict
 import json
 import os
 from pathlib import Path
@@ -49,6 +50,7 @@ def create_app(platform=None, identities=None):
         if os.getenv("A2A_URL"):
             await platform.register_remote_agent(os.environ["A2A_URL"])
         yield
+        await platform.close()
 
     app = FastAPI(title="Incident agentic platform", lifespan=lifespan)
     app.state.platform = platform
@@ -119,6 +121,17 @@ def create_app(platform=None, identities=None):
         except ValueError as exc:
             raise HTTPException(409, str(exc)) from None
         return platform.registry.get(name)
+
+    @app.get("/gateway")
+    async def gateway(who=Depends(identity)):
+        launched = platform.gateway.launches
+        servers = [{"name": s["name"], "transport": s["transport"], "tenants": s["tenants"], "status": s["status"],
+                    "sessions_launched": sum(n for (server, _), n in launched.items() if server == s["name"]),
+                    "tools": [{"name": tool, "risk": meta["risk"], "pinned_sha256": s["pins"].get(tool)}
+                              for tool, meta in s["tools"].items()]}
+                   for s in platform.registry.tool_servers()]
+        return {"policy": asdict(platform.gateway.policy), "servers": servers,
+                "audit": platform.gateway.recent(who["tenant"])}
 
     @app.get("/runs")
     async def runs(who=Depends(identity)):
