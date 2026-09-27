@@ -64,11 +64,11 @@ class SupervisorProvider:
 
 
 class Supervisor:
-    def __init__(self, worker_factory=MockProvider, budget=None, read_handler=context_tools):
+    def __init__(self, worker_factory=MockProvider, budget=None, read_handler=context_tools, tools=None, grant=None):
         self.worker_factory = worker_factory
         self.budget = budget or SharedBudget()
         self.children, self.results, self.contracts = [], {}, {}
-        self.read_handler = read_handler
+        self.read_handler, self.tools, self.grant = read_handler, tools, grant
 
     async def delegate(self, name, args, parent):
         if name != "delegate":
@@ -87,14 +87,17 @@ class Supervisor:
         if not set(capabilities) <= set(parent.allowed):
             return {"ok": False, "error": "child_privilege_escalation"}
         reserved = 1800
-        try:
-            await self.budget.reserve(reserved, depth=1)
-        except ValueError as exc:
-            return {"ok": False, "error": str(exc)}
-        self.contracts[identity] = contract
         child = replace(parent, run_id=uuid.uuid4().hex, parent_id=parent.run_id,
                         role=args["role"], allowed=capabilities, approved=())
-        tools = ToolExecutor(read_handler=self.read_handler)
+        try:
+            if self.grant:
+                # The child's credential can only narrow what the parent holds.
+                self.grant(parent, child)
+            await self.budget.reserve(reserved, depth=1)
+        except (PermissionError, ValueError) as exc:
+            return {"ok": False, "error": str(exc)}
+        self.contracts[identity] = contract
+        tools = self.tools or ToolExecutor(read_handler=self.read_handler)
         run = None
         try:
             run = await run_agent(self.worker_factory(), tools.execute, tools.available(child),

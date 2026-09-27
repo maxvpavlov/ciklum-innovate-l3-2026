@@ -1,31 +1,19 @@
-import asyncio
-import time
-from incident.coordination import WorkItem, bounded_review, schedule
-from incident.context import EvidenceStore
-from incident.providers import MockProvider
-from incident.supervisor import Supervisor
+import httpx
+from incident.core import Context
+from incident.a2a_client import RemoteSpecialist, cancel_slow_task
+from incident.local_service import local_service
 
 
 async def demo():
-    timings = {}
-    for parallel in [False, True]:
-        supervisor = Supervisor(worker_factory=lambda: MockProvider(latency=.02))
-        start = time.monotonic()
-        run = await supervisor.investigate(parallel=parallel)
-        timings["parallel" if parallel else "sequential"] = round((time.monotonic()-start)*1000, 2)
-        assert run.answer["cause"] == "connection_pool_exhaustion"
-    async def worker(item):
-        await asyncio.sleep(item.payload["delay"])
-        return {"ok": True, "source": item.id}
-    partial = await schedule([WorkItem("fast", {"delay": .001}),
-                              WorkItem("slow", {"delay": .2})], worker, deadline=.03)
-    async def reject(artifact):
-        return {"accepted": False, "reason": "contradictory evidence"}
-    async def unchanged(artifact, decision):
-        return artifact
-    review = await bounded_review(run.answer, unchanged, reject)
-    store = EvidenceStore()
-    version = store.save_artifact("acme", "reviewed-report", review["artifact"])
-    assert partial["status"] == "partial" and review["status"] == "escalated"
-    return {"timings_ms": timings, "partial": partial, "review": review["status"], "artifact_version": version}
+    async with local_service("incident.a2a_service:app", "/.well-known/agent-card.json") as url:
+        result = await RemoteSpecialist(url).investigate("INC-001 payments latency", Context())
+        async with httpx.AsyncClient() as http:
+            unauthorized = await http.post(url+"/a2a", json={})
+        cancelled = await cancel_slow_task(url)
+        assert unauthorized.status_code == 401
+        assert cancelled == "TASK_STATE_CANCELED"
+        assert result["answer"]["cause"] == "connection_pool_exhaustion"
+        return {"protocol": "A2A 1.0 JSON-RPC", "answer": result["answer"],
+                "stream_events": len(result["events"]), "unauthorized_status": 401,
+                "remote_cancellation": cancelled}
 

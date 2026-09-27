@@ -5,7 +5,8 @@ import sys
 from mcp import Client, StdioServerParameters
 from mcp.server import MCPServer
 from incident.core import Context
-from incident.fixtures import RUNBOOKS, simple_tools
+from incident.context import context_tools
+from incident.fixtures import RUNBOOKS
 
 
 def make_server(tenant="acme"):
@@ -15,12 +16,12 @@ def make_server(tenant="acme"):
     @server.tool()
     async def log_lookup(incident_id: str) -> dict:
         """Read diagnostic incident evidence in the launcher's tenant."""
-        return await simple_tools("log_lookup", {"incident_id": incident_id}, context)
+        return await context_tools("log_lookup", {"incident_id": incident_id}, context)
 
     @server.tool()
     async def runbook_search(query: str) -> dict:
         """Find relevant runbook evidence in the launcher's tenant."""
-        return await simple_tools("runbook_search", {"query": query}, context)
+        return await context_tools("runbook_search", {"query": query}, context)
 
     @server.resource("incident://runbooks")
     def runbooks() -> str:

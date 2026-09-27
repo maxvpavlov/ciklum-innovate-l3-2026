@@ -3,6 +3,7 @@ from collections import defaultdict, deque
 import hashlib
 import html
 import json
+import sqlite3
 import statistics
 import time
 from incident.security import redact
@@ -87,8 +88,30 @@ async def evaluate_platform(platform, name, version, trials=1):
                          "passed": all(grade(run, case).values()), "tokens": run.tokens,
                          "elapsed_ms": (time.perf_counter()-started)*1000})
     return {"dataset_sha256": hashlib.sha256(json.dumps(CASES, sort_keys=True).encode()).hexdigest(),
-        "configuration": platform.definitions.get(name, version), "split": "all",
+        "configuration": platform.registry.get(name, version), "split": "all",
         "trials": trials, "success_rate": sum(r["passed"] for r in rows)/len(rows),
         "mean_tokens": statistics.mean(r["tokens"] for r in rows),
         "mean_latency_ms": statistics.mean(r["elapsed_ms"] for r in rows), "rows": rows}
 
+
+
+class ReleaseLog:
+    """Every release decision keeps its evidence, whether or not the candidate was activated."""
+
+    def __init__(self, path=":memory:"):
+        self.db = sqlite3.connect(path, isolation_level=None, check_same_thread=False)
+        self.db.execute("CREATE TABLE IF NOT EXISTS releases (ts REAL, agent TEXT, baseline INT, candidate INT, "
+                        "approved INT, activated INT, report TEXT)")
+
+    def record(self, baseline, candidate, gate, activated):
+        summary = lambda r: {k: r[k] for k in ["success_rate", "mean_tokens", "mean_latency_ms", "trials", "split"]}
+        self.db.execute("INSERT INTO releases VALUES (?,?,?,?,?,?,?)", (time.time(), candidate["configuration"]["name"],
+            baseline["configuration"]["version"], candidate["configuration"]["version"], int(gate["approved"]),
+            int(activated), json.dumps({"checks": gate["checks"], "baseline": summary(baseline),
+                                        "candidate": summary(candidate), "dataset_sha256": candidate["dataset_sha256"]})))
+
+    def list(self, limit=20):
+        rows = self.db.execute("SELECT ts,agent,baseline,candidate,approved,activated,report FROM releases "
+                               "ORDER BY rowid DESC LIMIT ?", (limit,))
+        return [{"ts": r[0], "agent": r[1], "baseline_version": r[2], "candidate_version": r[3], "approved": bool(r[4]),
+                 "activated": bool(r[5]), **json.loads(r[6])} for r in rows]

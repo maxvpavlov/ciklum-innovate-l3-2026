@@ -15,6 +15,7 @@ class Context:
     allowed: tuple[str, ...] = ("log_lookup", "runbook_search")
     approved: tuple[str, ...] = ()
     parent_id: str | None = None
+    subject: str | None = None
 
 
 @dataclass

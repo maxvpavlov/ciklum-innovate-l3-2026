@@ -10,6 +10,19 @@ The coding agent used for development is separate from the incident-investigatio
 agents that the project implements. The default investigation provider is an
 offline deterministic fixture, so the course can run without paid model access.
 
+The finished platform has four platform components around the agent runtime, and
+learners build each of them:
+
+- an **agent registry** of immutable, versioned agent definitions, pinned remote
+  A2A agents and tool-server manifests (Session 08);
+- an **MCP tool gateway**, the single policy, audit and connection point for every
+  agent tool call, with shared upstream sessions and pinned tool definitions (Session 09);
+- **agent identity and credentials**: signed short-lived tokens, delegation chains from
+  user to agent to worker or remote agent, and a credential store (Session 10);
+- a **platform console** at `/console` that visualizes what has been built: the
+  platform map, registry, runs and traces, approvals, gateway audit, identity and
+  operations (from Session 08, extended in every later session).
+
 ## Start with a coding agent prompt
 
 Give your coding agent access to this repository and your learner workspace.
@@ -28,7 +41,8 @@ internally; participants do not need to issue those commands themselves.
 The destination for the twelve Google Docs is the
 [instructor materials folder](https://drive.google.com/drive/u/0/folders/1wos8PjyC0mTDQxrcZ89b9mG0yYV57Zr3).
 Native publication is pending browser upload access or a connected Drive
-connector. Prepared guides are available in the companion instructor-guides.zip.
+connector. The prepared .docx guides are in the course repository's `instructor-guides`
+folder and are generated from specs by its `guide-builder`.
 
 Each guide contains instructor narration, copyable coding-agent prompts,
 reference Python excerpts, expected results, review questions and troubleshooting.
@@ -44,14 +58,13 @@ A completion message alone does not establish that a learner's code works.
 | lesson-03 | Context selection, retrieval, expiring memory and versioned artifacts | 90 |
 | lesson-04 | Repeated evaluation, held-out cases and optional judge calibration | 90 |
 | lesson-05 | Durable checkpoints, crash recovery and exact-action approval | 90 |
-| lesson-06 | Supervisor, isolated child runs and shared worker budgets | 90 |
-| lesson-07 | Parallel scheduling, typed replies and bounded review | 120 |
-| lesson-08 | Independent A2A specialist, streaming, authentication and cancellation | 90 |
-| lesson-09 | Reusable platform core, run API and immutable definitions | 90 |
-| lesson-10 | Adversarial containment, paths, egress, provenance and redaction | 90 |
-| lesson-11 | End-to-end platform, traces, admission controls and evaluated releases | 120 |
+| lesson-06 | Supervisor, scoped subagents, shared budgets, parallel scheduling and bounded review | 120 |
+| lesson-07 | Independent A2A specialist, streaming, authentication and cancellation | 90 |
+| lesson-08 | Platform core: agent registry, run API and the platform console | 90 |
+| lesson-09 | MCP tool gateway: policy, audit, shared sessions and pinned tool definitions | 90 |
+| lesson-10 | Agent identity, delegated credentials, credential store and containment | 90 |
+| lesson-11 | Operations: correlated traces, admission control and evaluated releases | 120 |
 | lesson-12 | Tuning, before/after comparison and presentation evidence | 90 |
-
 
 Total: 12 sessions and 20 contact hours. Preparation and practice are additional.
 The reference tags preserve the implementation at each lesson. Your coding agent
@@ -65,16 +78,35 @@ Give the coding agent this prompt after Session 11:
 > Use my completed platform to demonstrate INC-001 with the team configuration.
 > Select the offline provider, start the local platform and the independent A2A
 > specialist on loopback using the existing project entry points, and configure
-> their connection. Handle process and environment setup yourself without
-> disturbing unrelated services. Submit the investigation, wait for its actual
-> outcome and show the parent, local MCP-backed worker and remote specialist.
-> Export and open the correlated trace, explain the cited evidence and report
-> failures honestly. Stop only the temporary services you started when finished.
+> their connection so the platform registers and pins the specialist's Agent Card.
+> Handle process and environment setup yourself without disturbing unrelated
+> services. Submit the investigation, wait for its actual outcome and show the
+> parent, the gateway-backed worker and the remote specialist. Show the delegation
+> chain each of them acted under and the gateway audit entries. Export and open the
+> correlated trace, explain the cited evidence and report failures honestly. Stop
+> only the temporary services you started when finished.
 
-The normal platform API exposes health, run lifecycle and authenticated trace
-operations. The self-contained lab demonstrations provide the same reference
+The normal platform API exposes health, token exchange, registry, run lifecycle,
+gateway, identity, operations and authenticated trace operations. The self-contained lab demonstrations provide the same reference
 scenarios with automatic local-service cleanup. The coding agent can inspect
 the existing entry points to choose how to execute them.
+
+## Open the platform console
+
+> Start my platform locally on loopback with the offline provider and open its
+> console. Sign in first as the demo analyst and then as the demo operator, and
+> show me what each identity can see and do in the Overview, Registry, Runs,
+> Approvals, Gateway, Identity and Operations views. Submit one single-agent and
+> one team investigation from the console, then explain the run timeline, the
+> correlated trace, the gateway audit and the delegation chains. Never paste a
+> signed token into chat or a file. Stop the services you started when finished.
+
+The console is served by the platform at `/console`. It uses the demo identities
+`demo-acme` (analyst), `demo-operator` and `demo-globex`, which it exchanges once for a
+one-hour signed token. Those demo credentials are for loopback use only. The console
+renders every API value as text and runs under a strict Content-Security-Policy,
+because model answers and tool evidence are untrusted.
+Screenshots of each view are in the course's `console-screenshots` folder.
 
 ## Practice approval and recovery
 
@@ -147,18 +179,21 @@ infrastructure controls require deliberate configuration and validation.
 ## Verification and limits
 
 See [TESTING.md](TESTING.md) for the reference verification record. Every code
-checkpoint was independently unpacked and tested, with 39 tests passing at the
-final checkpoint. Actual local MCP stdio and A2A HTTP transport, streaming,
-authentication rejection and cancellation were exercised.
+checkpoint was independently unpacked and tested, with 51 tests passing at the
+final checkpoint. Actual local MCP stdio, the gateway's shared sessions and
+pinned tool definitions, A2A HTTP transport, streaming, delegated-token
+authentication and cancellation were exercised, and the console was driven in a
+headless browser.
 
-The reference implementation is unchanged by the prompt-based teaching revision.
 A learner coding agent must still run and report checks against its own output;
 these prompts are instructions, not a guarantee of a correct implementation.
-Live model accounts, third-party MCP/A2A services, remote OAuth, enterprise
-identity, production cloud rollout and an external observability collector were
-not tested. SQLite is not an encrypted secret store, the remote specialist's
-task store is in memory, and public demo credentials must not secure an exposed
-deployment.
+Live model accounts, third-party MCP/A2A services, remote OAuth, an enterprise
+identity provider, a managed secret vault, production cloud rollout and an
+external observability collector were not tested. Tokens are signed with one
+shared development key (`PLATFORM_SIGNING_KEY`); a production issuer signs
+asymmetrically and publishes verification keys. The credential store keeps values
+in process memory and is not a vault. The remote specialist's task store is in
+memory, and public demo credentials must not secure an exposed deployment.
 
 The project retains executable CLI tools, lab runners and tests for coding
 agents to operate. Learner-facing preparation and walkthrough instructions are

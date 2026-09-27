@@ -88,11 +88,7 @@
   ],
   "exercise": "Start the platform API on loopback with the offline provider and a temporary database, and give me the console address. I will sign in as demo-acme, submit INC-001 with single and team, and compare the two run details. As demo-globex I will confirm that the Acme runs are absent. As demo-operator I will compare the Registry and Approvals views with the analyst's, submit the remediator and decide the pending action myself. Then run a registry version experiment: register single version 2 with a smaller context budget, attempt to rewrite version 1, let me activate version 2 as the operator, submit a run, retire version 1 and try to run it. Confirm that the older run still records version 1 and its hash.",
   "expected_json": {
-    "registered_agents": [
-      "remediator",
-      "single",
-      "team"
-    ],
+    "registered_agents": ["remediator", "single", "team"],
     "configurations": [
       {
         "agent": "single",
@@ -108,10 +104,7 @@
       }
     ],
     "cross_tenant_status": 404,
-    "versions_of_single": [
-      1,
-      2
-    ],
+    "versions_of_single": [1, 2],
     "active_single_version": 1,
     "console": {
       "status": 200,
@@ -169,8 +162,7 @@
     "@tested",
     "@not_tested",
     "@local_effects",
-    "At lesson-08 the API and console authenticate with fixed demo bearer strings that are for loopback use only; Session 10 replaces them with short-lived signed tokens. Remote Agent Cards are pinned on first registration without review, and every store shares one SQLite file. The next paragraph describes identity and the gateway after Sessions 09 and 10.",
-    "@platform_identity"
+    "At lesson-08 the API and console authenticate with fixed demo bearer strings that are for loopback use only; Session 10 replaces them with short-lived signed tokens. Remote Agent Cards are pinned on first registration without review, and every store shares one SQLite file."
   ],
   "close_say": "The platform now has a catalogue, a front door and a window. Every run names the exact definition that produced it, remote agents are pinned dependencies rather than whatever happened to answer, and the console shows each identity only what the API allows. Keep two teaching shortcuts visible: demo bearer strings that must never leave loopback, and one SQLite file shared by every store. In Session 09 every tool call passes through a gateway, and the console gains a Gateway view.",
   "references": [

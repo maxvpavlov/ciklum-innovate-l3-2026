@@ -50,7 +50,7 @@
     "readiness": "Have your coding agent rehearse the completed reference and prepare the current tests, fixtures and lab runner before class. Tests may fail until the capability is implemented. During class, use one bounded prompt at a time; learners inspect the change, explain the control decision and review the check evidence.",
     "offline": "Have the coding agent use the offline mock provider for class. If live access fails, restore that configuration and continue. Keep credentials in secure configuration. Adapter request shapes were tested with mock HTTP; live account access was not exercised.",
     "pinned": "Pinned versions in pyproject.toml and uv.lock: Python 3.12, MCP 2.2.0, A2A SDK 1.1.2, httpx 0.28.1, FastAPI 0.141.1, uvicorn 0.52.4, jsonschema 4.26.0, pytest 9.1.1 and pytest-asyncio 1.4.0. Have the coding agent manage their installation.",
-    "script_intro": "Use SAY for instructor narration, SHOW and REVIEW for the code and evidence participants examine, PROMPT for text they give their coding agents, and PAUSE for discussion. Prompts define scope and expected behaviour; the agent handles command execution. Python excerpts remain as reading and review material from the exact reference checkpoint, not manual typing instructions.",
+    "script_intro": "Use SAY for instructor narration, SHOW and REVIEW for the code and evidence participants examine, PROMPT for text they give their coding agents, and PAUSE for discussion. Prompts define scope and expected behaviour; the agent handles command execution. Code excerpts remain as reading and review material from the exact reference checkpoint, not manual typing instructions.",
     "opening_show": "The coding agent’s baseline report, current learner project, synthetic incident records and lesson outcome. Ask participants to explain what already works before authorizing the next bounded change.",
     "concept_pause": "Invite one learner to trace the control flow and another to identify a failure boundary. Resolve different interpretations before opening the implementation.",
     "step_show": "The current learner implementation and {file}. Use the following prompt to make the bounded change, then inspect the agent’s result.",
@@ -99,7 +99,7 @@
     "title": "Coding agent prompts for the course",
     "intro": [
       "Give your coding agent access to the reference repository and your learner project. Use the current prompts even when inspecting earlier code checkpoints. The agent handles environment setup, repository operations, execution and verification. You set scope, inspect code and decide whether the observed evidence meets the lesson criteria.",
-      "The reference implementation and its tests are unchanged. These prompts guide a learner implementation; a coding agent’s completion message is not proof that its result passed the checks. Use offline fixtures unless you deliberately configure and authorize a live integration."
+      "These prompts guide a learner implementation; a coding agent’s completion message is not proof that its result passed the checks. Use offline fixtures unless you deliberately configure and authorize a live integration."
     ],
     "lesson_heading": "{nn}. {title}",
     "references": "Starting reference: {prev_tag}. Ending reference: {tag}.",

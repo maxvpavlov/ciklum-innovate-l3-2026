@@ -39,6 +39,23 @@ class RunStore:
         body = json.loads(row[0]); body["context"] = Context(**body["context"])
         return Run(**body)
 
+    def summaries(self, tenant, parent_id=None, limit=50):
+        """Most recently saved runs first, for one tenant only; the console never reads other tenants."""
+        rows = self.db.execute("SELECT body FROM runs WHERE tenant=? ORDER BY rowid DESC", (tenant,))
+        result = []
+        for (body,) in rows:
+            run = json.loads(body)
+            if parent_id is not None and run["context"]["parent_id"] != parent_id:
+                continue
+            config = run.get("configuration") or {}
+            result.append({"id": run["context"]["run_id"], "status": run["status"],
+                           "role": run["context"]["role"], "parent_id": run["context"]["parent_id"],
+                           "agent": config.get("name"), "version": config.get("version"),
+                           "tokens": run["tokens"], "error": run["error"]})
+            if len(result) >= limit:
+                break
+        return result
+
     def decide(self, tenant, run_id, decision="approve", ttl=300):
         if decision not in {"approve", "deny"}:
             raise ValueError("invalid_decision")

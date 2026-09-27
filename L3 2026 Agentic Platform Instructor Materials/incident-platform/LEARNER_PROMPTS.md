@@ -2,7 +2,7 @@
 
 Give your coding agent access to the reference repository and your learner project. Use the current prompts even when inspecting earlier code checkpoints. The agent handles environment setup, repository operations, execution and verification. You set scope, inspect code and decide whether the observed evidence meets the lesson criteria.
 
-The reference implementation and its tests are unchanged. These prompts guide a learner implementation; a coding agent’s completion message is not proof that its result passed the checks. Use offline fixtures unless you deliberately configure and authorize a live integration.
+These prompts guide a learner implementation; a coding agent’s completion message is not proof that its result passed the checks. Use offline fixtures unless you deliberately configure and authorize a live integration.
 
 ## 01. Agent architecture and the ReAct runtime
 
@@ -284,7 +284,7 @@ Starting reference: lesson-04. Ending reference: lesson-05.
 
 > I am working on Lesson 05. The symptom is: A remote effect cannot be reconciled. Diagnostic focus: The external receiver does not provide durable idempotency evidence. Recovery guidance: Stop automatic replay and implement explicit reconciliation. Do not infer success from the model's narrative. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
 
-## 06. Supervisor and scoped subagents
+## 06. Supervisor, subagents and parallel coordination
 
 Starting reference: lesson-05. Ending reference: lesson-06.
 
@@ -298,23 +298,23 @@ Starting reference: lesson-05. Ending reference: lesson-06.
 
 ### Build step 1
 
-> For Lesson 06, continue in my learner project. Define the bounded delegate schema and supervisor planning fixture in incident/supervisor.py. Accept only known worker roles, stable task IDs and bounded objectives. Keep model-proposed decomposition separate from the application's role and permission mapping. Explain the log and runbook tasks and how their outputs will be independently checked. Label prescribed offline planning separately from live model planning. Use lesson-06 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> For Lesson 06, continue in my learner project. Implement the bounded delegate schema, the offline planning fixture and the delegate method in incident/supervisor.py. Accept only known roles, stable task IDs and bounded objectives. Map each role to a fixed tool set, refuse capabilities the parent lacks, reuse identical contracts and reject a changed objective under the same task ID. Give each child a new run ID, the parent's ID, only its role's tools and no approvals. Label offline planning separately from live model planning. Use lesson-06 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 ### Build step 2
 
-> For Lesson 06, continue in my learner project. Implement shared worker-budget reservation and settlement with explicit agent-count and depth limits. Reserve before starting a child, account for returned usage and handle missing usage conservatively. Demonstrate a plan that exceeds the child-count allowance. Preserve useful completed evidence while reporting incomplete work. Explain that this checkpoint's worker pool is separate from the parent's existing runtime limit. Use lesson-06 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> For Lesson 06, continue in my learner project. Implement shared budget reservation and settlement with depth, agent-count and token limits. Reserve before starting a child, give it bounded limits, settle from reported usage and charge the full reservation when usage is missing. Demonstrate a plan that exceeds the agent-count allowance, preserving completed evidence and reporting the incomplete result honestly. Note that the parent's own usage is outside this pool. Use lesson-06 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 ### Build step 3
 
-> For Lesson 06, continue in my learner project. Create isolated child contexts and run each worker through the existing runtime. Give it a new run ID, the correct parent ID, a narrow role-specific tool set and no inherited approvals. Pass only the bounded objective and permitted inputs. Demonstrate that a child cannot acquire a capability absent from its parent, and show its messages and lifecycle identifiers for review. Use lesson-06 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> For Lesson 06, continue in my learner project. Implement WorkItem and schedule in incident/coordination.py. Reject duplicate IDs, unknown dependencies and cycles before launching work, respect the concurrency limit, block dependants of failed work, and at the deadline keep completed results, cancel and await the rest and report partial status. Add an optional batch hook to the runtime and a supervisor adapter that sends pending delegate calls through the scheduler without bypassing delegate's checks. Compare sequential and parallel runs with the same injected latency. Use lesson-06 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 ### Build step 4
 
-> For Lesson 06, continue in my learner project. Complete duplicate-contract handling, result aggregation and the Session 06 lab and tests. Reuse an identical completed contract, reject a changed objective under the same task ID, and preserve incomplete or contradictory findings. Compare the two-worker result with the single-agent baseline. Report quality and overhead without assuming that adding agents must be beneficial. Use lesson-06 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> For Lesson 06, continue in my learner project. Implement typed reply correlation and bounded producer-reviewer coordination in incident/coordination.py. Require matching correlation, task and artifact identity and the next version. Give one component ownership of saving the reviewed artifact and escalate review that does not converge within its round limit, keeping the history. Complete the Session 06 lab and tests, including a deadline-cancelled worker, a stale reply and a reviewer that never accepts. Use lesson-06 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 ### Learner exercise
 
-> Help me carry out the Lesson 06 learner exercise in my existing project: Reduce max_agents to one, try a log worker from a parent that only has runbook access, and submit the same task ID twice. Then change the objective while retaining the ID. Explain each observed result and compare the normal two-worker run with the single-agent baseline. First state the expected outcomes, then run the experiment in a recoverable state. Show the observed results and explain any discrepancy. Keep the original acceptance criteria and restore temporary experiments when finished.
+> Help me carry out the Lesson 06 learner exercise in my existing project: Reduce max_agents to one, request a log worker from a parent with only runbook access, and reuse a task ID with a changed objective. Then schedule two independent tasks and one dependent task, inject a slow worker and a failed predecessor, and submit a stale reply. Explain each result and compare the two-worker run with the single-agent baseline. First state the expected outcomes, then run the experiment in a recoverable state. Show the observed results and explain any discrepancy. Keep the original acceptance criteria and restore temporary experiments when finished.
 
 ### Verify the checkpoint
 
@@ -326,21 +326,21 @@ Starting reference: lesson-05. Ending reference: lesson-06.
 
 ### Recover when delegation fails before a child starts
 
-> I am working on Lesson 06. The symptom is: Delegation fails before a child starts. Diagnostic focus: Inspect the schema, role mapping and shared reservation limits. Recovery guidance: Use a valid bounded objective and an allowance that fits the planned children. Keep the permission check intact. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
-
-### Recover when a child cannot find expected evidence
-
-> I am working on Lesson 06. The symptom is: A child cannot find expected evidence. Diagnostic focus: Its objective or capability set may be insufficient. Recovery guidance: Refine the delegation contract and evaluate it. Avoid copying the full parent transcript as the first response. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
+> I am working on Lesson 06. The symptom is: Delegation fails before a child starts. Diagnostic focus: Read the code: invalid_delegation, task_id_conflict, child_privilege_escalation or delegation_budget each name a different check. Recovery guidance: Use a bounded objective, a fresh task ID for new work and an allowance that fits the plan. Keep the permission check intact. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
 
 ### Recover when the parent declares success with one failed child
 
-> I am working on Lesson 06. The symptom is: The parent declares success with one failed child. Diagnostic focus: The aggregation policy may be ignoring required work. Recovery guidance: Preserve partial results but require the necessary child outcomes before reporting a supported complete answer. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
+> I am working on Lesson 06. The symptom is: The parent declares success with one failed child. Diagnostic focus: The aggregation may ignore failed or missing observations. Recovery guidance: Keep partial evidence but report insufficient_evidence unless every delegated outcome succeeded. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
 
-### Recover when delegation is slower than the baseline
+### Recover when the scheduler appears to hang
 
-> I am working on Lesson 06. The symptom is: Delegation is slower than the baseline. Diagnostic focus: The fixture may not have enough independent work to offset extra calls. Recovery guidance: Record the result. Next session measures the effect of parallel execution on the same bounded tasks. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
+> I am working on Lesson 06. The symptom is: The scheduler appears to hang. Diagnostic focus: Check for a cycle, an unknown dependency or a runner that ignores cancellation. Recovery guidance: Validate the graph first and reproduce with a small asynchronous fixture. Keep the deadline and the await after cancellation. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
 
-## 07. Subagent coordination and collaboration
+### Recover when parallel execution is not faster
+
+> I am working on Lesson 06. The symptom is: Parallel execution is not faster. Diagnostic focus: The batch hook may be disabled, the work CPU-bound, or the fixture short of independent waiting time. Recovery guidance: Confirm both runs use the same injected latency and that parallel mode uses the batch adapter. Record the result honestly; a slower multi-agent run is a valid finding. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
+
+## 07. A2A across independent agent services
 
 Starting reference: lesson-06. Ending reference: lesson-07.
 
@@ -354,23 +354,23 @@ Starting reference: lesson-06. Ending reference: lesson-07.
 
 ### Build step 1
 
-> For Lesson 07, continue in my learner project. Implement WorkItem and dependency validation in incident/coordination.py. Reject duplicate task IDs, unknown dependencies and cycles before launching work. Demonstrate a valid graph with two independent tasks and a dependent task. Keep scheduling independent of model behaviour by using small asynchronous fixtures. Explain readiness and the configured concurrency limit separately. Use lesson-07 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> For Lesson 07, continue in my learner project. Create the independent runbook specialist in incident/a2a_service.py with the pinned A2A SDK. Advertise the expected skill, interface, protocol and streaming capability through an Agent Card. Enforce the local teaching bearer credential at the endpoint and keep the service read-only and tenant-scoped. Explain what the card advertises, what application code actually enforces, and why this shared credential is temporary. Use lesson-07 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 ### Build step 2
 
-> For Lesson 07, continue in my learner project. Implement bounded scheduling with deadlines, explicit completion states and cancellation cleanup. Preserve a fast result when another worker exceeds the deadline, mark failed dependencies as blocked, and await cancelled tasks so no orphan work remains. Demonstrate the concurrency bound and distinguish partial completion from success. Show the results by task identity rather than arrival order. Use lesson-07 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> For Lesson 07, continue in my learner project. Implement SpecialistExecutor's task lifecycle using the SDK's event flow. Enqueue the initial task before status updates, run the existing agent loop with runbook-only access, publish evidence as an artifact and report the correct terminal state. Add the deterministic slow-task fixture for cancellation. Demonstrate incomplete execution without manufacturing a successful answer. Use lesson-07 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 ### Build step 3
 
-> For Lesson 07, continue in my learner project. Connect pending delegate calls to the scheduler through Supervisor.batch and the runtime's bounded batch path. Preserve contract validation, inherited capabilities, shared reservations and original tool-call IDs. Compare sequential and parallel execution on the same tasks with the same injected waiting time. Explain the observed timing and avoid treating one exact millisecond value as a universal expectation. Use lesson-07 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> For Lesson 07, continue in my learner project. Implement the platform-facing RemoteSpecialist adapter in incident/a2a_client.py. Check the allowed tenant, discover the expected capability, consume streamed artifacts and status, and normalize a completed result into the platform contract. Reject an incomplete stream. Show the evidence and remote run identifier, and explain what must be retained for later reconciliation. Use lesson-07 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 ### Build step 4
 
-> For Lesson 07, continue in my learner project. Implement typed reply correlation and bounded producer-reviewer coordination. Validate correlation, task, artifact and version identity; reject stale or mismatched replies. Give one component ownership of artifact writes and escalate review that does not converge within its allowance. Complete the Session 07 lab and tests with duplicate results, failed workers and a reviewer that never accepts. Use lesson-07 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> For Lesson 07, continue in my learner project. Complete the real local HTTP demonstration, service cleanup and Session 07 tests. Show discovery, streamed progress and evidence, rejection of an unauthenticated request, and confirmed cancellation of a slow remote task. Keep third-party services and live model calls out of this local check. Explain why a disconnected client is not proof that remote work has stopped. Use lesson-07 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 ### Learner exercise
 
-> Help me carry out the Lesson 07 learner exercise in my existing project: Create a graph with two independent tasks and one dependent task. Inject a slow worker and then a failed predecessor. Verify concurrency, partial completion and blocked dependencies. Finally, submit a stale envelope and run a reviewer that never accepts; neither should silently succeed. First state the expected outcomes, then run the experiment in a recoverable state. Show the observed results and explain any discrepancy. Keep the original acceptance criteria and restore temporary experiments when finished.
+> Help me carry out the Lesson 07 learner exercise in my existing project: Run the local service separately, fetch its Agent Card and call the client adapter. Try a missing bearer credential, an unsupported skill declaration and a deliberately slow task. Record the distinction between authentication failure, capability mismatch, incomplete streaming and confirmed cancellation. First state the expected outcomes, then run the experiment in a recoverable state. Show the observed results and explain any discrepancy. Keep the original acceptance criteria and restore temporary experiments when finished.
 
 ### Verify the checkpoint
 
@@ -380,23 +380,23 @@ Starting reference: lesson-06. Ending reference: lesson-07.
 
 > Compare my completed Lesson 07 work with reference lesson-07. Show the changed files, interfaces and important behavioural differences. Explain how each completion criterion is met with code or test evidence. Preserve deliberate learner improvements and earlier capabilities; do not overwrite my work merely to obtain a textually identical copy.
 
-### Recover when the scheduler appears to hang
+### Recover when an old tutorial's types or imports fail
 
-> I am working on Lesson 07. The symptom is: The scheduler appears to hang. Diagnostic focus: Check for a dependency cycle, an unknown dependency or a runner that ignores cancellation. Recovery guidance: Run graph validation first and reproduce with the small asynchronous fixture before involving model calls. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
+> I am working on Lesson 07. The symptom is: An old tutorial's types or imports fail. Diagnostic focus: Check whether it targets A2A 0.3 rather than the pinned 1.1.2 SDK and 1.0 protocol. Recovery guidance: Use the repository's protobuf request types, factory API and generated routes. Restore the lock file before debugging application logic. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
 
-### Recover when parallel execution is not faster
+### Recover when the server rejects a status event
 
-> I am working on Lesson 07. The symptom is: Parallel execution is not faster. Diagnostic focus: The work may be CPU-bound, serialized by a resource owner or limited by provider rate limits. Recovery guidance: Measure where time is spent. Keep bounded concurrency and compare equivalent workloads. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
+> I am working on Lesson 07. The symptom is: The server rejects a status event. Diagnostic focus: A Task may not have been enqueued before the status update. Recovery guidance: Restore the initial Task event and rerun the lifecycle test. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
 
-### Recover when a late reply overwrites newer evidence
+### Recover when the stream ends with no complete answer
 
-> I am working on Lesson 07. The symptom is: A late reply overwrites newer evidence. Diagnostic focus: Correlation or expected-version checks were omitted. Recovery guidance: Restore envelope validation and have the single artifact owner reconcile the reply. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
+> I am working on Lesson 07. The symptom is: The stream ends with no complete answer. Diagnostic focus: Inspect terminal status and whether an artifact was received. Recovery guidance: Report incomplete_remote_task and reconcile by task ID. Do not treat a disconnected stream as success. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
 
-### Recover when the reviewer loops indefinitely
+### Recover when a local port is already occupied
 
-> I am working on Lesson 07. The symptom is: The reviewer loops indefinitely. Diagnostic focus: The acceptance rule or round limit is missing. Recovery guidance: Use bounded_review and return an escalated outcome with the remaining disagreements. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
+> I am working on Lesson 07. The symptom is: A local port is already occupied. Diagnostic focus: Another process is using the fixed manual-demo port. Recovery guidance: Use the ephemeral-port lab helper or choose a different explicit loopback port and update the advertised base URL. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
 
-## 08. A2A across independent agent services
+## 08. Platform core, agent registry and console
 
 Starting reference: lesson-07. Ending reference: lesson-08.
 
@@ -410,23 +410,23 @@ Starting reference: lesson-07. Ending reference: lesson-08.
 
 ### Build step 1
 
-> For Lesson 08, continue in my learner project. Create the independent runbook specialist in incident/a2a_service.py with the pinned A2A SDK. Advertise the expected skill, interface, protocol and streaming capability through an Agent Card. Enforce the local teaching bearer credential at the endpoint and keep the service read-only and tenant-scoped. Explain what the card advertises and what application code actually enforces. Use lesson-08 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> For Lesson 08, continue in my learner project. Add an agent registry in incident/registry.py on the platform's SQLite file. Validate each definition against a strict schema, require known tools, store a SHA-256 content hash and reject different content under an existing version. Track one active version per agent, allow activating any non-retired version and refuse to retire the active one. Seed single, team and remediator at version 1. Show the rejection codes for an unknown field, an unknown tool and an in-place rewrite. Use lesson-08 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 ### Build step 2
 
-> For Lesson 08, continue in my learner project. Implement SpecialistExecutor's task lifecycle using the SDK's event flow. Enqueue the initial task before status updates, run the existing agent loop with runbook-only access, publish evidence as an artifact and report the correct terminal state. Add the deterministic slow-task fixture for cancellation. Demonstrate incomplete execution without manufacturing a successful answer. Use lesson-08 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> For Lesson 08, continue in my learner project. Register remote A2A agents by pinning the SHA-256 of their Agent Card, and refuse a changed card unless an explicit reviewed acceptance is given. Add discovery by skill across active local agents and pinned remote agents. Make the A2A client check the fetched card against the pin before creating a client, and register the specialist at startup when a remote URL is configured. Demonstrate discovery for the runbooks skill and the refusal of a modified card. Use lesson-08 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 ### Build step 3
 
-> For Lesson 08, continue in my learner project. Implement the platform-facing RemoteSpecialist adapter in incident/a2a_client.py. Check the allowed tenant, discover the expected capability, consume streamed artifacts and status, and normalize a completed result into the platform contract. Reject an incomplete stream. Show the evidence and remote run identifier, and explain what must be retained for later reconciliation. Use lesson-08 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> For Lesson 08, continue in my learner project. Build the platform core in incident/platform.py and the run API in incident/api.py. Submission resolves the requested or active definition, refuses retired versions, requires an operator for the remediator, builds the context in application code and saves the queued run with the resolved definition before launch. Claim a durable lease per run. Expose submit, list, inspect, cancel, decision and resume bound to the authenticated tenant, with 404 for another tenant's run and a conflict for a stale action key. Keep every handler asynchronous, because workers and handlers share one SQLite connection. Show both configurations completing with their recorded version and hash. Use lesson-08 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 ### Build step 4
 
-> For Lesson 08, continue in my learner project. Complete the real local HTTP demonstration, service cleanup and Session 08 tests. Show discovery, streamed progress and evidence, rejection of an unauthenticated request, and confirmed cancellation of a slow remote task. Keep third-party services and live model calls out of this local check. Explain why a disconnected client is not proof that remote work has stopped. Use lesson-08 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> For Lesson 08, continue in my learner project. Serve a platform console at /console as a static HTML shell with vanilla ES modules, under a strict same-origin Content-Security-Policy with no inline or external scripts. Render every API value as text through a small element helper, never as HTML. Add Overview with the platform map from a blueprint module, Registry, Runs with run detail, and Approvals. Scope views to the signed-in identity and show operator controls only to operators while the API still enforces them. Show me the response headers and the check for HTML injection sinks. Use lesson-08 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 ### Learner exercise
 
-> Help me carry out the Lesson 08 learner exercise in my existing project: Run the local service separately, fetch its Agent Card and call the client adapter. Try a missing bearer credential, an unsupported skill declaration and a deliberately slow task. Record the distinction between authentication failure, capability mismatch, incomplete streaming and confirmed cancellation. First state the expected outcomes, then run the experiment in a recoverable state. Show the observed results and explain any discrepancy. Keep the original acceptance criteria and restore temporary experiments when finished.
+> Help me carry out the Lesson 08 learner exercise in my existing project: Start the platform API on loopback with the offline provider and a temporary database, and give me the console address. I will sign in as demo-acme, submit INC-001 with single and team, and compare the two run details. As demo-globex I will confirm that the Acme runs are absent. As demo-operator I will compare the Registry and Approvals views with the analyst's, submit the remediator and decide the pending action myself. Then run a registry version experiment: register single version 2 with a smaller context budget, attempt to rewrite version 1, let me activate version 2 as the operator, submit a run, retire version 1 and try to run it. Confirm that the older run still records version 1 and its hash. First state the expected outcomes, then run the experiment in a recoverable state. Show the observed results and explain any discrepancy. Keep the original acceptance criteria and restore temporary experiments when finished.
 
 ### Verify the checkpoint
 
@@ -436,23 +436,23 @@ Starting reference: lesson-07. Ending reference: lesson-08.
 
 > Compare my completed Lesson 08 work with reference lesson-08. Show the changed files, interfaces and important behavioural differences. Explain how each completion criterion is met with code or test evidence. Preserve deliberate learner improvements and earlier capabilities; do not overwrite my work merely to obtain a textually identical copy.
 
-### Recover when an old tutorial's types or imports fail
+### Recover when the console loads but stays blank
 
-> I am working on Lesson 08. The symptom is: An old tutorial's types or imports fail. Diagnostic focus: Check whether it targets A2A 0.3 rather than the pinned 1.1.2 SDK and 1.0 protocol. Recovery guidance: Use the repository's protobuf request types, factory API and generated routes. Restore the lock file before debugging application logic. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
+> I am working on Lesson 08. The symptom is: The console loads but stays blank. Diagnostic focus: Look for Content-Security-Policy violations in the browser developer console: an inline script, a script from another origin, or a page opened as a local file instead of from /console. Recovery guidance: Serve the console from the platform on loopback and keep all scripts as same-origin modules. Do not add unsafe-inline or external sources to the policy. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
 
-### Recover when the server rejects a status event
+### Recover when submitting a run returns 400
 
-> I am working on Lesson 08. The symptom is: The server rejects a status event. Diagnostic focus: A Task may not have been enqueued before the status update. Recovery guidance: Restore the initial Task event and rerun the lifecycle test. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
+> I am working on Lesson 08. The symptom is: Submitting a run returns 400. Diagnostic focus: Read the error code. unknown_agent, unknown_agent_version and retired_version come from the registry lifecycle; the database may hold an earlier experiment. Recovery guidance: List the agent's versions, states and active version. Activate a non-retired version or register a new one; never edit a stored definition in place. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
 
-### Recover when the stream ends with no complete answer
+### Recover when the team run fails with agent_card_changed
 
-> I am working on Lesson 08. The symptom is: The stream ends with no complete answer. Diagnostic focus: Inspect terminal status and whether an artifact was received. Recovery guidance: Report incomplete_remote_task and reconcile by task ID. Do not treat a disconnected stream as success. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
+> I am working on Lesson 08. The symptom is: The team run fails with agent_card_changed. Diagnostic focus: The specialist's current Agent Card no longer matches the pinned hash, often after a restart with a different base URL or card content. Recovery guidance: Compare the pinned and fetched cards and explain the difference. Accept the change explicitly only if it is expected; never remove the runtime pin check. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
 
-### Recover when a local port is already occupied
+### Recover when tests fail intermittently after adding an endpoint
 
-> I am working on Lesson 08. The symptom is: A local port is already occupied. Diagnostic focus: Another process is using the fixed manual-demo port. Recovery guidance: Use the ephemeral-port lab helper or choose a different explicit loopback port and update the advertised base URL. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
+> I am working on Lesson 08. The symptom is: Tests fail intermittently after adding an endpoint. Diagnostic focus: A synchronous handler runs in the framework's thread pool and shares the SQLite connection with running workers; test_api_handlers_run_on_the_event_loop names it. Recovery guidance: Declare the handler asynchronous. Do not delete the test or open an unsynchronised connection per request. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
 
-## 09. Build the reusable platform core
+## 09. MCP tool gateway and policy
 
 Starting reference: lesson-08. Ending reference: lesson-09.
 
@@ -466,23 +466,23 @@ Starting reference: lesson-08. Ending reference: lesson-09.
 
 ### Build step 1
 
-> For Lesson 09, continue in my learner project. Implement immutable versioned agent definitions in incident/platform.py. Store the name, version, specification and content hash, and reject conflicting content under an existing version. Provide single-agent and team configurations that reuse the existing services. Explain which values belong to a definition and which belong to a tenant-specific run. Use lesson-09 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> For Lesson 09, continue in my learner project. Extend the registry with tool-server records whose manifest names the transport, the tenants served and each tool's risk as read or write. Validate the name and manifest shape, reject a changed manifest under an existing name, and add a catalog from tool to server, risk, tenants and status. Seed the MCP read server and the local write-action server. Show the catalog and one rejected manifest. Use lesson-09 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 ### Build step 2
 
-> For Lesson 09, continue in my learner project. Implement submission, durable run metadata and explicit worker ownership. Resolve the definition, enforce the operator-only remediation configuration, construct context in application code and save queued state before launch. Add a bounded durable lease so two active workers cannot claim the same run. Demonstrate the ownership conflict and explain recovery after lease expiry. Use lesson-09 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> For Lesson 09, continue in my learner project. Create a ToolGateway with an explicit policy: a per-run call budget, a maximum argument size and the roles allowed to use write tools. Check each call in a fixed order, returning a stable reason code for every denial before any upstream connection. Audit every decision with an argument hash, not the raw arguments. Wrap the existing executor for allowed calls so validation, approval and effects stay unchanged. Show one allowed call and three denials with their audit rows. Use lesson-09 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 ### Build step 3
 
-> For Lesson 09, continue in my learner project. Compose the existing runtime, context, tool, MCP, supervisor, A2A, state and artifact adapters behind the platform service. Keep the single-agent and team paths as configurations of shared services. Persist child identities and the chosen configuration, and save the final artifact with its expected version. Trace one incident from submission through a child tool call to stored evidence. Use lesson-09 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> For Lesson 09, continue in my learner project. Replace per-run MCP clients with one upstream session per server and tenant in the gateway, created under a lock and shared by all workers. Open and close each client in a single owner task so its cancel scopes are entered and exited by the same task. Stop waiting callers from cancelling the shared session, drop a session after an upstream error and close all sessions at shutdown. Show the launch count after several runs. Use lesson-09 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 ### Build step 4
 
-> For Lesson 09, continue in my learner project. Expose authenticated submit, inspect, cancel, decision and resume operations in incident/api.py. Bind tenant identity to authentication, require an operator for approval, and reject a stale reviewed action key. Complete the Session 09 tests with two configurations and cross-tenant inspection. For a manual remediation demo, show me the pending action and wait for my explicit decision; automated tests may exercise their labelled fixtures. Use lesson-09 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> For Lesson 09, continue in my learner project. Pin each MCP tool definition by hash on the gateway's first connection to a server, and quarantine the server if a later connection reports different definitions. Deny every tool on a quarantined server before any upstream call. Route single runs, team workers and remediation through the gateway, and add the Gateway console view. Show a changed-definition fixture and the resulting quarantine. Use lesson-09 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 ### Learner exercise
 
-> Help me carry out the Lesson 09 learner exercise in my existing project: Submit INC-001 using single and team, inspect each stored definition version and compare the answers. Try to inspect the Acme run with the Globex identity. Then submit the operator-only remediation fixture, reject a stale approval key, approve the current proposal and resume it. First state the expected outcomes, then run the experiment in a recoverable state. Show the observed results and explain any discrepancy. Keep the original acceptance criteria and restore temporary experiments when finished.
+> Help me carry out the Lesson 09 learner exercise in my existing project: Create a second gateway over the same registry with a lower per-run call budget and a tighter argument limit, leaving the platform's policy unchanged. Predict which calls of one investigation and three hand-written calls will be denied, and with which reason codes. Run them, compare the audit rows with your prediction and view the platform's audit in the console Gateway view. First state the expected outcomes, then run the experiment in a recoverable state. Show the observed results and explain any discrepancy. Keep the original acceptance criteria and restore temporary experiments when finished.
 
 ### Verify the checkpoint
 
@@ -492,23 +492,23 @@ Starting reference: lesson-08. Ending reference: lesson-09.
 
 > Compare my completed Lesson 09 work with reference lesson-09. Show the changed files, interfaces and important behavioural differences. Explain how each completion criterion is met with code or test evidence. Preserve deliberate learner improvements and earlier capabilities; do not overwrite my work merely to obtain a textually identical copy.
 
-### Recover when unknown agent or version
+### Recover when the session count is higher than one per tenant
 
-> I am working on Lesson 09. The symptom is: Unknown agent or version. Diagnostic focus: The definition was not registered or the requested version differs from the intended checkpoint. Recovery guidance: Inspect Definitions and use the registered configuration. Create a new immutable version for a deliberate change. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
+> I am working on Lesson 09. The symptom is: The session count is higher than one per tenant. Diagnostic focus: A run path still creates its own MCP client or tool executor, the supervisor ignores the injected gateway, or sessions are created outside the gateway lock. Recovery guidance: Pass the platform's gateway to every run kind and to the supervisor, and create sessions only inside the locked session method. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
 
-### Recover when resume reports that the run is already owned
+### Recover when shutdown hangs or reports a cancel scope exited in a different task
 
-> I am working on Lesson 09. The symptom is: Resume reports that the run is already owned. Diagnostic focus: A worker still has an active lease. Recovery guidance: Inspect the owner and wait for valid release or expiry. Do not disable ownership checks to force a duplicate launch. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
+> I am working on Lesson 09. The symptom is: Shutdown hangs or reports a cancel scope exited in a different task. Diagnostic focus: The MCP client is opened in one task and closed in another, or a waiting caller cancels the shared session future. Recovery guidance: Keep open, listing, pinning and close in one owner task per session, signal it with a stop event, shield the shared future and close the platform from the API lifespan. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
 
-### Recover when an operator action returns 403
+### Recover when every call to incident-tools is denied as tool_definition_changed
 
-> I am working on Lesson 09. The symptom is: An operator action returns 403. Diagnostic focus: The request used an analyst identity. Recovery guidance: Use the explicitly configured operator credential for the local approval exercise. Do not place that authority in the agent's prompt. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
+> I am working on Lesson 09. The symptom is: Every call to incident-tools is denied as tool_definition_changed. Diagnostic focus: The server was quarantined earlier, often by the changed-definition fixture writing to the same platform database. Recovery guidance: Find which definition changed and why. For a local experiment use a fresh database. Do not overwrite the pins or weaken the quarantine check to get a pass. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
 
-### Recover when a configuration update unexpectedly changes old runs
+### Recover when a normal investigation is denied by gateway policy
 
-> I am working on Lesson 09. The symptom is: A configuration update unexpectedly changes old runs. Diagnostic focus: The implementation may be reading only a mutable current definition. Recovery guidance: Keep the resolved version and hash in each run snapshot and reject in-place definition changes. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
+> I am working on Lesson 09. The symptom is: A normal investigation is denied by gateway policy. Diagnostic focus: Read the audit reason: tool_call_budget counts allowed calls per run ID, argument_policy measures serialized arguments and not_granted means the agent definition lacks the tool. Recovery guidance: Change the policy or agent definition deliberately with a recorded reason, or fix the caller. Do not bypass the gateway. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
 
-## 10. Security and tenant isolation
+## 10. Agent identity, delegated credentials and containment
 
 Starting reference: lesson-09. Ending reference: lesson-10.
 
@@ -522,23 +522,23 @@ Starting reference: lesson-09. Ending reference: lesson-10.
 
 ### Build step 1
 
-> For Lesson 10, continue in my learner project. Create the hostile-provider fixture that proposes mock_remediate from a read-only investigation context. Exercise the actual executor rather than relying on a model to refuse. Show the denied tool event and prove that the effect ledger remains empty. Preserve the platform's existing permission policy and explain which application control contains the bad proposal. Use lesson-10 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> For Lesson 10, continue in my learner project. Add a token issuer that signs short-lived JWT-shaped tokens with a configured development key and verifies signature, issuer, expiry and audience with distinct reasons and a constant-time comparison. Let the API exchange a demo credential for a signed platform token and record the signed-in subject on each run. Show tampered, expired and wrong-audience tokens being rejected, and explain why a shared key is a teaching simplification. Use lesson-10 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 ### Build step 2
 
-> For Lesson 10, continue in my learner project. Implement and test tenant workspace containment and explicit endpoint policy in incident/security.py. Resolve paths before containment checks, reject traversal and symlink escapes, require exact approved hosts and appropriate transport security, and constrain discovered remote interfaces. Do not disable TLS or operating-system protections. Explain the difference between these application checks and a full execution sandbox. Use lesson-10 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> For Lesson 10, continue in my learner project. Add delegated credentials. Mint a short-lived tool-gateway token for each executing run, with the user as subject, the agent definition as actor and the run's allowed tools as scope. Give each local or remote child a token that only narrows the parent's scope and extends the actor chain. Record grants for inspection, keep token values out of run state, and revoke a run's tokens and its children's when the run ends. Show the three actor chains of a team run. Use lesson-10 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 ### Build step 3
 
-> For Lesson 10, continue in my learner project. Strengthen final-answer validation using structured source metadata and the expected answer shape. Demonstrate that merely mentioning a fabricated source ID in prose cannot satisfy evidence validation. Preserve the distinction between observing a source and proving that it supports the conclusion. Add focused provenance regressions while keeping existing valid investigations working. Use lesson-10 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> For Lesson 10, continue in my learner project. Enforce delegated credentials at the tool gateway and the A2A specialist. At the gateway, deny calls without a delegated token, verify it for the gateway audience, and deny a tenant mismatch or a tool outside its scope, auditing each reason. At the specialist, replace the static shared token with a delegated token for its own audience and derive tenant and subject from the verified claims. Show a missing credential, a cross-tenant call and a wrong-audience request being refused. Use lesson-10 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 ### Build step 4
 
-> For Lesson 10, continue in my learner project. Add redaction for observable events without removing useful operational counters. Complete the Session 10 lab and adversarial tests, then rerun the tenant and approval checks from earlier lessons. Show sanitized evidence and identify the actual containment boundary. Explain untested production responsibilities such as storage protection and infrastructure-level isolation without claiming they are already implemented. Use lesson-10 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> For Lesson 10, continue in my learner project. Add a credential store that keeps secrets under secret:// references, releases a value only to a named consumer, audits every release and denial, and wraps values so they cannot be printed or serialized. Lease the model key to the provider adapter and let definitions name credentials only by reference. Keep the hostile-provider, path, endpoint, citation and redaction checks working. Show a denied lease and zero injected effects, and do not describe the store as a vault. Use lesson-10 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 ### Learner exercise
 
-> Help me carry out the Lesson 10 learner exercise in my existing project: Run the hostile-provider fixture and verify zero effects. Add a symlink escape, a lookalike host and a fabricated citation to the local tests. Re-run cross-tenant API inspection and exact-action approval checks. Record the control and evidence for each rejection. First state the expected outcomes, then run the experiment in a recoverable state. Show the observed results and explain any discrepancy. Keep the original acceptance criteria and restore temporary experiments when finished.
+> Help me carry out the Lesson 10 learner exercise in my existing project: Run the Session 10 lab and read each rejection. Then present a token signed with another key to the API, request a child tool the parent lacks, lease the model key as the wrong consumer, and add a symlink escape or lookalike host. Record the control, reason and audit row or grant for each. First state the expected outcomes, then run the experiment in a recoverable state. Show the observed results and explain any discrepancy. Keep the original acceptance criteria and restore temporary experiments when finished.
 
 ### Verify the checkpoint
 
@@ -548,21 +548,21 @@ Starting reference: lesson-09. Ending reference: lesson-10.
 
 > Compare my completed Lesson 10 work with reference lesson-10. Show the changed files, interfaces and important behavioural differences. Explain how each completion criterion is met with code or test evidence. Preserve deliberate learner improvements and earlier capabilities; do not overwrite my work merely to obtain a textually identical copy.
 
-### Recover when a live provider is blocked by endpoint policy
+### Recover when the a2a specialist rejects the delegated token
 
-> I am working on Lesson 10. The symptom is: A live provider is blocked by endpoint policy. Diagnostic focus: The configured base host is not in MODEL_ALLOWED_HOSTS. Recovery guidance: Review and explicitly configure the intended trusted provider host. Do not accept a host chosen by retrieved content or disable TLS verification. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
+> I am working on Lesson 10. The symptom is: The A2A specialist rejects the delegated token. Diagnostic focus: bad_signature usually means the two processes use different PLATFORM_SIGNING_KEY values; wrong_audience means the remote grant was minted for the tool gateway. Recovery guidance: Configure the same development key for both processes and mint the remote grant for the specialist's audience. Do not relax signature or audience checks. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
 
-### Recover when a legitimate artifact path is rejected
+### Recover when gateway calls fail with no_delegated_credential
 
-> I am working on Lesson 10. The symptom is: A legitimate artifact path is rejected. Diagnostic focus: The path may be absolute, outside the tenant root or resolved through a symlink. Recovery guidance: Use a relative path within the intended tenant workspace and inspect the resolved location. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
+> I am working on Lesson 10. The symptom is: Gateway calls fail with no_delegated_credential. Diagnostic focus: The run may not have been executed through the platform, a child run may have been created without the grant hook, or tokens may be revoked before children finish. Recovery guidance: Mint the run token before any tool call, grant every child through the supervisor's grant hook and revoke only in the finally block. Keep the gateway's credential check. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
 
-### Recover when redaction removes too much diagnostic detail
+### Recover when a live provider is blocked by endpoint policy or the credential store
 
-> I am working on Lesson 10. The symptom is: Redaction removes too much diagnostic detail. Diagnostic focus: A sensitive key name may have been used for a non-sensitive value. Recovery guidance: Improve the telemetry schema and retain separate safe counters rather than weakening credential protection. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
+> I am working on Lesson 10. The symptom is: A live provider is blocked by endpoint policy or the credential store. Diagnostic focus: egress_host_denied means the host is not in MODEL_ALLOWED_HOSTS; secret_access_denied means the model key is missing or leased by a consumer other than model-adapter. Recovery guidance: Explicitly configure the trusted provider host and the model key. Do not accept a host from retrieved content, disable TLS verification or put a key in a definition. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
 
-### Recover when someone calls the path helper a full sandbox
+### Recover when someone calls these controls a production identity system or sandbox
 
-> I am working on Lesson 10. The symptom is: Someone calls the path helper a full sandbox. Diagnostic focus: Application containment is being confused with OS isolation. Recovery guidance: State the actual boundary and use the restricted container or an appropriate production execution sandbox for infrastructure-level isolation. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
+> I am working on Lesson 10. The symptom is: Someone calls these controls a production identity system or sandbox. Diagnostic focus: Teaching controls are being confused with an identity provider, a managed vault and OS isolation. Recovery guidance: State the boundaries: shared HMAC key, in-memory store, loopback-only demo credentials and path checks rather than an execution sandbox. Name the Session 11 restricted container as a further layer. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
 
 ## 11. Operating and releasing agent platforms
 
@@ -578,23 +578,23 @@ Starting reference: lesson-10. Ending reference: lesson-11.
 
 ### Build step 1
 
-> For Lesson 11, continue in my learner project. Implement bounded admission and active-worker controls in incident/operations.py and connect them to Platform. Distinguish queue capacity from per-tenant arrival limits and active concurrency. Release reservations and leases on success, failure and cancellation. Include parent and child allowances in shared budget accounting. Show excess-work rejection and prove that cancellation restores capacity. Use lesson-11 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> For Lesson 11, continue in my learner project. Implement bounded admission and active-worker controls in incident/operations.py and connect them to Platform. Distinguish queue capacity from per-tenant arrival limits and active concurrency, record rejected submissions and map them to distinct API responses. Release admission, leases and tasks on success, failure and cancellation. Make the supervisor reserve its own allowance from the shared team budget. Show excess-work rejection and prove that cancellation restores capacity. Use lesson-11 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 ### Build step 2
 
-> For Lesson 11, continue in my learner project. Implement the tenant-scoped parent-and-child trace and its escaped, redacted HTML view. Run the hybrid investigation with a local MCP-backed log worker and independent A2A runbook specialist. Show the three correlated run nodes, their evidence and usage counted once. Explain that this is the application's trace view, and identify any external observability integration that remains untested. Use lesson-11 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> For Lesson 11, continue in my learner project. Implement the tenant-scoped parent-and-child trace, its escaped HTML view and an API endpoint that returns it only to the owning tenant. Run the hybrid investigation through the registry-pinned remote specialist, the tool gateway and delegated credentials. Show the three correlated run nodes, their roles and events, and usage counted once per run. Explain that this is the application's trace view and identify any external observability integration that remains untested. Use lesson-11 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 ### Build step 3
 
-> For Lesson 11, continue in my learner project. Implement release_gate and evaluate_platform using the actual immutable configurations. Compare the same dataset and partition, retain per-case results and enforce explicit quality, latency and usage thresholds. Evaluate a candidate context policy and demonstrate rejection of a degraded or mismatched report. Explain which thresholds are teaching values and which need workload-specific decisions. Use lesson-11 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> For Lesson 11, continue in my learner project. Implement release_gate and evaluate_platform using the actual immutable registry configurations, and add a release log that records every decision with its checks and summaries whether or not the candidate is activated. Compare the same dataset and partition, retain per-case rows and enforce explicit quality, latency and usage limits. Evaluate a candidate context policy and demonstrate that a degraded or mismatched report is rejected and recorded. Explain which thresholds are teaching values. Use lesson-11 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 ### Build step 4
 
-> For Lesson 11, continue in my learner project. Complete the Session 11 end-to-end, overload, rollout and rollback demonstration. Show the runnable platform, correlated trace, accepted and rejected load, passing candidate activation and return to the previous version. Inspect the existing restricted container recipe and run it if the environment supports it. Report its temporary-state limitation and any untested deployment behaviour. Leave the working platform ready for tuning and presentation. Use lesson-11 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> For Lesson 11, continue in my learner project. Complete the Session 11 end-to-end, overload, rollout and rollback demonstration. Show the correlated trace, accepted and rejected load, a passing candidate that is recorded and activated, and the return to the previous version. Show the release in the console Operations view. Inspect the existing restricted container recipe and run it only if the environment supports it. Report its temporary-state limitation and any untested deployment behaviour. Use lesson-11 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 ### Learner exercise
 
-> Help me carry out the Lesson 11 learner exercise in my existing project: Run the hybrid end-to-end investigation and inspect its three-node trace. Lower queue capacity, send excess work and verify rejection and cleanup. Evaluate a deliberately worse candidate and show that the release gate blocks it. Then activate a passing version and roll back. First state the expected outcomes, then run the experiment in a recoverable state. Show the observed results and explain any discrepancy. Keep the original acceptance criteria and restore temporary experiments when finished.
+> Help me carry out the Lesson 11 learner exercise in my existing project: Run the hybrid end-to-end investigation and inspect its three-node trace in the API and the console. Lower queue capacity, send excess work and verify rejection and cleanup. Evaluate a deliberately worse candidate and show that the release gate blocks it and the release log records the rejection. Then activate a passing version and roll back. First state the expected outcomes, then run the experiment in a recoverable state. Show the observed results and explain any discrepancy. Keep the original acceptance criteria and restore temporary experiments when finished.
 
 ### Verify the checkpoint
 
@@ -606,15 +606,15 @@ Starting reference: lesson-10. Ending reference: lesson-11.
 
 ### Recover when the parent completes but a trace child is missing
 
-> I am working on Lesson 11. The symptom is: The parent completes but a trace child is missing. Diagnostic focus: Child persistence or parent correlation may have been omitted. Recovery guidance: Inspect child run IDs and save their completed snapshots before building the trace. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
+> I am working on Lesson 11. The symptom is: The parent completes but a trace child is missing. Diagnostic focus: Child persistence or parent correlation may have been omitted, or the remote child was saved under another tenant. Recovery guidance: Inspect the child run IDs in the delegation summary, confirm each child context carries the parent ID and tenant, and save completed child snapshots before building the trace. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
 
 ### Recover when capacity remains full after cancellation
 
-> I am working on Lesson 11. The symptom is: Capacity remains full after cancellation. Diagnostic focus: The worker cleanup may not release its reservation or lease. Recovery guidance: Run the cancellation regression test and keep cleanup in finally for both waiting and active work. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
+> I am working on Lesson 11. The symptom is: Capacity remains full after cancellation. Diagnostic focus: The worker cleanup may not leave admission, release its lease or remove the task. Recovery guidance: Run the cancellation regression test and keep all three cleanup actions in the worker's finally block for both waiting and active work. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
 
-### Recover when a release gate fails on latency
+### Recover when the operations view shows no release decisions
 
-> I am working on Lesson 11. The symptom is: A release gate fails on latency. Diagnostic focus: Inspect the measured cases and environment rather than only the mean. Recovery guidance: Diagnose the slow stage, rerun representative trials and use justified project thresholds. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
+> I am working on Lesson 11. The symptom is: The Operations view shows no release decisions. Diagnostic focus: The gate may have been evaluated without recording the decision, or the release log may use a different database from the API process. Recovery guidance: Record every decision, including rejections, in the platform's release log, confirm the API and the demo share the platform database, and check the operations endpoint before the console. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
 
 ### Recover when container replacement loses sandbox state
 
@@ -634,23 +634,23 @@ Starting reference: lesson-11. Ending reference: lesson-12.
 
 ### Build step 1
 
-> For Lesson 12, continue in my learner project. Review my working Session 11 platform and the capstone reference. Help me state one bounded tuning hypothesis and identify the smallest change needed to test it. Explain the EfficientMockProvider example and where early completion is safe or unsafe in these fixtures. Preserve the baseline and define evidence that would justify adopting or rejecting my change before implementing it. Use lesson-12 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> For Lesson 12, continue in my learner project. Review my working Session 11 platform and the capstone reference. Help me state one bounded tuning hypothesis and identify the smallest change needed to test it, expressed as a new immutable registry version. Explain the EfficientMockProvider example, how the platform selects it from the definition's provider profile, and where early completion is safe or unsafe in these fixtures. Preserve the baseline and define the evidence that would justify adopting or rejecting my change before implementing it. Use lesson-12 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 ### Build step 2
 
-> For Lesson 12, continue in my learner project. Apply the selected tuning change as a new version or clearly isolated patch. Evaluate before and after on the same cases, partitions and trial conditions, retaining failures and per-case rows. Use the actual platform path. Keep fixture usage separate from live-model economics and preserve the original expected outcomes. Show the comparison and release decision with its limitations. Use lesson-12 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> For Lesson 12, continue in my learner project. Apply the selected tuning change as a new registry version. Evaluate before and after on the same cases, partitions and trial conditions, retaining failures and per-case rows. Use the actual platform path. Activate the candidate only if the release gate approves it, and record the decision in the release log either way. Keep fixture usage separate from live-model economics and preserve the original expected outcomes. Show the comparison, the recorded decision and its limitations. Use lesson-12 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 ### Build step 3
 
-> For Lesson 12, continue in my learner project. Help me evaluate caching or routing as a separate capstone experiment when relevant. Preserve tenant, configuration, input, schema and freshness boundaries in cache identity; report cold and warm behaviour separately. Check uncertainty routing without assuming a cheaper provider is always adequate. Run the focused tests and explain correctness risks and evidence needed for a live deployment. Use lesson-12 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> For Lesson 12, continue in my learner project. Help me evaluate caching or routing as a separate capstone experiment when relevant. Preserve tenant, configuration, input, schema and freshness boundaries in cache identity, and report cold and warm behaviour separately. Check uncertainty routing without assuming a cheaper provider is always adequate. Run the focused tests and explain the correctness risks and the evidence needed for a live deployment. Use lesson-12 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 ### Build step 4
 
-> For Lesson 12, continue in my learner project. Prepare a demonstration of my completed platform and a concise evidence pack: architecture, one end-to-end investigation, one permission or recovery failure case, and the before-and-after tuning report. Use actual code and recorded results, clearly identifying anything not demonstrated live. Ask me to explain the tradeoffs in my own words. Do not invent improvements or automatically adopt a change whose evidence is inadequate. Use lesson-12 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> For Lesson 12, continue in my learner project. Prepare a console demonstration of my completed platform and a concise evidence pack: the platform map, the registry with the released version, one end-to-end run with its trace, gateway audit and delegation chain, one permission or recovery failure case, and the recorded before-and-after release. Use actual code and recorded results, clearly identifying anything not demonstrated live. Ask me to explain the tradeoffs in my own words. Do not invent improvements or adopt a change whose evidence is inadequate. Use lesson-12 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 ### Learner exercise
 
-> Help me carry out the Lesson 12 learner exercise in my existing project: Before class, select a small tuning intervention and generate a comparable before-and-after report. During class, demonstrate the working platform and one failure-control case. Explain the evidence, tradeoffs and adoption decision. Use the fixture experiment only as a rehearsal when live model access is unavailable. First state the expected outcomes, then run the experiment in a recoverable state. Show the observed results and explain any discrepancy. Keep the original acceptance criteria and restore temporary experiments when finished.
+> Help me carry out the Lesson 12 learner exercise in my existing project: Before class, select a small tuning intervention, apply it as a new registry version and generate a comparable before-and-after report with a recorded release decision. During class, present the working platform through its console and demonstrate one failure-control case. Explain the evidence, tradeoffs and adoption decision. Use the fixture experiment only as a rehearsal when live model access is unavailable. First state the expected outcomes, then run the experiment in a recoverable state. Show the observed results and explain any discrepancy. Keep the original acceptance criteria and restore temporary experiments when finished.
 
 ### Verify the checkpoint
 
@@ -662,16 +662,16 @@ Starting reference: lesson-11. Ending reference: lesson-12.
 
 ### Recover when the demo fails during a presentation
 
-> I am working on Lesson 12. The symptom is: The demo fails during a presentation. Diagnostic focus: Locate the failing checkpoint, service or configuration and preserve the error evidence. Recovery guidance: Use the prepared completed reference snapshot and saved trace to continue the explanation. State which part was demonstrated live and which was shown from recorded evidence. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
+> I am working on Lesson 12. The symptom is: The demo fails during a presentation. Diagnostic focus: Locate the failing checkpoint, service, console view or configuration and preserve the error evidence. Recovery guidance: Use the prepared completed reference snapshot, its console screenshots and the saved trace to continue the explanation. State which part was demonstrated live and which was shown from recorded evidence. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
 
-### Recover when a tuning change improves one case and harms another
+### Recover when the console does not show the tuned version or its release
 
-> I am working on Lesson 12. The symptom is: A tuning change improves one case and harms another. Diagnostic focus: Inspect per-case outcomes and the acceptance criteria. Recovery guidance: Revise or reject the change, or define a justified routing policy and evaluate it separately. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
+> I am working on Lesson 12. The symptom is: The console does not show the tuned version or its release. Diagnostic focus: The candidate may have been evaluated in a temporary database, as the lab does, rather than in the platform database the API reads, or it was recorded but not activated. Recovery guidance: Register, evaluate, activate and record the candidate against the platform database the console uses, then confirm the registry and operations endpoints before presenting. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
 
 ### Recover when a participant presents fixture usage as real savings
 
-> Review my Lesson 12 presentation claims against the recorded comparison report. Identify any synthetic fixture usage described as real model cost or savings. Correct those claims and label the measurement conditions clearly. Explain what live benchmark and pricing evidence would be needed to estimate actual cost. Preserve the recorded results and do not invent an improvement.
+> Review my Lesson 12 presentation claims against the recorded comparison report and release log. Identify any synthetic fixture usage described as real model cost or savings. Correct those claims and label the measurement conditions clearly. Explain what live benchmark and pricing evidence would be needed to estimate actual cost. Preserve the recorded results and do not invent an improvement.
 
 ### Recover when there is not enough time for every individual presentation
 
-> Help me organize Lesson 12 presentations within the existing 90-minute agenda. Ask for the cohort size if it is missing. Allocate the 25-to-65-minute presentation block using review groups or pre-recorded demonstrations when necessary. Keep the remaining agenda timings and shared review criteria, give every participant a review opportunity and prepare a short plenary discussion. Show the proposed schedule and timing totals; no implementation changes are needed.
+> Help me organize Lesson 12 presentations within the existing 90-minute agenda. Ask for the cohort size if it is missing. Allocate the 35-to-70-minute presentation block using review groups or pre-recorded console demonstrations when necessary. Keep the remaining agenda timings and shared review criteria, give every participant a review opportunity and prepare a short plenary discussion. Show the proposed schedule and timing totals; no implementation changes are needed.

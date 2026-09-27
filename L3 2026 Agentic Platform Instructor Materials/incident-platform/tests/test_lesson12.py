@@ -9,6 +9,7 @@ async def test_tuning_keeps_quality_on_same_cases():
     report = await demo()
     assert report["baseline_success"] == report["candidate_success"] == 1
     assert report["candidate_mean_tokens"] < report["baseline_mean_tokens"]
+    assert report["release_log"]["activated"] and report["release_log"]["candidate_version"] == 2
 
 
 async def test_cache_separates_tenants_versions_and_expiry():
