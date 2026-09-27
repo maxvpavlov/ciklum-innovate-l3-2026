@@ -10,8 +10,16 @@ function eventLine(event) {
     h("b", {}, event.kind), " ", h("span", { class: "mono muted" }, detail));
 }
 
+function traceTable(trace) {
+  return h("div", {}, h("h2", {}, `Correlated trace · ${trace.total_tokens} fixture tokens across ${trace.nodes.length} runs`),
+    h("table", {}, h("tr", {}, ["Run", "Parent", "Role", "Status", "Tokens", "Events"].map((t) => h("th", {}, t))),
+      trace.nodes.map((n) => h("tr", {}, h("td", { class: "mono" }, h("a", { href: `#runs/${n.id}` }, short(n.id))),
+        h("td", { class: "mono" }, short(n.parent_id)), h("td", {}, n.role), h("td", {}, badge(n.status)),
+        h("td", {}, n.tokens), h("td", {}, n.events.map((e) => e.kind).join(", "))))));
+}
+
 async function detail(id, navigate) {
-  const run = await api(`/runs/${encodeURIComponent(id)}`);
+  const [run, trace] = await Promise.all([api(`/runs/${encodeURIComponent(id)}`), api(`/runs/${encodeURIComponent(id)}/trace`)]);
   const config = run.configuration ?? {};
   const cancel = async () => { await api(`/runs/${encodeURIComponent(id)}/cancel`, { method: "POST" }); navigate(`runs/${id}`); };
   return h("section", {},
@@ -27,7 +35,7 @@ async function detail(id, navigate) {
     h("div", { class: "row" },
       h("div", {}, h("h2", {}, "Answer"), h("pre", {}, JSON.stringify(run.answer, null, 2))),
       h("div", {}, h("h2", {}, "Events"), h("ol", { class: "timeline" }, run.events.map(eventLine)))),
-    run.children.length ? h("div", {}, h("h2", {}, "Child runs"), table(run.children)) : "",
+    run.children.length ? traceTable(trace) : "",
     config.sha256 ? h("p", { class: "muted mono" }, `definition ${config.name}@${config.version} sha256 ${config.sha256}`) : "");
 }
 
