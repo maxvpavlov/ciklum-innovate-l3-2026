@@ -6,5 +6,6 @@ import tools from "./tools.js";
 import approvals from "./approvals.js";
 import gateway from "./gateway.js";
 import identity from "./identity.js";
+import operations from "./operations.js";
 
-export default [overview, registry, runs, tools, approvals, gateway, identity];
+export default [overview, registry, runs, tools, approvals, gateway, identity, operations];

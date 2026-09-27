@@ -21,18 +21,18 @@ DELEGATE_SCHEMA = {"type": "function", "function": {
 
 @dataclass
 class SharedBudget:
-    remaining: int = 5000
+    remaining: int = 6000
     max_agents: int = 2
     max_depth: int = 1
     spawned: int = 0
     spent: int = 0
     lock: asyncio.Lock = field(default_factory=asyncio.Lock)
 
-    async def reserve(self, tokens, depth):
+    async def reserve(self, tokens, depth, count_agent=True):
         async with self.lock:
-            if depth > self.max_depth or self.spawned >= self.max_agents or tokens > self.remaining:
+            if depth > self.max_depth or (count_agent and self.spawned >= self.max_agents) or tokens > self.remaining:
                 raise ValueError("delegation_budget")
-            self.spawned += 1
+            self.spawned += int(count_agent)
             self.remaining -= tokens
 
     async def settle(self, reserved, used):
@@ -123,7 +123,13 @@ class Supervisor:
     async def investigate(self, task="Investigate INC-001 payments latency", context=None, provider=None,
                           parallel=False, initial=None, checkpoint=None):
         parent = context or Context()
-        return await run_agent(provider or SupervisorProvider(), self.delegate,
+        await self.budget.reserve(1800, depth=0, count_agent=False)
+        run = None
+        try:
+            run = await run_agent(provider or SupervisorProvider(), self.delegate,
                                [DELEGATE_SCHEMA], task, parent,
                                execute_batch=self.batch if parallel else None,
-                               initial=initial, checkpoint=checkpoint)
+                               initial=initial, checkpoint=checkpoint, limits=Limits(tokens=1800))
+            return run
+        finally:
+            await self.budget.settle(1800, run.tokens if run else 1800)
