@@ -19,7 +19,7 @@ Authoring workspace for the Ciklum internal course **Innovate: Building Agentic 
 
 - The whole workspace is one repo: `github.com/maxvpavlov/ciklum-innovate-l3-2026` (private).
 - `incident-platform` used to be a standalone repo. Its history was subtree-merged in, and its tags (`lesson-00`…`lesson-12`, `course-complete`) now live in this repo.
-- The course was reframed in September 2026. `lesson-00`…`lesson-05` are unchanged. `lesson-06`…`lesson-12` and `course-complete` now point at a rebuilt standalone line that branches from `lesson-05`; it was merged into the workspace history the same way. The previous checkpoints are kept as `v1/lesson-06`…`v1/lesson-12` and `v1/course-complete` (old numbering: 06 supervisor, 07 coordination, 08 A2A, 09 platform core, 10 security).
+- The course was reframed in September 2026. `lesson-00`…`lesson-05` are unchanged. `lesson-06`…`lesson-12` and `course-complete` now point at a rebuilt standalone line that branches from `lesson-05`; it was merged into the workspace history the same way. `retag-reframed-checkpoints.sh` moves the tags (and creates the `v1/*` backups); until it has been run against GitHub, remote tags still point at the old checkpoints. The previous checkpoints are kept as `v1/lesson-06`…`v1/lesson-12` and `v1/course-complete` (old numbering: 06 supervisor, 07 coordination, 08 A2A, 09 platform core, 10 security).
 - The tags point at standalone commits, where the platform files sit at the tree root. So `git archive lesson-05` produces the platform checkpoint alone, not the whole course.
 - To compare a tag with the current platform subdirectory, compare trees: `git diff lesson-12 "HEAD:L3 2026 Agentic Platform Instructor Materials/incident-platform"`.
 

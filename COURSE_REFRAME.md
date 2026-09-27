@@ -43,8 +43,11 @@ taught and built explicitly, and the platform has a web console that shows what 
 
 ## Where things are
 
-- Reference code: `lesson-06`…`lesson-12` and `course-complete` point at the rebuilt checkpoints.
-  The previous checkpoints are preserved as `v1/lesson-06`…`v1/lesson-12` and `v1/course-complete`.
+- Reference code: the rebuilt checkpoints are merged into this branch's history, and
+  `retag-reframed-checkpoints.sh` points `lesson-06`…`lesson-12` and `course-complete` at them,
+  after preserving the previous checkpoints as `v1/lesson-06`…`v1/lesson-12` and `v1/course-complete`.
+  **Run that script once** (the authoring session could push the branch but not tags). Until then
+  the tags on GitHub still point at the old checkpoints and the guides' quoted hashes won't match.
   Test counts per tag: 1, 7, 10, 13, 15, 17, 25, 27, 33, 37, 43, 48, 51.
 - Instructor guides are now generated from `L3 2026 Agentic Platform Instructor Materials/guide-builder/specs/`
   by `build.py`, and `check.py` enforces the guide–code coupling (13 prompts and 4 exact code
