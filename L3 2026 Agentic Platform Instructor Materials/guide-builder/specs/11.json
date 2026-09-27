@@ -1,0 +1,159 @@
+{
+  "number": 11,
+  "title": "Operating and releasing agent platforms",
+  "duration": 120,
+  "outcome": "A runnable end-to-end platform combines the registry, the tool gateway, delegated credentials and a pinned A2A specialist with admission controls, correlated traces and evaluated, recorded rollout and rollback that operators can inspect in the console.",
+  "platform_role": "This session adds the operations layer on top of the platform core, gateway and identity built in Sessions 08 to 10. Admission control and a worker semaphore bound the work the platform accepts; a correlated trace joins a parent run to its local and remote children; and every release decision is evaluated on the same cases and recorded with its evidence. The console gains the Operations view (capacity, runs by status and the release log) and a correlated trace on the run detail page.",
+  "preparation": [
+    "Bring your Session 10 checkpoint with the registry, gateway and delegated credentials working, plus your evaluation harness and one saved failure trace. Review the idea of service-level objectives before class. The reference supplies everything used today: the trace view, the load and rollout demonstration and a restricted Docker and Compose recipe. There is no separate scaffolding package. Kubernetes appears only as an optional discussion of rollout and rollback; the reference contains no Kubernetes files."
+  ],
+  "opening_say": "This is the final platform-building session. We will run one investigation through the whole platform: the registry selects the team definition and the pinned remote runbook specialist, the log worker reads through the tool gateway, and each child receives a narrower delegated credential. Then we inspect the parent and child runs as one trace, reject excess work under load, and evaluate a configuration change before activating it and rolling it back. Each release decision is recorded, so the console Operations view shows what was decided and why. By the end, participants should have the working platform promised at the start of the programme; Session 12 tunes and presents it. Begin by asking the group what evidence an operator needs when a parent run fails even though one child succeeded.",
+  "concept_say": "Separate admission, execution concurrency and model budgets. A queue bound limits accepted outstanding work; a per-tenant rate limit controls how often one tenant may submit; a semaphore limits active workers. The shared team budget now reserves the parent's own allowance as well as each child's, so a supervisor cannot spend outside the limit it enforces on its workers. Trace records correlate run, parent, role, status, usage and events without exposing prompts or credentials; delegated tokens are never stored with a run, so they cannot appear in a trace. A release decision compares the same dataset and partition, checks quality against the baseline and applies explicit latency and usage limits, then records the decision whether or not the candidate is activated. Routing and caching are tuning options for Session 12. Do not infer a safe release from a faster average alone.",
+  "steps": [
+    {
+      "title": "Bound admitted and active work",
+      "say": "Inspect the two rejection paths before sending load. queue_full means outstanding work has reached capacity; rate_limited means this tenant has submitted too often in the last second. Neither condition should let the server create unlimited waiting tasks. Platform.launch enters admission before claiming the run lease, and a rejected submission is saved with status rejected so operators can count it. The worker wrapper then acquires the semaphore and, in finally, leaves admission, releases the lease and forgets the task, including on cancellation. The API maps rate_limited to HTTP 429 and queue_full to 503. Run the cancellation test and verify that pending capacity returns to zero. Ask learners why a concurrency limit alone does not bound memory when any number of requests can wait behind it.",
+      "file": "incident/operations.py",
+      "prompt": "Implement bounded admission and active-worker controls in incident/operations.py and connect them to Platform. Distinguish queue capacity from per-tenant arrival limits and active concurrency, record rejected submissions and map them to distinct API responses. Release admission, leases and tasks on success, failure and cancellation. Make the supervisor reserve its own allowance from the shared team budget. Show excess-work rejection and prove that cancellation restores capacity.",
+      "excerpt": {
+        "start": 16,
+        "end": 33
+      },
+      "explain": "Admission protects the platform before expensive work begins; the semaphore controls how accepted work executes. They are complementary controls with different metrics and different client responses.",
+      "ask": "Why distinguish HTTP 429 from queue overload?",
+      "answer": "Rate limiting is an arrival policy for one tenant, so that client should slow down. A full queue is a service-capacity condition that affects everyone. Clients and operators need the actionable reason, and the console counts both."
+    },
+    {
+      "title": "Correlate parent and child evidence",
+      "say": "Build the trace from the tenant-scoped parent and every run whose context names it as parent. The result lists run, parent, role, status, usage and events, redacted before it is returned. Run the hybrid team demo and verify three nodes: the analyst parent, the local logs worker that read through the gateway, and remote_runbooks, the child that represents the pinned A2A specialist. The run detail page in the console now shows the same correlated trace, and the HTML trace view escapes every value. Explain that this is an application trace view, not a configured OpenTelemetry collector. Ask learners what they can diagnose from an error code, a role and a lifecycle event when raw prompts and credentials are deliberately absent.",
+      "file": "incident/operations.py",
+      "prompt": "Implement the tenant-scoped parent-and-child trace, its escaped HTML view and an API endpoint that returns it only to the owning tenant. Run the hybrid investigation through the registry-pinned remote specialist, the tool gateway and delegated credentials. Show the three correlated run nodes, their roles and events, and usage counted once per run. Explain that this is the application's trace view and identify any external observability integration that remains untested.",
+      "excerpt": {
+        "start": 36,
+        "end": 48
+      },
+      "explain": "Correlation shows where work and failure occurred across service boundaries. The trace reads only the requesting tenant's rows and passes through redaction, and the HTML renderer escapes values rather than presenting executable content.",
+      "ask": "Why count each run's usage separately before calculating a total?",
+      "answer": "It makes ownership and double counting visible. The total adds the usage reported by each run exactly once: 60 for the parent and 55 for each child in the fixture."
+    },
+    {
+      "title": "Evaluate and record a candidate before activation",
+      "say": "Read the gate as a set of reviewable conditions. The dataset hash and partition must match, quality must meet both the baseline and the minimum, and latency and usage must fit the chosen limits. Run a candidate single definition with a smaller context allowance through evaluate_platform, so the benchmark executes the immutable registry configuration that would be activated. Inspect individual rows when a check fails. Then record the decision in the release log with its checks and the baseline and candidate summaries; a rejected candidate is recorded too. Thresholds here are teaching values for the fixture workload, not universal service-level objectives. Ask participants to propose thresholds for their own task and name failures that would block a release regardless of the aggregate score.",
+      "file": "incident/operations.py",
+      "prompt": "Implement release_gate and evaluate_platform using the actual immutable registry configurations, and add a release log that records every decision with its checks and summaries whether or not the candidate is activated. Compare the same dataset and partition, retain per-case rows and enforce explicit quality, latency and usage limits. Evaluate a candidate context policy and demonstrate that a degraded or mismatched report is rejected and recorded. Explain which thresholds are teaching values.",
+      "excerpt": {
+        "start": 68,
+        "end": 76
+      },
+      "explain": "The evaluation executes versioned definitions through the platform and records their identity. A gate is meaningful only when it measures the candidate that will actually be activated, and a recorded decision can be reviewed later.",
+      "ask": "Can a candidate pass by silently dropping the hardest cases?",
+      "answer": "No. The dataset hash and partition must match, and reviewers should inspect case-level rows. The release log keeps the dataset hash with each decision."
+    },
+    {
+      "title": "Exercise overload, rollout and rollback",
+      "say": "Run the end-to-end demo, then send six requests with capacity for two outstanding runs. Four are rejected while accepted work completes. Next evaluate version one and the candidate version two, inspect the gate, activate version two, record the release and roll back to version one. Activation changes the default for new runs; existing runs keep their original immutable configuration and hash. Open the console Operations view and find the recorded decision. Then open the Docker and Compose files and identify the non-root user, read-only filesystem, dropped capabilities and internal network. The Compose sandbox keeps state in tmpfs, so replacing the container discards it; the local SQLite path demonstrates persistent recovery. Kubernetes rollouts are a discussion topic only.",
+      "file": "incident/labs/l11.py",
+      "prompt": "Complete the Session 11 end-to-end, overload, rollout and rollback demonstration. Show the correlated trace, accepted and rejected load, a passing candidate that is recorded and activated, and the return to the previous version. Show the release in the console Operations view. Inspect the existing restricted container recipe and run it only if the environment supports it. Report its temporary-state limitation and any untested deployment behaviour.",
+      "excerpt": {
+        "start": 23,
+        "end": 38
+      },
+      "explain": "The demo connects technical controls to observable operational outcomes. Rollback changes which version is active rather than mutating the contents of an old version, and the release log keeps the evidence for the change.",
+      "ask": "Why preserve the old definition after a successful rollout?",
+      "answer": "Existing runs and release records still refer to it by version and hash, and rollback needs an identifiable prior configuration."
+    }
+  ],
+  "figures": [
+    {
+      "after": "step2",
+      "image": "11-run-trace.png",
+      "caption": "The run detail page for a team run. Point at the correlated trace: the analyst parent, the logs child and the remote_runbooks child, each with its own usage adding to 170 fixture tokens, and at the definition hash that pins the version the run used."
+    },
+    {
+      "after": "step4",
+      "image": "11-operations.png",
+      "caption": "The Operations view: admission and worker capacity, runs by status and the release log. Point at the recorded decision with every gate check and at \"not activated\": an approved candidate is still only activated by an explicit step. Latency figures vary between runs."
+    }
+  ],
+  "exercise": "Run the hybrid end-to-end investigation and inspect its three-node trace in the API and the console. Lower queue capacity, send excess work and verify rejection and cleanup. Evaluate a deliberately worse candidate and show that the release gate blocks it and the release log records the rejection. Then activate a passing version and roll back.",
+  "expected_json": {
+    "end_to_end": {
+      "status": "complete",
+      "cause": "connection_pool_exhaustion",
+      "summary": "Combined bounded worker evidence",
+      "evidence": ["log-acme-001", "rb-pool-v1"]
+    },
+    "trace_nodes": 3,
+    "trace_roles": ["analyst", "logs", "remote_runbooks"],
+    "trace_file": "var/trace.html",
+    "total_tokens": 170,
+    "overload_rejected": 4,
+    "release_gate": {
+      "approved": true,
+      "checks": {
+        "same_dataset": true,
+        "same_split": true,
+        "quality": true,
+        "latency": true,
+        "tokens": true
+      }
+    },
+    "activated_version": 2,
+    "rollback_version": 1,
+    "recorded_releases": 1
+  },
+  "completion_criteria": [
+    "The end-to-end investigation cites both log and runbook evidence through the gateway and the pinned A2A specialist.",
+    "The trace includes the parent and two child nodes, and another tenant receives 404 for it.",
+    "Excess work is rejected with a distinct reason, and cancellation releases capacity.",
+    "A tiny shared parent-and-child budget prevents execution.",
+    "A degraded or mismatched evaluation blocks release, every decision appears in the release log and the Operations view, and activation can return to the previous version."
+  ],
+  "recorded_test_result": {
+    "passed": 48,
+    "seconds": "18.72"
+  },
+  "troubleshooting": [
+    {
+      "heading": "The parent completes but a trace child is missing",
+      "diagnostic": "Child persistence or parent correlation may have been omitted, or the remote child was saved under another tenant.",
+      "recovery": "Inspect the child run IDs in the delegation summary, confirm each child context carries the parent ID and tenant, and save completed child snapshots before building the trace."
+    },
+    {
+      "heading": "Capacity remains full after cancellation",
+      "diagnostic": "The worker cleanup may not leave admission, release its lease or remove the task.",
+      "recovery": "Run the cancellation regression test and keep all three cleanup actions in the worker's finally block for both waiting and active work."
+    },
+    {
+      "heading": "The Operations view shows no release decisions",
+      "diagnostic": "The gate may have been evaluated without recording the decision, or the release log may use a different database from the API process.",
+      "recovery": "Record every decision, including rejections, in the platform's release log, confirm the API and the demo share the platform database, and check the operations endpoint before the console."
+    },
+    {
+      "heading": "Container replacement loses sandbox state",
+      "diagnostic": "The supplied restricted Compose recipe uses tmpfs for the writable state directory.",
+      "recovery": "Use the local persistent SQLite demo for recovery exercises, or provision and test a persistent deployment volume before relying on container restart durability."
+    }
+  ],
+  "practice": [
+    "Choose a small set of capstone tuning changes and preserve a before report on the same cases.",
+    "Compare cold and warm cache behaviour separately, and identify how tenant, configuration version and freshness affect validity.",
+    "Prepare the console route and the failure trace you will explain during the capstone, and discuss what an optional Kubernetes rollout would add to or duplicate from the registry's activation and rollback."
+  ],
+  "verification_scope": ["@tested", "@not_tested", "@local_effects", "@platform_identity"],
+  "close_say": "The guided build is complete. You have a runnable sandbox platform with a registry, a tool gateway, delegated identity, a console and operational controls around the agent runtime. Preserve this checkpoint and its baseline evaluation. Session 12 focuses on measured tuning and on presenting what you built through the console.",
+  "references": [
+    {
+      "title": "Distributed traces",
+      "url": "https://opentelemetry.io/docs/concepts/signals/traces/"
+    },
+    {
+      "title": "Evaluation and regression checks",
+      "url": "https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents"
+    },
+    {
+      "title": "Rollout and rollback example (optional Kubernetes discussion)",
+      "url": "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/"
+    }
+  ]
+}

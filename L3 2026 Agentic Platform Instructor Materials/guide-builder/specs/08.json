@@ -1,0 +1,194 @@
+{
+  "number": 8,
+  "title": "Platform core, agent registry and console",
+  "duration": 90,
+  "outcome": "Agents become validated, immutable registry definitions that run through one platform API, remote A2A agents are pinned by Agent Card hash, and analysts and operators inspect the platform in a tenant-scoped console.",
+  "platform_role": "This session turns the separate capabilities from Sessions 01 to 07 into a platform: an agent registry, a run API and the platform console. From here every agent is a registered, versioned definition, and every run records the exact version and content hash it used. The console appears for the first time with Overview, Registry, Runs and Approvals views; Sessions 09, 10 and 11 add Gateway, Identity and Operations views to the same console.",
+  "preparation": [
+    "Bring your Session 07 checkpoint, including the A2A runbook specialist. Read the A2A agent discovery guidance and the OWASP cross-site scripting prevention cheat sheet. Learners need a desktop browser on the machine where their coding agent runs.",
+    "Before class, have your coding agent start the completed lesson-08 API on loopback and confirm that all three demo identities can sign into the console."
+  ],
+  "opening_say": "Until now each capability has had its own lab entry point. Today the incident assistant stops being the application and becomes one registered agent on a platform. An agent registry holds validated, immutable, versioned definitions. A run API resolves a definition, records exactly which version ran and controls the run lifecycle. A console, served by the platform itself, lets analysts and operators see what exists and what happened. Single-agent and team investigations run through the same API, and the Session 07 specialist becomes a registered remote agent with a pinned card. Open with one question: when an incident answer looks wrong next week, what must you know about the agent that produced it?",
+  "concept_say": "Draw three boxes. The registry is the platform's catalogue: which agents exist, who owns them, which tools and skills they declare, and which version is active or retired. The run service takes an authenticated request, resolves a definition, snapshots it into the run and hands the work to a worker that holds a lease. The console is a client of the same API with no privileged back door, so it sees exactly what the signed-in identity may see. Keep two scopes apart: the registry is platform-wide, while runs, approvals and evidence are tenant-scoped. Then name the trust boundaries: definitions are reviewed input, model answers and tool evidence are untrusted text, and a remote agent is trusted only as far as the card we pinned.",
+  "steps": [
+    {
+      "title": "Register validated, immutable agent versions",
+      "say": "Open the registry. A definition is validated against AGENT_SCHEMA before anything is stored: kind, description, owner, allowed tools, skills, prompt and context budget, with no additional properties. So a definition that smuggles in an api_key field fails as invalid_definition, and an allowed tool the platform does not know, such as shell_exec, fails as unknown_tool. The content hash is the SHA-256 of the canonical JSON. Registering identical content again is harmless; different content under an existing version fails as immutable_definition. Lifecycle is kept apart from content: one version per name is active, any non-retired version can be activated, and the active version cannot be retired. Ask learners what a retired version still means for runs that already used it.",
+      "file": "incident/registry.py",
+      "prompt": "Add an agent registry in incident/registry.py on the platform's SQLite file. Validate each definition against a strict schema, require known tools, store a SHA-256 content hash and reject different content under an existing version. Track one active version per agent, allow activating any non-retired version and refuse to retire the active one. Seed single, team and remediator at version 1. Show the rejection codes for an unknown field, an unknown tool and an in-place rewrite.",
+      "excerpt": {
+        "start": 38,
+        "end": 54
+      },
+      "explain": "Validation and immutability happen at registration, before any run exists, so a malformed or rewritten definition never reaches a worker. Keeping lifecycle state outside the hashed content lets operators activate and retire versions without changing what a version means.",
+      "ask": "Why is the lifecycle state not part of the content hash?",
+      "answer": "Activating or retiring is an operational decision about the same content. If state were hashed, retiring version 1 would change its identity and break the link between old runs and the definition they actually used."
+    },
+    {
+      "title": "Pin remote agents and discover by skill",
+      "say": "In Session 07 the team discovered the runbook specialist at request time and trusted whatever card came back. Now the platform registers the remote agent once: fetch_card reads the public card, and register_remote stores the URL, the card and its SHA-256. A later registration with a different card fails as agent_card_changed unless someone explicitly accepts the change after review. At run time discover_client fetches the card again and compares its digest with the pin before creating a client, so a card swapped after registration stops the run instead of silently redirecting work. Discovery by skill returns active local agents and pinned remote agents together. Be honest about the limit: the first registration is trust on first use, with no human review.",
+      "file": "incident/a2a_client.py",
+      "prompt": "Register remote A2A agents by pinning the SHA-256 of their Agent Card, and refuse a changed card unless an explicit reviewed acceptance is given. Add discovery by skill across active local agents and pinned remote agents. Make the A2A client check the fetched card against the pin before creating a client, and register the specialist at startup when a remote URL is configured. Demonstrate discovery for the runbooks skill and the refusal of a modified card.",
+      "excerpt": {
+        "start": 14,
+        "end": 28
+      },
+      "explain": "Pinning turns a mutable discovery document into a reviewed dependency. Checking the pin again at call time closes the gap between registration and use, which is exactly where a card substitution would otherwise go unnoticed.",
+      "ask": "Why check the pin at run time if registration already rejects a changed card?",
+      "answer": "Registration only sees the card as it was on that day. The remote service can change its card later; the runtime comparison is what stops a run from following the changed card."
+    },
+    {
+      "title": "Resolve definitions in the platform core and run API",
+      "say": "Follow one submission. The API maps the bearer credential to a tenant and a role; the body carries only the incident ID, the agent name and an optional version. submit resolves the definition from the registry, refuses a retired version and requires an operator for the remediator kind. Application code builds Context from the definition's allowed tools, so the model never chooses its own permissions. The resolved definition, with version and hash, is saved on the queued run before work starts. launch then claims a durable lease, and a second claim fails as run_already_owned. The lifecycle endpoints keep the same boundaries: inspect loads only within the caller's tenant, decisions need an operator and the current action key, and resume goes back through the lease.",
+      "file": "incident/platform.py",
+      "prompt": "Build the platform core in incident/platform.py and the run API in incident/api.py. Submission resolves the requested or active definition, refuses retired versions, requires an operator for the remediator, builds the context in application code and saves the queued run with the resolved definition before launch. Claim a durable lease per run. Expose submit, list, inspect, cancel, decision and resume bound to the authenticated tenant, with 404 for another tenant's run and a conflict for a stale action key. Keep every handler asynchronous, because workers and handlers share one SQLite connection. Show both configurations completing with their recorded version and hash.",
+      "excerpt": {
+        "start": 81,
+        "end": 99
+      },
+      "explain": "Recording the resolved definition keeps each result reproducible after the registry moves on. The lease decides who executes a run; it complements the Session 05 effect ledger rather than replacing it. Handlers are async because a synchronous handler would run in a thread pool and race the workers on the shared SQLite connection; a test enforces this.",
+      "ask": "Why does inspecting another tenant's run return 404 rather than 403?",
+      "answer": "A 403 would confirm that the run exists. Loading only within the caller's tenant means another tenant's run is simply not found, so the API reveals nothing about it."
+    },
+    {
+      "title": "Serve the platform console",
+      "say": "The console is static files served by the platform at /console: an HTML shell, one stylesheet and ES modules, with no build step and no external scripts. A middleware adds a strict Content-Security-Policy: scripts, styles and connections from the same origin only, no inline script and no framing. Now look at h(). Every API value, including model answers, tool evidence and event details, becomes a text node or an attribute value; nothing is assigned to innerHTML, and a test searches every console script for HTML injection sinks, eval and external URLs. Views call the same API with the signed-in credential, so runs are tenant-scoped, and Activate, Approve and Deny appear only for an operator while the server enforces the same rule.",
+      "file": "incident/console/app.js",
+      "prompt": "Serve a platform console at /console as a static HTML shell with vanilla ES modules, under a strict same-origin Content-Security-Policy with no inline or external scripts. Render every API value as text through a small element helper, never as HTML. Add Overview with the platform map from a blueprint module, Registry, Runs with run detail, and Approvals. Scope views to the signed-in identity and show operator controls only to operators while the API still enforces them. Show me the response headers and the check for HTML injection sinks.",
+      "excerpt": {
+        "start": 8,
+        "end": 21
+      },
+      "explain": "Model output and tool evidence are attacker-influenced text. Rendering them as text nodes under a policy that forbids inline script gives two independent layers against injected markup, and a console that uses only the public API cannot see more than its user.",
+      "ask": "If the API already enforces the operator check, why hide the buttons, and why not rely on hiding alone?",
+      "answer": "Hiding them is usability: analysts do not see actions they cannot take. It is not a control, because anyone can call the API directly. The server-side operator check is the real boundary."
+    }
+  ],
+  "figures": [
+    {
+      "after": "step1",
+      "image": "08-registry.png",
+      "caption": "Registry view as the Acme analyst. Point at the version, state and SHA-256 columns, and at the empty Remote agents section: nothing is pinned until a specialist URL is configured."
+    },
+    {
+      "after": "step3",
+      "image": "08-run-detail.png",
+      "caption": "Run detail for a completed team run. Point at the recorded definition team@1 with its hash, the two child runs and the event timeline; token counts are fixture teaching metrics."
+    },
+    {
+      "after": "step4",
+      "image": "08-overview.png",
+      "caption": "Overview rendered from blueprint.py: Sessions 01 to 08 built, 09 to 12 planned. The counters come from the same tenant-scoped API as every other view."
+    },
+    {
+      "after": "practice",
+      "image": "08-approvals.png",
+      "caption": "Approvals as demo-operator with a pending mock_remediate proposal. Point at the exact arguments and the action key; an analyst sees only a notice here, and resuming is a separate step."
+    }
+  ],
+  "exercise": "Start the platform API on loopback with the offline provider and a temporary database, and give me the console address. I will sign in as demo-acme, submit INC-001 with single and team, and compare the two run details. As demo-globex I will confirm that the Acme runs are absent. As demo-operator I will compare the Registry and Approvals views with the analyst's, submit the remediator and decide the pending action myself. Then run a registry version experiment: register single version 2 with a smaller context budget, attempt to rewrite version 1, let me activate version 2 as the operator, submit a run, retire version 1 and try to run it. Confirm that the older run still records version 1 and its hash.",
+  "expected_json": {
+    "registered_agents": [
+      "remediator",
+      "single",
+      "team"
+    ],
+    "configurations": [
+      {
+        "agent": "single",
+        "status": "completed",
+        "definition_version": 1,
+        "child_runs": 0
+      },
+      {
+        "agent": "team",
+        "status": "completed",
+        "definition_version": 1,
+        "child_runs": 2
+      }
+    ],
+    "cross_tenant_status": 404,
+    "versions_of_single": [
+      1,
+      2
+    ],
+    "active_single_version": 1,
+    "console": {
+      "status": 200,
+      "content_security_policy": true,
+      "built_components": [
+        "runtime",
+        "tools",
+        "context",
+        "evaluation",
+        "durability",
+        "orchestration",
+        "a2a",
+        "registry"
+      ]
+    }
+  },
+  "completion_criteria": [
+    "Definitions are schema-validated, use only known tools and cannot be rewritten under an existing version; the active version cannot be retired and a retired version cannot run.",
+    "Remote agents are pinned by Agent Card hash and discoverable by skill, and a changed card is refused at registration and at call time.",
+    "Single and team configurations complete through the same API, and each run records its definition version and hash.",
+    "A second lease claim is rejected, another tenant's run returns 404, and a decision requires an operator and the current action key.",
+    "The console is served at /console under a strict Content-Security-Policy, renders API data as text only and shows each identity only its tenant's runs; every API handler is asynchronous."
+  ],
+  "recorded_test_result": {
+    "passed": 33,
+    "seconds": "4.35"
+  },
+  "troubleshooting": [
+    {
+      "heading": "The console loads but stays blank",
+      "diagnostic": "Look for Content-Security-Policy violations in the browser developer console: an inline script, a script from another origin, or a page opened as a local file instead of from /console.",
+      "recovery": "Serve the console from the platform on loopback and keep all scripts as same-origin modules. Do not add unsafe-inline or external sources to the policy."
+    },
+    {
+      "heading": "Submitting a run returns 400",
+      "diagnostic": "Read the error code. unknown_agent, unknown_agent_version and retired_version come from the registry lifecycle; the database may hold an earlier experiment.",
+      "recovery": "List the agent's versions, states and active version. Activate a non-retired version or register a new one; never edit a stored definition in place."
+    },
+    {
+      "heading": "The team run fails with agent_card_changed",
+      "diagnostic": "The specialist's current Agent Card no longer matches the pinned hash, often after a restart with a different base URL or card content.",
+      "recovery": "Compare the pinned and fetched cards and explain the difference. Accept the change explicitly only if it is expected; never remove the runtime pin check."
+    },
+    {
+      "heading": "Tests fail intermittently after adding an endpoint",
+      "diagnostic": "A synchronous handler runs in the framework's thread pool and shares the SQLite connection with running workers; test_api_handlers_run_on_the_event_loop names it.",
+      "recovery": "Declare the handler asynchronous. Do not delete the test or open an unsynchronised connection per request."
+    }
+  ],
+  "practice": [
+    "Draft a second business agent, such as a change-review assistant, as a registry definition: its tools, skills and owner, and which fields the schema would reject.",
+    "Discuss whether the registry should stay platform-wide while runs are tenant-scoped, and who should be allowed to register a definition."
+  ],
+  "verification_scope": [
+    "@tested",
+    "@not_tested",
+    "@local_effects",
+    "At lesson-08 the API and console authenticate with fixed demo bearer strings that are for loopback use only; Session 10 replaces them with short-lived signed tokens. Remote Agent Cards are pinned on first registration without review, and every store shares one SQLite file. The next paragraph describes identity and the gateway after Sessions 09 and 10.",
+    "@platform_identity"
+  ],
+  "close_say": "The platform now has a catalogue, a front door and a window. Every run names the exact definition that produced it, remote agents are pinned dependencies rather than whatever happened to answer, and the console shows each identity only what the API allows. Keep two teaching shortcuts visible: demo bearer strings that must never leave loopback, and one SQLite file shared by every store. In Session 09 every tool call passes through a gateway, and the console gains a Gateway view.",
+  "references": [
+    {
+      "title": "A2A Agent Discovery",
+      "url": "https://a2a-protocol.org/latest/topics/agent-discovery/"
+    },
+    {
+      "title": "OWASP Cross Site Scripting Prevention Cheat Sheet",
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html"
+    },
+    {
+      "title": "MDN Content Security Policy",
+      "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CSP"
+    },
+    {
+      "title": "Separating agent execution concerns",
+      "url": "https://www.anthropic.com/engineering/managed-agents"
+    }
+  ]
+}

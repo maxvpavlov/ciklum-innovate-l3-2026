@@ -1,0 +1,131 @@
+{
+  "number": 2,
+  "title": "Reliable tools and MCP integration",
+  "duration": 120,
+  "outcome": "Validated local and MCP tools share an application-owned permission boundary, exact-action approval and idempotent mock writes.",
+  "platform_role": "This session builds the platform's tool boundary: validated contracts, application-owned authorization, exact-action approval, an idempotent effect ledger and a real MCP transport. Each client launches its own MCP stdio server, which is deliberately simple; Session 09 replaces that with a central MCP tool gateway with shared upstream sessions, policy, audit and pinned tool definitions. The console's Gateway view (Session 09) will show the allow and deny decisions that ToolExecutor makes privately today, and Session 10 backs them with delegated credentials.",
+  "preparation": [
+    "Bring your Session 01 checkpoint. Review JSON Schema, tool contracts and MCP architecture. Pin compatible SDK/protocol versions. Mentor supplies client/server scaffolding; install and smoke-test it before class."
+  ],
+  "opening_say": "Open yesterday's loop and identify its most consequential line: the executor call. A model can produce malformed arguments, repeat a request or propose a capability it does not possess. Today we turn that line into a predictable boundary. We will validate arguments, reject unauthorized operations, classify errors and prevent duplicate mock effects. Then we expose the read-only capabilities through MCP and use a real client transport. The investigation should still produce the same cited answer. Protocol adoption changes how we discover and reach a tool; our application still decides what a run may do.",
+  "concept_say": "Draw two paths from the same ToolExecutor: one to an in-process function and one to MCPReadAdapter. Put authorization and schema validation before both paths. Explain host, client and server roles, and distinguish tools from resources. The demo uses stdio, with tenant identity bound by the trusted process launcher. That is a deliberate local trust boundary. Launching one MCP stdio server per client is also deliberately simple: in Session 09 a central tool gateway shares upstream sessions, applies policy, audits every call and pins tool definitions. A remotely deployed HTTP MCP server would require its own authentication, token validation and authorization integration; the course does not claim to exercise OAuth. Discuss retryability before running anything: a transient read failure can be retried, while a permission rejection should not be retried. A write needs an idempotency design and exact approval, even if the model insists it is harmless.",
+  "steps": [
+    {
+      "title": "Validate before dispatch",
+      "say": "Read the executor in order. First check that the tool exists, then check the run's capabilities, then validate the arguments. This sequence matters: we do not let the model expand its permissions by naming a tool. Show an extra tenant argument in a log_lookup request. additionalProperties is false, so the model cannot select another tenant through an otherwise legitimate tool. A denied request returns a structured terminal error. The agent can observe that error, but observing it does not change the permission decision. Ask learners to point to the exact branch that would stop an injected request for mock_remediate from a read-only investigator.",
+      "file": "incident/tools.py",
+      "prompt": "Implement ToolExecutor in incident/tools.py. Check tool existence, application-owned capabilities and JSON arguments before dispatch. Reject unexpected tenant arguments and oversized results. Return structured errors that distinguish terminal failures from retryable read failures. Preserve the existing agent loop. Demonstrate malformed arguments and an unauthorized write proposal being rejected before a handler performs an effect.",
+      "excerpt": {
+        "start": 34,
+        "end": 51
+      },
+      "explain": "The same checks apply regardless of transport. Schemas provide predictable interfaces, while Context supplies authority. Output-size limits prevent an unexpectedly large result from consuming the whole conversation.",
+      "ask": "Can a correct JSON Schema make a tool safe by itself?",
+      "answer": "No. A well-formed request can still be unauthorized or harmful. Authorization, effect ownership and operational limits are separate checks."
+    },
+    {
+      "title": "Bind approval and deduplicate effects",
+      "say": "Approval must identify the actual action we reviewed. Our key includes tenant, run identifier, tool name and canonical arguments. Approving a rollback for INC-001 does not approve INC-002. Walk through the mock-effect transaction: either the idempotency record already exists, or we insert the effect and its result atomically. Restart the executor and make the same approved request again. The second result says replayed, and the ledger still contains one effect. Make clear that this is a local SQLite demonstration. For an external service, the receiver must support idempotency or an equivalent reconciliation design; a local flag cannot make an arbitrary remote operation exactly once.",
+      "file": "incident/tools.py",
+      "prompt": "Add exact-action approval and idempotent mock remediation to ToolExecutor. Bind the action key to tenant, run, tool name and canonical arguments. Commit the local mock effect and its deduplication record atomically in SQLite. Test the same approved write after reopening the executor and test changed arguments against the original approval. Show that only one local effect exists, and explain the limit of this guarantee for external APIs.",
+      "excerpt": {
+        "start": 19,
+        "end": 21
+      },
+      "explain": "The action key prevents approval from drifting to different arguments. The database transaction gives the simulated effect and deduplication record one commit boundary.",
+      "ask": "Why is checking a dictionary before a remote write insufficient?",
+      "answer": "The process can crash between the write and recording success. A durable receiver-side idempotency key or reconciliation mechanism is needed."
+    },
+    {
+      "title": "Expose capabilities with MCP",
+      "say": "Create the MCP server using the pinned SDK. The decorated functions call the same fixture-backed readers, and the resource exposes a runbook index. Tenant identity is fixed when the server starts. The model supplies an incident or query, never the tenant. Explain the transport before launching it: stdout is reserved for the protocol, so diagnostic logging belongs on stderr. Show the resource URI and ask how it differs from calling runbook_search. The resource is addressable content, while the tool performs a parameterized operation. Authentication for this stdio demonstration is the trusted process boundary; do not present it as a tested remote identity flow.",
+      "file": "incident/mcp_bridge.py",
+      "prompt": "Implement the MCP server in incident/mcp_bridge.py with the pinned SDK. Expose the existing tenant-scoped log and runbook readers plus the runbook resource. Bind tenant identity in trusted launcher configuration, keep protocol stdout clean, and limit the server to the capabilities required by this lesson. Explain the host, client, server and resource roles before demonstrating discovery.",
+      "excerpt": {
+        "start": 11,
+        "end": 29
+      },
+      "explain": "MCP standardizes discovery and access without supplying the application's scheduler or permission policy. The reference pins mcp 2.2.0 and the exercised connection negotiates protocol 2026-07-28.",
+      "ask": "Who is responsible for preventing this client from launching an arbitrary process?",
+      "answer": "The host application or operator. Our launcher uses a fixed module and the current interpreter; model output cannot choose the command."
+    },
+    {
+      "title": "Run through the client adapter",
+      "say": "Replace only the read handler with MCPReadAdapter and run the original investigation. The executor still validates and authorizes calls before the adapter sends them. Inspect the discovered names and negotiated protocol, then compare the final source IDs with Session 01. Highlight the SDK's snake_case result fields, including is_error and structured_content. A version mismatch here is an integration problem, not an agent reasoning problem. Finally, test denied writes, extra arguments and oversized results. Pause until each participant can explain where an MCP failure becomes an application error and why terminal failures should not trigger a retry storm.",
+      "file": "incident/mcp_bridge.py",
+      "prompt": "Implement the MCP read adapter and connect it behind ToolExecutor. Use the real local stdio transport and the pinned SDK's result shapes. Complete the Session 02 lab and contract tests, show the negotiated protocol and discovered tools, and run the same investigation through the adapter. Confirm that transport discovery does not grant new permissions and show the unchanged cited outcome.",
+      "excerpt": {
+        "start": 39,
+        "end": 50
+      },
+      "explain": "The real stdio test starts a subprocess and exercises the protocol. It complements unit tests of local validation and effect handling. HTTP MCP authentication and third-party MCP servers are not part of the verified demo.",
+      "ask": "If the MCP server advertises a new write tool, does the agent automatically gain that capability?",
+      "answer": "No. Discovery is information. The application's allowed capability set and validation policy must explicitly permit use."
+    }
+  ],
+  "exercise": "Add an unexpected tenant argument to a log request, call mock_remediate with a read-only Context, lower output_limit, and repeat an approved mock write after reopening the SQLite executor. Record the error category or replay behaviour for each case.",
+  "expected_json": {
+    "tools": ["log_lookup", "runbook_search"],
+    "protocol": "2026-07-28",
+    "answer": {
+      "status": "complete",
+      "cause": "connection_pool_exhaustion",
+      "summary": "INC-001: connection_pool_exhaustion",
+      "evidence": ["log-acme-001", "rb-pool-v1"]
+    },
+    "write_without_capability": {
+      "ok": false,
+      "error": "permission_denied",
+      "retryable": false
+    }
+  },
+  "completion_criteria": [
+    "The real stdio client discovers log_lookup and runbook_search.",
+    "The investigation still cites the observed log and runbook.",
+    "Malformed and denied requests fail before dispatch.",
+    "Changing an approved action's arguments requires a new approval.",
+    "A duplicate approved mock write produces one stored effect."
+  ],
+  "recorded_test_result": {
+    "passed": 10,
+    "seconds": "1.96"
+  },
+  "troubleshooting": [
+    {
+      "heading": "MCP startup or parsing fails",
+      "diagnostic": "Look for debug output written to stdout or a process started from the wrong repository directory.",
+      "recovery": "Keep protocol stdout clean, use stderr logging and rerun the isolated stdio test."
+    },
+    {
+      "heading": "Result-field attribute error",
+      "diagnostic": "Compare the installed MCP version with the lock file and the result field names in the adapter.",
+      "recovery": "Restore the pinned Python 3.12 environment from the project lock file. Avoid mixing 1.x tutorial code with the 2.2.0 adapter."
+    },
+    {
+      "heading": "Tool exists but returns permission_denied",
+      "diagnostic": "Inspect Context.allowed rather than the server's discovery list.",
+      "recovery": "Use the intended read-only investigator or construct an operator-owned context explicitly for the mock-approval exercise."
+    },
+    {
+      "heading": "A changed schema breaks an integration",
+      "diagnostic": "The client-side tool contract and the discovered server contract differ.",
+      "recovery": "Pin the compatible server/client versions, update the adapter deliberately and rerun contract tests before using the changed tool."
+    }
+  ],
+  "practice": [
+    "Inject one transient read failure, verify the bounded retry, then make the failure terminal and confirm that it is not retried.",
+    "Sketch the additional identity and token-validation controls required for a remote HTTP MCP deployment, and mark which of them the tool gateway (Session 09) and delegated credentials (Session 10) will provide."
+  ],
+  "verification_scope": ["@tested", "@not_tested"],
+  "close_say": "Your platform now has a tested tool boundary and a real protocol adapter. Keep that boundary intact as the platform grows: Session 09 centralizes it in a tool gateway, and Session 10 backs today's application-owned authorization with delegated, short-lived credentials. Next we decide which evidence enters the model's context and how to keep stored artifacts and memory separate from authority.",
+  "references": [
+    {
+      "title": "Writing effective tools for agents",
+      "url": "https://www.anthropic.com/engineering/writing-tools-for-agents"
+    },
+    {
+      "title": "MCP architecture",
+      "url": "https://modelcontextprotocol.io/docs/learn/architecture"
+    }
+  ]
+}

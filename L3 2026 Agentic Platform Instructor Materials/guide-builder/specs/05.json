@@ -1,0 +1,130 @@
+{
+  "number": 5,
+  "title": "Checkpoints, recovery and human approval",
+  "duration": 90,
+  "outcome": "Runs persist across worker loss, pause for exact-action approval, resume safely and reject denied or expired approvals.",
+  "platform_role": "This session builds the platform's durable run state: stored run snapshots, exact-action approval decisions and the effect ledger. Session 08 adds the console's Approvals view, where only an operator identity can decide and the decision must echo the current proposal key, while the Runs view flags a waiting run. Session 10 makes users and agents platform principals, so the operator can present a signed, short-lived token instead of a demo credential.",
+  "preparation": [
+    "Bring your Session 04 checkpoint. Review transactions, idempotency and durable job processing. Study persistence and interrupts as design examples for your custom runtime."
+  ],
+  "opening_say": "An agent can fail after deciding what to do, during a tool call or after an external effect has happened. A restart must distinguish those situations. Today we persist the same runtime state and demonstrate a deliberately difficult boundary: a worker disappears after a mock write but before it records the tool result. We will restart the executor, resume the run and prove that the effect ledger still contains one action. This lesson is about explicit ownership and recovery semantics, not merely saving a chat transcript.",
+  "concept_say": "Draw three durable records: the run snapshot, the approval decision and the effect ledger. They answer different questions. The snapshot says where execution stopped. Approval says which exact action a trusted operator accepted and until when. The ledger says whether the simulated effect already committed. Explain why persisting a pending call before dispatch matters. If the process crashes after the write, the pending call is still present and will be retried, so the receiver-side idempotency key must make that retry safe. Cancellation and denial are terminal control decisions. An expired approval should leave the operation waiting rather than silently renewing authority.",
+  "steps": [
+    {
+      "title": "Persist reconstructible state",
+      "say": "Save the full Run snapshot under tenant and run ID, then reconstruct Context explicitly when loading. We are preserving messages, pending calls, counters, status and answer. The store does not infer authority from text. Show a lookup from the wrong tenant and confirm that it fails as run_not_found. Ask learners which fields must survive a crash before the model receives its tool result. The pending call and its identifier must survive, because they connect the stored assistant request to the eventual observation. The local file is our durable boundary for the exercise; process memory is not sufficient.",
+      "file": "incident/durable.py",
+      "prompt": "Implement RunStore in incident/durable.py so it persists and reconstructs the current runtime state under tenant and run ID. Preserve messages, pending calls, usage counters and control state. Use a persistent local database for restart checks. Show which data must survive a crash before a tool observation is recorded, and demonstrate that another tenant cannot load the run.",
+      "excerpt": {
+        "start": 16,
+        "end": 18
+      },
+      "explain": "A restart can rebuild the run without replaying every previous model decision. Tenant-scoped keys preserve the access boundary during recovery.",
+      "ask": "Is saving only the final answer enough for recovery?",
+      "answer": "No. A run may not have a final answer, and we must know pending calls, counters and control state to resume safely."
+    },
+    {
+      "title": "Store the exact approval decision",
+      "say": "Start the remediation fixture and observe waiting_approval. No effect has happened. The trusted operator now approves the proposed tool name and arguments, whose canonical action key is stored with an expiry. Read the denial branch and the approved_keys query. Approval is a separate durable record and must still be valid when execution resumes. This is also where we distinguish operator action from model preference. RemediationProvider is a deterministic fixture used to reach the approval branch; it is not a real operational recommendation. All effects remain in the local mock ledger.",
+      "file": "incident/durable.py",
+      "prompt": "Implement durable approval decisions with exact action keys, expiry and denial. Reach the waiting state using the clearly labelled remediation fixture, with no real external action. Show the exact proposed tool and arguments. Keep the human decision separate from execution: do not approve on my behalf while preparing the demonstration. Explain how the stored decision is checked again at resume time.",
+      "excerpt": {
+        "start": 27,
+        "end": 39
+      },
+      "explain": "Binding approval to tenant, run, tool and arguments prevents a decision from being reused for a different action. Expiry and denial remain enforceable after restart.",
+      "ask": "Why not simply store approved=true on the run?",
+      "answer": "That flag would not identify which operation and arguments were reviewed. A changed proposal could inherit an unrelated approval."
+    },
+    {
+      "title": "Resume from the pending boundary",
+      "say": "Load the snapshot, reject terminal denial or cancellation, and refresh approved keys from the current approval records. Then call the same run_agent function with initial state and the save callback. The runtime processes the stored pending call before requesting another model decision. Walk through the before-write crash first, then the after-write crash. In the second case, the ledger recognizes the action key and returns the committed result. The resumed conversation can append the missing tool observation and finish. Ask participants to explain why we do not ask the model to reconstruct whether the earlier write succeeded.",
+      "file": "incident/durable.py",
+      "prompt": "Implement resume_run using the stored pending call and the same run_agent loop. Refresh currently valid approvals, reject denied or cancelled work and use the local effect ledger to reconcile a replay. Demonstrate why recovery consults durable application evidence rather than asking a model whether an earlier write succeeded. Preserve the original tenant and action boundaries.",
+      "excerpt": {
+        "start": 47,
+        "end": 56
+      },
+      "explain": "Recovery uses durable application evidence. The model does not decide transaction history. The local exactly-once demonstration depends on the mock effect and idempotency record sharing a SQLite transaction.",
+      "ask": "Does this guarantee exactly-once execution for every external API?",
+      "answer": "No. External effects require receiver-supported idempotency, transactional messaging or reconciliation. The demo proves the local ledger's boundary."
+    },
+    {
+      "title": "Inject a crash after the effect",
+      "say": "Read the injected failure before running it. The wrapper deliberately executes the approved effect and then raises WorkerCrash before the runtime saves the observation. We reopen the database and create a new executor, then resume. Inspect the final status and count the effects table. The result must be completed with exactly one effect. Next, expire an approval and repeat. This time the run must remain waiting. Finally, deny the proposal and show that resume is rejected. Pause until a learner can place each failure on the state diagram and name the durable record used to resolve it.",
+      "file": "incident/labs/l05.py",
+      "prompt": "Complete the Session 05 crash-injection demonstration and tests. Simulate worker loss after a committed mock effect but before the result checkpoint, reopen the database and resume. Prove that there is one effect. Also demonstrate expired and denied approvals. Separate this automated fixture test from my manually controlled demonstration, and explain why the local transaction does not guarantee exactly-once behaviour for arbitrary remote APIs.",
+      "excerpt": {
+        "start": 37,
+        "end": 39
+      },
+      "explain": "Fault injection tests the exact interval that ordinary happy-path checks miss. The crash fixture derives from BaseException so the runtime does not accidentally convert a simulated process loss into a normal recoverable error.",
+      "ask": "What evidence distinguishes a safe retry from an unknown remote effect?",
+      "answer": "A durable receiver-side result for the same idempotency key. Without it, recovery must reconcile the external state before proceeding."
+    }
+  ],
+  "exercise": "Run the crash-after-effect demonstration, then inspect the stored snapshot and effect count. Repeat with an expired approval and a denied proposal. Change the incident arguments and verify that the earlier approval does not authorize the new action.",
+  "expected_json": {
+    "paused": "waiting_approval",
+    "approval": {
+      "key": "3a03de7b22629d992680bdc2797f877955bf26bcfb0b8b4db3e5c9ac4a31db4d",
+      "name": "mock_remediate",
+      "args": {
+        "incident_id": "INC-001",
+        "action": "rollback"
+      },
+      "decision": "approve"
+    },
+    "resumed": "completed",
+    "effects_after_crash_and_resume": 1
+  },
+  "completion_criteria": [
+    "The initial remediation run waits for approval and has no write effect.",
+    "An approved action survives a simulated worker crash and resumes.",
+    "Crash-after-write recovery leaves exactly one mock effect.",
+    "An expired approval does not execute the action.",
+    "Denied and cancelled runs cannot be resumed as approved work."
+  ],
+  "recorded_test_result": {
+    "passed": 17,
+    "seconds": "1.24"
+  },
+  "troubleshooting": [
+    {
+      "heading": "Resume still waits after approval",
+      "diagnostic": "Check expiry, tenant, run ID and the action key against the pending arguments.",
+      "recovery": "Review the current proposal and issue a fresh, exact decision if appropriate. Do not copy an old approval flag."
+    },
+    {
+      "heading": "A restart loses the run",
+      "diagnostic": "The store may have used :memory: or a temporary directory that was removed.",
+      "recovery": "Use the same persistent database path for both processes. Temporary demo directories are intentionally cleaned up after the assertion."
+    },
+    {
+      "heading": "Two effects appear",
+      "diagnostic": "The effect and idempotency record may no longer share a transaction, or the action key changed.",
+      "recovery": "Restore the transaction boundary and canonical key, then rerun the crash test."
+    },
+    {
+      "heading": "A remote effect cannot be reconciled",
+      "diagnostic": "The external receiver does not provide durable idempotency evidence.",
+      "recovery": "Stop automatic replay and implement explicit reconciliation. Do not infer success from the model's narrative."
+    }
+  ],
+  "practice": [
+    "Add a crash before the write and compare its stored state with the after-write case.",
+    "Write a short recovery runbook describing which operations can be retried automatically and which require reconciliation."
+  ],
+  "verification_scope": ["@tested", "@not_tested", "@local_effects"],
+  "close_say": "Your platform can now pause and recover with explicit action ownership. Have your coding agent save the checkpoint with its failure tests. In Session 08 these approvals get a console Approvals view that only an operator can act on, and in Session 10 that operator can authenticate with a signed, short-lived token. In the next session we apply the same runtime and authority boundaries to delegated child agents.",
+  "references": [
+    {
+      "title": "Checkpoint persistence",
+      "url": "https://docs.langchain.com/oss/python/langgraph/persistence"
+    },
+    {
+      "title": "Interrupts and human approval",
+      "url": "https://docs.langchain.com/oss/python/langgraph/interrupts"
+    }
+  ]
+}

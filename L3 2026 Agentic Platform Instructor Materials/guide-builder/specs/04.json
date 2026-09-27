@@ -1,0 +1,131 @@
+{
+  "number": 4,
+  "title": "Build the agent evaluation harness",
+  "duration": 90,
+  "outcome": "A reproducible evaluation harness records single-agent quality, usage and latency, with held-out cases and a calibrated-judge workflow.",
+  "platform_role": "This session builds the platform's measuring instrument: a dataset with a recorded identity, repeated trials, a held-out split and per-trial quality, usage and latency. In Session 11 the same harness becomes the release gate that decides whether a new agent version may be activated, and the console's Operations view lists those release decisions. The single-agent baseline recorded today is also the comparison point for the Session 12 capstone.",
+  "preparation": [
+    "Bring your Session 03 checkpoint, acceptance scenarios and recorded runs. Read the evaluation reference and tool-evaluation guidance."
+  ],
+  "opening_say": "Before adding more agents, we need evidence that complexity helps. Today we build the measuring instrument we will use for the rest of the programme. The current platform can investigate several incidents, including missing or ambiguous evidence. We will define success independently of the agent's preferred sequence of tool calls, run repeated trials and retain a held-out partition. The baseline becomes a reference point for parallel orchestration, provider changes, context policies and capstone tuning.",
+  "concept_say": "Separate task outcome, evidence quality and policy compliance. A correct cause without supporting evidence is incomplete; a supported answer that used an unauthorized write is unacceptable. Our deterministic checks compare structured outcomes and inspect observable tool behaviour. A model judge can help with semantic questions, but it introduces another fallible model. Use paired human labels to measure agreement and inspect disagreements before relying on it. Walk through the five fixture cases and their development or held-out status. Explain that repeated offline trials should be stable, while repeated live trials reveal variation. Dataset identity, provider configuration, sampling choices and pricing assumptions all belong in the benchmark record.",
+  "steps": [
+    {
+      "title": "Define cases before scoring runs",
+      "say": "Read each case as a requirement. The missing incident should not inherit the most common runbook's cause. The ambiguous case should finish with insufficient evidence. The other-tenant case should use a different source population. Mark the held-out cases before tuning, and do not repeatedly edit them to accommodate a favoured implementation. Show the dataset hash in the result. It is a practical way to detect whether two reports evaluated the same case definitions. Ask learners to propose one additional failure case and state its expected outcome before running the agent.",
+      "file": "incident/evaluate.py",
+      "prompt": "Create the versioned evaluation cases in incident/evaluate.py. Cover supported diagnoses, missing evidence, ambiguity and another tenant, with explicit expected outcomes and development versus held-out partitions. Preserve the supplied acceptance scenarios and record dataset identity. Explain each case before running the agent. Do not change expected answers simply to make the current implementation pass.",
+      "excerpt": {
+        "start": 14,
+        "end": 20
+      },
+      "explain": "Expected outcomes are independent of implementation details. Cases can remain stable while a valid agent changes its path or uses a different provider.",
+      "ask": "Why not require exactly two tool calls in every successful case?",
+      "answer": "Different valid strategies can reach the same supported result. Check essential policy requirements and outcome evidence rather than one incidental trajectory."
+    },
+    {
+      "title": "Grade outcomes and policy separately",
+      "say": "Inspect the three checks returned by grade. The outcome check includes both cause and evidence-sufficiency status. The evidence check requires support for a known cause. The policy check rejects remediation during an investigation. Run the intentionally wrong answer test: it sounds plausible but names the wrong cause, so it fails. Explain the correction made to the offline provider in this checkpoint. A generic runbook is not proof of an incident's cause. The missing-evidence case exposed that mistaken inference, and the fixture now preserves unknown when diagnostic log evidence is absent.",
+      "file": "incident/evaluate.py",
+      "prompt": "Implement separate outcome, evidence and tool-policy checks in grade. Demonstrate rejection of a plausible but wrong diagnosis. Check the offline provider's missing-evidence behaviour and make the smallest required correction in incident/providers.py so a generic runbook does not become proof of an incident cause. Preserve the original test expectations and show the regression evidence.",
+      "excerpt": {
+        "start": 23,
+        "end": 30
+      },
+      "explain": "Separate checks explain failures instead of hiding them behind one score. The mock-provider correction is a regression example, not a claim that a live model was improved.",
+      "ask": "Can one aggregate success percentage tell us whether a regression is acceptable?",
+      "answer": "Not by itself. Inspect which cases failed and whether evidence, permissions or a critical scenario regressed."
+    },
+    {
+      "title": "Record repeated measurements",
+      "say": "Follow the loop over cases and trials. Each run gets a fresh executor and context. We record checks, usage, steps and elapsed time, and retain the individual rows so a mean does not hide a bad case. Run development and held-out partitions separately, then run the full fixture set. The reference mock reports usage units chosen by the fixture; they are not tokenizer measurements or paid API charges. In live mode, usage comes from the provider, and cost is only available when pricing rates are configured. Ask participants to identify which numbers should be stable offline and which may vary with machine scheduling.",
+      "file": "incident/evaluate.py",
+      "prompt": "Implement repeated evaluation with fresh execution context per trial, per-case result rows, dataset identity, selected partition, quality, usage and latency measurements. Keep live cost unavailable when pricing is missing, and clearly label offline fixture usage. Run two trials on the held-out partition and show the four underlying rows, including failures rather than only a favourable aggregate.",
+      "excerpt": {
+        "start": 40,
+        "end": 62
+      },
+      "explain": "Per-trial rows support inspection and later comparisons. A held-out partition separates tuning feedback from an additional evaluation check. Unknown pricing remains unavailable rather than being reported as a free live call.",
+      "ask": "Why retain raw trial rows when we already have means?",
+      "answer": "They expose variation, case-specific failures, outliers and accidental changes in the tested population."
+    },
+    {
+      "title": "Calibrate an optional model judge",
+      "say": "Use a small labelled set to demonstrate agreement calculation and inspect the disagreement index. Then open model_judge. The expected outcome and agent answer are sent as data with a bounded grading request. The agent answer remains untrusted even inside an evaluation prompt. A judge response must have the expected type. Explain that deterministic checks remain useful even when a judge is present, especially for permission violations and missing source IDs. For this session, the optional live judge is not required: use the supplied labelled example and show where real human labels and a verified live adapter would enter.",
+      "file": "incident/evaluate.py",
+      "prompt": "Implement paired human-versus-judge agreement checks and the optional model_judge interface. Validate judge output, treat the agent answer as untrusted grading input and expose disagreements for human review. Complete the Session 04 lab and tests using offline calibration examples. Explain what is verified locally and what would still require a calibrated live judge and authorized provider access.",
+      "excerpt": {
+        "start": 33,
+        "end": 37
+      },
+      "explain": "A judge is a measurement component that needs validation. Agreement on a tiny example illustrates the process but cannot establish reliable judge performance for a production workload.",
+      "ask": "What should we do with judge disagreements?",
+      "answer": "Review the underlying cases and rubric. Correct ambiguous labels or an inadequate judge before changing the agent merely to satisfy the judge."
+    }
+  ],
+  "exercise": "Add one unsupported-answer case and one tool-policy violation to a local test. Verify that the relevant check fails. Run two repeated trials on the held-out partition and locate every per-case result. Use the calibration example to explain why the flagged disagreement needs human review.",
+  "expected_json": {
+    "dataset_sha256": "90d1f50a6663c9e7ec24a2d3951b0238d92114eefc8797c5317a42c428ddbc3f",
+    "provider": "MockProvider",
+    "trials": 2,
+    "split": "all",
+    "success_rate": 1.0,
+    "mean_tokens": 75,
+    "mean_steps": 3,
+    "mean_latency_ms": 0.8998957055155188,
+    "calibration": {
+      "agreement": 0.6666666666666667,
+      "review_indices": [1]
+    },
+    "interpretation": "Offline fixture results validate wiring and checks, not live model quality."
+  },
+  "completion_criteria": [
+    "Two held-out cases with two trials produce four result rows.",
+    "A plausible but wrong cause is rejected.",
+    "Missing or ambiguous evidence is not reported as a supported diagnosis.",
+    "Reports identify the dataset and retain per-trial results.",
+    "Judge calibration identifies the mismatching labels."
+  ],
+  "recorded_test_result": {
+    "passed": 15,
+    "seconds": "1.08"
+  },
+  "troubleshooting": [
+    {
+      "heading": "A comparison improves after changing the cases",
+      "diagnostic": "The dataset hash or partition differs.",
+      "recovery": "Restore the same dataset and compare like-for-like before attributing an improvement to the implementation."
+    },
+    {
+      "heading": "Live cost appears unavailable",
+      "diagnostic": "Input and output pricing rates are not configured.",
+      "recovery": "Provide explicit current rates in the environment and rerun. Keep cost unavailable until then."
+    },
+    {
+      "heading": "One live trial passes and another fails",
+      "diagnostic": "Inspect outcome variation and the individual traces.",
+      "recovery": "Increase representative trials and investigate the failure mode rather than selecting only a favourable run."
+    },
+    {
+      "heading": "The judge disagrees with an obvious check",
+      "diagnostic": "The rubric, human label or judge may be wrong.",
+      "recovery": "Review the example manually. Keep deterministic permission and schema checks authoritative for those properties."
+    }
+  ],
+  "practice": [
+    "Create a versioned dataset extension with a clear rationale and retain the previous baseline.",
+    "Compare full history and bounded context using the same cases and report both outcome quality and usage."
+  ],
+  "verification_scope": ["@tested", "@not_tested"],
+  "close_say": "Save the baseline report with its dataset identity and configuration. We will keep using this harness as the platform becomes more capable: in Session 11 it becomes the release gate for new agent versions, and the console's Operations view keeps the log of release decisions. Next we make a run survive interruption without duplicating its effects.",
+  "references": [
+    {
+      "title": "Demystifying evals for AI agents",
+      "url": "https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents"
+    },
+    {
+      "title": "Evaluating tool effectiveness",
+      "url": "https://www.anthropic.com/engineering/writing-tools-for-agents"
+    }
+  ]
+}

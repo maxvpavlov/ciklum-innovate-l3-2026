@@ -1,0 +1,169 @@
+{
+  "number": 12,
+  "title": "Tune and present your agentic platform",
+  "duration": 90,
+  "outcome": "Participants present the platform they built through its own console, justify a bounded tuning change with comparable, recorded evidence and explain the architecture, the four platform components, failures and remaining limitations.",
+  "platform_role": "This session completes the platform rather than adding a component. A tuning change becomes a new immutable registry version, is evaluated against the baseline on the same cases, and is activated only through a recorded release decision. The console is the presentation surface: the Overview map shows all twelve components built, the Registry shows single v2 active, and the Runs, Gateway, Identity and Operations views supply the evidence for the capstone.",
+  "preparation": [
+    "Bring the working Session 11 platform and its checks. Choose a small set of tuning changes, measure before and after results on the same evaluation cases, and prepare a short architecture and demo narrative with code, traces and benchmarks. Before class, apply the tuned version and its recorded release to the platform database the console reads, and rehearse the console route you will present: Overview, Registry, a team run with its trace, Gateway, Identity and Operations."
+  ],
+  "readiness_notes": [
+    "Require the working Session 11 platform and before and after evidence in advance, including a console that starts on the participant's own platform database. Use review groups or recorded demonstrations for a large cohort so every participant receives review within the 90-minute session. Keep the completed reference and its screenshots ready as a fallback if a live console fails."
+  ],
+  "agenda": [
+    ["00 to 10", "Readiness check and presentation criteria", "Discussion"],
+    ["10 to 30", "Guided tuning walkthrough: steps 1 to 3 on the reference", "Demo"],
+    ["30 to 35", "Step 4: the console presentation route", "Demo"],
+    ["35 to 70", "Participant or review-group demonstrations through the console", "Presentation"],
+    ["70 to 82", "Evidence review and architecture questions", "Review"],
+    ["82 to 90", "Adoption decisions and follow-up actions", "Discussion"]
+  ],
+  "opening_say": "Today we review the platform you have already built. Start from a working Session 11 checkpoint and a small, explicit tuning hypothesis. The build steps are a short guided walkthrough on the reference, not new construction: participants should have run them before class. The strongest presentation is delivered through the platform console. It shows the platform map, the versioned definition that was released, one end-to-end run with its trace, the gateway's audit and the delegation chain, and the recorded release decision. It compares before and after on the same cases and demonstrates one control or recovery behaviour. The reference's simulated usage improvement demonstrates measurement mechanics; it is not evidence that a real model became cheaper or more capable.",
+  "concept_say": "Frame every tuning change as a hypothesis, intervention, comparison and decision. Keep the dataset, partition and measurement conditions stable. The reference registers single version two with an efficient provider profile: the fixture finishes early when structured log evidence is sufficient and keeps the longer path for ambiguous or missing evidence. Across the five cases it reduces mean simulated usage from 75 to 63 while preserving the fixture's success rate. That is a 16 percent reduction in this controlled fixture. The release gate approves it, the platform activates it and the release log records the decision. The separate cache example distinguishes cold from warm runs and scopes entries by tenant and configuration. Routing selects a careful provider when observations are incomplete or failed. Live-model quality, cost and latency need real credentials and configured pricing before any deployment claim.",
+  "steps": [
+    {
+      "title": "State the hypothesis and inspect the change",
+      "say": "Explain the hypothesis in one sentence: when the diagnostic log already provides sufficient structured evidence, the fixture can stop without a redundant runbook request. Read the early-finish condition and identify the cases where it must not apply. Missing and unknown evidence keep the original behaviour. The platform selects this provider only when a definition's provider_profile is efficient, so the change lives in a new registry version rather than in version one. Emphasise that this is an intentionally transparent fixture policy, not a general recommendation to skip retrieval. Ask each participant to state their own intervention just as narrowly. A collection of unrelated changes makes it difficult to attribute an improvement or diagnose a regression.",
+      "file": "incident/tuning.py",
+      "prompt": "Review my working Session 11 platform and the capstone reference. Help me state one bounded tuning hypothesis and identify the smallest change needed to test it, expressed as a new immutable registry version. Explain the EfficientMockProvider example, how the platform selects it from the definition's provider profile, and where early completion is safe or unsafe in these fixtures. Preserve the baseline and define the evidence that would justify adopting or rejecting my change before implementing it.",
+      "excerpt": {
+        "start": 10,
+        "end": 20
+      },
+      "explain": "A small change supports an interpretable comparison. The policy is applied through a new immutable registry version rather than by mutating the baseline, so both versions remain comparable and reversible.",
+      "ask": "Why does the mean become 63 rather than 55?",
+      "answer": "Three of five fixture cases finish with 55 simulated usage units, while two retain 75. The mean is (3 times 55 plus 2 times 75) divided by 5, which is 63."
+    },
+    {
+      "title": "Run a comparable evaluation and record the release",
+      "say": "Run three trials for each case under version one, then register the efficient version two and evaluate it with the same platform, dataset and trial count. Inspect the release gate and the individual rows before quoting the summary. The result should preserve fixture success and show the reduced simulated usage. Only then activate version two and record the release, so the Operations view shows the decision with its checks and summaries. Do not reuse these numbers as live-model economics. For a live experiment, report the actual provider, model, configuration, pricing, sampling conditions and test set. Ask participants to show one case that could have regressed and explain how the evaluation would reveal it.",
+      "file": "incident/labs/l12.py",
+      "prompt": "Apply the selected tuning change as a new registry version. Evaluate before and after on the same cases, partitions and trial conditions, retaining failures and per-case rows. Use the actual platform path. Activate the candidate only if the release gate approves it, and record the decision in the release log either way. Keep fixture usage separate from live-model economics and preserve the original expected outcomes. Show the comparison, the recorded decision and its limitations.",
+      "excerpt": {
+        "start": 15,
+        "end": 24
+      },
+      "explain": "The experiment uses the actual versioned platform path. Equivalent evaluation conditions make the difference interpretable, and the recorded release ties the activation to its evidence.",
+      "ask": "What would make the comparison invalid even if the new mean is better?",
+      "answer": "Changing the dataset, hiding failed cases, mixing cold and warm cache conditions, changing pricing assumptions or evaluating a different configuration from the one activated and presented."
+    },
+    {
+      "title": "Explain caching and routing tradeoffs",
+      "say": "Walk through the cache key before discussing hits. Tenant, configuration hash, messages, tool schemas and output allowance all affect whether a cached response is applicable. Expiry controls freshness, and the example bypasses the cache whenever the effectful mock tool is available. Show the cold and warm measurements separately. Then inspect RoutingProvider in the same file: incomplete or failed observations select the careful path. A real routing policy needs evaluation because a cheaper model can make an expensive mistake. Neither experiment is activated in the registry; both are separate capstone options. Ask learners to explain one situation where an apparently helpful cache would return stale or unauthorised information.",
+      "file": "incident/tuning.py",
+      "prompt": "Help me evaluate caching or routing as a separate capstone experiment when relevant. Preserve tenant, configuration, input, schema and freshness boundaries in cache identity, and report cold and warm behaviour separately. Check uncertainty routing without assuming a cheaper provider is always adequate. Run the focused tests and explain the correctness risks and the evidence needed for a live deployment.",
+      "excerpt": {
+        "start": 23,
+        "end": 39
+      },
+      "explain": "Caching and routing are tuning mechanisms with correctness conditions. The reference tests cross-tenant separation, configuration changes, expiry and uncertainty routing independently of live-model behaviour.",
+      "ask": "Why not report the warm-cache result as the normal model cost?",
+      "answer": "It represents a different operating condition. Report the hit rate and separate cold and warm behaviour on a representative workload."
+    },
+    {
+      "title": "Present the platform through the console",
+      "say": "Use the saved comparison report as supporting evidence, then present the platform itself through the console. Start at the Overview map with all twelve components built. Open the Registry and show single version two active beside version one, each with its hash. Submit a team run and walk its correlated trace, then show the Gateway audit for its tool calls and the Identity view with the delegation chain. Finish in Operations with the recorded release. Demonstrate one permission rejection, cancellation or recovery case, and close with a decision: adopt, keep experimental or reject. Ask the reviewer to challenge one architectural assumption; the participant should answer from code, traces and records rather than a fluent narrative.",
+      "file": "incident/labs/l12.py",
+      "prompt": "Prepare a console demonstration of my completed platform and a concise evidence pack: the platform map, the registry with the released version, one end-to-end run with its trace, gateway audit and delegation chain, one permission or recovery failure case, and the recorded before-and-after release. Use actual code and recorded results, clearly identifying anything not demonstrated live. Ask me to explain the tradeoffs in my own words. Do not invent improvements or adopt a change whose evidence is inadequate.",
+      "excerpt": {
+        "start": 29,
+        "end": 40
+      },
+      "explain": "The capstone assesses ownership of the implementation and quality of judgement. A working console demonstration backed by recorded evidence is stronger than a feature list or a generated slide.",
+      "ask": "What should a participant do if the tuning result is negative?",
+      "answer": "Present it honestly, show the rejected decision in the release log, explain what was learned and keep the better baseline active. A justified rejection demonstrates sound engineering judgement."
+    }
+  ],
+  "figures": [
+    {
+      "after": "concept",
+      "image": "12-overview.png",
+      "caption": "The Overview map at lesson-12: every component from Session 01 to Session 12 is marked built. Use it as the first slide of a capstone presentation and point at the counts of agent versions and remote agents."
+    },
+    {
+      "after": "step2",
+      "image": "12-operations.png",
+      "caption": "The Operations view after the capstone release: single v1 to v2 with success unchanged at 100%, mean fixture usage 75.0 to 63.0, every gate check allowed and the decision activated. Latency values vary between runs and are not a performance claim."
+    },
+    {
+      "after": "step4",
+      "image": "12-registry.png",
+      "caption": "The Registry during the presentation: single v2 is active and v1 remains available with its own hash, which is what makes rollback possible. Point also at the pinned Agent Card hash of the remote runbook specialist."
+    }
+  ],
+  "exercise": "Before class, select a small tuning intervention, apply it as a new registry version and generate a comparable before-and-after report with a recorded release decision. During class, present the working platform through its console and demonstrate one failure-control case. Explain the evidence, tradeoffs and adoption decision. Use the fixture experiment only as a rehearsal when live model access is unavailable.",
+  "expected_json": {
+    "baseline_success": 1.0,
+    "candidate_success": 1.0,
+    "baseline_mean_tokens": 75,
+    "candidate_mean_tokens": 63,
+    "token_reduction_percent": 16.0,
+    "cache_experiment": {
+      "cold_tokens": 75,
+      "warm_tokens": 0,
+      "hits": 3
+    },
+    "report_file": "var/capstone-comparison.json",
+    "interpretation": "Synthetic fixture policy experiment; not a live model benchmark.",
+    "release_log": {
+      "agent": "single",
+      "baseline_version": 1,
+      "candidate_version": 2,
+      "approved": true,
+      "activated": true
+    }
+  },
+  "completion_criteria": [
+    "The Session 11 platform still runs end to end.",
+    "The intervention is explicit and tied to a new registry version or a documented patch.",
+    "Before and after use comparable cases and conditions, with failures visible, and the decision is recorded in the release log.",
+    "The presentation shows evidence for each platform component: the registry version and hash, gateway audit entries, a delegation chain and the console views that display them.",
+    "Permission, recovery or cancellation behaviour is demonstrated.",
+    "The presenter can explain code ownership, protocol boundaries, measurements and limitations."
+  ],
+  "recorded_test_result": {
+    "passed": 51,
+    "seconds": "20.67"
+  },
+  "troubleshooting": [
+    {
+      "heading": "The demo fails during a presentation",
+      "diagnostic": "Locate the failing checkpoint, service, console view or configuration and preserve the error evidence.",
+      "recovery": "Use the prepared completed reference snapshot, its console screenshots and the saved trace to continue the explanation. State which part was demonstrated live and which was shown from recorded evidence."
+    },
+    {
+      "heading": "The console does not show the tuned version or its release",
+      "diagnostic": "The candidate may have been evaluated in a temporary database, as the lab does, rather than in the platform database the API reads, or it was recorded but not activated.",
+      "recovery": "Register, evaluate, activate and record the candidate against the platform database the console uses, then confirm the registry and operations endpoints before presenting."
+    },
+    {
+      "heading": "A participant presents fixture usage as real savings",
+      "prompt": "Review my Lesson 12 presentation claims against the recorded comparison report and release log. Identify any synthetic fixture usage described as real model cost or savings. Correct those claims and label the measurement conditions clearly. Explain what live benchmark and pricing evidence would be needed to estimate actual cost. Preserve the recorded results and do not invent an improvement."
+    },
+    {
+      "heading": "There is not enough time for every individual presentation",
+      "prompt": "Help me organize Lesson 12 presentations within the existing 90-minute agenda. Ask for the cohort size if it is missing. Allocate the 35-to-70-minute presentation block using review groups or pre-recorded console demonstrations when necessary. Keep the remaining agenda timings and shared review criteria, give every participant a review opportunity and prepare a short plenary discussion. Show the proposed schedule and timing totals; no implementation changes are needed."
+    }
+  ],
+  "practice": [
+    "Submit the tuned repository, runbook, console demo narrative, comparison report, release record and remaining limitations.",
+    "Include evidence for the four platform components: registry versions and pins, gateway audit, identity and delegation chains, and the console views that show them.",
+    "Address review findings and keep the baseline version available so the tuning decision can be revisited."
+  ],
+  "verification_scope": ["@tested", "@not_tested", "@local_effects", "@platform_identity"],
+  "close_say": "The course outcome is a platform you can run, inspect and explain through its own console. Your capstone decision should follow from recorded evidence, including evidence that an attractive change should not be adopted. Keep the tests, checkpoints, release log and runbook as the basis for future development.",
+  "references": [
+    {
+      "title": "Evaluation evidence and grading",
+      "url": "https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents"
+    },
+    {
+      "title": "Multi-agent design tradeoffs",
+      "url": "https://www.anthropic.com/engineering/multi-agent-research-system"
+    },
+    {
+      "title": "A2A Agent Discovery",
+      "url": "https://a2a-protocol.org/latest/topics/agent-discovery/"
+    }
+  ]
+}

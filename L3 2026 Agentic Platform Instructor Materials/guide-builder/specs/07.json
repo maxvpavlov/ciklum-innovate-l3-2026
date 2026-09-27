@@ -1,0 +1,139 @@
+{
+  "number": 7,
+  "title": "A2A across independent agent services",
+  "duration": 90,
+  "outcome": "An independently hosted runbook specialist is discovered and invoked through the official A2A SDK, with streamed artifacts, authentication and remote cancellation.",
+  "platform_role": "This session adds the first agent the platform does not run itself: a runbook specialist behind its own HTTP service, reached over A2A. In Session 08 its Agent Card becomes a registry entry pinned by hash, and the console's run detail shows the remote specialist as a child of the team run. Today's static demo bearer token is deliberately temporary: Session 10 replaces it with a delegated, audience-bound token from which the specialist derives the tenant.",
+  "preparation": [
+    "Bring your Session 06 checkpoint. Read the current A2A specification and SDK documentation. Pin compatible SDK and protocol versions and prepare the service and client environment."
+  ],
+  "opening_say": "So far, the platform owns the workers it launches. Today we connect a specialist that runs behind a separate service boundary. The runbook specialist advertises what it can do, accepts an A2A task and streams status and evidence back to our client adapter. The local demo uses a real HTTP server and the official SDK. We will also reject an unauthenticated request and cancel a deliberately slow remote task. Keep the distinction clear: internal scheduling, MCP tool integration and A2A service interoperability solve different parts of the platform problem.",
+  "concept_say": "Draw the platform client, Agent Card endpoint and A2A task endpoint. The card advertises interfaces, protocol version, capabilities and a runbook skill. A task has a lifecycle and may produce artifacts as it progresses. The application must still validate the discovered capability, authenticate requests, respect tenant boundaries and decide how remote failure affects the parent. The reference pins a2a-sdk 1.1.2 and uses its A2A 1.0 JSON-RPC binding. Its public types are Protocol Buffer messages, so request and response construction differs from older 0.3 examples. The specialist is deliberately bound to Acme and read-only runbook tools. Its remote task store is in memory; durable production task storage is a separate service responsibility. Nothing pins the card yet, and one shared token identifies no caller; Sessions 08 and 10 close those gaps.",
+  "steps": [
+    {
+      "title": "Advertise the specialist capability",
+      "say": "Read the card as a contract rather than a marketing description. It identifies the supported interface, JSON-RPC binding, protocol version, streaming capability and runbooks skill. The advertised bearer scheme documents the authentication mechanism, while the middleware below it actually enforces it with a constant-time comparison. Show the well-known card endpoint and explain why clients should inspect capabilities before assuming that any remote agent can perform any task. The demo token is a plainly labelled local teaching credential shared by every caller, unsuitable for a public deployment; Session 10 replaces it with a short-lived token issued for this specialist's audience. Ask learners what should happen if the card changes between two calls.",
+      "file": "incident/a2a_service.py",
+      "prompt": "Create the independent runbook specialist in incident/a2a_service.py with the pinned A2A SDK. Advertise the expected skill, interface, protocol and streaming capability through an Agent Card. Enforce the local teaching bearer credential at the endpoint and keep the service read-only and tenant-scoped. Explain what the card advertises, what application code actually enforces, and why this shared credential is temporary.",
+      "excerpt": {
+        "start": 45,
+        "end": 59
+      },
+      "explain": "Discovery gives clients a typed description of a service. It does not grant authority or provide the platform's scheduler. The pinned SDK avoids mixing incompatible request shapes across A2A versions.",
+      "ask": "Does advertising a security scheme protect the endpoint?",
+      "answer": "No. The server must enforce authentication and authorization. The card describes the contract; middleware and service policy implement it."
+    },
+    {
+      "title": "Publish task lifecycle events and artifacts",
+      "say": "The executor first enqueues a Task, then sends a working status. That ordering is required by the SDK's event flow. It runs the same agent loop with runbook-only capabilities and publishes the result as an artifact before marking completion. Walk through the slow-task branch used by the cancellation test. Ask what the client should report if the stream ends before a completed status or before the evidence artifact arrives. It must not manufacture a successful result from a partial stream. Also point out that failure and completion are distinct terminal states. The tenant is hard-coded to Acme here; in Session 10 it comes from verified token claims, never from the message.",
+      "file": "incident/a2a_service.py",
+      "prompt": "Implement SpecialistExecutor's task lifecycle using the SDK's event flow. Enqueue the initial task before status updates, run the existing agent loop with runbook-only access, publish evidence as an artifact and report the correct terminal state. Add the deterministic slow-task fixture for cancellation. Demonstrate incomplete execution without manufacturing a successful answer.",
+      "excerpt": {
+        "start": 21,
+        "end": 36
+      },
+      "explain": "Status and artifacts can arrive at different moments. Correct task initialization and terminal-state handling make that flow observable and testable.",
+      "ask": "Why enqueue a Task before a status update?",
+      "answer": "The task manager needs the task identity and initial state before applying lifecycle updates. The SDK rejects an invalid event sequence."
+    },
+    {
+      "title": "Normalize the remote result into the platform",
+      "say": "The client verifies the tenant boundary before making a request, resolves the card and checks the runbooks skill. It then consumes StreamResponse events, collecting the evidence artifact and terminal status. Only a completed task with an artifact becomes a successful platform result. This adapter keeps transport-specific protobuf objects out of the rest of our incident code. Show the normalized answer, source IDs and remote run ID. From Session 08 the platform records this call as a child of the team run; A2A itself provides neither that scheduler nor that trace.",
+      "file": "incident/a2a_client.py",
+      "prompt": "Implement the platform-facing RemoteSpecialist adapter in incident/a2a_client.py. Check the allowed tenant, discover the expected capability, consume streamed artifacts and status, and normalize a completed result into the platform contract. Reject an incomplete stream. Show the evidence and remote run identifier, and explain what must be retained for later reconciliation.",
+      "excerpt": {
+        "start": 26,
+        "end": 46
+      },
+      "explain": "A narrow adapter isolates protocol details and makes incomplete remote execution an explicit error. The service remains independently deployable.",
+      "ask": "Can we treat an artifact alone as proof that the remote task completed?",
+      "answer": "No. It may be a partial artifact. Require the appropriate lifecycle state and the evidence contract."
+    },
+    {
+      "title": "Exercise real HTTP authentication and cancellation",
+      "say": "Run the complete demo and inspect four streamed events, the cited runbook result, HTTP 401 for the unauthorized request and TASK_STATE_CANCELED for the slow task. The helper starts an ephemeral loopback service and terminates it after the checks. For cancellation, the client first obtains a task ID using return-immediately polling and then sends CancelTask. Ask participants to describe what information must be retained if the client disconnects and later wants to inspect or cancel the task. A transport disconnect does not itself prove that remote execution stopped.",
+      "file": "incident/a2a_client.py",
+      "prompt": "Complete the real local HTTP demonstration, service cleanup and Session 07 tests. Show discovery, streamed progress and evidence, rejection of an unauthenticated request, and confirmed cancellation of a slow remote task. Keep third-party services and live model calls out of this local check. Explain why a disconnected client is not proof that remote work has stopped.",
+      "excerpt": {
+        "start": 49,
+        "end": 59
+      },
+      "explain": "The acceptance test uses a real local HTTP connection and the official client and server protocol implementation. It does not verify third-party A2A agents, enterprise identity providers or cross-network deployment.",
+      "ask": "If the network drops, is the remote task cancelled?",
+      "answer": "Not necessarily. Reconcile the remote task state using its identifier and issue cancellation when required."
+    }
+  ],
+  "exercise": "Run the local service separately, fetch its Agent Card and call the client adapter. Try a missing bearer credential, an unsupported skill declaration and a deliberately slow task. Record the distinction between authentication failure, capability mismatch, incomplete streaming and confirmed cancellation.",
+  "expected_json": {
+    "protocol": "A2A 1.0 JSON-RPC",
+    "answer": {
+      "status": "complete",
+      "cause": "connection_pool_exhaustion",
+      "summary": "INC-001: connection_pool_exhaustion",
+      "evidence": [
+        "rb-pool-v1"
+      ]
+    },
+    "stream_events": 4,
+    "unauthorized_status": 401,
+    "remote_cancellation": "TASK_STATE_CANCELED"
+  },
+  "completion_criteria": [
+    "The card is fetched from the well-known endpoint and advertises the expected skill.",
+    "The real HTTP stream contains task progress, an evidence artifact and completion.",
+    "Unauthenticated task requests receive HTTP 401.",
+    "The client rejects an incompatible tenant before making a request.",
+    "The slow remote task reaches TASK_STATE_CANCELED."
+  ],
+  "recorded_test_result": {
+    "passed": 27,
+    "seconds": "2.88"
+  },
+  "troubleshooting": [
+    {
+      "heading": "An old tutorial's types or imports fail",
+      "diagnostic": "Check whether it targets A2A 0.3 rather than the pinned 1.1.2 SDK and 1.0 protocol.",
+      "recovery": "Use the repository's protobuf request types, factory API and generated routes. Restore the lock file before debugging application logic."
+    },
+    {
+      "heading": "The server rejects a status event",
+      "diagnostic": "A Task may not have been enqueued before the status update.",
+      "recovery": "Restore the initial Task event and rerun the lifecycle test."
+    },
+    {
+      "heading": "The stream ends with no complete answer",
+      "diagnostic": "Inspect terminal status and whether an artifact was received.",
+      "recovery": "Report incomplete_remote_task and reconcile by task ID. Do not treat a disconnected stream as success."
+    },
+    {
+      "heading": "A local port is already occupied",
+      "diagnostic": "Another process is using the fixed manual-demo port.",
+      "recovery": "Use the ephemeral-port lab helper or choose a different explicit loopback port and update the advertised base URL."
+    }
+  ],
+  "practice": [
+    "Compare local and remote specialist execution on the same task and record the additional failure modes.",
+    "Decide which Agent Card fields a registry should pin, and what review should happen before a changed card is trusted again.",
+    "Design a persistent task store and a per-caller service credential for the specialist without changing the platform-facing adapter contract."
+  ],
+  "verification_scope": [
+    "@tested",
+    "@not_tested",
+    "@local_effects"
+  ],
+  "close_say": "Your platform can now exchange tasks and evidence with an independent agent service. Retain remote identifiers and explicit lifecycle checks. Next session we build the platform core: an agent registry that pins this specialist's card, a run API and the first views of the platform console.",
+  "references": [
+    {
+      "title": "A2A protocol specification",
+      "url": "https://a2a-protocol.org/latest/specification/"
+    },
+    {
+      "title": "A2A Agent Discovery",
+      "url": "https://a2a-protocol.org/latest/topics/agent-discovery/"
+    },
+    {
+      "title": "A2A Python SDK documentation",
+      "url": "https://a2a-protocol.org/dev/sdk/python/api/index.html"
+    }
+  ]
+}

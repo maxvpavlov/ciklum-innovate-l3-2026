@@ -1,0 +1,128 @@
+{
+  "number": 1,
+  "title": "Agent architecture and the ReAct runtime",
+  "duration": 120,
+  "outcome": "A working, bounded single-agent runtime in the learner's own repository, with interchangeable model access and observable tool use.",
+  "platform_role": "This session builds the core of the platform: the bounded agent runtime that every later component wraps rather than replaces. The agent registry (Session 08), MCP tool gateway (Session 09), identity and credentials (Session 10) and operations (Session 11) all sit around this loop. The run's event log, which records each model step, tool observation and failure, is the data that the console's Runs view renders as an event timeline from Session 08; today learners read it as JSON.",
+  "preparation": [
+    "Refresh 2025 LLM/prompting/RAG basics and HTTP, JSON, async programming and tests. Set up your repository, mock data, five acceptance scenarios and a workflow baseline. Mentor prepares a staged reference repository with runnable checkpoints and checks for each demo. Read the architecture, ReAct and chosen model API tool-calling references.",
+    "Sketch the target platform that you will draw in the opening, labelling each component with the session that builds it; the platform table above gives the order."
+  ],
+  "opening_say": "Today we begin the platform that you will extend throughout this programme, so first draw where it is going. Put the agent runtime in the centre. Around it, sketch an agent registry of versioned definitions, remote agents and tool servers (Session 08); one MCP tool gateway that applies policy to every tool call and keeps an audit trail (Session 09); agent identity with delegated, short-lived credentials and a credential store (Session 10); and operations with evaluated releases (Session 11). Across the top, draw the platform console: a web UI that shows the registry, runs and approvals from Session 08, and later the gateway audit, identity and operations. Today we build only the centre box. Our incident is a payments service that slowed after a deployment; we want an investigation with cited evidence from mock logs and runbooks. Ask what a successful investigation should contain: a likely cause, the source of that claim, and a clear statement when evidence is insufficient. A fluent paragraph by itself is not an acceptance test. Our first checkpoint must also stop when it exhausts its allowance or begins repeating an action.",
+  "concept_say": "Now zoom into the centre box and draw the model, runtime and tools as three separate boxes. The model proposes an action, the runtime decides whether and how to execute it, and the tool returns an observation. Every later capability, including subagents and remote agents, reuses this loop. A workflow can prescribe the sequence in advance. An agent can choose the next permitted action from observations. Both may be useful for this incident, so keep the simple workflow baseline. Explain that our default provider is a deterministic fixture policy. It produces a known series of requests, so everyone can debug the same behaviour without credentials or network variability. OpenAI-compatible and Anthropic adapters normalize real provider responses into that same internal contract. A passing offline test validates the loop and its boundaries; assessing live-model reasoning will require a separate benchmark. Finish by asking which component owns a timeout. The runtime owns it, because a model instruction cannot enforce elapsed time.",
+  "steps": [
+    {
+      "title": "Define the run contract",
+      "say": "Start with the values that application code controls. Tenant, run identifier, role and permitted tools belong in the execution context. They must not be supplied by a retrieved document. Keep the evolving messages and result in Run. This separation will matter when we persist a run or create a child: we can serialize task state while deliberately constructing its authority. Walk through one example context for Acme, then point to Limits. We have separate limits on steps, reported tokens, elapsed time and maximum requested output. These limits address different failure modes. Ask participants to identify the limit that catches a provider that hangs without producing any tokens.",
+      "file": "incident/core.py",
+      "prompt": "Create the Context, Limits, Reply and Run contracts in incident/core.py. Separate application-owned tenant identity, permissions and run identifiers from model messages and results. Make run state serializable and give the runtime explicit step, token and time limits. Keep this step focused on the contracts; do not implement later platform features. Show the fields, their owners and one example of a value the model must not control.",
+      "excerpt": {
+        "start": 10,
+        "end": 17
+      },
+      "explain": "Typed dataclasses make ownership visible without introducing an orchestration framework. Run.snapshot exposes serializable state for later checkpoints. Token admission uses an approximate character-based input estimate at this stage; the provider's returned usage is checked again after each response.",
+      "ask": "Why not place allowed tools inside the model's answer?",
+      "answer": "An answer is untrusted output. The application constructs Context and decides the permitted capabilities independently."
+    },
+    {
+      "title": "Normalize model access",
+      "say": "Keep provider-specific response shapes out of the loop. MockProvider and HTTPProvider both return a Reply containing an assistant message and usage. Show how an OpenAI tool call becomes an internal name and JSON arguments. Then show the Anthropic conversion, where tool results are user content blocks associated with a tool-use identifier. These are adapters around the same runtime. The environment selects the provider and model; credentials never go into the repository. Point out that changing a base URL is a configuration choice, not an instruction the agent is permitted to make during an investigation. For today's build, keep MODEL_PROVIDER set to mock.",
+      "file": "incident/providers.py",
+      "prompt": "Implement the provider interface in incident/providers.py using the current core contracts. Add the deterministic offline provider and configurable OpenAI-compatible and Anthropic adapters. Normalize messages, tool calls, errors and usage into Reply. Use mock HTTP responses to check both adapter request shapes without paid calls. Explain how provider selection and secrets are configured without exposing credentials.",
+      "excerpt": {
+        "start": 106,
+        "end": 117
+      },
+      "explain": "The loop can be tested without a paid API. The two HTTP adapter contract tests inspect request bodies and normalize responses with a mock HTTP transport. They do not claim that a live account or a particular model was exercised.",
+      "ask": "What does the adapter test prove, and what does it leave open?",
+      "answer": "It proves request and response translation for the tested shapes. Credentials, account access, provider-specific model behaviour and live latency remain to be verified."
+    },
+    {
+      "title": "Implement the loop and pending calls",
+      "say": "Now follow one iteration with a concrete call to log_lookup for INC-001. We record the proposed tool call before executing it, dispatch the name and arguments, and attach the observation using the same call identifier. The next model request includes that observation. Pause here and ask a learner to trace the identifier from assistant message to tool message. A repeated action with identical arguments is detected within the run. Later, pending calls will also become our recovery boundary. Notice that the model never invokes Python directly: the runtime calls the supplied executor. This makes the first implementation small enough to inspect and gives us one place to add contracts and authorization in Session 02.",
+      "file": "incident/core.py",
+      "prompt": "Implement run_agent in incident/core.py and connect the synthetic readers in incident/fixtures.py. Preserve assistant tool-call IDs when appending observations, track pending calls before dispatch, and finish with a structured answer and observed evidence IDs. Use the existing provider interface. Show the complete model-to-tool-to-observation path for INC-001 and explain how the same loop can later support checkpointing.",
+      "excerpt": {
+        "start": 91,
+        "end": 111
+      },
+      "explain": "Preserving tool-call identifiers is necessary for valid provider conversations. Recording pending work before execution is the foundation for later approval and recovery. The first lesson's simple_tools function is intentionally replaced by the validated executor in the next lesson.",
+      "ask": "What goes wrong if we append a tool result without its assistant tool call?",
+      "answer": "The conversation no longer contains a valid request/result pair. Providers may reject it, and the runtime loses the evidence needed to explain what happened."
+    },
+    {
+      "title": "Bound and verify execution",
+      "say": "Run the happy path before introducing failures. The fixture requests logs, requests a runbook, and returns a final answer after three model steps. It cites log-acme-001 and rb-pool-v1. Next, run the limit tests and the repeating-provider example. Explain each failure as a controlled outcome rather than an unexplained exception. A one-step allowance prevents completion, a tiny token allowance prevents dispatch, and a deadline cancels an outstanding operation. Ask everyone to change one limit, predict the error, and then run the check. Close this section by locating the event records. We record actions and usage, and do not need access to hidden model reasoning to diagnose the loop. From Session 08, the platform console renders these same records as a run's event timeline, so keep them structured and complete.",
+      "file": "incident/core.py",
+      "prompt": "Review and enforce the runtime's step, token, elapsed-time and repeated-action guards. Complete the Session 01 lab runner and tests. Demonstrate the normal cited answer and deliberately trigger each limit using offline fixtures. Explain the approximate pre-dispatch token estimate and distinguish reported usage from configured cost. Show which guard caused each failure and why the run stopped.",
+      "excerpt": {
+        "start": 111,
+        "end": 130
+      },
+      "explain": "The fixture makes stop conditions reproducible. Costs are computed only from explicitly configured rates; zero configured pricing is not evidence that a live provider is free. Later lessons add stronger final-answer validation and structured tracing.",
+      "ask": "Does a completed run necessarily mean the incident was solved?",
+      "answer": "No. Execution can finish with an insufficient_evidence answer. Evaluation must distinguish successful execution from a supported task outcome."
+    }
+  ],
+  "exercise": "Change Limits in a small local invocation to allow one step, then a tiny token budget, then a short deadline with a slow MockProvider. Predict and observe step_budget, token_budget and TimeoutError. Restore the normal limits and verify the cited happy-path answer. Keep your workflow baseline for comparison.",
+  "expected_json": {
+    "capability": "bounded ReAct loop",
+    "answer": {
+      "status": "complete",
+      "cause": "connection_pool_exhaustion",
+      "summary": "INC-001: connection_pool_exhaustion",
+      "evidence": ["log-acme-001", "rb-pool-v1"]
+    },
+    "model_steps": 3,
+    "repeated_action": "repeated_action"
+  },
+  "completion_criteria": [
+    "INC-001 finishes with connection_pool_exhaustion and observed source IDs.",
+    "The repeating provider stops with repeated_action.",
+    "Step, token and elapsed-time limits produce the expected failures.",
+    "Both live-provider request-shape tests pass without using real credentials."
+  ],
+  "recorded_test_result": {
+    "passed": 7,
+    "seconds": "0.25"
+  },
+  "troubleshooting": [
+    {
+      "heading": "Live mode fails before a request",
+      "diagnostic": "Check MODEL_PROVIDER, MODEL_NAME and whether MODEL_API_KEY is set. Do not print the key.",
+      "recovery": "Switch to MODEL_PROVIDER=mock and rerun the demo. Configure the live adapter separately after class."
+    },
+    {
+      "heading": "The final message cannot be parsed",
+      "diagnostic": "The runtime expects a JSON answer with status, cause, summary and evidence.",
+      "recovery": "Inspect the normalized message in a debugger and compare it with MockProvider. Keep malformed-output tests separate from tool transport problems."
+    },
+    {
+      "heading": "The lesson command says the checkpoint is too early",
+      "diagnostic": "incident/__init__.py still identifies the starting checkpoint.",
+      "recovery": "After completing the lesson changes, set LESSON to 1 or use the completed reference snapshot."
+    },
+    {
+      "heading": "A native Python package cannot load on macOS",
+      "diagnostic": "A binary-wheel or local interpreter compatibility issue can occur before the course code runs.",
+      "recovery": "Use a compatible Python 3.12 installation or the tested Docker route described in the repository. Do not disable operating-system security protections."
+    }
+  ],
+  "practice": [
+    "Add a missing-incident acceptance scenario and explain what a supported insufficient-evidence response should look like.",
+    "Compare the workflow baseline and agent loop on the same fixtures, including their step counts and error handling.",
+    "Redraw the platform blueprint in your own notes and mark the box today's checkpoint fills. For each later console view, note whether today's event log already records the data it needs."
+  ],
+  "verification_scope": ["@tested", "@not_tested"],
+  "close_say": "You now own the loop that every later agent will use: the centre box of the platform you drew today. Have your coding agent save this checkpoint and be ready to explain how one action moves from model proposal to tool observation. Keep your blueprint; we will add a component to it in most sessions, and from Session 08 the console will render these same run events. In the next session we make that tool boundary reliable and connect the same capabilities through MCP.",
+  "references": [
+    {
+      "title": "Building effective agents",
+      "url": "https://www.anthropic.com/engineering/building-effective-agents"
+    },
+    {
+      "title": "ReAct paper",
+      "url": "https://arxiv.org/abs/2210.03629"
+    }
+  ]
+}

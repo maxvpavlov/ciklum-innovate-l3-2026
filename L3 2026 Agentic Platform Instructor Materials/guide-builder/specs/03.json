@@ -1,0 +1,127 @@
+{
+  "number": 3,
+  "title": "Context, retrieval and memory",
+  "duration": 90,
+  "outcome": "Tenant-scoped retrieval, bounded conversation context, expiring memory and versioned evidence artifacts extend the same platform.",
+  "platform_role": "This session builds the platform's evidence layer: tenant-scoped retrieval, bounded context selection, expiring memory and versioned artifacts. From Session 08 the platform saves each run's answer as a versioned artifact in this store, and the console's Runs view shows that answer with its cited source IDs beside the run's event timeline. Memory stays a tenant-scoped convenience with a retention policy; the console does not display it.",
+  "preparation": [
+    "Bring your Session 02 checkpoint. Refresh retrieval and embeddings from 2025. Review context engineering and the distinction between session state and long-term memory stores."
+  ],
+  "opening_say": "A larger context window does not decide which information is relevant, current or authorized. We now have a working agent and reliable tools; today we control the evidence they exchange. Use the payments incident to distinguish a transient tool observation, a reusable runbook, the current task state and a saved investigation artifact. Each has a different lifetime. Our goal is to retrieve the right tenant's sources, retain enough complete conversation rounds for valid tool use, and detect stale writes when artifacts are revised.",
+  "concept_say": "Draw four stores: the current message history, runbook source records, persistent memory and versioned artifacts. Keep permissions in execution context outside these stores. The retrieval example uses transparent lexical matching so participants can inspect why a source was selected. It is not an embeddings implementation. The design leaves a clear tool boundary where a vector or hybrid retriever can later be substituted. Explain that compaction must preserve complete assistant/tool rounds. Dropping the assistant request but keeping its tool result can invalidate the next model call. Memory is a convenience with a retention policy, not permanent truth. A retained summary should carry provenance and be rechecked when it conflicts with current evidence.",
+  "steps": [
+    {
+      "title": "Retrieve within the tenant boundary",
+      "say": "Read the tenant filter before discussing ranking quality. We filter the source population by the authenticated tenant and only then rank the remaining runbooks. The score is the overlap between query words and source text, with a deterministic source-ID tie break. Show the same payments query for Acme and Globex. The results must differ because the permitted data differs. Keep source IDs and versions in the returned records. A downstream explanation can then cite the exact evidence it used. Ask a learner to replace the query and predict the leading source before running it.",
+      "file": "incident/context.py",
+      "prompt": "Implement tenant-scoped runbook retrieval and context_tools in incident/context.py. Filter authorized sources before ranking and retain source IDs and versions. Use transparent lexical ranking for this lesson so I can inspect why a record was selected. Compare the same payments query for Acme and Globex. Keep the tool contract compatible with the existing executor and explain the returned evidence.",
+      "excerpt": {
+        "start": 9,
+        "end": 13
+      },
+      "explain": "A simple visible ranking function keeps the lesson focused on evidence boundaries and evaluation. Swapping retrieval algorithms later should preserve tenant filtering, provenance and the return contract.",
+      "ask": "Should tenant filtering happen after a global top-k search?",
+      "answer": "That can return too few authorized results and risks exposing metadata. Apply the access boundary to the searched population or enforce an equivalent secure retrieval design."
+    },
+    {
+      "title": "Select complete conversation rounds",
+      "say": "Start with the system instruction and original task, then group the remaining messages into complete rounds. The selector works backward from the newest round while staying within its character budget. This preserves request/result relationships. Show the test that constructs ten rounds and verifies that every retained tool result has a matching call identifier. We are selecting context for the next model request, not deleting the full run history. That full history remains available for persistence and diagnosis. Ask participants what happens if the original task alone exceeds the budget: the selector rejects it rather than silently truncating the instruction or producing malformed state.",
+      "file": "incident/context.py",
+      "prompt": "Add select_context and connect it to the runtime as selection for the next model request. Preserve the instruction and original task, retain complete assistant/tool rounds within the configured allowance, and keep the full run history separately. Reject a task that cannot fit. Demonstrate a reduced conversation with no orphaned tool-call IDs and explain the evidence that was omitted.",
+      "excerpt": {
+        "start": 22,
+        "end": 40
+      },
+      "explain": "Keeping the full history separate from the selected model input supports both traceability and bounded prompts. A character budget is an approximation, so live-provider token usage still needs measurement.",
+      "ask": "Is a shorter prompt always a better prompt?",
+      "answer": "No. It may discard necessary evidence. Compare task outcomes and context size on the same cases before adopting a compaction policy."
+    },
+    {
+      "title": "Version artifacts explicitly",
+      "say": "An investigation report is an artifact with an identity and version. Read the optimistic version check: a writer states which version it expects to replace, and the transaction rejects a stale expectation. Create version one, then attempt another write that still expects version zero. The failure is useful because silently overwriting newer evidence would hide a coordination problem. Later, the supervisor will give one component ownership of shared artifact writes. For now, make sure each learner can read the current version and explain how to retry a legitimate update after inspecting the newer artifact.",
+      "file": "incident/context.py",
+      "prompt": "Implement EvidenceStore's versioned artifact operations. Scope identities by tenant, require the writer's expected version and reject stale updates in a transaction. Demonstrate version one, a conflicting update and a cross-tenant lookup. Preserve newer evidence rather than automatically overwriting it after a conflict. Show how a caller should inspect and reconcile the current artifact before retrying.",
+      "excerpt": {
+        "start": 49,
+        "end": 62
+      },
+      "explain": "The version is a concurrency contract. It detects conflicts instead of pretending that the last write is necessarily the correct one. Tenant and artifact ID form the lookup boundary.",
+      "ask": "Should a failed version check automatically retry with the latest version?",
+      "answer": "Not without examining the new content. That would turn conflict detection into an unconditional overwrite."
+    },
+    {
+      "title": "Apply memory retention and verify provenance",
+      "say": "Store a small memory record with an expiry, then read it from the correct and wrong tenants. An expired value returns no result. Explain why a memory store and an artifact store are different: an artifact is a versioned output that we may audit; a memory entry is selected context that can become stale. Run the completed investigation, save its answer as an artifact and inspect the cited source IDs. End by comparing the full-history and selected-context paths. Keep the outcome test alongside any reduction in context size so that optimization does not quietly remove necessary information.",
+      "file": "incident/context.py",
+      "prompt": "Add expiring tenant-scoped memory and complete the Session 03 lab and tests. Compare memory with versioned artifacts and the current task history. Demonstrate expiration, provenance and access boundaries, then compare the investigation with full history and bounded context. Report the outcome as well as context size; do not call a smaller prompt an improvement if required evidence is lost.",
+      "excerpt": {
+        "start": 69,
+        "end": 71
+      },
+      "explain": "Retention and provenance make memory behaviour explicit. The example implements expiration on read; production cleanup, encryption and storage policy require additional operational decisions.",
+      "ask": "What should the agent do when memory conflicts with current logs?",
+      "answer": "Preserve the conflict as evidence, prefer appropriately verified current sources, and avoid treating memory as an instruction or authorization."
+    }
+  ],
+  "exercise": "Run the same retrieval for Acme and Globex, inspect source IDs, and attempt a stale artifact write. Build a long synthetic conversation and reduce max_chars while checking valid tool-call pairs. Compare the investigation outcome before and after context selection.",
+  "expected_json": {
+    "answer": {
+      "status": "complete",
+      "cause": "connection_pool_exhaustion",
+      "summary": "INC-001: connection_pool_exhaustion",
+      "evidence": ["log-acme-001", "rb-pool-v1"]
+    },
+    "artifact_version": 1,
+    "expired_memory": null,
+    "cross_tenant_artifact": null
+  },
+  "completion_criteria": [
+    "Retrieval returns only the selected tenant's source records.",
+    "Compaction retains matching assistant/tool pairs.",
+    "Expired memory is unavailable, including after a database reopen.",
+    "Cross-tenant artifact lookup returns no artifact.",
+    "A stale artifact update fails rather than overwriting the current version."
+  ],
+  "recorded_test_result": {
+    "passed": 13,
+    "seconds": "1.03"
+  },
+  "troubleshooting": [
+    {
+      "heading": "No runbook matches",
+      "diagnostic": "Inspect the tokenized query and the authorized source population.",
+      "recovery": "Use a diagnostic term from the fixture, then expand evaluation cases before changing ranking. Do not remove the tenant filter to obtain a result."
+    },
+    {
+      "heading": "A provider rejects conversation history",
+      "diagnostic": "Check that retained tool messages have their matching assistant calls.",
+      "recovery": "Run the complete-round test and restore the grouping logic before tuning the budget."
+    },
+    {
+      "heading": "An artifact update reports stale_artifact_version",
+      "diagnostic": "Another write has advanced the artifact version.",
+      "recovery": "Read the latest artifact, reconcile the content and submit the correct expected version."
+    },
+    {
+      "heading": "Memory seems to disappear",
+      "diagnostic": "Check TTL and tenant identity.",
+      "recovery": "Use a non-expired test value in the same tenant. Treat expiry as intended retention behaviour rather than bypassing it."
+    }
+  ],
+  "practice": [
+    "Substitute a different ranking function behind context_tools and compare supported outcomes, not just retrieval scores.",
+    "Add a conflicting-memory case and document which source should take precedence and why."
+  ],
+  "verification_scope": ["@tested", "@not_tested"],
+  "close_say": "Your platform now manages evidence as a first-class part of execution. Keep the source IDs, version checks and tenant boundaries when adding more sophisticated retrieval. From Session 08 the platform saves every run's answer in this artifact store, and the console shows it per run with its cited sources. Next we turn these cases into a repeatable evaluation harness.",
+  "references": [
+    {
+      "title": "Effective context engineering",
+      "url": "https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents"
+    },
+    {
+      "title": "Persistence and memory stores",
+      "url": "https://docs.langchain.com/oss/python/langgraph/persistence"
+    }
+  ]
+}

@@ -1,0 +1,180 @@
+{
+  "number": 6,
+  "title": "Supervisor, subagents and parallel coordination",
+  "duration": 120,
+  "outcome": "A supervisor delegates bounded work to isolated log and runbook agents under typed contracts and a shared budget, runs independent work concurrently with a deadline, and coordinates correlated replies, versioned artifacts and bounded review.",
+  "platform_role": "This session turns the single runtime into a small multi-agent system: a supervisor whose only tool is delegate, child runs that are ordinary run_agent calls with a narrowed Context, and one shared budget. There is no console yet. In Session 08 the Runs view lists each child with a link to its parent, and in Session 11 those identifiers become the correlated trace. Session 09 routes child tool calls through the gateway, and Session 10 gives each child a delegated credential narrower than its parent's.",
+  "preparation": [
+    "Bring your Session 05 checkpoint and the Session 04 single-agent evaluation baseline. Review multi-agent design, context isolation and Python asyncio tasks, timeouts and cancellation. Prepare two bounded tasks for the demo, log analysis and runbook investigation, and decide before class which component owns the reviewed report artifact."
+  ],
+  "opening_say": "We now have a single agent, reliable tools, context controls, evaluation and recovery. Today we add delegation and then make it concurrent without losing those foundations. The supervisor asks one child to inspect logs and another to investigate runbooks. Each child uses the same run_agent function with a separate context and narrower capabilities. We run delegation sequentially first, so the contracts are easy to inspect, then schedule the same tasks in parallel. Ask what evidence would justify the extra agent calls, and what the platform should report when a worker is slow, a result arrives twice or a reviewer never accepts.",
+  "concept_say": "Draw the parent above two workers and label each arrow with task ID, role, objective and expected result. A subagent is not a differently worded prompt in a shared transcript: it has its own messages, scoped tools, run ID and parent ID. The offline supervisor provider produces a prescribed plan; a live model can propose calls with the same delegate schema, but the application validates them. Budget reservations stop concurrent workers each assuming they own the full allowance. Then draw a dependency graph. A task is ready when its predecessors have completed; the concurrency limit decides how many ready tasks run at once; a deadline bounds the whole operation. Replies carry correlation and artifact identity, artifacts have one writer and an expected version, and review has a round limit.",
+  "steps": [
+    {
+      "title": "Define the delegation contract and scoped child",
+      "say": "The model may propose a task ID, a role and a bounded objective. It cannot invent a role or attach permissions. Read DELEGATE_SCHEMA and name the two allowed roles, then follow delegate. The contract is serialised with sorted keys: an identical contract reuses its result, while a changed objective under the same task ID is rejected as task_id_conflict. The application maps the role to a fixed tool set and refuses a child that would hold a tool its parent lacks. The child Context gets a new run ID, the parent's run ID as parent_id, the role's tools and no approvals. The parent's conversation is not copied. Ask why the objective is capped at 500 characters.",
+      "file": "incident/supervisor.py",
+      "prompt": "Implement the bounded delegate schema, the offline planning fixture and the delegate method in incident/supervisor.py. Accept only known roles, stable task IDs and bounded objectives. Map each role to a fixed tool set, refuse capabilities the parent lacks, reuse identical contracts and reject a changed objective under the same task ID. Give each child a new run ID, the parent's ID, only its role's tools and no approvals. Label offline planning separately from live model planning.",
+      "excerpt": {
+        "start": 79,
+        "end": 95
+      },
+      "explain": "The schema bounds proposed decomposition, and the role-to-tool mapping keeps authority with the application. Children never receive the delegate tool, so they cannot spawn further agents.",
+      "ask": "Should a worker choose its own permissions after reading its objective?",
+      "answer": "No. The application maps the validated role to a fixed capability set and checks that it does not exceed the parent's authority."
+    },
+    {
+      "title": "Reserve shared capacity and bound each child",
+      "say": "Inspect SharedBudget. The lock makes reservation atomic, which matters once children run concurrently. A child must fit the depth, agent-count and token limits before it starts. delegate reserves 1,800 fixture tokens, runs the child with its own limits of that allowance and four steps, and settles in a finally block from reported usage; a child that produced no run is charged the full reservation. Lower max_agents to one: the second delegation fails with delegation_budget, and the parent reports insufficient_evidence while keeping the log evidence. Name one honest gap: the parent's own calls sit outside this pool. Session 11 reserves them from the same budget.",
+      "file": "incident/supervisor.py",
+      "prompt": "Implement shared budget reservation and settlement with depth, agent-count and token limits. Reserve before starting a child, give it bounded limits, settle from reported usage and charge the full reservation when usage is missing. Demonstrate a plan that exceeds the agent-count allowance, preserving completed evidence and reporting the incomplete result honestly. Note that the parent's own usage is outside this pool.",
+      "excerpt": {
+        "start": 22,
+        "end": 41
+      },
+      "explain": "Reservation before launch prevents oversubscription under concurrency, and agent count bounds total child creation, not only simultaneous activity. Settlement cannot make an inaccurate usage report exact.",
+      "ask": "Why reserve before spawning instead of checking usage afterward?",
+      "answer": "By then concurrent children may already have spent more than the allowance. Admission must happen before the work begins."
+    },
+    {
+      "title": "Schedule independent work with a deadline",
+      "say": "Open coordination.py. schedule rejects duplicate IDs, unknown dependencies and cycles before any work starts. The loop launches ready tasks up to the concurrency limit, marks dependants of a failed task as blocked, and waits for the first completion or the deadline. Unfinished tasks are recorded as cancelled with reason deadline, then cancelled and awaited so their cleanup runs. The overall status is partial unless everything completed. Next show the execute_batch hook in core.run_agent and Supervisor.batch: pending delegate calls become WorkItems, each still passes through delegate, and results return by tool-call ID. Compare sequential and parallel runs with the same injected latency; judge the direction, not exact milliseconds.",
+      "file": "incident/coordination.py",
+      "prompt": "Implement WorkItem and schedule in incident/coordination.py. Reject duplicate IDs, unknown dependencies and cycles before launching work, respect the concurrency limit, block dependants of failed work, and at the deadline keep completed results, cancel and await the rest and report partial status. Add an optional batch hook to the runtime and a supervisor adapter that sends pending delegate calls through the scheduler without bypassing delegate's checks. Compare sequential and parallel runs with the same injected latency.",
+      "excerpt": {
+        "start": 48,
+        "end": 72
+      },
+      "explain": "A generic runner keeps scheduling testable with small asynchronous fixtures. Parallelism is enabled only through the supervisor's batch adapter; the general tool executor does not become a concurrent write engine.",
+      "ask": "Should a partial result carry the same success status as a complete result?",
+      "answer": "No. The consumer needs an explicit completeness state and the outcome of each required task, keyed by task ID rather than arrival order."
+    },
+    {
+      "title": "Correlate replies, version artifacts and bound review",
+      "say": "Read Envelope and accept_reply. Correlation, task and artifact IDs must match the request, and the reply must advance the version by exactly one, so a reply for another request or a stale version cannot overwrite newer evidence. Then read bounded_review: the reviewer decides, the producer revises, and after max_rounds without acceptance the status is escalated with the artifact and review history preserved. The lab's reviewer always reports contradictory evidence, the review escalates, and the single owning component saves the report as version 1. Ask how learners would tell a genuine evidence conflict from a reviewer whose criteria keep changing. Both need explicit acceptance rules; the corrective action differs.",
+      "file": "incident/coordination.py",
+      "prompt": "Implement typed reply correlation and bounded producer-reviewer coordination in incident/coordination.py. Require matching correlation, task and artifact identity and the next version. Give one component ownership of saving the reviewed artifact and escalate review that does not converge within its round limit, keeping the history. Complete the Session 06 lab and tests, including a deadline-cancelled worker, a stale reply and a reviewer that never accepts.",
+      "excerpt": {
+        "start": 86,
+        "end": 104
+      },
+      "explain": "Typed envelopes and artifact versions fix coordination errors that prompt changes cannot. A finite review loop turns disagreement into an escalation with evidence.",
+      "ask": "When should a review loop stop even if the reviewer has not accepted?",
+      "answer": "When its round, time or cost allowance is exhausted, or when the conflict needs a human decision. Preserve the unresolved evidence and escalate."
+    }
+  ],
+  "exercise": "Reduce max_agents to one, request a log worker from a parent with only runbook access, and reuse a task ID with a changed objective. Then schedule two independent tasks and one dependent task, inject a slow worker and a failed predecessor, and submit a stale reply. Explain each result and compare the two-worker run with the single-agent baseline.",
+  "expected_json": {
+    "parent": "96d1e86ac800431fbe178032bcc6f40a",
+    "answer": {
+      "status": "complete",
+      "cause": "connection_pool_exhaustion",
+      "summary": "Combined bounded worker evidence",
+      "evidence": [
+        "log-acme-001",
+        "rb-pool-v1"
+      ]
+    },
+    "children": [
+      {
+        "role": "logs",
+        "tools": [
+          "log_lookup"
+        ],
+        "tokens": 55
+      },
+      {
+        "role": "runbooks",
+        "tools": [
+          "runbook_search"
+        ],
+        "tokens": 55
+      }
+    ],
+    "shared_tokens_spent": 110,
+    "timings_ms": {
+      "sequential": 86.15,
+      "parallel": 44.64
+    },
+    "partial": {
+      "status": "partial",
+      "results": {
+        "fast": {
+          "status": "completed",
+          "data": {
+            "ok": true,
+            "source": "fast"
+          }
+        },
+        "slow": {
+          "status": "cancelled",
+          "error": "deadline"
+        }
+      }
+    },
+    "review": "escalated",
+    "artifact_version": 1
+  },
+  "completion_criteria": [
+    "Children have distinct run IDs, the correct parent ID, only their role's tools and no inherited approvals.",
+    "A child cannot exceed its parent's capabilities; identical contracts are reused and changed ones rejected.",
+    "The shared budget enforces agent-count, depth and token limits before launch.",
+    "Concurrency never exceeds its limit and dependent work waits for successful predecessors.",
+    "A deadline preserves completed results and cancels unfinished work; cycles are rejected.",
+    "Mismatched or stale replies fail validation, and non-converging review escalates."
+  ],
+  "recorded_test_result": {
+    "passed": 25,
+    "seconds": "1.81"
+  },
+  "troubleshooting": [
+    {
+      "heading": "Delegation fails before a child starts",
+      "diagnostic": "Read the code: invalid_delegation, task_id_conflict, child_privilege_escalation or delegation_budget each name a different check.",
+      "recovery": "Use a bounded objective, a fresh task ID for new work and an allowance that fits the plan. Keep the permission check intact."
+    },
+    {
+      "heading": "The parent declares success with one failed child",
+      "diagnostic": "The aggregation may ignore failed or missing observations.",
+      "recovery": "Keep partial evidence but report insufficient_evidence unless every delegated outcome succeeded."
+    },
+    {
+      "heading": "The scheduler appears to hang",
+      "diagnostic": "Check for a cycle, an unknown dependency or a runner that ignores cancellation.",
+      "recovery": "Validate the graph first and reproduce with a small asynchronous fixture. Keep the deadline and the await after cancellation."
+    },
+    {
+      "heading": "Parallel execution is not faster",
+      "diagnostic": "The batch hook may be disabled, the work CPU-bound, or the fixture short of independent waiting time.",
+      "recovery": "Confirm both runs use the same injected latency and that parallel mode uses the batch adapter. Record the result honestly; a slower multi-agent run is a valid finding."
+    }
+  ],
+  "practice": [
+    "Design a third worker on paper, with objective, inputs, tools and acceptance criteria, and decide which tasks may run in parallel with it.",
+    "Compare two concurrency limits on the same fixtures, and add a contradictory-evidence review case with an explicit acceptance rule."
+  ],
+  "verification_scope": [
+    "@tested",
+    "@not_tested",
+    "@local_effects"
+  ],
+  "close_say": "You have added scoped delegation and bounded concurrency while keeping the runtime's control boundaries. Keep the single-agent baseline and the contract and scheduling tests. Next session a specialist moves behind its own service boundary and we reach it over A2A.",
+  "references": [
+    {
+      "title": "Multi-agent research system",
+      "url": "https://www.anthropic.com/engineering/multi-agent-research-system"
+    },
+    {
+      "title": "Context isolation and subagents",
+      "url": "https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents"
+    },
+    {
+      "title": "Parallel and evaluator-optimizer patterns",
+      "url": "https://www.anthropic.com/engineering/building-effective-agents"
+    },
+    {
+      "title": "Async tasks, timeouts and cancellation",
+      "url": "https://docs.python.org/3/library/asyncio-task.html"
+    }
+  ]
+}
