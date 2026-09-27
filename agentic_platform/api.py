@@ -1,7 +1,7 @@
 """Run, registry and console API. Demo bearer identities are explicit and intended for loopback use."""
-from collections import deque
 from contextlib import asynccontextmanager
-from dataclasses import replace
+from collections import deque
+from dataclasses import asdict, replace
 import json
 import os
 from pathlib import Path
@@ -73,6 +73,7 @@ def create_app(platform=None, identities=None):
         if os.getenv("A2A_URL"):
             await platform.register_remote_agent(os.environ["A2A_URL"])
         yield
+        await platform.close()
 
     app = FastAPI(title="Incident agentic platform", lifespan=lifespan)
     app.state.platform = platform
@@ -143,6 +144,17 @@ def create_app(platform=None, identities=None):
         except ValueError as exc:
             raise HTTPException(409, str(exc)) from None
         return platform.registry.get(name)
+
+    @app.get("/gateway")
+    async def gateway(who=Depends(identity)):
+        launched = platform.gateway.launches
+        servers = [{"name": s["name"], "transport": s["transport"], "tenants": s["tenants"], "status": s["status"],
+                    "sessions_launched": sum(n for (server, _), n in launched.items() if server == s["name"]),
+                    "tools": [{"name": tool, "risk": meta["risk"], "pinned_sha256": s["pins"].get(tool)}
+                              for tool, meta in s["tools"].items()]}
+                   for s in platform.registry.tool_servers()]
+        return {"policy": asdict(platform.gateway.policy), "servers": servers,
+                "audit": platform.gateway.recent(who["tenant"])}
 
     @app.get("/runs")
     async def runs(who=Depends(identity)):
@@ -217,7 +229,7 @@ def create_app(platform=None, identities=None):
 
     @app.post("/tools/check")
     async def tool_check(body: ToolCheck, who=Depends(identity)):
-        """The console's Session 02 check: one call through the tool boundary as the signed-in role."""
+        """The console's Session 02 check: one call through the tool boundary as the signed-in role. Agents' calls also pass the tool gateway."""
         context = context_for(who, "console-check")
         entry = {"at": time.time(), "role": who["role"], "name": body.name, "args": body.args, "error": None}
         result = None

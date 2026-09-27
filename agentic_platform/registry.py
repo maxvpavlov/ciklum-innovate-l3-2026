@@ -1,4 +1,4 @@
-"""Agent registry: validated immutable versions, lifecycle state and pinned remote agents."""
+"""Registry: immutable agent versions, lifecycle state, pinned remote agents and tool servers."""
 import hashlib
 import json
 import re
@@ -34,6 +34,7 @@ class Registry:
         self.db.execute("CREATE TABLE IF NOT EXISTS agents (name TEXT, version INT, body TEXT, sha256 TEXT, state TEXT, registered REAL, PRIMARY KEY(name,version))")
         self.db.execute("CREATE TABLE IF NOT EXISTS active_versions (name TEXT PRIMARY KEY, version INT)")
         self.db.execute("CREATE TABLE IF NOT EXISTS remote_agents (name TEXT PRIMARY KEY, url TEXT, card TEXT, sha256 TEXT)")
+        self.db.execute("CREATE TABLE IF NOT EXISTS tool_servers (name TEXT PRIMARY KEY, manifest TEXT, pins TEXT, status TEXT)")
 
     def register(self, name, version, spec):
         if not re.fullmatch(r"[a-z][a-z0-9-]{1,40}", name) or not isinstance(version, int) or version < 1:
@@ -106,3 +107,40 @@ class Registry:
         remote = [{"type": "remote", "name": r["name"], "url": r["url"], "sha256": r["sha256"]}
                   for r in self.remotes() if skill in r["skills"]]
         return local + remote
+
+    def register_tool_server(self, name, manifest):
+        """A server manifest names its transport, served tenants and each tool's risk."""
+        if not re.fullmatch(r"[a-z][a-z0-9-]{1,40}", name):
+            raise ValueError("invalid_server_identity")
+        if set(manifest) != {"transport", "tenants", "tools"} or not all(
+                t.get("risk") in {"read", "write"} for t in manifest["tools"].values()):
+            raise ValueError("invalid_server_manifest")
+        old = self.db.execute("SELECT manifest FROM tool_servers WHERE name=?", (name,)).fetchone()
+        if old and json.loads(old[0]) != manifest:
+            raise ValueError("server_manifest_changed")
+        self.db.execute("INSERT OR IGNORE INTO tool_servers VALUES (?,?,?,?)",
+                        (name, json.dumps(manifest, sort_keys=True), "{}", "registered"))
+
+    def pin_tools(self, name, pins):
+        """Record reviewed tool definitions; later differences quarantine the server."""
+        current = self.tool_server(name)
+        if current["pins"] and current["pins"] != pins:
+            self.db.execute("UPDATE tool_servers SET status='quarantined' WHERE name=?", (name,))
+            raise ValueError("tool_definition_changed")
+        self.db.execute("UPDATE tool_servers SET pins=?, status=? WHERE name=? AND status!='quarantined'",
+                        (json.dumps(pins, sort_keys=True), "pinned", name))
+
+    def tool_server(self, name):
+        row = self.db.execute("SELECT manifest,pins,status FROM tool_servers WHERE name=?", (name,)).fetchone()
+        if not row:
+            raise KeyError("unknown_tool_server")
+        return {"name": name, **json.loads(row[0]), "pins": json.loads(row[1]), "status": row[2]}
+
+    def tool_servers(self):
+        return [self.tool_server(r[0]) for r in self.db.execute("SELECT name FROM tool_servers ORDER BY name")]
+
+    def catalog(self):
+        """Map every registered tool name to its server and risk."""
+        return {tool: {"server": s["name"], "risk": meta["risk"], "transport": s["transport"],
+                       "tenants": s["tenants"], "status": s["status"]}
+                for s in self.tool_servers() for tool, meta in s["tools"].items()}
