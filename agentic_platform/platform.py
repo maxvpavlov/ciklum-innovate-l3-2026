@@ -1,4 +1,4 @@
-"""Reusable run service combining registry, model, tool, state and artifact adapters."""
+"""Reusable run service combining registry, gateway, model, state and artifact adapters."""
 import asyncio
 from dataclasses import replace
 import json
@@ -6,13 +6,13 @@ import os
 from pathlib import Path
 import uuid
 from agent_runtime.core import Context, Run, SYSTEM, run_agent
-from agent_runtime.context import EvidenceStore, context_tools, select_context
+from agent_runtime.context import EvidenceStore, select_context
 from agent_runtime.durable import RunStore, resume_run
-from agent_runtime.mcp_bridge import MCPReadAdapter, stdio_client
+from agentic_platform.gateway import ToolGateway
 from agent_runtime.providers import MockProvider, provider_from_env
 from agentic_platform.registry import Registry
 from agent_runtime.supervisor import Supervisor, SupervisorProvider
-from agent_runtime.tools import WRITE_SCHEMA, ToolExecutor
+from agent_runtime.tools import WRITE_SCHEMA
 from course.fixtures import SCHEMAS
 
 
@@ -62,6 +62,13 @@ SEED_AGENTS = {
                    "owner": "sre-team", "allowed": ["mock_remediate"], "skills": ["mock-remediation"]},
 }
 
+SEED_TOOL_SERVERS = {
+    "incident-tools": {"transport": "mcp-stdio", "tenants": ["astro", "locomotive"],
+                       "tools": {"log_lookup": {"risk": "read"}, "runbook_search": {"risk": "read"}}},
+    "platform-actions": {"transport": "local", "tenants": ["astro", "locomotive"],
+                         "tools": {"mock_remediate": {"risk": "write"}}},
+}
+
 
 class Platform:
     def __init__(self, path="var/platform.db", factory=provider_from_env):
@@ -69,9 +76,15 @@ class Platform:
         self.path, self.factory = path, factory
         self.store, self.evidence = RunStore(path), EvidenceStore(path)
         self.registry = Registry(path, known_tools=[s["function"]["name"] for s in SCHEMAS+[WRITE_SCHEMA]])
+        for name, manifest in SEED_TOOL_SERVERS.items():
+            self.registry.register_tool_server(name, manifest)
+        self.gateway = ToolGateway(self.registry, path)
         self.tasks, self.owner = {}, uuid.uuid4().hex
         for name, spec in SEED_AGENTS.items():
             self.registry.register(name, 1, {**spec, "prompt": SYSTEM, "context_chars": 6000})
+
+    async def close(self):
+        await self.gateway.close()
 
     async def register_remote_agent(self, url, name="runbook-specialist"):
         """Discover an A2A service and pin its Agent Card in the registry."""
@@ -100,29 +113,28 @@ class Platform:
 
     async def _execute(self, tenant, run_id):
         run = self.store.load(tenant, run_id)
-        tools = ToolExecutor(self.path, read_handler=context_tools)
+        tools = self.gateway
         try:
             kind = run.configuration["spec"]["kind"]
             if kind == "team":
-                async with stdio_client(tenant) as client:
-                    kwargs = {"worker_factory": self.factory, "read_handler": MCPReadAdapter(client)}
-                    remote = [a for a in self.registry.discover("runbooks") if a["type"] == "remote"]
-                    if remote:
-                        from agent_runtime.a2a_client import RemoteSpecialist
-                        specialist = RemoteSpecialist(remote[0]["url"], os.getenv("A2A_TOKEN", "demo-specialist-token"),
-                                                      card_sha256=remote[0]["sha256"])
-                        supervisor = HybridSupervisor(specialist, **kwargs)
-                    else:
-                        supervisor = Supervisor(**kwargs)
-                    parent_provider = self.factory()
-                    if isinstance(parent_provider, MockProvider):
-                        parent_provider = SupervisorProvider()
-                    run = await supervisor.investigate(context=run.context, provider=parent_provider,
-                        parallel=True, initial=run, checkpoint=self.store.save)
-                    for child in supervisor.children:
-                        self.store.save(child)
-                    run.event("delegation_summary", child_tokens=supervisor.budget.spent,
-                              children=[c.context.run_id for c in supervisor.children])
+                kwargs = {"worker_factory": self.factory, "tools": self.gateway}
+                remote = [a for a in self.registry.discover("runbooks") if a["type"] == "remote"]
+                if remote:
+                    from agent_runtime.a2a_client import RemoteSpecialist
+                    specialist = RemoteSpecialist(remote[0]["url"], os.getenv("A2A_TOKEN", "demo-specialist-token"),
+                                                  card_sha256=remote[0]["sha256"])
+                    supervisor = HybridSupervisor(specialist, **kwargs)
+                else:
+                    supervisor = Supervisor(**kwargs)
+                parent_provider = self.factory()
+                if isinstance(parent_provider, MockProvider):
+                    parent_provider = SupervisorProvider()
+                run = await supervisor.investigate(context=run.context, provider=parent_provider,
+                    parallel=True, initial=run, checkpoint=self.store.save)
+                for child in supervisor.children:
+                    self.store.save(child)
+                run.event("delegation_summary", child_tokens=supervisor.budget.spent,
+                          children=[c.context.run_id for c in supervisor.children])
             else:
                 if kind == "remediator":
                     from course.labs.l05 import RemediationProvider
