@@ -3,5 +3,6 @@ import overview from "./overview.js";
 import registry from "./registry.js";
 import runs from "./runs.js";
 import approvals from "./approvals.js";
+import gateway from "./gateway.js";
 
-export default [overview, registry, runs, approvals];
+export default [overview, registry, runs, approvals, gateway];
