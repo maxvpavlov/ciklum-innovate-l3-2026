@@ -179,6 +179,9 @@ class Platform:
                     provider = RemediationProvider()
                 else:
                     provider = self.factory()
+                    if isinstance(provider, MockProvider) and config["spec"].get("provider_profile") == "efficient":
+                        from incident.tuning import EfficientMockProvider
+                        provider = EfficientMockProvider()
                 if run.status == "waiting_approval" or run.pending:
                     run = await resume_run(self.store, tenant, run_id, provider, tools)
                 else:
