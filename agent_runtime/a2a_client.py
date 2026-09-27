@@ -7,8 +7,22 @@ from a2a.types import a2a_pb2 as p
 from google.protobuf.json_format import MessageToDict
 
 
-async def discover_client(http, url, streaming=True, polling=False):
+def card_dict(card):
+    return MessageToDict(card, preserving_proto_field_name=True)
+
+
+async def fetch_card(url):
+    """Read the public Agent Card so the platform registry can pin it."""
+    async with httpx.AsyncClient(timeout=10) as http:
+        return card_dict(await A2ACardResolver(http, base_url=url).get_agent_card())
+
+
+async def discover_client(http, url, streaming=True, polling=False, pinned=None):
     card = await A2ACardResolver(http, base_url=url).get_agent_card()
+    if pinned:
+        from agentic_platform.registry import digest
+        if digest(card_dict(card)) != pinned:
+            raise ValueError("agent_card_changed")
     if not any(skill.id == "runbooks" for skill in card.skills):
         raise ValueError("unsupported_capability")
     return ClientFactory(ClientConfig(httpx_client=http, streaming=streaming, polling=polling)).create(card)
@@ -20,14 +34,14 @@ def request_for(task):
 
 
 class RemoteSpecialist:
-    def __init__(self, url, token="demo-specialist-token"):
-        self.url, self.token = url, token
+    def __init__(self, url, token="demo-specialist-token", card_sha256=None):
+        self.url, self.token, self.card_sha256 = url, token, card_sha256
 
     async def investigate(self, task, context):
         if context.tenant != "astro":
             raise PermissionError("specialist_tenant_mismatch")
         async with httpx.AsyncClient(headers={"Authorization": "Bearer "+self.token}, timeout=10) as http:
-            client = await discover_client(http, self.url)
+            client = await discover_client(http, self.url, pinned=self.card_sha256)
             evidence, final, events = None, None, []
             try:
                 async for event in client.send_message(request_for(task)):
