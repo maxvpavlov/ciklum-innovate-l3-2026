@@ -12,8 +12,9 @@ import time
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
-from starlette.responses import RedirectResponse
+from starlette.responses import HTMLResponse, RedirectResponse
 from agentic_platform.blueprint import platform_map
+from agentic_platform.operations import CapacityError, build_trace, trace_html
 from agent_runtime.core import ApprovalRequired, Context
 from agentic_platform.platform import Platform
 from agent_runtime.tools import ToolExecutor, action_key
@@ -189,6 +190,8 @@ def create_app(platform=None, identities=None):
             return {"id": run_id, "status": "queued"}
         except PermissionError as exc:
             raise HTTPException(403, str(exc)) from None
+        except CapacityError as exc:
+            raise HTTPException(429 if str(exc) == "rate_limited" else 503, str(exc)) from None
         except (KeyError, ValueError) as exc:
             raise HTTPException(400, str(exc)) from None
 
@@ -237,7 +240,31 @@ def create_app(platform=None, identities=None):
             platform.launch(who["tenant"], run_id)
         except ValueError as exc:
             raise HTTPException(409, str(exc)) from None
+        except CapacityError as exc:
+            raise HTTPException(429, str(exc)) from None
         return {"id": run_id, "status": "queued"}
+
+    @app.get("/runs/{run_id}/trace")
+    async def trace(run_id: str, who=Depends(identity)):
+        load(who, run_id)
+        return build_trace(platform.store, who["tenant"], run_id)
+
+    @app.get("/runs/{run_id}/trace/view", response_class=HTMLResponse)
+    async def trace_view(run_id: str, who=Depends(identity)):
+        load(who, run_id)
+        return trace_html(build_trace(platform.store, who["tenant"], run_id))
+
+    @app.get("/operations")
+    async def operations(who=Depends(identity)):
+        runs = platform.store.summaries(who["tenant"], limit=1000)
+        statuses = {}
+        for run in runs:
+            statuses[run["status"]] = statuses.get(run["status"], 0)+1
+        return {"admission": {"pending": platform.admission.pending, "max_pending": platform.admission.max_pending,
+                              "per_second_per_tenant": platform.admission.per_second},
+                "workers": platform.workers, "active_runs": len(platform.tasks),
+                "shared_team_budget": platform.total_token_budget, "run_status_counts": statuses,
+                "releases": platform.releases.list()}
 
     tools, decisions = ToolExecutor(), {}
 
