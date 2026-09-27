@@ -64,10 +64,11 @@ class SupervisorProvider:
 
 
 class Supervisor:
-    def __init__(self, worker_factory=MockProvider, budget=None):
+    def __init__(self, worker_factory=MockProvider, budget=None, read_handler=context_tools):
         self.worker_factory = worker_factory
         self.budget = budget or SharedBudget()
         self.children, self.results, self.contracts = [], {}, {}
+        self.read_handler = read_handler
 
     async def delegate(self, name, args, parent):
         if name != "delegate":
@@ -93,7 +94,7 @@ class Supervisor:
         self.contracts[identity] = contract
         child = replace(parent, run_id=uuid.uuid4().hex, parent_id=parent.run_id,
                         role=args["role"], allowed=capabilities, approved=())
-        tools = ToolExecutor(read_handler=context_tools)
+        tools = ToolExecutor(read_handler=self.read_handler)
         run = None
         try:
             run = await run_agent(self.worker_factory(), tools.execute, tools.available(child),
@@ -117,8 +118,9 @@ class Supervisor:
                 for key, value in report["results"].items()}
 
     async def investigate(self, task="Investigate INC-001 payments latency", context=None, provider=None,
-                          parallel=False):
+                          parallel=False, initial=None, checkpoint=None):
         parent = context or Context()
         return await run_agent(provider or SupervisorProvider(), self.delegate,
                                [DELEGATE_SCHEMA], task, parent,
-                               execute_batch=self.batch if parallel else None)
+                               execute_batch=self.batch if parallel else None,
+                               initial=initial, checkpoint=checkpoint)
