@@ -43,7 +43,10 @@ export async function api(path, options = {}) {
 }
 
 async function signIn(credential) {
+  // Exchange the demo credential once; the console keeps only the short-lived signed token.
   sessionStorage.setItem(TOKEN, credential);
+  const issued = await api("/auth/token", { method: "POST" });
+  sessionStorage.setItem(TOKEN, issued.access_token);
   who = await api("/whoami");
 }
 
@@ -63,7 +66,7 @@ function loginView() {
   } },
     h("label", {}, "Demo credential", input),
     h("p", { class: "muted" }, "Local demo identities: demo-astro (analyst), demo-operator (operator), demo-locomotive (analyst). "
-      + "They are for loopback use only."),
+      + "They are for loopback use only and are exchanged for a one-hour signed token."),
     h("button", { type: "submit" }, "Sign in"));
   return h("section", { class: "panel login" }, h("h1", {}, "Sign in"), status, form);
 }
