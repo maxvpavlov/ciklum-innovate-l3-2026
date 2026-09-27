@@ -12,6 +12,21 @@ class RunStore:
         self.db = sqlite3.connect(path, isolation_level=None, check_same_thread=False)
         self.db.execute("CREATE TABLE IF NOT EXISTS runs (tenant TEXT, id TEXT, status TEXT, body TEXT, PRIMARY KEY(tenant,id))")
         self.db.execute("CREATE TABLE IF NOT EXISTS approvals (tenant TEXT, run_id TEXT, key TEXT, expires REAL, decision TEXT, PRIMARY KEY(tenant,run_id,key))")
+        self.db.execute("CREATE TABLE IF NOT EXISTS leases (tenant TEXT, run_id TEXT, owner TEXT, expires REAL, PRIMARY KEY(tenant,run_id))")
+
+    def claim(self, tenant, run_id, owner, seconds=30):
+        self.db.execute("BEGIN IMMEDIATE")
+        try:
+            row = self.db.execute("SELECT owner,expires FROM leases WHERE tenant=? AND run_id=?", (tenant,run_id)).fetchone()
+            if row and row[1] > time.time():
+                raise ValueError("run_already_owned")
+            self.db.execute("INSERT OR REPLACE INTO leases VALUES (?,?,?,?)", (tenant,run_id,owner,time.time()+seconds))
+            self.db.execute("COMMIT")
+        except BaseException:
+            self.db.execute("ROLLBACK"); raise
+
+    def release(self, tenant, run_id, owner):
+        self.db.execute("DELETE FROM leases WHERE tenant=? AND run_id=? AND owner=?", (tenant,run_id,owner))
 
     def save(self, run):
         self.db.execute("INSERT OR REPLACE INTO runs VALUES (?,?,?,?)",
@@ -23,6 +38,23 @@ class RunStore:
             raise KeyError("run_not_found")
         body = json.loads(row[0]); body["context"] = Context(**body["context"])
         return Run(**body)
+
+    def summaries(self, tenant, parent_id=None, limit=50):
+        """Most recently saved runs first, for one tenant only; the console never reads other tenants."""
+        rows = self.db.execute("SELECT body FROM runs WHERE tenant=? ORDER BY rowid DESC", (tenant,))
+        result = []
+        for (body,) in rows:
+            run = json.loads(body)
+            if parent_id is not None and run["context"]["parent_id"] != parent_id:
+                continue
+            config = run.get("configuration") or {}
+            result.append({"id": run["context"]["run_id"], "status": run["status"],
+                           "role": run["context"]["role"], "parent_id": run["context"]["parent_id"],
+                           "agent": config.get("name"), "version": config.get("version"),
+                           "tokens": run["tokens"], "error": run["error"]})
+            if len(result) >= limit:
+                break
+        return result
 
     def decide(self, tenant, run_id, decision="approve", ttl=300):
         if decision not in {"approve", "deny"}:
@@ -54,4 +86,3 @@ async def resume_run(store, tenant, run_id, provider, tools):
     task = next(m["content"] for m in run.messages if m["role"] == "user")
     return await run_agent(provider, tools.execute, tools.available(run.context), task,
                            initial=run, checkpoint=store.save)
-
