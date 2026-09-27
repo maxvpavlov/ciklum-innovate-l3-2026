@@ -1,0 +1,17 @@
+services:
+  platform:
+    build: .
+    ports: ["127.0.0.1:8000:8000"]
+    environment:
+      MODEL_PROVIDER: mock
+    read_only: true
+    tmpfs: ["/tmp", "/app/var:uid=1000,gid=1000"]
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 64
+    mem_limit: 512m
+    networks: [isolated]
+networks:
+  isolated:
+    internal: true
+
