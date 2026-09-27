@@ -15,6 +15,7 @@ class Context:
     allowed: tuple[str, ...] = ("log_lookup", "runbook_search")
     approved: tuple[str, ...] = ()
     parent_id: str | None = None
+    subject: str | None = None
 
 
 @dataclass
@@ -48,8 +49,9 @@ class Run:
     configuration: dict = field(default_factory=dict)
 
     def event(self, kind, **data):
+        from agent_runtime.security import redact
         self.events.append({"kind": kind, "run_id": self.context.run_id,
-                            "parent_id": self.context.parent_id, **data})
+                            "parent_id": self.context.parent_id, **redact(data)})
 
     def snapshot(self):
         return asdict(self)
@@ -141,11 +143,8 @@ async def run_agent(provider, execute: Callable, schemas: list, task: str,
                     save()
                     continue
                 answer = json.loads(reply.message.get("content") or "{}")
-                if not {"status", "cause", "summary", "evidence"} <= answer.keys():
-                    raise ValueError("invalid_final_answer")
-                observed = " ".join(m["content"] for m in run.messages if m["role"] == "tool")
-                if any(source not in observed for source in answer["evidence"]):
-                    raise ValueError("unobserved_citation")
+                from agent_runtime.security import validate_answer
+                validate_answer(answer, [json.loads(m["content"]) for m in run.messages if m["role"] == "tool"])
                 run.answer = answer
                 run.status = "completed"
                 save()
