@@ -10,6 +10,7 @@ from incident.context import EvidenceStore, select_context
 from incident.durable import RunStore, resume_run
 from incident.gateway import ToolGateway
 from incident.identity import DEV_SIGNING_KEY, CredentialStore, Delegation, TokenIssuer
+from incident.operations import Admission, CapacityError, ReleaseLog
 from incident.providers import MockProvider, provider_from_env
 from incident.registry import Registry
 from incident.supervisor import Supervisor, SupervisorProvider
@@ -73,10 +74,12 @@ SEED_TOOL_SERVERS = {
 
 
 class Platform:
-    def __init__(self, path="var/platform.db", factory=None):
+    def __init__(self, path="var/platform.db", factory=None, admission=None, workers=2, total_token_budget=6000):
         Path(path).parent.mkdir(parents=True, exist_ok=True)
         self.path = path
-        self.store, self.evidence = RunStore(path), EvidenceStore(path)
+        self.admission, self.semaphore = admission or Admission(), asyncio.Semaphore(workers)
+        self.workers, self.total_token_budget = workers, total_token_budget
+        self.store, self.evidence, self.releases = RunStore(path), EvidenceStore(path), ReleaseLog(path)
         self.secrets = CredentialStore(path)
         self.secrets.put("secret://platform/signing-key", os.getenv("PLATFORM_SIGNING_KEY", DEV_SIGNING_KEY), {"identity"})
         if os.getenv("MODEL_API_KEY"):
@@ -112,14 +115,32 @@ class Platform:
                            {"role": "user", "content": f"Investigate {incident_id} payments latency"}],
                   status="queued", configuration=config)
         self.store.save(run)
-        self.launch(tenant, context.run_id)
+        try:
+            self.launch(tenant, context.run_id)
+        except CapacityError as exc:
+            run.status, run.error = "rejected", str(exc)
+            self.store.save(run)
+            raise
         return context.run_id
 
     def launch(self, tenant, run_id):
-        self.store.claim(tenant, run_id, self.owner)
+        self.admission.enter(tenant)
+        try:
+            self.store.claim(tenant, run_id, self.owner)
+        except BaseException:
+            self.admission.leave(); raise
         key = (tenant, run_id)
-        self.tasks[key] = asyncio.create_task(self._execute(tenant, run_id))
+        self.tasks[key] = asyncio.create_task(self._worker(tenant, run_id))
         return self.tasks[key]
+
+    async def _worker(self, tenant, run_id):
+        try:
+            async with self.semaphore:
+                return await self._execute(tenant, run_id)
+        finally:
+            self.admission.leave()
+            self.store.release(tenant, run_id, self.owner)
+            self.tasks.pop((tenant,run_id), None)
 
     async def _execute(self, tenant, run_id):
         run = self.store.load(tenant, run_id)
@@ -131,7 +152,9 @@ class Platform:
                                      f"agent:{config['name']}@v{config['version']}")
             kind = config["spec"]["kind"]
             if kind == "team":
-                kwargs = {"worker_factory": self.factory, "tools": self.gateway, "grant": self.credentials.for_child}
+                from incident.supervisor import SharedBudget
+                kwargs = {"worker_factory": self.factory, "tools": self.gateway, "grant": self.credentials.for_child,
+                          "budget": SharedBudget(remaining=self.total_token_budget)}
                 remote = [a for a in self.registry.discover("runbooks") if a["type"] == "remote"]
                 if remote:
                     from incident.a2a_client import RemoteSpecialist
@@ -148,7 +171,7 @@ class Platform:
                     parallel=True, initial=run, checkpoint=self.store.save)
                 for child in supervisor.children:
                     self.store.save(child)
-                run.event("delegation_summary", child_tokens=supervisor.budget.spent,
+                run.event("delegation_summary", shared_tokens_spent=supervisor.budget.spent,
                           children=[c.context.run_id for c in supervisor.children])
             else:
                 if kind == "remediator":
