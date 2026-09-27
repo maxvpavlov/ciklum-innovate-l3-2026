@@ -70,7 +70,8 @@ SYSTEM = (
 
 async def run_agent(provider, execute: Callable, schemas: list, task: str,
                     context=None, limits=None, initial=None,
-                    checkpoint: Callable | None = None, select_messages=None) -> Run:
+                    checkpoint: Callable | None = None, select_messages=None,
+                    execute_batch=None) -> Run:
     """Tool calls are persisted before dispatch so a paused call can resume."""
     limits = limits or Limits()
     run = initial or Run(context or Context(), [
@@ -88,6 +89,15 @@ async def run_agent(provider, execute: Callable, schemas: list, task: str,
     try:
         async with asyncio.timeout(limits.seconds):
             while run.steps < limits.steps:
+                if run.pending and execute_batch:
+                    results = await execute_batch(run.pending, run.context)
+                    for call in run.pending:
+                        result = results[call["id"]]
+                        run.event("tool", name=call["name"], ok=result.get("ok", True))
+                        run.messages.append({"role": "tool", "tool_call_id": call["id"],
+                                             "content": json.dumps(result)})
+                    run.pending = []
+                    save()
                 while run.pending:
                     call = run.pending[0]
                     key = json.dumps([call["name"], call["args"]], sort_keys=True)
