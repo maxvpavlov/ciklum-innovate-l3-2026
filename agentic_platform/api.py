@@ -1,38 +1,26 @@
-"""Platform shell: the run API and console, given from Session 02. Demo bearer identities are for loopback use.
-
-Runs live in memory and execute in this process. The shell starts on a Lesson 01 runtime: until the
-Lesson 02 build steps add ToolExecutor, runs call the Lesson 01 readers directly and the Tools view says
-the boundary is not built. Session 05 makes runs durable, and Session 08 replaces this module with the
-platform core (registry, run lifecycle, approvals), keeping these routes, identities and response shapes.
-"""
-import asyncio
+"""Run, registry and console API. Demo bearer identities are explicit and intended for loopback use."""
 from collections import deque
+from contextlib import asynccontextmanager
 from dataclasses import replace
 import json
 import os
 from pathlib import Path
 import time
-import uuid
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
 from starlette.responses import RedirectResponse
 from agentic_platform.blueprint import platform_map
-from agent_runtime import core
-from agent_runtime.core import SYSTEM, Context, Run, run_agent
-from agent_runtime.providers import provider_from_env
-try:  # Lesson 02 build steps 1 and 2 add the tool boundary
-    from agent_runtime.tools import ToolExecutor, action_key
-except ImportError:
-    ToolExecutor = action_key = None
-ApprovalRequired = getattr(core, "ApprovalRequired", None) or type("ApprovalRequired", (Exception,), {})
+from agent_runtime.core import ApprovalRequired, Context
+from agentic_platform.platform import Platform
+from agent_runtime.tools import ToolExecutor, action_key
 
 DEMO_IDENTITIES = {
     "demo-astro": {"tenant": "astro", "role": "analyst"},
     "demo-operator": {"tenant": "astro", "role": "operator"},
     "demo-locomotive": {"tenant": "locomotive", "role": "analyst"},
 }
-# The platform maps a signed-in role to the tools its runs may use; the model never chooses them.
+# The platform maps a signed-in role to the tools a console check may use; the model never chooses them.
 ROLE_TOOLS = {"analyst": ("log_lookup", "runbook_search"),
               "operator": ("log_lookup", "runbook_search", "mock_remediate")}
 CONSOLE = Path(__file__).parent/"console"
@@ -45,43 +33,24 @@ class Submit(BaseModel):
     model_config = ConfigDict(extra="forbid")
     incident_id: str = Field(pattern=r"^INC-\d{3}$")
     agent: str = "single"
+    version: int | None = None
+
+
+class Decision(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    key: str
+    decision: str = "approve"
+
+
+class VersionChoice(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    version: int
 
 
 class ToolCheck(BaseModel):
     model_config = ConfigDict(extra="forbid")
     name: str = Field(pattern=r"^[a-z_]{1,40}$")
     args: dict = Field(default_factory=dict)
-
-
-class Lesson01Readers:
-    """Until ToolExecutor exists: the Lesson 01 synthetic readers, with no tool boundary in front of them."""
-
-    def __init__(self):
-        from course.fixtures import SCHEMAS, simple_tools
-        self.schemas, self.read = SCHEMAS, simple_tools
-
-    def available(self, context):
-        return [s for s in self.schemas if s["function"]["name"] in context.allowed]
-
-    async def execute(self, name, args, context):
-        return await self.read(name, args, context)
-
-
-class Shell:
-    """In-memory runs and tool decisions, kept per tenant."""
-
-    def __init__(self):
-        self.runs, self.incidents, self.decisions, self.tasks = {}, {}, {}, set()
-
-    def summaries(self, tenant):
-        return [{"id": run_id, "incident": self.incidents[(t, run_id)], "role": run.context.role,
-                 "status": run.status, "tokens": run.tokens, "error": run.error, "parent_id": None}
-                for (t, run_id), run in reversed(self.runs.items()) if t == tenant]
-
-    async def close(self):
-        for task in list(self.tasks):
-            task.cancel()
-        await asyncio.gather(*self.tasks, return_exceptions=True)
 
 
 def context_for(who, run_id=None):
@@ -96,11 +65,17 @@ def tool_outcome(result):
 
 
 def create_app(platform=None, identities=None):
-    shell = platform or Shell()
+    platform = platform or Platform(os.getenv("PLATFORM_DB", "var/platform.db"))
     identities = identities or json.loads(os.getenv("PLATFORM_IDENTITIES", json.dumps(DEMO_IDENTITIES)))
-    tools = ToolExecutor() if ToolExecutor else Lesson01Readers()
-    app = FastAPI(title="Incident agentic platform")
-    app.state.platform = shell
+
+    @asynccontextmanager
+    async def lifespan(app):
+        if os.getenv("A2A_URL"):
+            await platform.register_remote_agent(os.environ["A2A_URL"])
+        yield
+
+    app = FastAPI(title="Incident agentic platform", lifespan=lifespan)
+    app.state.platform = platform
 
     @app.middleware("http")
     async def console_headers(request, call_next):
@@ -121,15 +96,16 @@ def create_app(platform=None, identities=None):
             raise HTTPException(401, "unauthorized")
         return identities[token]
 
+    def operator(who=Depends(identity)):
+        if who["role"] != "operator":
+            raise HTTPException(403, "operator_required")
+        return who
+
     def load(who, run_id):
         try:
-            return shell.runs[(who["tenant"], run_id)]
+            return platform.store.load(who["tenant"], run_id)
         except KeyError:
             raise HTTPException(404, "run_not_found") from None
-
-    async def investigate(run):
-        await run_agent(provider_from_env(), tools.execute, tools.available(run.context),
-                        run.messages[-1]["content"], run.context, initial=run)
 
     @app.get("/health")
     async def health():
@@ -145,58 +121,103 @@ def create_app(platform=None, identities=None):
 
     @app.get("/platform")
     async def overview(who=Depends(identity)):
-        runs = shell.summaries(who["tenant"])
+        runs = platform.store.summaries(who["tenant"], limit=1000)
         return {**platform_map(), "counts": {
+            "agent_versions": len(platform.registry.agents()),
+            "remote_agents": len(platform.registry.remotes()),
             "runs": len(runs),
-            "waiting_approval": sum(r["status"] == "waiting_approval" for r in runs),
-            "tool_decisions": len(shell.decisions.get(who["tenant"], ()))}}
+            "waiting_approval": sum(r["status"] == "waiting_approval" for r in runs)}}
+
+    @app.get("/registry")
+    async def registry(who=Depends(identity)):
+        return {"agents": platform.registry.agents(),
+                "remote_agents": [{k: r[k] for k in ["name", "url", "sha256", "skills"]}
+                                  for r in platform.registry.remotes()]}
+
+    @app.post("/registry/agents/{name}/activate")
+    async def activate(name: str, body: VersionChoice, who=Depends(operator)):
+        try:
+            platform.registry.activate(name, body.version)
+        except KeyError as exc:
+            raise HTTPException(404, str(exc)) from None
+        except ValueError as exc:
+            raise HTTPException(409, str(exc)) from None
+        return platform.registry.get(name)
 
     @app.get("/runs")
     async def runs(who=Depends(identity)):
-        return shell.summaries(who["tenant"])
+        return platform.store.summaries(who["tenant"])
 
     @app.post("/runs", status_code=202)
     async def submit(body: Submit, who=Depends(identity)):
-        if body.agent != "single":
-            raise HTTPException(400, "unknown_agent")
-        run_id = uuid.uuid4().hex
-        run = Run(context_for(who, run_id), [{"role": "system", "content": SYSTEM},
-                                              {"role": "user", "content": f"Investigate {body.incident_id}"}])
-        run.status = "queued"
-        shell.runs[(who["tenant"], run_id)] = run
-        shell.incidents[(who["tenant"], run_id)] = body.incident_id
-        task = asyncio.create_task(investigate(run))
-        shell.tasks.add(task)
-        task.add_done_callback(shell.tasks.discard)
-        return {"id": run_id, "status": "queued"}
+        try:
+            run_id = platform.submit(who["tenant"], who["role"], body.incident_id, body.agent, body.version)
+            return {"id": run_id, "status": "queued"}
+        except PermissionError as exc:
+            raise HTTPException(403, str(exc)) from None
+        except (KeyError, ValueError) as exc:
+            raise HTTPException(400, str(exc)) from None
 
     @app.get("/runs/{run_id}")
     async def inspect(run_id: str, who=Depends(identity)):
         run = load(who, run_id)
         proposal = None
-        if run.pending and run.status == "waiting_approval" and action_key:
+        if run.pending and run.status == "waiting_approval":
             call = run.pending[0]
             proposal = {"key": action_key(call["name"], call["args"], run.context),
                         "name": call["name"], "args": call["args"]}
         return {"id": run_id, "status": run.status, "answer": run.answer, "error": run.error,
-                "incident": shell.incidents[(who["tenant"], run_id)], "tokens": run.tokens,
-                "proposal": proposal, "role": run.context.role, "parent_id": None,
-                "events": run.events, "children": []}
+                "configuration": run.configuration, "tokens": run.tokens, "proposal": proposal,
+                "approved": bool(proposal) and proposal["key"] in platform.store.approved_keys(who["tenant"], run_id),
+                "role": run.context.role, "parent_id": run.context.parent_id, "events": run.events,
+                "children": platform.store.summaries(who["tenant"], parent_id=run_id)}
+
+    @app.post("/runs/{run_id}/cancel")
+    async def cancel(run_id: str, who=Depends(identity)):
+        load(who, run_id)
+        try:
+            await platform.cancel(who["tenant"], run_id)
+        except ValueError as exc:
+            raise HTTPException(409, str(exc)) from None
+        return {"status": "cancelled"}
+
+    @app.post("/runs/{run_id}/decision")
+    async def decision(run_id: str, body: Decision, who=Depends(operator)):
+        run = load(who, run_id)
+        if not run.pending:
+            raise HTTPException(409, "no_pending_action")
+        call = run.pending[0]
+        if action_key(call["name"], call["args"], run.context) != body.key:
+            raise HTTPException(409, "proposal_changed")
+        try:
+            return platform.store.decide(who["tenant"], run_id, body.decision)
+        except ValueError as exc:
+            raise HTTPException(409, str(exc)) from None
+
+    @app.post("/runs/{run_id}/resume", status_code=202)
+    async def resume(run_id: str, who=Depends(identity)):
+        run = load(who, run_id)
+        if run.status in {"denied", "cancelled", "completed"}:
+            raise HTTPException(409, "terminal_run")
+        try:
+            platform.launch(who["tenant"], run_id)
+        except ValueError as exc:
+            raise HTTPException(409, str(exc)) from None
+        return {"id": run_id, "status": "queued"}
+
+    tools, decisions = ToolExecutor(), {}
 
     @app.get("/tools")
-    async def catalogue(who=Depends(identity)):
+    async def tool_catalogue(who=Depends(identity)):
         allowed = context_for(who).allowed
         return {"tools": [{"name": s["function"]["name"], "description": s["function"]["description"],
                            "kind": "write" if s["function"]["name"] == "mock_remediate" else "read",
                            "allowed": s["function"]["name"] in allowed} for s in tools.schemas],
-                "boundary": ToolExecutor is not None,
-                "decisions": list(shell.decisions.get(who["tenant"], ()))}
+                "decisions": list(decisions.get(who["tenant"], ()))}
 
     @app.post("/tools/check")
-    async def check(body: ToolCheck, who=Depends(identity)):
-        """Send one call through the tool boundary as the signed-in role. A write is never approved here."""
-        if ToolExecutor is None:
-            raise HTTPException(409, "tool_boundary_not_built")
+    async def tool_check(body: ToolCheck, who=Depends(identity)):
+        """The console's Session 02 check: one call through the tool boundary as the signed-in role."""
         context = context_for(who, "console-check")
         entry = {"at": time.time(), "role": who["role"], "name": body.name, "args": body.args, "error": None}
         result = None
@@ -205,7 +226,7 @@ def create_app(platform=None, identities=None):
             entry |= {"decision": tool_outcome(result), "error": result.get("error")}
         except ApprovalRequired as exc:
             entry |= {"decision": "approval_required", "key": exc.action["key"]}
-        shell.decisions.setdefault(who["tenant"], deque(maxlen=50)).appendleft(entry)
+        decisions.setdefault(who["tenant"], deque(maxlen=50)).appendleft(entry)
         return {**entry, "result": result}
 
     app.mount("/console", StaticFiles(directory=CONSOLE, html=True), name="console")
