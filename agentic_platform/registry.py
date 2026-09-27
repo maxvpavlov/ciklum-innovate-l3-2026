@@ -17,6 +17,9 @@ AGENT_SCHEMA = {
         "prompt": {"type": "string", "minLength": 1},
         "context_chars": {"type": "integer", "minimum": 1000, "maximum": 20000},
         "provider_profile": {"enum": ["default", "efficient"]},
+        # Definitions may name credentials only by reference; values live in the credential store.
+        "credentials": {"type": "object", "propertyNames": {"pattern": "^[a-z-]{1,40}$"},
+                        "additionalProperties": {"type": "string", "pattern": "^secret://[a-z0-9/_-]+$"}},
     },
     "required": ["kind", "description", "owner", "allowed", "skills", "prompt", "context_chars"],
     "additionalProperties": False,
