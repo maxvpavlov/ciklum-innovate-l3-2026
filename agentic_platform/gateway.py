@@ -19,8 +19,9 @@ class GatewayPolicy:
 
 
 class ToolGateway:
-    def __init__(self, registry, path=":memory:", launcher=stdio_client, policy=GatewayPolicy()):
+    def __init__(self, registry, path=":memory:", launcher=stdio_client, policy=GatewayPolicy(), credentials=None):
         self.registry, self.launcher, self.policy = registry, launcher, policy
+        self.credentials = credentials
         self.db = sqlite3.connect(path, isolation_level=None, check_same_thread=False)
         self.db.execute("CREATE TABLE IF NOT EXISTS gateway_audit (seq INTEGER PRIMARY KEY AUTOINCREMENT, ts REAL, "
                         "tenant TEXT, run_id TEXT, parent_id TEXT, role TEXT, tool TEXT, server TEXT, "
@@ -48,6 +49,19 @@ class ToolGateway:
             return "deny", "write_role_required", entry["server"]
         if len(json.dumps(args)) > self.policy.max_argument_chars:
             return "deny", "argument_policy", entry["server"]
+        if self.credentials is not None:
+            # The application-owned context and the delegated token must agree.
+            token = self.credentials.token(context.run_id)
+            if token is None:
+                return "deny", "no_delegated_credential", entry["server"]
+            try:
+                claims = self.credentials.issuer.verify(token, "tool-gateway")
+            except PermissionError as exc:
+                return "deny", str(exc), entry["server"]
+            if claims["tenant"] != context.tenant:
+                return "deny", "tenant_mismatch", entry["server"]
+            if name not in claims["scope"].split():
+                return "deny", "scope_denied", entry["server"]
         if self.calls[context.run_id] >= self.policy.max_calls_per_run:
             return "deny", "tool_call_budget", entry["server"]
         return "allow", "policy_passed", entry["server"]
