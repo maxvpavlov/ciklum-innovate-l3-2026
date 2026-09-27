@@ -1,4 +1,4 @@
-"""Reusable run service combining registry, gateway, model, state and artifact adapters."""
+"""Reusable run service combining registry, gateway, identity, model, state and artifact adapters."""
 import asyncio
 from dataclasses import replace
 import json
@@ -9,6 +9,7 @@ from incident.core import Context, Run, SYSTEM, run_agent
 from incident.context import EvidenceStore, select_context
 from incident.durable import RunStore, resume_run
 from incident.gateway import ToolGateway
+from incident.identity import DEV_SIGNING_KEY, CredentialStore, Delegation, TokenIssuer
 from incident.providers import MockProvider, provider_from_env
 from incident.registry import Registry
 from incident.supervisor import Supervisor, SupervisorProvider
@@ -17,9 +18,9 @@ from incident.fixtures import SCHEMAS
 
 
 class HybridSupervisor(Supervisor):
-    def __init__(self, remote, *args, **kwargs):
+    def __init__(self, remote, *args, remote_grant=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.remote = remote
+        self.remote, self.remote_grant = remote, remote_grant
 
     async def delegate(self, name, args, parent):
         if args.get("role") != "runbooks":
@@ -32,18 +33,19 @@ class HybridSupervisor(Supervisor):
                 raise ValueError("child_privilege_escalation")
             if args["task_id"] in self.contracts:
                 raise ValueError("duplicate_remote_task")
+            context = replace(parent, run_id=uuid.uuid4().hex, parent_id=parent.run_id,
+                              role="remote_runbooks", allowed=("runbook_search",), approved=())
+            token = self.remote_grant(parent, context) if self.remote_grant else None
             await self.budget.reserve(1800, depth=1)
-        except (ValidationError, ValueError) as exc:
+        except (ValidationError, ValueError, PermissionError) as exc:
             return {"ok": False, "error": type(exc).__name__}
         self.contracts[args["task_id"]] = json.dumps(args, sort_keys=True)
         used = 1800
         try:
-            result = await self.remote.investigate(args["objective"], parent)
+            result = await self.remote.investigate(args["objective"], parent, token=token)
             used = result["tokens"]
-            context = replace(parent, run_id=result["run_id"], parent_id=parent.run_id,
-                              role="remote_runbooks", allowed=("runbook_search",), approved=())
             child = Run(context, [], status="completed", answer=result["answer"], tokens=used)
-            child.event("remote", protocol="A2A", event_count=len(result["events"]))
+            child.event("remote", protocol="A2A", remote_run_id=result["run_id"], event_count=len(result["events"]))
             self.children.append(child)
             return {"ok": True, "data": child.answer, "child_run_id": context.run_id,
                     "task_id": args["task_id"], "status": "completed"}
@@ -71,14 +73,21 @@ SEED_TOOL_SERVERS = {
 
 
 class Platform:
-    def __init__(self, path="var/platform.db", factory=provider_from_env):
+    def __init__(self, path="var/platform.db", factory=None):
         Path(path).parent.mkdir(parents=True, exist_ok=True)
-        self.path, self.factory = path, factory
+        self.path = path
         self.store, self.evidence = RunStore(path), EvidenceStore(path)
+        self.secrets = CredentialStore(path)
+        self.secrets.put("secret://platform/signing-key", os.getenv("PLATFORM_SIGNING_KEY", DEV_SIGNING_KEY), {"identity"})
+        if os.getenv("MODEL_API_KEY"):
+            self.secrets.put("secret://model/api-key", os.environ["MODEL_API_KEY"], {"model-adapter"})
+        self.factory = factory or (lambda: provider_from_env(self.secrets))
+        self.issuer = TokenIssuer(self.secrets.lease("secret://platform/signing-key", "identity").reveal())
+        self.credentials = Delegation(self.issuer, path)
         self.registry = Registry(path, known_tools=[s["function"]["name"] for s in SCHEMAS+[WRITE_SCHEMA]])
         for name, manifest in SEED_TOOL_SERVERS.items():
             self.registry.register_tool_server(name, manifest)
-        self.gateway = ToolGateway(self.registry, path)
+        self.gateway = ToolGateway(self.registry, path, credentials=self.credentials)
         self.tasks, self.owner = {}, uuid.uuid4().hex
         for name, spec in SEED_AGENTS.items():
             self.registry.register(name, 1, {**spec, "prompt": SYSTEM, "context_chars": 6000})
@@ -91,13 +100,14 @@ class Platform:
         from incident.a2a_client import fetch_card
         return self.registry.register_remote(name, url, await fetch_card(url))
 
-    def submit(self, tenant, role, incident_id, agent="single", version=None):
+    def submit(self, tenant, role, incident_id, agent="single", version=None, subject=None):
         config = self.registry.get(agent, version)
         if config["state"] == "retired":
             raise ValueError("retired_version")
         if config["spec"]["kind"] == "remediator" and role != "operator":
             raise PermissionError("operator_required")
-        context = Context(tenant=tenant, role=role, allowed=tuple(config["spec"]["allowed"]))
+        context = Context(tenant=tenant, role=role, allowed=tuple(config["spec"]["allowed"]),
+                          subject=subject or f"user:{tenant}-{role}")
         run = Run(context, [{"role": "system", "content": config["spec"]["prompt"]},
                            {"role": "user", "content": f"Investigate {incident_id} payments latency"}],
                   status="queued", configuration=config)
@@ -115,15 +125,20 @@ class Platform:
         run = self.store.load(tenant, run_id)
         tools = self.gateway
         try:
-            kind = run.configuration["spec"]["kind"]
+            config = run.configuration
+            # Delegated credentials are minted per execution and are never saved with the run.
+            self.credentials.for_run(run.context, run.context.subject or f"user:{tenant}",
+                                     f"agent:{config['name']}@v{config['version']}")
+            kind = config["spec"]["kind"]
             if kind == "team":
-                kwargs = {"worker_factory": self.factory, "tools": self.gateway}
+                kwargs = {"worker_factory": self.factory, "tools": self.gateway, "grant": self.credentials.for_child}
                 remote = [a for a in self.registry.discover("runbooks") if a["type"] == "remote"]
                 if remote:
                     from incident.a2a_client import RemoteSpecialist
-                    specialist = RemoteSpecialist(remote[0]["url"], os.getenv("A2A_TOKEN", "demo-specialist-token"),
-                                                  card_sha256=remote[0]["sha256"])
-                    supervisor = HybridSupervisor(specialist, **kwargs)
+                    specialist = RemoteSpecialist(remote[0]["url"], card_sha256=remote[0]["sha256"])
+                    supervisor = HybridSupervisor(specialist, **kwargs, remote_grant=lambda parent, child:
+                        self.credentials.for_child(parent, child, audience="agent:runbook-specialist",
+                                                   actor="agent:runbook-specialist"))
                 else:
                     supervisor = Supervisor(**kwargs)
                 parent_provider = self.factory()
@@ -160,6 +175,7 @@ class Platform:
             run.event("failure", code=run.error); self.store.save(run)
             return run
         finally:
+            self.credentials.revoke(run_id)
             self.store.release(tenant, run_id, self.owner)
             self.tasks.pop((tenant,run_id), None)
 

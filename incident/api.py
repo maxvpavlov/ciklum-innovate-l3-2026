@@ -1,4 +1,7 @@
-"""Run, registry and console API. Demo bearer identities are explicit and intended for loopback use."""
+"""Run, registry, gateway, identity and console API.
+
+Demo credentials are explicit and intended for loopback use; they can only be
+exchanged for short-lived signed tokens, which every later request presents."""
 from contextlib import asynccontextmanager
 from dataclasses import asdict
 import json
@@ -70,9 +73,14 @@ def create_app(platform=None, identities=None):
         if not header.startswith("Bearer "):
             raise HTTPException(401, "bearer_required")
         token = header.removeprefix("Bearer ")
-        if token not in identities:
-            raise HTTPException(401, "unauthorized")
-        return identities[token]
+        if token in identities:
+            return {"sub": f"user:{token}", **identities[token], "auth": "demo_credential"}
+        try:
+            claims = platform.issuer.verify(token, "platform-api")
+        except PermissionError as exc:
+            raise HTTPException(401, str(exc)) from None
+        return {"sub": claims["sub"], "tenant": claims["tenant"], "role": claims["role"],
+                "auth": "signed_token", "expires": claims["exp"]}
 
     def operator(who=Depends(identity)):
         if who["role"] != "operator":
@@ -96,6 +104,19 @@ def create_app(platform=None, identities=None):
     @app.get("/whoami")
     async def whoami(who=Depends(identity)):
         return who
+
+    @app.post("/auth/token")
+    async def token(who=Depends(identity)):
+        ttl = 3600
+        access = platform.issuer.issue({"sub": who["sub"], "tenant": who["tenant"], "role": who["role"],
+                                        "aud": "platform-api", "scope": "runs registry"}, ttl)
+        return {"access_token": access, "token_type": "Bearer", "expires_in": ttl}
+
+    @app.get("/identity")
+    async def identity_view(who=Depends(identity)):
+        return {"principal": who, "grants": platform.credentials.grants(who["tenant"]),
+                "credential_refs": platform.secrets.refs(),
+                "secret_access": platform.secrets.accesses() if who["role"] == "operator" else []}
 
     @app.get("/platform")
     async def overview(who=Depends(identity)):
@@ -140,7 +161,8 @@ def create_app(platform=None, identities=None):
     @app.post("/runs", status_code=202)
     async def submit(body: Submit, who=Depends(identity)):
         try:
-            run_id = platform.submit(who["tenant"], who["role"], body.incident_id, body.agent, body.version)
+            run_id = platform.submit(who["tenant"], who["role"], body.incident_id, body.agent, body.version,
+                                     subject=who["sub"])
             return {"id": run_id, "status": "queued"}
         except PermissionError as exc:
             raise HTTPException(403, str(exc)) from None

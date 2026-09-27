@@ -1,6 +1,6 @@
 """A real A2A 1.0 service using the official Python SDK's JSON-RPC routes."""
 import asyncio
-import hmac
+from contextvars import ContextVar
 import json
 import os
 from fastapi import FastAPI
@@ -12,9 +12,14 @@ from a2a.server.routes import create_agent_card_routes, create_jsonrpc_routes
 from a2a.server.routes.fastapi_routes import add_a2a_routes_to_fastapi
 from a2a.types import a2a_pb2 as p
 from incident.core import Context, run_agent
+from incident.identity import TokenIssuer
 from incident.context import context_tools
 from incident.providers import provider_from_env
 from incident.tools import ToolExecutor
+
+
+AUDIENCE = "agent:runbook-specialist"
+caller = ContextVar("caller")
 
 
 class SpecialistExecutor(AgentExecutor):
@@ -26,7 +31,10 @@ class SpecialistExecutor(AgentExecutor):
         task = context.get_user_input()
         if "SLOW" in task:
             await asyncio.sleep(2)
-        ctx = Context(tenant="acme", allowed=("runbook_search",))
+        claims = caller.get()
+        # Tenant and delegating subject come from the verified token, never from the message.
+        ctx = Context(tenant=claims["tenant"], role="remote_runbooks", allowed=("runbook_search",),
+                      subject=claims["sub"])
         tools = ToolExecutor(read_handler=context_tools)
         run = await run_agent(provider_from_env(), tools.execute, tools.available(ctx), task, ctx)
         if run.status != "completed":
@@ -39,9 +47,9 @@ class SpecialistExecutor(AgentExecutor):
         await TaskUpdater(event_queue, context.task_id, context.context_id).cancel()
 
 
-def make_app(base_url=None, token=None):
+def make_app(base_url=None, issuer=None):
     base_url = base_url or os.getenv("A2A_BASE_URL", "http://127.0.0.1:8010")
-    token = token or os.getenv("A2A_TOKEN", "demo-specialist-token")
+    issuer = issuer or TokenIssuer()
     card = p.AgentCard(name="Runbook specialist", description="Read-only Acme runbook evidence",
         version="1.0.0", default_input_modes=["text/plain"], default_output_modes=["application/json"],
         supported_interfaces=[p.AgentInterface(url=base_url+"/a2a", protocol_binding="JSONRPC", protocol_version="1.0")],
@@ -53,9 +61,15 @@ def make_app(base_url=None, token=None):
 
     @app.middleware("http")
     async def authenticate(request, call_next):
-        if request.url.path == "/a2a" and not hmac.compare_digest(
-            request.headers.get("authorization", ""), "Bearer "+token):
-            return JSONResponse({"error": "unauthorized"}, status_code=401)
+        if request.url.path == "/a2a":
+            header = request.headers.get("authorization", "")
+            try:
+                claims = issuer.verify(header.removeprefix("Bearer "), AUDIENCE)
+            except PermissionError as exc:
+                return JSONResponse({"error": "unauthorized", "reason": str(exc)}, status_code=401)
+            if "runbook_search" not in claims["scope"].split():
+                return JSONResponse({"error": "forbidden", "reason": "scope_denied"}, status_code=403)
+            caller.set(claims)
         return await call_next(request)
 
     add_a2a_routes_to_fastapi(app, agent_card_routes=create_agent_card_routes(card),
