@@ -64,11 +64,11 @@ class SupervisorProvider:
 
 
 class Supervisor:
-    def __init__(self, worker_factory=MockProvider, budget=None, read_handler=context_tools):
+    def __init__(self, worker_factory=MockProvider, budget=None, read_handler=context_tools, tools=None):
         self.worker_factory = worker_factory
         self.budget = budget or SharedBudget()
         self.children, self.results, self.contracts = [], {}, {}
-        self.read_handler = read_handler
+        self.read_handler, self.tools = read_handler, tools
 
     async def delegate(self, name, args, parent):
         if name != "delegate":
@@ -94,7 +94,7 @@ class Supervisor:
         self.contracts[identity] = contract
         child = replace(parent, run_id=uuid.uuid4().hex, parent_id=parent.run_id,
                         role=args["role"], allowed=capabilities, approved=())
-        tools = ToolExecutor(read_handler=self.read_handler)
+        tools = self.tools or ToolExecutor(read_handler=self.read_handler)
         run = None
         try:
             run = await run_agent(self.worker_factory(), tools.execute, tools.available(child),
