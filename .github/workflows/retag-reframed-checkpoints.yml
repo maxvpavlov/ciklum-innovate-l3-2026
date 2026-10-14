@@ -1,0 +1,29 @@
+name: Retag reframed checkpoints
+
+# Moves lesson-06..lesson-12 and course-complete to the reframed reference and keeps the
+# previous checkpoints as v1/* tags. The script is idempotent, so re-running is harmless.
+on:
+  push:
+    branches: [main]
+    paths:
+      - retag-reframed-checkpoints.sh
+      - .github/workflows/retag-reframed-checkpoints.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  retag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Move the tags
+        run: |
+          git fetch origin "+refs/heads/main:refs/remotes/origin/main"
+          sed -i 's|^git fetch origin claude/clever-tesla-bnbyzh$|git fetch origin main|' retag-reframed-checkpoints.sh
+          bash retag-reframed-checkpoints.sh
+      - name: Show the result
+        run: git ls-remote --tags origin | grep -E 'lesson-(0[6-9]|1[0-2])|course-complete'
