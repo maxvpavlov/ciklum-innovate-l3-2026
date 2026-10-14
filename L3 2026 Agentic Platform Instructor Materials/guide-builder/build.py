@@ -1,4 +1,4 @@
-"""Build the 12 instructor guides (.docx) and LEARNER_PROMPTS.md from specs/*.json.
+"""Build the 12 instructor guides (.docx and .md) and LEARNER_PROMPTS.md from specs/*.json.
 
 Usage:
     uv run --with python-docx python build.py [--out-guides DIR] [--out-prompts FILE]
@@ -24,6 +24,8 @@ from docx.shared import Inches
 from guidelib import (GUIDES_DIR, HERE, LESSONS, PROMPTS_FILE, SPECS_DIR, excerpt,
                       expected_json_text, files_changed, guide_filename, guide_title,
                       lesson_vars, load_common, load_spec, tag_hash, template)
+
+from markdown import build_index, build_markdown
 
 TEMPLATE = HERE / "template.docx"
 FIGURES_DIR = HERE.parent / "console-screenshots"
@@ -381,9 +383,15 @@ def build_all(specs_dir=SPECS_DIR, out_guides=GUIDES_DIR, out_prompts=PROMPTS_FI
     for spec in specs:
         path = out_guides / guide_filename(spec)
         build_guide(spec, common, template_path, path)
-        written.append(path)
-        log(f"wrote {path}")
+        md_path = path.with_suffix(".md")
+        md_path.write_text(build_markdown(spec, common, renderer(spec, common), troubleshooting_prompt),
+                           encoding="utf-8")
+        written += [path, md_path]
+        log(f"wrote {path} and {md_path.name}")
     if full:
+        index = out_guides / "README.md"
+        index.write_text(build_index(specs, common), encoding="utf-8")
+        written.append(index)
         out_prompts = Path(out_prompts)
         out_prompts.parent.mkdir(parents=True, exist_ok=True)
         out_prompts.write_text(build_prompts_md(specs, common), encoding="utf-8")

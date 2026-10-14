@@ -1,7 +1,8 @@
 # guide-builder
 
-Deterministic generator for the 12 instructor guides (`../instructor-guides/NN <title>.docx`) and
-the learner prompt file (`../incident-platform/LEARNER_PROMPTS.md`).
+Deterministic generator for the 12 instructor guides (`../instructor-guides/NN <title>.docx`, plus a
+Markdown twin `NN <title>.md` and an index `README.md` for reading on GitHub) and the learner prompt
+file (`../incident-platform/LEARNER_PROMPTS.md`).
 
 - Lesson content lives in `specs/NN.json`.
 - Text shared by every guide lives in `specs/_common.json`.
@@ -56,7 +57,8 @@ $PY build.py --make-template "../instructor-guides/09 Build the reusable platfor
 |---|---|
 | `guidelib.py` | Paths, git helpers (`tag_hash`, `excerpt`, `files_changed`), spec I/O, docx reader |
 | `extract.py` | Parses the guides into `specs/NN.json`; boilerplate is matched against `_common.json` |
-| `build.py` | Writes the guides and `LEARNER_PROMPTS.md` from the specs |
+| `build.py` | Writes the guides (.docx and .md), the guides index and `LEARNER_PROMPTS.md` from the specs |
+| `markdown.py` | Renders a guide as GitHub Markdown from the same spec and templates as the .docx |
 | `check.py` | Guide–repo coupling validation |
 | `roundtrip.py` | extract → build → compare proof |
 | `template.docx` | Guide 09 with an empty body, no hyperlinks and footer "Lesson 00" |
