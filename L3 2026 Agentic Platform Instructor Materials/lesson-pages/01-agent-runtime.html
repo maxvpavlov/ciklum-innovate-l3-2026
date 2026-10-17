@@ -154,6 +154,14 @@ td code { white-space: nowrap; }
 .own-app { color: var(--tool); font-weight: 600; }
 .own-model { color: var(--model); font-weight: 600; }
 
+/* Course-opening cards */
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.cards > div { background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; padding: 18px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.cards .q { font: 700 19px/1.25 var(--display); font-variation-settings: "wdth" 88; }
+.cards .ans { font: 500 12.5px var(--mono); color: var(--signal); letter-spacing: .02em; }
+tr.now td { background: var(--signal-soft); }
+.cards.six { grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); }
+
 /* Guards */
 .guards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
 .guard { background: var(--sheet); border: 1px solid var(--rule); border-top: 3px solid var(--signal); border-radius: 8px;
@@ -206,12 +214,14 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
 
 <nav class="rail" aria-label="Session sections">
   <ol id="rail">
-    <li><a href="#start"><span class="t">00:00</span><span>Start</span></a></li>
-    <li><a href="#incident"><span class="t">00:03</span><span>The incident</span></a></li>
-    <li><a href="#platform"><span class="t">00:07</span><span>The platform</span></a></li>
-    <li><a href="#loop"><span class="t">00:10</span><span>The ReAct loop</span></a></li>
-    <li><a href="#transcript"><span class="t">00:18</span><span>One real run</span></a></li>
-    <li><a href="#guards"><span class="t">00:24</span><span>Who owns limits</span></a></li>
+    <li><a href="#start"><span class="t">00:00</span><span>Course</span></a></li>
+    <li><a href="#why"><span class="t">00:00</span><span>Why platforms</span></a></li>
+    <li><a href="#parts"><span class="t">00:05</span><span>Parts of a platform</span></a></li>
+    <li><a href="#how"><span class="t">00:10</span><span>How we work</span></a></li>
+    <li><a href="#incident"><span class="t">00:13</span><span>The premise</span></a></li>
+    <li><a href="#loop"><span class="t">00:17</span><span>The ReAct loop</span></a></li>
+    <li><a href="#transcript"><span class="t">00:23</span><span>One real run</span></a></li>
+    <li><a href="#guards"><span class="t">00:27</span><span>Who owns limits</span></a></li>
     <li><a href="#step1"><span class="t">00:30</span><span>Build 1 · contract</span></a></li>
     <li><a href="#step2"><span class="t">00:40</span><span>Build 2 · providers</span></a></li>
     <li><a href="#step3"><span class="t">00:50</span><span>Build 3 · loop</span></a></li>
@@ -226,43 +236,53 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
 <main>
 
 <header class="hero" id="start">
-  <p class="course">Innovate · Building Agentic Platforms · L3 2026</p>
-  <h1>Session 01<span class="sub">Agent architecture and the ReAct runtime</span></h1>
-  <p class="lede">Today we build the centre of the platform you will extend for twelve sessions: a bounded loop in which a model proposes an action, the runtime decides whether to run it, and a tool returns what it observed.</p>
-  <div class="facts"><span><b>120 min</b> · 30 discussion + 90 guided build</span><span>start <b>lesson-00</b></span><span>end <b>lesson-01</b></span><span>offline · no API keys</span></div>
+  <p class="course">Innovate · L3 · 2026 · Session 01 of 12</p>
+  <h1>Building Agentic Platforms<span class="sub">From one agent loop to an orchestrated, governed platform you build yourself</span></h1>
+  <p class="lede">Over twelve sessions you design, build, evaluate and operate your own agentic platform: agents that use tools, delegate to other agents, talk to independent agent services, and run under identity, policy and evaluation you can show evidence for.</p>
+  <div class="facts"><span><b>12 sessions</b> · 20 contact hours</span><span><b>1 platform</b> built step by step</span><span>capstone: measured before/after</span><span>offline · no API keys needed</span></div>
   <p class="hint">Scroll to present. Press <kbd>N</kbd> and <kbd>P</kbd> to jump between sections. Dark bands mean: switch to the terminal.</p>
 </header>
 
-<section class="ch" id="incident">
-  <p class="eyebrow"><span>Opening</span><span class="min">00:03–00:07</span></p>
-  <h2>Payments got slow after a deployment</h2>
+<section class="ch" id="why">
+  <p class="eyebrow"><span>Course opening</span><span class="min">00:00–00:05</span></p>
+  <h2>One agent is a demo. Agents in production are a platform problem.</h2>
   <div class="stack">
-    <article class="ticket" aria-label="Incident INC-001">
-      <header><span>INC-001 · tenant acme</span><span class="sev">payments latency</span></header>
-      <dl>
-        <dt>Service</dt><dd>payments</dd>
-        <dt>Signal</dt><dd>DB pool wait 900 ms after deploy d42</dd>
-        <dt>We have</dt><dd>synthetic logs and runbooks, one tenant's worth of each</dd>
-        <dt>We want</dt><dd>an investigation with cited evidence</dd>
-      </dl>
-    </article>
-    <div class="ask">
-      <span class="label">Ask the room</span>
-      <p class="q">What must a good investigation contain before we accept it?</p>
+    <p class="lede" style="margin-top:0">Most teams can get a single agent to answer a question in an afternoon. The hard part starts when several agents touch real systems, for real users, every day. The same questions come back on every project, and a platform is where you answer them once.</p>
+    <div class="cards six">
+      <div><span class="q">Who called what?</span><p>Every agent wires its own tools and nobody can see or control the calls.</p><span class="ans">tool gateway · policy · audit</span></div>
+      <div><span class="q">On whose behalf?</span><p>Agents act with borrowed credentials, and no one can say who approved an action.</p><span class="ans">identity · delegation · approvals</span></div>
+      <div><span class="q">When does it stop?</span><p>Loops that never converge, silent retries and runaway usage.</p><span class="ans">bounded runtime · budgets</span></div>
+      <div><span class="q">Is version 2 better?</span><p>Changes ship on a good feeling instead of measured quality, cost and latency.</p><span class="ans">evaluation · release gates</span></div>
+      <div><span class="q">How do agents work together?</span><p>Specialists live in other teams and services and need a shared protocol.</p><span class="ans">orchestration · A2A</span></div>
+      <div><span class="q">What actually happened?</span><p>Operators need to see runs, decisions and failures, not just final answers.</p><span class="ans">traces · registry · console</span></div>
     </div>
-    <div class="criteria">
-      <div><b>A likely cause</b>stated plainly, not hedged into nothing.</div>
-      <div><b>The source of that claim</b>the log or runbook IDs it actually read.</div>
-      <div><b>An honest "not enough evidence"</b>when the data does not support a cause.</div>
-    </div>
-    <p class="say">A fluent paragraph is not an acceptance test. Our first checkpoint must also stop when it runs out of allowance or starts repeating itself.</p>
+    <p class="say">This course is about those answers. You leave with a working sandbox platform you built and can explain, and with the judgement to tell which parts a real project needs.</p>
   </div>
 </section>
 
-<section class="ch" id="platform">
-  <p class="eyebrow"><span>The course in one picture</span><span class="min">00:07–00:10</span></p>
-  <h2>Twelve sessions build one platform. Today is the centre box.</h2>
+<section class="ch" id="parts">
+  <p class="eyebrow"><span>Course opening</span><span class="min">00:05–00:10</span></p>
+  <h2>The main parts of an agentic platform</h2>
   <div class="stack">
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Part</th><th>The question it answers</th><th>Session</th></tr></thead>
+        <tbody>
+          <tr class="now"><td><b>Agent runtime</b></td><td>How does one agent act, and how is it forced to stop?</td><td>01 · today</td></tr>
+          <tr><td><b>Tools and MCP</b></td><td>How do agents use real systems through reliable, permissioned contracts?</td><td>02</td></tr>
+          <tr><td><b>Context and memory</b></td><td>What does the agent know, from which sources, and for how long?</td><td>03</td></tr>
+          <tr><td><b>Evaluation</b></td><td>Is it actually good, and better than the last version?</td><td>04</td></tr>
+          <tr><td><b>Durability and approval</b></td><td>What survives a crash, and who signs off before an effect happens?</td><td>05</td></tr>
+          <tr><td><b>Orchestration</b></td><td>How does a supervisor split work across scoped subagents and combine it?</td><td>06</td></tr>
+          <tr><td><b>Agent-to-agent (A2A)</b></td><td>How do independent agent services discover and call each other?</td><td>07</td></tr>
+          <tr><td><b>Registry and console</b></td><td>Which agents exist, which version ran, and what happened?</td><td>08</td></tr>
+          <tr><td><b>Tool gateway</b></td><td>Is every tool call checked against one policy and recorded?</td><td>09</td></tr>
+          <tr><td><b>Identity and credentials</b></td><td>On whose behalf does each agent act, and with which secrets?</td><td>10</td></tr>
+          <tr><td><b>Operations and releases</b></td><td>Can we trace, throttle, roll out and roll back safely?</td><td>11</td></tr>
+          <tr><td><b>Capstone</b></td><td>Can you show a measured improvement and defend your design?</td><td>12</td></tr>
+        </tbody>
+      </table>
+    </div>
     <figure>
       <div class="diagram">
         <svg viewBox="0 0 860 430" role="img" aria-labelledby="bpTitle">
@@ -298,16 +318,61 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
           <path class="ink" d="M430 302 V338"/><path class="arrowhead" d="M430 342 l-5 -8 h10z"/>
         </svg>
       </div>
-      <figcaption>Draw this on the whiteboard as you talk. Everything around the centre box wraps the loop; nothing replaces it. Session numbers show when each part arrives.</figcaption>
+      <figcaption>The platform we build over twelve sessions. Session numbers show when each part arrives; the highlighted box is today's work, and everything else wraps it rather than replacing it.</figcaption>
     </figure>
-    <p class="say">Every later capability, including subagents, remote agents, the gateway and identity, reuses the loop we write today.</p>
+  </div>
+</section>
+
+<section class="ch" id="how">
+  <p class="eyebrow"><span>Course opening</span><span class="min">00:10–00:13</span></p>
+  <h2>How we work in this course</h2>
+  <div class="stack">
+    <div class="cards">
+      <div><span class="q">You direct a coding agent</span><p>You set scope, read the change and judge the evidence. The agent types the code and runs the checks.</p></div>
+      <div><span class="q">Every session ends runnable</span><p>Each session finishes at a tagged checkpoint, <code>lesson-01</code> to <code>lesson-12</code>, with tests that pass.</p></div>
+      <div><span class="q">Evidence, not claims</span><p>A coding agent saying "done" proves nothing. We look at diffs, test output and run events.</p></div>
+      <div><span class="q">Offline and synthetic</span><p>A deterministic mock model and invented data, so everyone sees the same behaviour with no keys and no cost.</p></div>
+    </div>
+    <p class="say">The capstone is your own tuned platform, a runbook, a live demo, and a before/after comparison of quality, cost and latency.</p>
+  </div>
+</section>
+
+<section class="ch" id="incident">
+  <p class="eyebrow"><span>Our premise</span><span class="min">00:13–00:17</span></p>
+  <h2>The platform we build investigates incidents</h2>
+  <div class="stack">
+    <div class="prose" style="margin-top:0">
+      <p>To keep twelve sessions concrete we use one invented domain throughout: an <b>incident-investigation platform</b> for two fictional companies, Acme and Globex. Agents read logs and runbooks, explain what went wrong with cited evidence, and may propose a remediation that a human must approve.</p>
+      <p class="muted">It is a good teaching case because it needs everything a real platform needs: tools, evidence, tenants that must not see each other's data, approvals before any effect, and more than one agent. All data are synthetic, and no real system is ever touched.</p>
+    </div>
+    <h3>Case one: payments got slow after a deployment</h3>
+    <article class="ticket" aria-label="Incident INC-001">
+      <header><span>INC-001 · tenant acme</span><span class="sev">payments latency</span></header>
+      <dl>
+        <dt>Service</dt><dd>payments</dd>
+        <dt>Signal</dt><dd>DB pool wait 900 ms after deploy d42</dd>
+        <dt>We have</dt><dd>synthetic logs and runbooks, one tenant's worth of each</dd>
+        <dt>We want</dt><dd>an investigation with cited evidence</dd>
+      </dl>
+    </article>
+    <div class="ask">
+      <span class="label">Ask the room</span>
+      <p class="q">What must a good investigation contain before we accept it?</p>
+    </div>
+    <div class="criteria">
+      <div><b>A likely cause</b>stated plainly, not hedged into nothing.</div>
+      <div><b>The source of that claim</b>the log or runbook IDs it actually read.</div>
+      <div><b>An honest "not enough evidence"</b>when the data does not support a cause.</div>
+    </div>
+    <p class="say">A fluent paragraph is not an acceptance test. Our first checkpoint must also stop when it runs out of allowance or starts repeating itself.</p>
   </div>
 </section>
 
 <section class="ch" id="loop">
-  <p class="eyebrow"><span>Concept</span><span class="min">00:10–00:18</span></p>
+  <p class="eyebrow"><span>Today's box · concept</span><span class="min">00:17–00:23</span></p>
   <h2>Model, runtime, tool: three boxes, one loop</h2>
   <div class="stack">
+    <p class="say">Today we build only the centre box of the platform. Every later capability, including subagents, remote agents, the gateway and identity, reuses this loop.</p>
     <figure>
       <div class="diagram">
         <svg viewBox="0 0 860 300" role="img" aria-labelledby="loopTitle">
@@ -369,7 +434,7 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
 </section>
 
 <section class="ch" id="transcript">
-  <p class="eyebrow"><span>Concept</span><span class="min">00:18–00:24</span></p>
+  <p class="eyebrow"><span>Concept</span><span class="min">00:23–00:27</span></p>
   <h2>One real run of INC-001, message by message</h2>
   <p class="lede">This is the actual output of the reference checkpoint. Trace the call ID from the proposal to its observation.</p>
   <div class="stack">
@@ -396,7 +461,7 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
 </section>
 
 <section class="ch" id="guards">
-  <p class="eyebrow"><span>Concept</span><span class="min">00:24–00:30</span></p>
+  <p class="eyebrow"><span>Concept</span><span class="min">00:27–00:30</span></p>
   <h2>The application owns identity and limits. The model owns nothing.</h2>
   <div class="stack">
     <div class="tablewrap">
