@@ -1,0 +1,653 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+</head>
+<body>
+<title>Session 01: The ReAct Runtime</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: one long presenter scroll on drafting-paper ground; a quiet session rail on the left,
+   chapters that alternate prose and evidence, and full-width "switch to terminal" bands. */
+:root {
+  --paper: #f2f4f6;        /* cool drafting paper */
+  --sheet: #fbfcfd;        /* raised surfaces */
+  --ink: #15202e;          /* navy ink */
+  --muted: #586678;
+  --rule: #cfd6df;
+  --signal: #d9481f;       /* incident signal: today's box, guards, terminal cues */
+  --signal-soft: #fbe4dc;
+  --model: #3f5bd0;        /* the model's turn in transcripts */
+  --tool: #1d7a62;         /* tool observations */
+  --term-bg: #10161f;
+  --term-fg: #dfe6ee;
+  --display: "Archivo", "Arial Narrow", system-ui, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0f151d; --sheet: #161e29; --ink: #e5ebf2; --muted: #9aa8b8; --rule: #2a3542;
+    --signal: #ff7a4d; --signal-soft: #3a1d14; --model: #8ea2ff; --tool: #57c9a6;
+    --term-bg: #0a0e14; --term-fg: #dfe6ee; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0f151d; --sheet: #161e29; --ink: #e5ebf2; --muted: #9aa8b8; --rule: #2a3542;
+  --signal: #ff7a4d; --signal-soft: #3a1d14; --model: #8ea2ff; --tool: #57c9a6;
+  --term-bg: #0a0e14; --term-fg: #dfe6ee; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  background: var(--paper); color: var(--ink); font: 17px/1.6 var(--body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--signal); outline-offset: 3px; }
+
+/* Session rail (wide screens only) */
+.rail {
+  position: fixed; top: calc(24px + env(safe-area-inset-top, 0px)); left: max(16px, env(safe-area-inset-left, 0px));
+  width: 190px; display: none; font: 500 12.5px/1.35 var(--mono); z-index: 5;
+}
+.rail ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.rail a { display: grid; grid-template-columns: 44px 1fr; gap: 6px; padding: 5px 8px; border-radius: 6px;
+  text-decoration: none; color: var(--muted); }
+.rail a:hover { background: var(--sheet); color: var(--ink); }
+.rail a[aria-current="true"] { color: var(--ink); background: var(--sheet); box-shadow: inset 2px 0 0 var(--signal); }
+.rail .t { font-variant-numeric: tabular-nums; }
+.rail .keys { margin-top: 14px; color: var(--muted); font-size: 11.5px; line-height: 1.5; padding: 0 8px; }
+.rail kbd, .hint kbd { font: 600 11px var(--mono); border: 1px solid var(--rule); border-bottom-width: 2px;
+  border-radius: 4px; padding: 0 5px; background: var(--sheet); }
+@media (min-width: 1240px) { .rail { display: block; } main { margin-left: 210px; } }
+
+main { max-width: 1040px; margin: 0 auto; }
+section.ch { padding-block: 72px 24px; border-top: 1px solid var(--rule); scroll-margin-top: 8px; }
+section.ch:first-of-type { border-top: 0; }
+.eyebrow { font: 600 12.5px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--signal);
+  display: flex; gap: 14px; flex-wrap: wrap; }
+.eyebrow .min { color: var(--muted); }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; }
+h2 { font-size: clamp(30px, 4.4vw, 46px); font-variation-settings: "wdth" 82; font-weight: 750;
+  line-height: 1.05; letter-spacing: -.01em; margin-top: 14px; }
+h3 { font-size: 21px; font-weight: 650; font-variation-settings: "wdth" 92; }
+p { margin: 0; }
+.lede { font-size: 20px; line-height: 1.55; max-width: 62ch; color: var(--ink); margin-top: 18px; }
+.prose { max-width: 66ch; display: grid; gap: 14px; margin-top: 18px; }
+.muted { color: var(--muted); }
+code, .mono { font-family: var(--mono); font-size: .9em; }
+.stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; margin-top: 34px; }
+.stack > * { min-width: 0; }
+.two { display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.two > * { min-width: 0; }
+
+/* Say-this lines */
+.say { border-left: 3px solid var(--ink); padding: 4px 0 4px 18px; font-size: 19px; font-style: italic; max-width: 60ch; }
+.ask { display: grid; gap: 6px; padding: 18px 20px; background: var(--sheet); border: 1px solid var(--rule);
+  border-radius: 10px; max-width: 68ch; }
+.ask .q { font: 650 19px/1.35 var(--display); font-variation-settings: "wdth" 92; }
+.ask .label { font: 600 11.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.ask details summary { cursor: pointer; color: var(--muted); font-size: 15px; }
+.ask details p { margin-top: 6px; }
+
+/* Hero */
+.hero { padding-block: 64px 56px; display: grid; gap: 22px; }
+.hero .course { font: 600 13px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.hero h1 { font-size: clamp(44px, 8.2vw, 104px); line-height: .92; font-weight: 800;
+  font-variation-settings: "wdth" 68; letter-spacing: -.015em; }
+.hero h1 .sub { display: block; font-weight: 500; font-variation-settings: "wdth" 100; font-size: .34em;
+  letter-spacing: 0; line-height: 1.2; margin-top: 18px; color: var(--muted); }
+.facts { display: flex; flex-wrap: wrap; gap: 10px 26px; font: 500 14px var(--mono); color: var(--muted); }
+.facts b { color: var(--ink); font-weight: 600; }
+.hint { font-size: 14px; color: var(--muted); }
+
+/* Incident ticket */
+.ticket { background: var(--sheet); border: 1px solid var(--rule); border-radius: 12px; overflow: hidden; max-width: 760px; }
+.ticket header { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 14px 20px;
+  border-bottom: 1px solid var(--rule); font: 600 14px var(--mono); }
+.sev { color: var(--signal); }
+.ticket dl { display: grid; grid-template-columns: max-content 1fr; gap: 8px 22px; margin: 0; padding: 18px 20px; }
+.ticket dt { font: 500 13px var(--mono); color: var(--muted); }
+.ticket dd { margin: 0; }
+.criteria { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); counter-reset: c; }
+.criteria div { padding-top: 14px; border-top: 2px solid var(--ink); }
+.criteria b { display: block; font: 650 18px var(--display); font-variation-settings: "wdth" 92; margin-bottom: 4px; }
+
+/* Diagrams */
+figure { margin: 0; }
+.diagram { background: var(--sheet); border: 1px solid var(--rule); border-radius: 12px; padding: 18px; overflow-x: auto; }
+.diagram svg { display: block; width: 100%; min-width: 620px; height: auto; }
+figcaption { font-size: 14.5px; color: var(--muted); margin-top: 10px; max-width: 70ch; }
+svg text { font-family: var(--mono); fill: var(--ink); }
+svg .lbl { font-family: var(--body); font-size: 15px; font-weight: 600; }
+svg .small { font-size: 12px; fill: var(--muted); }
+svg .box { fill: var(--paper); stroke: var(--rule); stroke-width: 1.5; }
+svg .today { fill: var(--signal-soft); stroke: var(--signal); stroke-width: 2.5; }
+svg .ink { stroke: var(--ink); fill: none; stroke-width: 1.8; }
+svg .arrowhead { fill: var(--ink); }
+svg .sig { fill: var(--signal); }
+
+/* Comparison */
+.compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
+.compare > div { background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; padding: 20px; display: grid; gap: 10px; align-content: start; }
+.compare ol { margin: 0; padding-left: 20px; font-family: var(--mono); font-size: 14.5px; display: grid; gap: 4px; }
+
+/* Transcript */
+.transcript { display: grid; gap: 0; max-width: 900px; }
+.turn { display: grid; grid-template-columns: 92px 1fr; gap: 16px; padding: 14px 0; border-bottom: 1px dashed var(--rule); }
+.turn:last-child { border-bottom: 0; }
+.who { font: 600 12.5px/1.3 var(--mono); text-transform: uppercase; letter-spacing: .06em; padding-top: 3px; }
+.who.m { color: var(--model); } .who.t { color: var(--tool); } .who.u { color: var(--muted); } .who.r { color: var(--signal); }
+.turn pre { margin: 0; font: 14px/1.5 var(--mono); white-space: pre-wrap; word-break: break-word; min-width: 0; }
+.turn .note { font-size: 14.5px; color: var(--muted); margin-top: 6px; }
+.tally { display: flex; flex-wrap: wrap; gap: 10px 28px; font: 500 14px var(--mono); color: var(--muted); margin-top: 14px; }
+.tally b { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* Tables */
+.tablewrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 10px; background: var(--sheet); }
+table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 15.5px; }
+th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font: 600 12px var(--mono); text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+tr:last-child td { border-bottom: 0; }
+td code { white-space: nowrap; }
+.own-app { color: var(--tool); font-weight: 600; }
+.own-model { color: var(--model); font-weight: 600; }
+
+/* Guards */
+.guards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+.guard { background: var(--sheet); border: 1px solid var(--rule); border-top: 3px solid var(--signal); border-radius: 8px;
+  padding: 16px 18px; display: grid; gap: 8px; align-content: start; }
+.guard .code { font: 600 15px var(--mono); color: var(--signal); }
+.guard .lim { font: 500 13px var(--mono); color: var(--muted); }
+
+/* Terminal bands */
+.terminal { margin-block: 30px 6px; background: var(--term-bg); color: var(--term-fg); border-radius: 14px; overflow: hidden; }
+.terminal .bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;
+  padding: 14px 20px; border-bottom: 1px solid #263140; }
+.terminal .switch { font: 700 13px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: #ff9b74;
+  display: flex; align-items: center; gap: 10px; }
+.terminal .switch::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: #ff9b74;
+  box-shadow: 0 0 0 4px rgba(255, 155, 116, .18); }
+.terminal .file { font: 500 13px var(--mono); color: #9fb0c3; }
+.terminal .body { padding: 18px 20px 20px; display: grid; gap: 14px; }
+.terminal .goal { font-size: 16px; color: #c4cfdb; max-width: 70ch; }
+.prompt { position: relative; font: 14.5px/1.6 var(--mono); background: #18212d; border: 1px solid #263140; border-radius: 8px;
+  padding: 14px 16px 14px 16px; white-space: pre-wrap; word-break: break-word; }
+.prompt .pfx { color: #ff9b74; user-select: none; }
+.copy { font: 600 12.5px var(--mono); color: var(--term-fg); background: transparent; border: 1px solid #3a4a5e;
+  border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+.copy:hover { border-color: #ff9b74; color: #ff9b74; }
+.terminal .check { font: 500 13.5px var(--mono); color: #9fb0c3; }
+.terminal .check b { color: #8fe0c3; font-weight: 600; }
+
+/* Code excerpt */
+.excerpt { background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; overflow-x: auto; }
+.excerpt .src { font: 500 12.5px var(--mono); color: var(--muted); padding: 10px 16px; border-bottom: 1px solid var(--rule); }
+.excerpt pre { margin: 0; padding: 14px 16px; font: 14px/1.55 var(--mono); }
+.excerpt .hl { background: var(--signal-soft); display: inline-block; width: 100%; }
+
+/* Exercise grid */
+.predict { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+.predict div { border: 1px solid var(--rule); border-radius: 10px; padding: 16px; background: var(--sheet); display: grid; gap: 6px; }
+.predict .set { font: 500 14px var(--mono); }
+.predict .out { font: 600 15px var(--mono); color: var(--signal); }
+
+.result { font: 14px/1.5 var(--mono); background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; padding: 16px 18px; overflow-x: auto; margin: 0; }
+.big { font: 800 clamp(56px, 9vw, 96px)/1 var(--display); font-variation-settings: "wdth" 70; color: var(--signal); }
+footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 14px; display: grid; gap: 8px; }
+@media (max-width: 560px) {
+  .turn { grid-template-columns: 1fr; gap: 4px; }
+  .ticket dl { grid-template-columns: 1fr; gap: 2px 0; }
+  .ticket dd { margin-bottom: 8px; }
+  body { font-size: 16px; }
+}
+</style>
+
+<nav class="rail" aria-label="Session sections">
+  <ol id="rail">
+    <li><a href="#start"><span class="t">00:00</span><span>Start</span></a></li>
+    <li><a href="#incident"><span class="t">00:03</span><span>The incident</span></a></li>
+    <li><a href="#platform"><span class="t">00:07</span><span>The platform</span></a></li>
+    <li><a href="#loop"><span class="t">00:10</span><span>The ReAct loop</span></a></li>
+    <li><a href="#transcript"><span class="t">00:18</span><span>One real run</span></a></li>
+    <li><a href="#guards"><span class="t">00:24</span><span>Who owns limits</span></a></li>
+    <li><a href="#step1"><span class="t">00:30</span><span>Build 1 · contract</span></a></li>
+    <li><a href="#step2"><span class="t">00:40</span><span>Build 2 · providers</span></a></li>
+    <li><a href="#step3"><span class="t">00:50</span><span>Build 3 · loop</span></a></li>
+    <li><a href="#step4"><span class="t">01:03</span><span>Build 4 · guards</span></a></li>
+    <li><a href="#exercise"><span class="t">01:15</span><span>Break it on purpose</span></a></li>
+    <li><a href="#verify"><span class="t">01:40</span><span>Evidence</span></a></li>
+    <li><a href="#close"><span class="t">01:55</span><span>Close</span></a></li>
+  </ol>
+  <p class="keys"><kbd>N</kbd> next · <kbd>P</kbd> previous<br>Times are minutes into the 120-minute session.</p>
+</nav>
+
+<main>
+
+<header class="hero" id="start">
+  <p class="course">Innovate · Building Agentic Platforms · L3 2026</p>
+  <h1>Session 01<span class="sub">Agent architecture and the ReAct runtime</span></h1>
+  <p class="lede">Today we build the centre of the platform you will extend for twelve sessions: a bounded loop in which a model proposes an action, the runtime decides whether to run it, and a tool returns what it observed.</p>
+  <div class="facts"><span><b>120 min</b> · 30 discussion + 90 guided build</span><span>start <b>lesson-00</b></span><span>end <b>lesson-01</b></span><span>offline · no API keys</span></div>
+  <p class="hint">Scroll to present. Press <kbd>N</kbd> and <kbd>P</kbd> to jump between sections. Dark bands mean: switch to the terminal.</p>
+</header>
+
+<section class="ch" id="incident">
+  <p class="eyebrow"><span>Opening</span><span class="min">00:03–00:07</span></p>
+  <h2>Payments got slow after a deployment</h2>
+  <div class="stack">
+    <article class="ticket" aria-label="Incident INC-001">
+      <header><span>INC-001 · tenant acme</span><span class="sev">payments latency</span></header>
+      <dl>
+        <dt>Service</dt><dd>payments</dd>
+        <dt>Signal</dt><dd>DB pool wait 900 ms after deploy d42</dd>
+        <dt>We have</dt><dd>synthetic logs and runbooks, one tenant's worth of each</dd>
+        <dt>We want</dt><dd>an investigation with cited evidence</dd>
+      </dl>
+    </article>
+    <div class="ask">
+      <span class="label">Ask the room</span>
+      <p class="q">What must a good investigation contain before we accept it?</p>
+    </div>
+    <div class="criteria">
+      <div><b>A likely cause</b>stated plainly, not hedged into nothing.</div>
+      <div><b>The source of that claim</b>the log or runbook IDs it actually read.</div>
+      <div><b>An honest "not enough evidence"</b>when the data does not support a cause.</div>
+    </div>
+    <p class="say">A fluent paragraph is not an acceptance test. Our first checkpoint must also stop when it runs out of allowance or starts repeating itself.</p>
+  </div>
+</section>
+
+<section class="ch" id="platform">
+  <p class="eyebrow"><span>The course in one picture</span><span class="min">00:07–00:10</span></p>
+  <h2>Twelve sessions build one platform. Today is the centre box.</h2>
+  <div class="stack">
+    <figure>
+      <div class="diagram">
+        <svg viewBox="0 0 860 430" role="img" aria-labelledby="bpTitle">
+          <title id="bpTitle">Platform blueprint: the agent runtime at the centre, surrounded by later components</title>
+          <rect class="box" x="40" y="20" width="780" height="62" rx="8"/>
+          <text class="lbl" x="60" y="48">Platform console</text>
+          <text class="small" x="60" y="68">registry · runs · approvals · gateway audit · identity · operations   (08–12)</text>
+          <rect class="box" x="40" y="112" width="220" height="200" rx="8"/>
+          <text class="lbl" x="58" y="142">Agent registry</text>
+          <text class="small" x="58" y="162">versioned agents, remote</text>
+          <text class="small" x="58" y="178">agents, tool servers (08)</text>
+          <text class="lbl" x="58" y="224">Supervisor + A2A</text>
+          <text class="small" x="58" y="244">subagents (06), remote</text>
+          <text class="small" x="58" y="260">specialists (07)</text>
+          <rect class="today" x="300" y="122" width="260" height="180" rx="10"/>
+          <text class="lbl" x="322" y="156">Agent runtime</text>
+          <text class="small" x="322" y="178">bounded ReAct loop</text>
+          <text class="small" x="322" y="196">run contract · limits · events</text>
+          <text x="322" y="276" class="sig" style="font-weight:600;font-size:14px">TODAY · Session 01</text>
+          <rect class="box" x="600" y="112" width="220" height="200" rx="8"/>
+          <text class="lbl" x="618" y="142">MCP tool gateway</text>
+          <text class="small" x="618" y="162">policy and audit on</text>
+          <text class="small" x="618" y="178">every tool call (02, 09)</text>
+          <text class="lbl" x="618" y="224">Identity</text>
+          <text class="small" x="618" y="244">delegated, short-lived</text>
+          <text class="small" x="618" y="260">credentials (10)</text>
+          <rect class="box" x="40" y="342" width="780" height="62" rx="8"/>
+          <text class="lbl" x="60" y="370">Context · evaluation · durability · operations</text>
+          <text class="small" x="60" y="390">memory (03) · eval harness (04) · checkpoints and approval (05) · traces and releases (11) · tuning (12)</text>
+          <path class="ink" d="M260 212 H296"/><path class="arrowhead" d="M300 212 l-8 -5 v10z"/>
+          <path class="ink" d="M600 212 H564"/><path class="arrowhead" d="M560 212 l8 -5 v10z"/>
+          <path class="ink" d="M430 122 V86"/><path class="arrowhead" d="M430 82 l-5 8 h10z"/>
+          <path class="ink" d="M430 302 V338"/><path class="arrowhead" d="M430 342 l-5 -8 h10z"/>
+        </svg>
+      </div>
+      <figcaption>Draw this on the whiteboard as you talk. Everything around the centre box wraps the loop; nothing replaces it. Session numbers show when each part arrives.</figcaption>
+    </figure>
+    <p class="say">Every later capability, including subagents, remote agents, the gateway and identity, reuses the loop we write today.</p>
+  </div>
+</section>
+
+<section class="ch" id="loop">
+  <p class="eyebrow"><span>Concept</span><span class="min">00:10–00:18</span></p>
+  <h2>Model, runtime, tool: three boxes, one loop</h2>
+  <div class="stack">
+    <figure>
+      <div class="diagram">
+        <svg viewBox="0 0 860 300" role="img" aria-labelledby="loopTitle">
+          <title id="loopTitle">The ReAct loop: the model proposes, the runtime decides and executes, the tool observes</title>
+          <rect class="box" x="30" y="80" width="220" height="120" rx="10"/>
+          <text class="lbl" x="52" y="114">Model</text>
+          <text class="small" x="52" y="140">reasons and proposes</text>
+          <text class="small" x="52" y="158">a tool call or an answer</text>
+          <rect class="today" x="320" y="70" width="220" height="140" rx="10"/>
+          <text class="lbl" x="342" y="104">Runtime</text>
+          <text class="small" x="342" y="130">checks limits and permits</text>
+          <text class="small" x="342" y="148">records the pending call</text>
+          <text class="small" x="342" y="166">executes, appends result</text>
+          <rect class="box" x="610" y="80" width="220" height="120" rx="10"/>
+          <text class="lbl" x="632" y="114">Tools</text>
+          <text class="small" x="632" y="140">log_lookup</text>
+          <text class="small" x="632" y="158">runbook_search</text>
+          <path class="ink" d="M250 115 H314"/><path class="arrowhead" d="M318 115 l-8 -5 v10z"/>
+          <text class="small" x="256" y="104">proposal</text>
+          <path class="ink" d="M540 115 H604"/><path class="arrowhead" d="M608 115 l-8 -5 v10z"/>
+          <text class="small" x="550" y="104">execute</text>
+          <path class="ink" d="M610 170 H546"/><path class="arrowhead" d="M542 170 l8 -5 v10z"/>
+          <text class="small" x="552" y="190">observation</text>
+          <path class="ink" d="M320 170 H256"/><path class="arrowhead" d="M252 170 l8 -5 v10z"/>
+          <text class="small" x="262" y="190">next turn</text>
+          <path class="ink" d="M430 210 V262 H140 V204" stroke-dasharray="5 5"/>
+          <text class="small" x="160" y="284">repeat until a structured answer, or a limit stops the run</text>
+        </svg>
+      </div>
+      <figcaption>The model never calls code. It proposes; the runtime decides whether and how to execute. That one boundary is where authorization, limits and auditing live for the rest of the course.</figcaption>
+    </figure>
+
+    <div class="compare">
+      <div>
+        <h3>A workflow</h3>
+        <p class="muted">Steps are fixed in advance by the developer.</p>
+        <ol><li>read the log</li><li>search the runbook</li><li>write the summary</li></ol>
+        <p>Predictable and cheap. Keep it as your baseline.</p>
+      </div>
+      <div>
+        <h3>An agent</h3>
+        <p class="muted">The next permitted step is chosen from what was just observed.</p>
+        <ol><li>propose → run → observe</li><li>propose → run → observe</li><li>… then answer, or stop</li></ol>
+        <p>Flexible, so it needs explicit limits and evidence.</p>
+      </div>
+    </div>
+
+    <div class="prose">
+      <p>Our default model is a <b>deterministic mock provider</b>. It is a scripted policy, not intelligence: it reads the log, then searches the runbook for the cause it saw, then answers from the sources it observed. Everyone gets the same behaviour with no credentials and no network variability.</p>
+      <p>OpenAI-compatible and Anthropic adapters translate real provider responses into the same internal shape. A passing offline test proves the loop and its boundaries. It does not prove model quality; that needs a separate, authorized benchmark.</p>
+    </div>
+
+    <div class="ask">
+      <span class="label">Poll</span>
+      <p class="q">A provider hangs and returns nothing. Which component stops the run?</p>
+      <details><summary>Show the answer</summary><p>The runtime, with its elapsed-time limit. No step or token is consumed while a call hangs, and an instruction to the model cannot enforce a deadline.</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="ch" id="transcript">
+  <p class="eyebrow"><span>Concept</span><span class="min">00:18–00:24</span></p>
+  <h2>One real run of INC-001, message by message</h2>
+  <p class="lede">This is the actual output of the reference checkpoint. Trace the call ID from the proposal to its observation.</p>
+  <div class="stack">
+    <div class="transcript" role="list">
+      <div class="turn" role="listitem"><span class="who u">User</span><div><pre>Investigate INC-001</pre></div></div>
+      <div class="turn" role="listitem"><span class="who m">Model · 1</span><div><pre>tool_call <b>call-0</b>  log_lookup {"incident_id": "INC-001"}</pre></div></div>
+      <div class="turn" role="listitem"><span class="who t">Tool</span><div><pre><b>call-0</b> → {"source_id": "log-acme-001", "service": "payments",
+          "cause": "connection_pool_exhaustion",
+          "signal": "DB pool wait 900ms after deploy d42"}</pre><p class="note">Same ID as the proposal. Drop the ID and the conversation is no longer a valid request and result pair.</p></div></div>
+      <div class="turn" role="listitem"><span class="who m">Model · 2</span><div><pre>tool_call <b>call-1</b>  runbook_search {"query": "connection_pool_exhaustion"}</pre></div></div>
+      <div class="turn" role="listitem"><span class="who t">Tool</span><div><pre><b>call-1</b> → [{"source_id": "rb-pool-v1",
+           "text": "payments connection pool exhaustion DB wait after deployment"}]</pre></div></div>
+      <div class="turn" role="listitem"><span class="who r">Model · 3</span><div><pre>{"status": "complete",
+ "cause": "connection_pool_exhaustion",
+ "evidence": ["log-acme-001", "rb-pool-v1"]}</pre><p class="note">The runtime checks the answer's shape and rejects any cited source that never appeared in a tool result.</p></div></div>
+    </div>
+    <div class="tally"><span>model steps <b>3</b></span><span>tool calls <b>2</b></span><span>fixture tokens <b>75</b></span><span>cost <b>0</b> (no prices configured)</span></div>
+    <div class="ask">
+      <span class="label">Ask</span>
+      <p class="q">Does a completed run mean the incident is solved?</p>
+      <details><summary>Show the answer</summary><p>No. INC-003 also completes, with status <code>insufficient_evidence</code> and cause <code>unknown</code>. Execution finishing and the task being supported by evidence are different checks.</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="ch" id="guards">
+  <p class="eyebrow"><span>Concept</span><span class="min">00:24–00:30</span></p>
+  <h2>The application owns identity and limits. The model owns nothing.</h2>
+  <div class="stack">
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Field</th><th>Owner</th><th>Why it matters</th></tr></thead>
+        <tbody>
+          <tr><td><code>tenant</code>, <code>run_id</code>, <code>role</code></td><td class="own-app">application</td><td>A retrieved document must never be able to switch tenant or identity.</td></tr>
+          <tr><td><code>allowed</code> tools</td><td class="own-app">application</td><td>Permissions are granted by code, never claimed in model output.</td></tr>
+          <tr><td><code>Limits</code>: steps, tokens, seconds, output size</td><td class="own-app">application</td><td>Each limit catches a different failure; together they bound every run.</td></tr>
+          <tr><td><code>messages</code>, proposed tool calls, the answer</td><td class="own-model">model</td><td>Untrusted input. The runtime validates it before acting on it.</td></tr>
+          <tr><td><code>events</code></td><td class="own-app">runtime</td><td>What happened, step by step. From Session 08 the console shows it as a run timeline.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="guards">
+      <div class="guard"><span class="code">step_budget</span><span class="lim">default 8 model steps</span><p>Stops a loop that never converges.</p></div>
+      <div class="guard"><span class="code">token_budget</span><span class="lim">default 8,000, checked before each call</span><p>Reserves room for the reply before dispatch, then rechecks reported usage.</p></div>
+      <div class="guard"><span class="code">TimeoutError</span><span class="lim">default 20 s for the whole run</span><p>Catches a hang that consumes no steps and no tokens.</p></div>
+      <div class="guard"><span class="code">repeated_action</span><span class="lim">same tool, same arguments, same run</span><p>Stops an agent stuck asking the same question.</p></div>
+    </div>
+    <p class="say">Every stop is a named, explained outcome, never an unexplained exception.</p>
+  </div>
+</section>
+
+<section class="ch" id="build">
+  <p class="eyebrow"><span>Guided build</span><span class="min">00:30–01:15</span></p>
+  <h2>Now we build it, one bounded prompt at a time</h2>
+  <div class="prose">
+    <p>Learners do not type the code. Each step is one prompt to their own coding agent. The agent makes the change and runs the checks; then we compare it with the reference checkpoint and ask it to explain any difference.</p>
+    <p class="muted">Rule for the whole build: a coding agent saying "done" is not evidence. Look at the diff and at the check output.</p>
+  </div>
+
+  <div class="terminal" id="step1">
+    <div class="bar"><span class="switch">Switch to terminal · Build step 1 of 4</span><span class="file">incident/core.py · 00:30–00:40</span></div>
+    <div class="body">
+      <p class="goal">Define the run contract: Context, Limits, Reply and Run. Separate what the application owns from what the model produces.</p>
+      <div class="prompt" id="p1"><span class="pfx">PROMPT ▸ </span>For Lesson 01, continue in my learner project. Create the Context, Limits, Reply and Run contracts in incident/core.py. Separate application-owned tenant identity, permissions and run identifiers from model messages and results. Make run state serializable and give the runtime explicit step, token and time limits. Keep this step focused on the contracts; do not implement later platform features. Show the fields, their owners and one example of a value the model must not control. Use lesson-01 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div>
+      <div><button class="copy" type="button" data-copy="p1">Copy prompt</button></div>
+    </div>
+  </div>
+  <div class="stack">
+    <div class="excerpt">
+      <div class="src">reference · incident/core.py · lesson-01 · lines 10–17</div>
+<pre>@dataclass
+class Context:
+    tenant: str = "acme"
+    run_id: str = field(default_factory=lambda: uuid.uuid4().hex)
+    role: str = "investigator"
+    allowed: tuple[str, ...] = ("log_lookup", "runbook_search")
+    approved: tuple[str, ...] = ()
+    parent_id: str | None = None</pre>
+    </div>
+    <div class="ask"><span class="label">Ask</span><p class="q">Why not let the model's answer say which tools it may use?</p>
+      <details><summary>Show the answer</summary><p>Model output is untrusted. The application builds Context and grants capabilities independently. (<code>approved</code> and <code>parent_id</code> are hooks for approvals in Session 05 and child runs in Session 06.)</p></details></div>
+  </div>
+
+  <div class="terminal" id="step2">
+    <div class="bar"><span class="switch">Switch to terminal · Build step 2 of 4</span><span class="file">incident/providers.py · 00:40–00:50</span></div>
+    <div class="body">
+      <p class="goal">Normalize model access: a deterministic offline provider plus OpenAI-compatible and Anthropic adapters, all returning one Reply shape.</p>
+      <div class="prompt" id="p2"><span class="pfx">PROMPT ▸ </span>For Lesson 01, continue in my learner project. Implement the provider interface in incident/providers.py using the current core contracts. Add the deterministic offline provider and configurable OpenAI-compatible and Anthropic adapters. Normalize messages, tool calls, errors and usage into Reply. Use mock HTTP responses to check both adapter request shapes without paid calls. Explain how provider selection and secrets are configured without exposing credentials. Use lesson-01 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div>
+      <div><button class="copy" type="button" data-copy="p2">Copy prompt</button></div>
+    </div>
+  </div>
+  <div class="stack">
+    <div class="two">
+      <div class="prose" style="margin-top:0">
+        <p><b>What to point at.</b> An OpenAI tool call becomes an internal name plus JSON arguments. For Anthropic, the system prompt moves to its own field, tool calls become <code>tool_use</code> blocks and results become <code>tool_result</code> blocks in a user message.</p>
+        <p><b>Configuration, not instruction.</b> <code>MODEL_PROVIDER</code> selects the adapter and defaults to <code>mock</code>. Keys come from the environment and never enter the repository or the chat.</p>
+      </div>
+      <div class="ask"><span class="label">Ask</span><p class="q">What does the adapter test prove, and what does it leave open?</p>
+        <details><summary>Show the answer</summary><p>It proves request and response translation for the tested shapes, using a mock HTTP transport. Credentials, account access, real model behaviour and latency remain unverified.</p></details></div>
+    </div>
+  </div>
+
+  <div class="terminal" id="step3">
+    <div class="bar"><span class="switch">Switch to terminal · Build step 3 of 4</span><span class="file">incident/core.py · 00:50–01:03</span></div>
+    <div class="body">
+      <p class="goal">Implement the loop: record each proposed call as pending before running it, keep the call ID on the observation, finish with a structured, cited answer.</p>
+      <div class="prompt" id="p3"><span class="pfx">PROMPT ▸ </span>For Lesson 01, continue in my learner project. Implement run_agent in incident/core.py and connect the synthetic readers in incident/fixtures.py. Preserve assistant tool-call IDs when appending observations, track pending calls before dispatch, and finish with a structured answer and observed evidence IDs. Use the existing provider interface. Show the complete model-to-tool-to-observation path for INC-001 and explain how the same loop can later support checkpointing. Use lesson-01 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div>
+      <div><button class="copy" type="button" data-copy="p3">Copy prompt</button></div>
+    </div>
+  </div>
+  <div class="stack">
+    <div class="excerpt">
+      <div class="src">reference · incident/core.py · lesson-01 · inside run_agent()</div>
+<pre>while run.pending:
+    call = run.pending[0]
+    key = json.dumps([call["name"], call["args"]], sort_keys=True)
+    if key in seen:
+        raise ValueError("repeated_action")
+    seen.add(key)
+    result = await execute(call["name"], call["args"], run.context)
+<span class="hl">    run.messages.append({"role": "tool", "tool_call_id": call["id"],
+                         "content": json.dumps(result)})</span>
+    run.pending.pop(0)
+    save()</pre>
+    </div>
+    <div class="ask"><span class="label">Ask</span><p class="q">What goes wrong if we append a tool result without its assistant tool call?</p>
+      <details><summary>Show the answer</summary><p>The conversation is no longer a valid request and result pair; providers may reject it, and we lose the evidence needed to explain the run. Saving pending calls before execution is also what lets a run pause and resume later.</p></details></div>
+  </div>
+
+  <div class="terminal" id="step4">
+    <div class="bar"><span class="switch">Switch to terminal · Build step 4 of 4</span><span class="file">incident/core.py · labs · tests · 01:03–01:15</span></div>
+    <div class="body">
+      <p class="goal">Bound and verify execution: run the happy path first, then trigger every guard on purpose and explain why each run stopped.</p>
+      <div class="prompt" id="p4"><span class="pfx">PROMPT ▸ </span>For Lesson 01, continue in my learner project. Review and enforce the runtime's step, token, elapsed-time and repeated-action guards. Complete the Session 01 lab runner and tests. Demonstrate the normal cited answer and deliberately trigger each limit using offline fixtures. Explain the approximate pre-dispatch token estimate and distinguish reported usage from configured cost. Show which guard caused each failure and why the run stopped. Use lesson-01 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div>
+      <div><button class="copy" type="button" data-copy="p4">Copy prompt</button></div>
+      <p class="check">Expect: INC-001 answers <b>connection_pool_exhaustion</b> citing log-acme-001 and rb-pool-v1 after 3 model steps; the repeating provider stops with <b>repeated_action</b>.</p>
+    </div>
+  </div>
+  <div class="stack">
+    <div class="prose">
+      <p><b>The token check, in one sentence.</b> Before each model call the runtime estimates input as characters ÷ 3, adds the maximum reply size, and refuses the call if that would exceed the budget. It is a reservation, not a tokenizer count, and reported usage is checked again after the reply.</p>
+      <p><b>Cost.</b> Cost is computed only from prices you configure. A zero means "no prices configured", not "free".</p>
+    </div>
+  </div>
+</section>
+
+<section class="ch" id="exercise">
+  <p class="eyebrow"><span>Learner exercise</span><span class="min">01:15–01:40</span></p>
+  <h2>Break it on purpose: predict first, then run</h2>
+  <div class="stack">
+    <p class="lede">Each learner changes one limit at a time, writes down the failure they expect, then runs it. Restore the normal limits and confirm the cited answer comes back.</p>
+    <div class="predict">
+      <div><span class="set">Limits(steps=1)</span><span class="out">step_budget</span><span class="muted">One step cannot both call a tool and answer.</span></div>
+      <div><span class="set">Limits(tokens=1)</span><span class="out">token_budget</span><span class="muted">Refused before the first model call.</span></div>
+      <div><span class="set">seconds=0.001 + slow mock</span><span class="out">TimeoutError</span><span class="muted">The whole run is wrapped in one deadline.</span></div>
+      <div><span class="set">MockProvider(repeat=True)</span><span class="out">repeated_action</span><span class="muted">Same tool, same arguments, twice.</span></div>
+    </div>
+    <div class="terminal" style="margin-top:0">
+      <div class="bar"><span class="switch">Switch to terminal · Exercise</span><span class="file">learners' own projects</span></div>
+      <div class="body">
+        <div class="prompt" id="p5"><span class="pfx">PROMPT ▸ </span>Help me carry out the Lesson 01 learner exercise in my existing project: Change Limits in a small local invocation to allow one step, then a tiny token budget, then a short deadline with a slow MockProvider. Predict and observe step_budget, token_budget and TimeoutError. Restore the normal limits and verify the cited happy-path answer. Keep your workflow baseline for comparison. First state the expected outcomes, then run the experiment in a recoverable state. Show the observed results and explain any discrepancy. Keep the original acceptance criteria and restore temporary experiments when finished.</div>
+        <div><button class="copy" type="button" data-copy="p5">Copy prompt</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="ch" id="verify">
+  <p class="eyebrow"><span>Verification</span><span class="min">01:40–01:55</span></p>
+  <h2>Evidence, not claims</h2>
+  <div class="stack">
+    <div class="two">
+      <div class="prose" style="margin-top:0">
+        <p class="big">7 passed</p>
+        <p>The reference <code>lesson-01</code> checkpoint passes its full suite of seven tests offline in under a second: the cited happy path, each of the three limits, and both provider request shapes checked against mock HTTP.</p>
+        <p class="muted">Unrun or skipped checks are not passes. Ask learners to show the actual output.</p>
+      </div>
+      <figure>
+<pre class="result">{
+  "capability": "bounded ReAct loop",
+  "answer": {
+    "status": "complete",
+    "cause": "connection_pool_exhaustion",
+    "summary": "INC-001: connection_pool_exhaustion",
+    "evidence": ["log-acme-001", "rb-pool-v1"]
+  },
+  "model_steps": 3,
+  "repeated_action": "repeated_action"
+}</pre>
+        <figcaption>The Session 01 lab output. Run IDs and timings vary between machines; the status, cause and evidence must not.</figcaption>
+      </figure>
+    </div>
+    <div class="terminal" style="margin-top:0">
+      <div class="bar"><span class="switch">Switch to terminal · Verify</span><span class="file">tests/test_lesson01.py · lab 1</span></div>
+      <div class="body">
+        <div class="prompt" id="p6"><span class="pfx">PROMPT ▸ </span>Verify my Lesson 01 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 1 only when the required capability is present. Run tests/test_lesson01.py, the Session 01 demonstration and the existing regression suite using the offline provider. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result and save a recoverable checkpoint of my work. Do not equate an unrun or skipped check with a pass.</div>
+        <div><button class="copy" type="button" data-copy="p6">Copy prompt</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="ch" id="close">
+  <p class="eyebrow"><span>Close</span><span class="min">01:55–02:00</span></p>
+  <h2>You own the loop every later agent will use</h2>
+  <div class="stack">
+    <div class="criteria">
+      <div><b>An agent is a loop</b>the model proposes, the runtime decides and executes, the tool observes.</div>
+      <div><b>Authority is code</b>tenant, role and permitted tools are set by the application, never by model output.</div>
+      <div><b>Every run is bounded</b>and every stop has a name and a reason.</div>
+      <div><b>Completed is not solved</b>look for cited evidence or an honest "insufficient evidence".</div>
+    </div>
+    <p class="say">Keep your blueprint. From Session 08 the console will show these same run events as a timeline.</p>
+    <div class="ask"><span class="label">Next session · 02</span><p class="q">Reliable tools and MCP integration</p><p>Validated tool contracts, application-owned permissions, an approval gate for a mock remediation, and real MCP transport. Bring your Session 01 checkpoint.</p></div>
+  </div>
+</section>
+
+<footer>
+  <p>Instructor guide: <code>instructor-guides/01 Agent architecture and the ReAct runtime.md</code> · reference checkpoint <code>lesson-01</code> · all incident data are synthetic.</p>
+  <p>Further reading: <a href="https://www.anthropic.com/engineering/building-effective-agents">Building effective agents</a> · <a href="https://arxiv.org/abs/2210.03629">ReAct: Synergizing Reasoning and Acting in Language Models</a></p>
+</footer>
+</main>
+
+<script>
+(() => {
+  // Copy buttons: copy the prompt text without the "PROMPT ▸" prefix.
+  document.querySelectorAll(".copy").forEach((button) => {
+    button.addEventListener("click", () => {
+      const block = document.getElementById(button.dataset.copy);
+      const text = [...block.childNodes].filter((n) => !(n.classList && n.classList.contains("pfx")))
+        .map((n) => n.textContent).join("").trim();
+      const done = () => { button.textContent = "Copied"; setTimeout(() => { button.textContent = "Copy prompt"; }, 1600); };
+      const select = () => {
+        const range = document.createRange(); range.selectNodeContents(block);
+        const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+        button.textContent = "Selected · press Ctrl+C";
+      };
+      try { navigator.clipboard.writeText(text).then(done, select); } catch (e) { select(); }
+    });
+  });
+
+  // N / P jump between sections for presenting; the rail highlights the current one.
+  const stops = [...document.querySelectorAll("#start, section.ch, .terminal[id]")];
+  const links = [...document.querySelectorAll("#rail a")];
+  const current = () => {
+    const y = window.scrollY + window.innerHeight * 0.25;
+    let index = 0;
+    stops.forEach((el, i) => { if (el.getBoundingClientRect().top + window.scrollY <= y) index = i; });
+    return index;
+  };
+  document.addEventListener("keydown", (event) => {
+    if (event.target.closest("input, textarea, [contenteditable]") || event.metaKey || event.ctrlKey || event.altKey) return;
+    const key = event.key.toLowerCase();
+    if (key !== "n" && key !== "p") return;
+    const next = Math.max(0, Math.min(stops.length - 1, current() + (key === "n" ? 1 : -1)));
+    stops[next].scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+    event.preventDefault();
+  });
+  const mark = () => {
+    const id = stops[current()].id;
+    let active = links.find((a) => a.getAttribute("href") === "#" + id);
+    if (!active) {
+      const section = stops[current()].closest("section");
+      active = links.find((a) => section && a.getAttribute("href") === "#" + section.id);
+    }
+    links.forEach((a) => a.setAttribute("aria-current", a === active ? "true" : "false"));
+  };
+  window.addEventListener("scroll", () => requestAnimationFrame(mark), { passive: true });
+  mark();
+})();
+</script>
+
+</body>
+</html>
