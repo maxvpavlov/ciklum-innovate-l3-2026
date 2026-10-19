@@ -57,9 +57,6 @@ a { color: inherit; }
 .rail a:hover { background: var(--sheet); color: var(--ink); }
 .rail a[aria-current="true"] { color: var(--ink); background: var(--sheet); box-shadow: inset 2px 0 0 var(--signal); }
 .rail .t { font-variant-numeric: tabular-nums; }
-.rail .keys { margin-top: 14px; color: var(--muted); font-size: 11.5px; line-height: 1.5; padding: 0 8px; }
-.rail kbd, .hint kbd { font: 600 11px var(--mono); border: 1px solid var(--rule); border-bottom-width: 2px;
-  border-radius: 4px; padding: 0 5px; background: var(--sheet); }
 @media (min-width: 1240px) { .rail { display: block; } main { margin-left: 210px; } }
 
 main { max-width: 1040px; margin: 0 auto; }
@@ -100,7 +97,6 @@ code, .mono { font-family: var(--mono); font-size: .9em; }
   letter-spacing: 0; line-height: 1.2; margin-top: 18px; color: var(--muted); }
 .facts { display: flex; flex-wrap: wrap; gap: 10px 26px; font: 500 14px var(--mono); color: var(--muted); }
 .facts b { color: var(--ink); font-weight: 600; }
-.hint { font-size: 14px; color: var(--muted); }
 
 /* Incident ticket */
 .ticket { background: var(--sheet); border: 1px solid var(--rule); border-radius: 12px; overflow: hidden; max-width: 760px; }
@@ -215,10 +211,12 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
 <nav class="rail" aria-label="Session sections">
   <ol id="rail">
     <li><a href="#start"><span class="t">00:00</span><span>Course</span></a></li>
-    <li><a href="#why"><span class="t">00:00</span><span>Why platforms</span></a></li>
-    <li><a href="#parts"><span class="t">00:05</span><span>Parts of a platform</span></a></li>
-    <li><a href="#how"><span class="t">00:10</span><span>How we work</span></a></li>
-    <li><a href="#incident"><span class="t">00:13</span><span>The premise</span></a></li>
+    <li><a href="#teams"><span class="t">00:00</span><span>Beyond one agent</span></a></li>
+    <li><a href="#when"><span class="t">00:03</span><span>When to use many</span></a></li>
+    <li><a href="#why"><span class="t">00:06</span><span>Why a platform</span></a></li>
+    <li><a href="#parts"><span class="t">00:09</span><span>Parts of a platform</span></a></li>
+    <li><a href="#how"><span class="t">00:12</span><span>How we work</span></a></li>
+    <li><a href="#incident"><span class="t">00:14</span><span>The premise</span></a></li>
     <li><a href="#loop"><span class="t">00:17</span><span>The ReAct loop</span></a></li>
     <li><a href="#transcript"><span class="t">00:23</span><span>One real run</span></a></li>
     <li><a href="#guards"><span class="t">00:27</span><span>Who owns limits</span></a></li>
@@ -230,7 +228,6 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
     <li><a href="#verify"><span class="t">01:40</span><span>Evidence</span></a></li>
     <li><a href="#close"><span class="t">01:55</span><span>Close</span></a></li>
   </ol>
-  <p class="keys"><kbd>N</kbd> next · <kbd>P</kbd> previous<br>Times are minutes into the 120-minute session.</p>
 </nav>
 
 <main>
@@ -240,28 +237,74 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
   <h1>Building Agentic Platforms<span class="sub">From one agent loop to an orchestrated, governed platform you build yourself</span></h1>
   <p class="lede">Over twelve sessions you design, build, evaluate and operate your own agentic platform: agents that use tools, delegate to other agents, talk to independent agent services, and run under identity, policy and evaluation you can show evidence for.</p>
   <div class="facts"><span><b>12 sessions</b> · 20 contact hours</span><span><b>1 platform</b> built step by step</span><span>capstone: measured before/after</span><span>offline · no API keys needed</span></div>
-  <p class="hint">Scroll to present. Press <kbd>N</kbd> and <kbd>P</kbd> to jump between sections. Dark bands mean: switch to the terminal.</p>
 </header>
 
-<section class="ch" id="why">
-  <p class="eyebrow"><span>Course opening</span><span class="min">00:00–00:05</span></p>
-  <h2>One agent is a demo. Agents in production are a platform problem.</h2>
+<section class="ch" id="teams">
+  <p class="eyebrow"><span>Course opening</span><span class="min">00:00–00:03</span></p>
+  <h2>Single agents are everyday tools. Enterprise work needs agents that work together.</h2>
   <div class="stack">
-    <p class="lede" style="margin-top:0">Most teams can get a single agent to answer a question in an afternoon. The hard part starts when several agents touch real systems, for real users, every day. The same questions come back on every project, and a platform is where you answer them once.</p>
-    <div class="cards six">
-      <div><span class="q">Who called what?</span><p>Every agent wires its own tools and nobody can see or control the calls.</p><span class="ans">tool gateway · policy · audit</span></div>
-      <div><span class="q">On whose behalf?</span><p>Agents act with borrowed credentials, and no one can say who approved an action.</p><span class="ans">identity · delegation · approvals</span></div>
-      <div><span class="q">When does it stop?</span><p>Loops that never converge, silent retries and runaway usage.</p><span class="ans">bounded runtime · budgets</span></div>
-      <div><span class="q">Is version 2 better?</span><p>Changes ship on a good feeling instead of measured quality, cost and latency.</p><span class="ans">evaluation · release gates</span></div>
-      <div><span class="q">How do agents work together?</span><p>Specialists live in other teams and services and need a shared protocol.</p><span class="ans">orchestration · A2A</span></div>
-      <div><span class="q">What actually happened?</span><p>Operators need to see runs, decisions and failures, not just final answers.</p><span class="ans">traces · registry · console</span></div>
+    <div class="prose" style="margin-top:0">
+      <p>An agent that reasons, calls a tool, reads the result and decides what to do next is no longer news. Today we still build that loop from scratch, because everything later stands on it. If you already know ReAct, treat today as a solid foundation that you will keep extending, not as the point of the course.</p>
+      <p>Many enterprise tasks are too big, too varied or too sensitive for one agent. Coding agents already show the pattern: to implement a large feature, an <b>orchestrator</b> plans the work and leads <b>subagents</b>, each with its own task and its own context, then reviews and combines what they return.</p>
     </div>
-    <p class="say">This course is about those answers. You leave with a working sandbox platform you built and can explain, and with the judgement to tell which parts a real project needs.</p>
+    <figure>
+      <div class="diagram">
+        <svg viewBox="0 0 860 250" role="img" aria-labelledby="orchTitle">
+          <title id="orchTitle">An orchestrator splits a feature into sub-tasks for three subagents, each with its own context, and combines their results</title>
+          <rect class="today" x="270" y="18" width="320" height="70" rx="10"/>
+          <text class="lbl" x="292" y="48">Orchestrator</text>
+          <text class="small" x="292" y="70">plans · delegates · reviews · combines</text>
+          <rect class="box" x="20" y="160" width="260" height="70" rx="8"/>
+          <text class="lbl" x="38" y="190">Subagent: API change</text>
+          <text class="small" x="38" y="212">own context · fast model</text>
+          <rect class="box" x="300" y="160" width="260" height="70" rx="8"/>
+          <text class="lbl" x="318" y="190">Subagent: data migration</text>
+          <text class="small" x="318" y="212">own context · DB access only</text>
+          <rect class="box" x="580" y="160" width="260" height="70" rx="8"/>
+          <text class="lbl" x="598" y="190">Subagent: tests</text>
+          <text class="small" x="598" y="212">own context · runs in parallel</text>
+          <path class="ink" d="M380 88 L156 154"/><path class="arrowhead" d="M150 156 l9 -1 l-3 -9z"/>
+          <path class="ink" d="M430 88 V152"/><path class="arrowhead" d="M430 157 l-5 -8 h10z"/>
+          <path class="ink" d="M480 88 L704 154"/><path class="arrowhead" d="M710 156 l-6 -10 l-3 9z"/>
+        </svg>
+      </div>
+      <figcaption>The orchestration pattern from coding agents. The same shape appears in support, operations, finance and research work.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="ch" id="when">
+  <p class="eyebrow"><span>Course opening</span><span class="min">00:03–00:06</span></p>
+  <h2>When do you need more than one agent?</h2>
+  <div class="stack">
+    <div class="cards">
+      <div><span class="q">The work outgrows one context</span><p>The projected work will not fit in one agent's context window. Compacting the history step by step does not help either, because the work splits naturally into parallel parts and each part needs its own isolated context.</p><span class="ans">supervisor and subagents · 06</span></div>
+      <div><span class="q">Each sub-task needs a different model</span><p>A strong model plans and judges, while faster, cheaper models handle routine sub-tasks. Switching models per sub-task changes quality, cost and latency.</p><span class="ans">model routing · 12</span></div>
+      <div><span class="q">Access must be isolated</span><p>An agent is bound to one external system or service, or acts for one particular person, and must see only that system's data and that person's permissions.</p><span class="ans">A2A · gateway · identity · 07, 09, 10</span></div>
+    </div>
+    <p class="say">If none of these applies, one agent is the right design. Adding agents adds cost, latency and failure modes, so each one has to earn its place.</p>
+  </div>
+</section>
+
+<section class="ch" id="why">
+  <p class="eyebrow"><span>Course opening</span><span class="min">00:06–00:09</span></p>
+  <h2>A platform is the natural next step for agentic applications</h2>
+  <div class="stack">
+    <p class="lede" style="margin-top:0">Once you run many agents, something has to <b>spawn</b> them, <b>configure</b> them, <b>host</b> them and give everyone one place to <b>manage</b> what they do. That is the agentic platform: the central hub for agentic operations. It also adds the traceability and control points that a single agent cannot provide on its own.</p>
+    <div class="cards six">
+      <div><span class="q">Who called what?</span><p>Every tool call passes one policy check and lands in one audit record.</p><span class="ans">tool gateway · policy · audit</span></div>
+      <div><span class="q">On whose behalf?</span><p>Each agent acts for a known person, with narrow, short-lived credentials and recorded approvals.</p><span class="ans">identity · delegation · approvals</span></div>
+      <div><span class="q">When does it stop?</span><p>Every run has step, token and time limits, so loops cannot run away.</p><span class="ans">bounded runtime · budgets</span></div>
+      <div><span class="q">Is version 2 better?</span><p>Changes ship on measured quality, cost and latency, not on a good feeling.</p><span class="ans">evaluation · release gates</span></div>
+      <div><span class="q">How do agents work together?</span><p>A supervisor delegates inside the platform, and A2A reaches agents run by other teams.</p><span class="ans">orchestration · A2A</span></div>
+      <div><span class="q">What actually happened?</span><p>Operators see which agent version ran, every decision and every failure, not just the final answer.</p><span class="ans">traces · registry · console</span></div>
+    </div>
+    <p class="say">This course is about building those control points. You leave with a working sandbox platform you built and can explain, and with the judgement to tell which parts a real project needs.</p>
   </div>
 </section>
 
 <section class="ch" id="parts">
-  <p class="eyebrow"><span>Course opening</span><span class="min">00:05–00:10</span></p>
+  <p class="eyebrow"><span>Course opening</span><span class="min">00:09–00:12</span></p>
   <h2>The main parts of an agentic platform</h2>
   <div class="stack">
     <div class="tablewrap">
@@ -324,7 +367,7 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
 </section>
 
 <section class="ch" id="how">
-  <p class="eyebrow"><span>Course opening</span><span class="min">00:10–00:13</span></p>
+  <p class="eyebrow"><span>Course opening</span><span class="min">00:12–00:14</span></p>
   <h2>How we work in this course</h2>
   <div class="stack">
     <div class="cards">
@@ -338,7 +381,7 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
 </section>
 
 <section class="ch" id="incident">
-  <p class="eyebrow"><span>Our premise</span><span class="min">00:13–00:17</span></p>
+  <p class="eyebrow"><span>Our premise</span><span class="min">00:14–00:17</span></p>
   <h2>The platform we build investigates incidents</h2>
   <div class="stack">
     <div class="prose" style="margin-top:0">
