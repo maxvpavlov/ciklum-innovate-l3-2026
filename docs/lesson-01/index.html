@@ -459,6 +459,12 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
       <figcaption>The model never calls code. It proposes; the runtime decides whether and how to execute. That one boundary is where authorization, limits and auditing live for the rest of the course.</figcaption>
     </figure>
 
+    <h3>Does this investigation need a loop at all?</h3>
+    <div class="prose" style="margin-top:0">
+      <p>For INC-001 you could write the investigation as three fixed steps, and it would work. So before building the loop, be clear about when it earns its extra cost. A <b>workflow</b> is the right tool when the steps are known in advance. An <b>agent</b> earns its place when the next step depends on what was just observed.</p>
+      <p>Our three tickets show the difference. For INC-002 the log points to clock skew, so the runbook search must ask a different question. For INC-003 the log has no diagnosis, so the right move is to stop and say there is not enough evidence rather than force a cause. A fixed sequence cannot make those choices; a loop can, which is also why it needs limits.</p>
+    </div>
+
     <div class="compare">
       <div>
         <h3>A workflow</h3>
@@ -473,6 +479,7 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
         <p>Flexible, so it needs explicit limits and evidence.</p>
       </div>
     </div>
+    <p class="say">Keep the workflow as your baseline. If the agent does not do better on the same cases, its flexibility is not worth the cost. Measuring every change against a baseline is a habit the whole course keeps, up to the before/after comparison in the capstone.</p>
 
     <div class="prose">
       <p>Our default model is a <b>deterministic mock provider</b>. It is a scripted policy, not intelligence: it reads the log, then searches the runbook for the cause it saw, then answers from the sources it observed. Everyone gets the same behaviour with no credentials and no network variability.</p>
