@@ -1,6 +1,6 @@
 # Session 01 content development: Agent architecture and the ReAct runtime
 
-> Markdown copy of [`01 Agent architecture and the ReAct runtime - content development.docx`](01%20Agent%20architecture%20and%20the%20ReAct%20runtime%20-%20content%20development.docx) for reading on GitHub. The Word document is the original; edit it there and regenerate this page.
+> Markdown copy of [`01 Agent architecture and the ReAct runtime - content development.docx`](01%20Agent%20architecture%20and%20the%20ReAct%20runtime%20-%20content%20development.docx) for reading on GitHub. The Word document in this repository is the single source of truth; edit it, then regenerate this page with `guide-builder/content_md.py`.
 
 ## 1. Topic Overview
 
@@ -16,7 +16,7 @@ Write 2–4 sentences explaining what the topic is about, why it matters and wha
 
 **Your input:**
 
-This first session of "Building Agentic Platforms" explains how an AI agent actually works: a model proposes an action, a runtime decides whether to execute it, and a tool returns an observation, in a loop bounded by explicit limits. It matters because every later capability of the platform (tools, memory, subagents, remote agents, the tool gateway, identity and the console) is built around this one loop. Learners see why the platform uses an agent rather than a hard-coded sequence, see the target platform they will build over 12 sessions, and direct their own coding agent to build a bounded, observable single-agent runtime for a sandbox incident investigation.
+This first session of "Building Agentic Platforms" opens the course: why enterprise work needs several agents working together, why that calls for a platform, and the parts of the platform learners will build over 12 sessions. It then explains how one AI agent actually works: a model proposes an action, a runtime decides whether to execute it, and a tool returns an observation, in a loop bounded by explicit limits. Every later capability (tools, memory, subagents, remote agents, the tool gateway, identity and the console) is built around this loop. In class the instructor directs a coding agent to build that bounded runtime for a sandbox incident investigation; after the session each learner repeats the same prompts in their own project.
 
 ### 1.3 Level
 
@@ -44,9 +44,11 @@ List previous topics, knowledge, tools, access or skills required. If none, writ
 
 • HTTP and JSON basics; comfortable reading code produced by a coding agent and reviewing it critically.
 
-• Access to an AI coding agent (for example Claude Code) and a personal Git repository. No paid model account is needed: the course runs on an offline, deterministic mock provider.
+• Access to an AI coding agent (for example Claude Code) and to the course GitLab group (you receive an invitation); the setup prompt installs the GitLab CLI. No paid model account is needed: the course runs on an offline, deterministic mock provider.
 
 • Local Python 3.12 environment (the coding agent installs pinned dependencies) or Docker.
+
+• None of this has to be ready for Session 01 itself: the session is a demonstration, and learners set up their project afterwards with the setup prompt.
 
 ### 1.5 Session Details
 
@@ -54,17 +56,15 @@ List previous topics, knowledge, tools, access or skills required. If none, writ
 
 L&D provides date, calendar details and delivery logistics. SME provides estimated time needed and timing constraints.
 
-**Date:** **Sep 22, 2026**
+**Date:** **Oct 28, 2026**
 
 **Session link: zoom**
 
 **Calendar invitation text:**
 
-Draft for L&D (please adjust date and link): "L3 Building Agentic Platforms, Session 01: Agent architecture and the ReAct runtime (120 min: 30 min discussion + 90 min guided build). We start the incident-investigation platform you will extend all course long. Before the session: set up your repository and coding agent, and read 'Building effective agents' and the ReAct paper. Bring a laptop with your coding agent working."
+Draft for L&D (please add the link): "L3 Building Agentic Platforms, Session 01: Agent architecture and the ReAct runtime (120 min: 30 min discussion + 90 min instructor demonstration). We open the course and start the incident-investigation platform you will extend all course long. Nothing to prepare: after the session you repeat the demonstrated prompts in your own project. Session page: https://maxvpavlov.github.io/ciklum-innovate-l3-2026/lesson-01/"
 
-**Duration (SME):** 120 minutes. Timing constraint: the guided build needs at least 70 uninterrupted minutes; learners need their coding agent and repository ready before the session starts.
-
-**Note for L&D:** this template says Sep 22, 2026, but the Selection sheet of the curriculum workbook plans the first session for 2026-10-28. Please confirm the date.
+**Duration (SME):** 120 minutes. Timing constraint: the demonstration needs about 45 uninterrupted minutes with the session page and a terminal shared on screen. Learners need nothing installed to attend.
 
 ### 1.6 Speaker(s)
 
@@ -75,7 +75,7 @@ List the main speaker, co-speakers and guest experts and clarify their roles.
 **Your input:**   
 Maksym Pavlov
 
-**Role:** Maksym Pavlov is the main speaker and SME: concept discussion, live demo of each build step, review of learners' code and evidence. Co-speakers or mentors: none named yet.
+**Role:** Maksym Pavlov is the main speaker and SME: the course opening and concept discussion, and the live demonstration of the setup prompt, the check pack and each build step. Learners' own code is checked after the session by the Session 01 check pack and the review prompt. Co-speakers or mentors: none named yet.
 
 ## 2. Learning Objectives
 
@@ -97,23 +97,23 @@ By the end of this topic, you will be able to:
 
 **Objective 1:**
 
-Contrast a hard-coded sequence with an agent loop and explain why incident investigation needs the loop, and where its flexibility needs limits.
+Explain the ReAct loop (the model reasons and proposes an action, the runtime executes it, and the observation feeds the next step) and why an incident investigation needs it rather than a hard-coded sequence.
 
 **Objective 2:**
 
-Design an application-owned run contract that separates tenant identity, permissions and limits from anything the model produces.
+Build, by directing a coding agent, a ReAct runtime bounded by step, token, time and repeated-action limits.
 
 **Objective 3:**
 
-Build, by directing a coding agent, a bounded model → tool → observation loop with step, token, time and repeated-action guards.
+Design a run contract in which application code, not the model, owns tenant identity, permissions and limits.
 
 **Objective 4:**
 
-Evaluate a run from its event log and structured, cited answer, distinguishing completed execution from a supported conclusion.
+Evaluate a run from its event log and cited answer, distinguishing a completed run from a supported conclusion.
 
 **Objective 5:**
 
-Describe the target agentic platform (runtime, agent registry, MCP tool gateway, identity and credentials, console, operations) and locate the runtime within it.
+Describe the target agentic platform (agent registry, MCP tool gateway, identity and credentials, console, operations), when a task needs more than one agent, and where the ReAct runtime sits within it.
 
 ## 3. Pre-work
 
@@ -125,15 +125,7 @@ If nothing is required, write: “No pre-work required.”
 
 **Pre-work:**
 
-• Refresh LLM, prompting and RAG basics, plus HTTP, JSON, async programming and tests (about 1–2 hours).
-
-• Read 'Building effective agents' (Anthropic) and the ReAct paper; skim your model provider's tool-calling docs (about 1 hour).
-
-• Set up a personal Git repository and a working AI coding agent; ask it to prepare the Lesson 01 workspace from the reference repository (prompt provided in the course materials). Confirm the baseline checks run.
-
-• Write five acceptance scenarios for the sample incident.
-
-• Sketch the target platform you expect to build, labelling each component with the session that builds it.
+No pre-work required. The readings and the project setup are part of the after-class work (4.4).
 
 ## 4. Live Session Design
 
@@ -145,13 +137,12 @@ Provide the proposed flow and approximate timing.
 
 | Section | Topic | Approx. time | Format |
 |---|---|---|---|
-| 1 | Opening: the incident, the target platform blueprint | 0–10 min | Discussion |
-| 2 | Concept: model, runtime and tools; agent vs hard-coded sequence; limits | 10–30 min | Presentation + discussion |
-| 3 | Build steps 1–2: run contract; provider adapters | 30–50 min | Live demo + guided build |
-| 4 | Build steps 3–4: the loop and pending calls; guards and evidence | 50–75 min | Live demo + guided build |
-| 5 | Learner exercise: fault injection on limits | 75–100 min | Hands-on exercise |
-| 6 | Acceptance checks and interpreting results | 100–115 min | Verification + discussion |
-| 7 | Questions, reflection and checkpoint handoff | 115–120 min | Reflection |
+| 1 | Course opening: why agent teams, when to split work, why a platform and its parts, and the incident premise | 0–17 min | Presentation + discussion |
+| 2 | Concept: the ReAct loop, one real run, who owns identity and limits | 17–30 min | Presentation + discussion |
+| 3 | Instructor demo: the setup prompt, the check pack and build steps 1–4 on a fresh project | 30–75 min | Live demo |
+| 4 | Break it on purpose: learners predict each guard's failure, the instructor runs it | 75–95 min | Discussion + live demo |
+| 5 | Verification evidence, the review prompt and pushing the checkpoint to GitLab | 95–110 min | Live demo |
+| 6 | Questions and the after-class assignment: repeat every prompt in your own project | 110–120 min | Discussion |
 
 ### 4.2 Topic-by-Topic Content
 
@@ -167,21 +158,21 @@ Key message — the one thing participants should remember from this section.
 
 **Section 1:**
 
-From hard-coded sequences to agents, and the platform we will build
+Why agentic platforms, and the investigation premise
 
-**Key concepts:** a hard-coded sequence prescribes steps in advance; an agent chooses the next permitted action from observations. An agentic platform wraps the agent runtime with an agent registry, an MCP tool gateway, identity and delegated credentials, a web console and operations. Today builds only the runtime at the centre.
+**Key concepts:** single agents are everyday tools, while enterprise work needs agents that work together: when the work outgrows one context, is better done in a clean context, needs a different model per sub-task, or needs access isolated to one system or person. A platform spawns, configures, hosts and governs those agents and adds the control points: who called what, on whose behalf, when a run stops, whether version 2 is better, how agents work together and what actually happened. The course builds one: an incident-investigation platform for two fictional companies, Astro and Locomotive.
 
-**Common misconceptions:** an agent is always better than a hard-coded sequence (measure every change against a baseline on the same cases); a fluent answer is a successful investigation (success needs a cause, cited evidence, or an explicit insufficient-evidence result).
+**Common misconceptions:** more agents are always better (each one adds cost, latency and failure modes and has to earn its place); a platform is only infrastructure (it is where identity, policy, evaluation and audit live).
 
-**Key message:** the runtime is the core every later platform component wraps, so its contracts and events must be explicit.
+**Key message:** a platform is the natural next step for agentic applications; today we build its core, the agent runtime, whose contracts and events every later component relies on.
 
 **Section 2:**
 
-The run contract and model access
+The ReAct loop and the run contract
 
-**Key concepts:** Context (tenant, role, permitted tools, run id) is owned by application code; Run holds messages, events and the answer; Limits bound steps, tokens, elapsed time and output size. Provider adapters normalize OpenAI-compatible and Anthropic responses into one Reply; a deterministic mock provider makes behaviour reproducible without credentials.
+**Key concepts:** the ReAct loop: the model reasons and proposes an action, the runtime decides whether and how to execute it, and the observation feeds the next step. An AI investigation platform is worth building where incidents are too varied to follow a hard-coded sequence. Context (tenant, role, permitted tools, run id) is owned by application code; Run holds messages, events and the answer; Limits bound steps, tokens, elapsed time and output size. Provider adapters normalize OpenAI-compatible and Anthropic responses into one Reply; a deterministic mock provider makes behaviour reproducible without credentials.
 
-**Common misconceptions:** the model can be trusted to state its own permissions; a passing offline test proves live-model quality; zero configured price means a provider is free.
+**Common misconceptions:** an agent is always better than a hard-coded sequence (measure every change against a baseline on the same cases); the model can be trusted to state its own permissions; a passing offline test proves live-model quality; zero configured price means a provider is free.
 
 **Key message:** anything the model produces is untrusted input; authority is constructed by the application.
 
@@ -191,7 +182,7 @@ The bounded loop, guards and evidence
 
 **Key concepts:** model proposes a tool call, the runtime records it as pending, executes it and appends the observation with the same call id. Guards stop the run with a named code (step_budget, token_budget, TimeoutError, repeated_action). The event log records actions and usage, not hidden reasoning; from Session 08 the platform console renders it as a run timeline.
 
-**Common misconceptions:** a completed run means the incident is solved; a coding agent's 'done' message is evidence; a timeout can be enforced by instructing the model.
+**Common misconceptions:** a fluent answer is a successful investigation (success needs a cause, cited evidence, or an explicit insufficient-evidence result); a completed run means the incident is solved; a coding agent's 'done' message is evidence; a timeout can be enforced by instructing the model.
 
 **Key message:** every stop is a controlled, explained outcome, and evidence comes from runs and checks, not from claims.
 
@@ -201,12 +192,12 @@ The bounded loop, guards and evidence
 
 Identify where participants should actively engage.
 - Poll**✔ (concept block) Which limit catches a provider that hangs without returning tokens?**
-- Discussion**✔ (opening) What must a successful investigation contain?**
+- Discussion  ✔ (opening) What must a successful investigation contain? (75–95 min) Predict each guard's failure before it runs.
 - Case study
 - Breakout activity
 - Quiz
-- Hands-on exercise**✔ (75–100 min) Fault injection on runtime limits**
-- Live demo**✔ (build steps 1–4) Instructor demonstrates each bounded change and its checks**
+- Hands-on exercise  ✔ (after the session) Repeat the demonstrated prompts and the fault-injection exercise in your own project
+- Live demo  ✔ (30–75 min) The instructor runs the setup prompt, adds the check pack and demonstrates each bounded build step
 - Problem-solving activity**✔ (step 3) Trace one tool-call id from proposal to observation**
 - Reflection**✔ (close) Redraw the platform blueprint and mark today's box**
 
@@ -218,11 +209,11 @@ For each activity include: Purpose • Instructions • Time • Expected outcom
 
 **2. Poll: which component owns a timeout?** Purpose: separate runtime responsibilities from model behaviour. Options: the model / the tool / the runtime / the provider. Correct: the runtime. Time: 2 min. Debrief: an instruction to the model cannot enforce elapsed time; only the loop can.
 
-**3. Live demo with guided build (4 steps).** Purpose: show each bounded change. Instructions: for each step the instructor explains, shows the prompt learners give their coding agent, then compares the agent's change with the reference excerpt. Time: 45 min. Expected outcome: a working bounded runtime in each learner's repository. Debrief: ask each learner to explain one boundary in their agent's change.
+**3. Live demo: setup and the four build steps.** Purpose: show the way of working that learners repeat after the session. Instructions: the instructor runs the setup prompt on a fresh project and adds the Session 01 check pack, then for each build step explains it, runs the prompt, and reviews the agent's change and the checks against the code excerpt on the session page. Time: 45 min. Expected outcome: learners can name each prompt, what it changes and what evidence it should produce. Debrief: ask learners to explain one boundary in the agent's change.
 
 **4. Problem-solving: trace a tool-call id.** Purpose: understand why call ids must be preserved. Instructions: follow the log_lookup call for INC-001 from the assistant message to the tool message. Time: 5 min. Expected outcome: learners can explain what breaks if a result is appended without its call. Debrief: pending calls are the future recovery boundary.
 
-**5. Hands-on exercise: fault injection.** Purpose: make every stop condition observable. Instructions: in a local invocation allow one step, then a tiny token budget, then a short deadline with a slow mock provider; predict each failure first. Time: 25 min. Expected outcome: step_budget, token_budget and TimeoutError observed, then the normal cited answer restored. Debrief: compare predictions with observations and explain discrepancies.
+**5. Discussion: break it on purpose.** Purpose: make every stop condition observable. Instructions: for each change (one step, a tiny token budget, a short deadline with a slow mock provider, a repeating provider) learners predict the failure, then the instructor runs it. Time: 20 min. Expected outcome: step_budget, token_budget, TimeoutError and repeated_action observed, then the normal cited answer restored. Debrief: compare predictions with observations and explain discrepancies. Learners repeat the exercise in their own project after the session.
 
 **6. Reflection: platform blueprint.** Purpose: connect today's build to the whole course. Instructions: redraw the blueprint and mark the box built today; note which later console views already have their data in today's event log. Time: 5 min. Expected outcome: a personal architecture sketch kept for the next sessions.
 
@@ -234,21 +225,25 @@ Describe what participants will actually do.
 
 **Task:**
 
-Extend your Session 01 checkpoint with one new acceptance scenario and a comparison with a hard-coded sequence.
+Repeat today's prompts in your own project, then extend it.
 
 **Instructions:**
 
-• Ask your coding agent to add a missing-incident scenario (for example INC-404) and define what a supported insufficient_evidence answer looks like.
+• Run the prompts on the Session 01 page in order: the setup prompt (it clones the course repository, creates your project from the learner kit and pushes it to a new private repository in the course GitLab group), Add the check pack, Build steps 1–4, the exercise, Verify and push, and Review.
 
-• Write INC-001's investigation as a hard-coded sequence and run it and the agent loop on all three tickets; record step counts, stop reasons and error handling.
+• Read each change before running the next prompt. The check pack must pass unchanged; never edit it to get a pass.
+
+• Read 'Building effective agents' (Anthropic) and the ReAct paper (about 1 hour).
+
+• Extension: ask your coding agent to add a missing-incident scenario (for example INC-404) and define what a supported insufficient_evidence answer looks like.
+
+• Extension: write INC-001's investigation as a hard-coded sequence and run it and the agent loop on all three tickets; record step counts, stop reasons and error handling.
 
 • Redraw the platform blueprint and note which later console views the event log can already feed.
 
-• Have the agent run the full test suite and save a recoverable checkpoint; keep the actual output as evidence.
-
 **Expected result:**
 
-A committed checkpoint with the new scenario and passing checks (7 tests at the reference checkpoint), a short comparison table, and an updated blueprint sketch.
+Your project in the course GitLab group with the Lesson 01 check pack passing unchanged (7 tests) and LESSON = 1, plus a short comparison table and an updated blueprint sketch. Estimated time: 2–3 hours.
 
 **Feedback / debrief points:**
 
@@ -268,31 +263,31 @@ Provide the presentation content or draft. Recommended logic: Context → Concep
 
 **Presentation / slide deck:**
 
-Draft outline (Context → Concept → Example → Application → Practice → Summary). The full instructor script is in instructor guide 01 (instructor-guides/01 Agent architecture and the ReAct runtime.docx).
+The Session 01 page is the presentation, with Read and Present views (https://maxvpavlov.github.io/ciklum-innovate-l3-2026/lesson-01/). The full instructor script is in instructor guide 01. Outline (Context → Concept → Example → Application → Practice → Summary):
 
 • 1. Title and course promise: build one agentic platform in 12 sessions.
 
-• 2. Context: the sandbox incident (payments slow after deploy d42) and what 'solved' means.
+• 2. Why agent teams: single agents are everyday tools; enterprise work needs orchestrated agents.
 
-• 3. The target platform blueprint: runtime, registry, tool gateway, identity, console, operations; session map.
+• 3. When to split the work across agents: context size, a clean context, a model per sub-task, isolated access.
 
-• 4. Concept: agent vs hard-coded sequence; model, runtime and tools as three boxes.
+• 4. Why a platform, and its parts: the control points and the map of what the course builds.
 
-• 5. Concept: the run contract (Context, Run, Limits) and who owns each field.
+• 5. How we work: coding agents, checkpoints, evidence over claims, offline synthetic data.
 
-• 6. Concept: provider adapters and the deterministic mock provider.
+• 6. The premise: the incident-investigation platform, Astro's tickets, what a runbook is, and INC-001.
 
-• 7. Example: one iteration for INC-001, from tool call to observation.
+• 7. Concept: the ReAct loop as three boxes, and why an agent rather than a hard-coded sequence.
 
-• 8. Example: guards and their failure codes.
+• 8. Example: one real run of INC-001, step by step.
 
-• 9. Application: the four build prompts learners give their coding agent.
+• 9. Concept: who owns identity and limits; the four guards.
 
-• 10. Practice: fault-injection exercise and acceptance checks.
+• 10. Application: the setup prompt, the check pack and the four build prompts.
 
-• 11. Evidence, not claims: reading the event log and test output.
+• 11. Practice: break it on purpose, then verification evidence and the push to GitLab.
 
-• 12. Summary, reflection questions and what comes next.
+• 12. Summary and the after-class assignment.
 
 ## 6. Session Wrap-up
 
@@ -304,7 +299,7 @@ Define 3–5 essential messages participants should leave the session with. Thes
 
 **Key takeaway 1:**
 
-An agent is a loop: the model proposes, the runtime decides and executes, the tool observes.
+An agent is a ReAct loop: the model reasons and proposes, the runtime decides and executes, the tool returns an observation.
 
 **Key takeaway 2:**
 
@@ -350,7 +345,7 @@ Identify the logical next step: next session, next topic, practice assignment, c
 
 **What's next:**
 
-Session 02, Reliable tools and MCP integration (120 min): validated tool contracts, application-owned permissions, an approval gate for mock remediation and real MCP transport. Bring your Session 01 checkpoint.
+Session 02, Reliable tools and MCP integration (120 min): validated tool contracts, application-owned permissions, an approval gate for mock remediation and real MCP transport. It starts from your Session 01 checkpoint in your GitLab repository.
 
 ## 7. Post-session E-learning Content
 
@@ -374,7 +369,7 @@ L&D structures, edits and adapts the content for self-paced learning. SME can pr
 
 Outline for a 20–25 minute self-paced version:
 
-• Video 1 (5 min): what an agent is, agent vs hard-coded sequence, and the platform blueprint.
+• Video 1 (5 min): why agent teams need a platform, what an agent is, agent vs hard-coded sequence, and the platform blueprint.
 
 • Video 2 (6 min): the run contract and why the application owns authority.
 
@@ -384,7 +379,7 @@ Outline for a 20–25 minute self-paced version:
 
 • Knowledge check (7.4) and the self-paced assignment (7.5).
 
-Source material: instructor guide 01 (SAY sections), the reference repository at tag lesson-01 and its lab output.
+Source material: the Session 01 page (https://maxvpavlov.github.io/ciklum-innovate-l3-2026/lesson-01/), instructor guide 01 (SAY sections) and the lesson-01 lab output.
 
 ### 7.3 Examples / Use Cases
 
@@ -426,17 +421,17 @@ Create a task that can be completed without attending the live session. Include 
 
 **Your input:**
 
-**Task:** Using your own coding agent and the course reference repository, build the Session 01 checkpoint: a bounded single-agent runtime for the sample incident.
+**Task:** Using your own coding agent and the learner kit in the course repository, build the Session 01 checkpoint: a bounded single-agent runtime for the sample incident.
 
-**Context:** The four build prompts and the verification prompt are in LEARNER_PROMPTS.md (Lesson 01); no paid model account is needed.
+**Context:** Run the prompts on the Session 01 page in order, starting with the setup prompt, which creates your project and its repository in the course GitLab group; the same prompts are in LEARNER_PROMPTS.md (Lesson 01). No paid model account is needed.
 
-**Expected output:** a repository whose Lesson 01 tests pass, the lab output for INC-001 citing log-astro-001 and rb-pool-v1, and a short note explaining each guard you triggered.
+**Expected output:** your repository in the course GitLab group with the Lesson 01 check pack passing unchanged (7 tests), the lab output for INC-001 citing log-astro-001 and rb-pool-v1, and a short note explaining each guard you triggered.
 
 **Estimated time:** 2–3 hours.
 
 **Success criteria:** INC-001 answers connection_pool_exhaustion with observed sources; the repeating provider stops with repeated_action; step, token and time limits each produce their expected failure; both provider request-shape tests pass without real credentials.
 
-**Resources:** instructor guide 01, LEARNER_PROMPTS.md, reference tag lesson-01.
+**Resources:** the Session 01 page, learner-kit/lessons/01 in the course repository, LEARNER_PROMPTS.md (Lesson 01).
 
 ### 7.6 Lesson Reflection
 
@@ -462,7 +457,7 @@ Provide articles, videos, books, documentation, research, internal resources, to
 
 **Optional / deep dive:** your model provider's tool-calling documentation (OpenAI function calling or Anthropic tool use).
 
-**Optional / deep dive:** the reference repository at tag lesson-01 (incident/core.py, incident/providers.py) and TESTING.md.
+**Optional / deep dive:** one finished implementation, the course reference at tag lesson-01 (incident/core.py, incident/providers.py) and TESTING.md; read it after building your own.
 
 ### 7.8 What's Next
 
@@ -479,16 +474,16 @@ Next: Session 02, Reliable tools and MCP integration. Recommended path: complete
 **Owner: [SME]**
 
 Indicate which assets are needed and provide them where applicable.
-- Presentation**✔ outline in 5.1; slides to be produced**
+- Presentation  ✔ the Session 01 page (https://maxvpavlov.github.io/ciklum-innovate-l3-2026/lesson-01/), with Read and Present views
 - Speaker notes**✔ SAY sections of instructor guide 01**
 - Script**✔ instructor guide 01 (complete)**
 - Examples**✔ three worked examples in 7.3**
 - Case study
-- Demo**✔ reference repository, tags lesson-00 → lesson-01**
+- Demo  ✔ the learner kit (learner-kit/ in the course repository); the reference tags lesson-00 → lesson-01 are the instructor's answer key
 - Screenshots
-- Diagrams**✔ platform blueprint (drawn live; a slide version is still to be produced)**
+- Diagrams  ✔ the orchestration, platform blueprint and ReAct loop diagrams on the Session 01 page
 - Templates
-- Sample files**✔ synthetic incidents and runbooks in the reference repository**
+- Sample files  ✔ synthetic incidents and runbooks in learner-kit/lessons/01/given
 - Quiz questions**✔ five questions in 7.4**
 - Practice assignment**✔ 7.5 and LEARNER_PROMPTS.md, Lesson 01**
 - Additional resources**✔ 7.7**
@@ -516,7 +511,11 @@ List terminology that must be used consistently.
 
 • Mock (fixture) provider: a deterministic stand-in for a model; its 'tokens' are teaching metrics, not real usage or cost.
 
-• Checkpoint: a reference repository tag (lesson-NN) marking the end state of a session.
+• Checkpoint: the tagged state of a learner's project at the end of a session. The course's own lesson-NN tags are the instructor's answer key.
+
+• Learner kit and check pack: the starter project, the given files and each lesson's tests, in learner-kit/ of the course repository; a lesson's check pack fails until its capability is built.
+
+• Given files: synthetic data and deterministic test doubles, such as the mock provider, that everyone uses unchanged.
 
 • insufficient_evidence: the correct answer status when the evidence does not support a cause.
 
@@ -556,7 +555,7 @@ Document exceptions, limitations, risks, assumptions or cases where the recommen
 
 • All incident data are synthetic; no real systems are touched.
 
-• Learners write prompts for their coding agent rather than typing code; the reference excerpts are for review, not copying.
+• Learners write prompts for their coding agent rather than typing code. The code excerpts on the session page show one way to write it; the check pack, not a comparison with the reference, proves a learner's own implementation.
 
 ## 10. L&D Production & Delivery
 
