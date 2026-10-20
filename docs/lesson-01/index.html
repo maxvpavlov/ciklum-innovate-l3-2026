@@ -375,8 +375,8 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
   <h2>The platform we build investigates incidents</h2>
   <div class="stack">
     <div class="prose" style="margin-top:0">
-      <p>To keep twelve sessions concrete we use one invented domain throughout: an <b>incident-investigation platform</b> for two fictional companies, Acme and Globex. Agents read logs and runbooks, explain what went wrong with cited evidence, and may propose a remediation that a human must approve.</p>
-      <p>Picture how it starts. At Acme, the payments team notices that checkout has become slow and reports it to the service desk, which opens a ticket. On our platform an <b>investigation agent</b> picks the ticket up. It cannot change anything. It can only read, using two tools, and it must answer with a cause and the evidence for it.</p>
+      <p>To keep twelve sessions concrete we use one invented domain throughout: an <b>incident-investigation platform</b> for two fictional companies, Astro and Locomotive. Agents read logs and runbooks, explain what went wrong with cited evidence, and may propose a remediation that a human must approve.</p>
+      <p>Picture how it starts. At Astro, the payments team notices that checkout has become slow and reports it to the service desk, which opens a ticket. On our platform an <b>investigation agent</b> picks the ticket up. It cannot change anything. It can only read, using two tools, and it must answer with a cause and the evidence for it.</p>
       <p class="muted">It is a good teaching case because it needs everything a real platform needs: tools, evidence, tenants that must not see each other's data, approvals before any effect, and more than one agent. All data are synthetic, and no real system is ever touched.</p>
     </div>
     <div class="cards">
@@ -389,7 +389,7 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
     </div>
     <div class="tablewrap">
       <table>
-        <thead><tr><th>Acme ticket</th><th>Service</th><th>What the logs show</th><th>What a good agent concludes</th></tr></thead>
+        <thead><tr><th>Astro ticket</th><th>Service</th><th>What the logs show</th><th>What a good agent concludes</th></tr></thead>
         <tbody>
           <tr class="now"><td><b>INC-001</b> · today's case</td><td>payments</td><td>DB pool wait 900 ms after deploy d42</td><td>connection pool exhaustion, with a matching runbook</td></tr>
           <tr><td><b>INC-002</b></td><td>login</td><td>token expiry errors; host clock +180 s</td><td>clock skew, with a matching runbook</td></tr>
@@ -399,12 +399,12 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
     </div>
     <h3>Case one: payments got slow after a deployment</h3>
     <article class="ticket" aria-label="Incident INC-001">
-      <header><span>INC-001 · tenant acme</span><span class="sev">payments latency</span></header>
+      <header><span>INC-001 · tenant astro</span><span class="sev">payments latency</span></header>
       <dl>
         <dt>Reported by</dt><dd>the payments team, via the service desk</dd>
         <dt>Service</dt><dd>payments</dd>
         <dt>Symptom</dt><dd>checkout is slow since this morning's deployment</dd>
-        <dt>Agent can use</dt><dd><code>log_lookup</code> and <code>runbook_search</code>, read-only, Acme's data only</dd>
+        <dt>Agent can use</dt><dd><code>log_lookup</code> and <code>runbook_search</code>, read-only, Astro's data only</dd>
         <dt>We want</dt><dd>a likely cause, with the evidence it came from</dd>
       </dl>
     </article>
@@ -498,13 +498,13 @@ user    Investigate INC-001
 tools   log_lookup(incident_id) · runbook_search(query)</pre></div></div>
       <div class="turn" role="listitem"><span class="who m">Model · 1</span><div><pre>tool_call <b>call-0</b>  log_lookup {"incident_id": "INC-001"}</pre><p class="note">The model runs nothing. It asks the runtime to run a tool, and gives the request an ID.</p></div></div>
       <div class="turn" role="listitem"><span class="who rt">Runtime</span><div><p>Checks that <code>log_lookup</code> is allowed and the budget has room, records <b>call-0</b> as pending, then runs the tool.</p></div></div>
-      <div class="turn" role="listitem"><span class="who t">Tool</span><div><pre><b>call-0</b> → {"ok": true, "data": {"source_id": "log-acme-001", "service": "payments",
+      <div class="turn" role="listitem"><span class="who t">Tool</span><div><pre><b>call-0</b> → {"ok": true, "data": {"source_id": "log-astro-001", "service": "payments",
           "cause": "connection_pool_exhaustion",
           "signal": "DB pool wait 900ms after deploy d42"}}</pre></div></div>
       <div class="turn" role="listitem"><span class="who rt">Runtime</span><div><p>Appends the log record to the conversation as a tool message tagged <b>call-0</b>, then sends the whole conversation back to the model.</p><p class="note">The tag pairs the result with its request. Drop it and the conversation is no longer a valid request and result pair.</p></div></div>
       <div class="turn" role="listitem"><span class="who m">Model · 2</span><div><pre>tool_call <b>call-1</b>  runbook_search {"query": "connection_pool_exhaustion"}</pre><p class="note">It has read the log record and now looks for a runbook that matches the suspected cause.</p></div></div>
       <div class="turn" role="listitem"><span class="who rt">Runtime</span><div><p>Same checks, records <b>call-1</b> as pending, runs the search.</p></div></div>
-      <div class="turn" role="listitem"><span class="who t">Tool</span><div><pre><b>call-1</b> → {"ok": true, "data": [{"source_id": "rb-pool-v1", "tenant": "acme", "version": 1,
+      <div class="turn" role="listitem"><span class="who t">Tool</span><div><pre><b>call-1</b> → {"ok": true, "data": [{"source_id": "rb-pool-v1", "tenant": "astro", "version": 1,
            "text": "payments connection pool exhaustion DB wait after deployment",
            "cause": "connection_pool_exhaustion",
            "action": "Consider rollback after approval"}]}</pre></div></div>
@@ -512,7 +512,7 @@ tools   log_lookup(incident_id) · runbook_search(query)</pre></div></div>
       <div class="turn" role="listitem"><span class="who r">Model · 3</span><div><pre>{"status": "complete",
  "cause": "connection_pool_exhaustion",
  "summary": "INC-001: connection_pool_exhaustion",
- "evidence": ["log-acme-001", "rb-pool-v1"]}</pre><p class="note">No tool call this time, so this is the final answer.</p></div></div>
+ "evidence": ["log-astro-001", "rb-pool-v1"]}</pre><p class="note">No tool call this time, so this is the final answer.</p></div></div>
       <div class="turn" role="listitem"><span class="who rt">Runtime</span><div><p>Checks the answer's shape and that both cited IDs really appeared in tool results, then marks the run <b>completed</b>. The runbook's rollback stays a suggestion; nothing was executed.</p></div></div>
     </div>
     <div class="tally"><span>model steps <b>3</b></span><span>tool calls <b>2</b></span><span>fixture tokens <b>75</b></span><span>cost <b>0</b> (no prices configured)</span></div>
@@ -571,7 +571,7 @@ tools   log_lookup(incident_id) · runbook_search(query)</pre></div></div>
       <div class="src">reference · incident/core.py · lesson-01 · lines 10–17</div>
 <pre>@dataclass
 class Context:
-    tenant: str = "acme"
+    tenant: str = "astro"
     run_id: str = field(default_factory=lambda: uuid.uuid4().hex)
     role: str = "investigator"
     allowed: tuple[str, ...] = ("log_lookup", "runbook_search")
@@ -634,7 +634,7 @@ class Context:
       <p class="goal">Bound and verify execution: run the happy path first, then trigger every guard on purpose and explain why each run stopped.</p>
       <div class="prompt" id="p4"><span class="pfx">PROMPT ▸ </span>For Lesson 01, continue in my learner project. Review and enforce the runtime's step, token, elapsed-time and repeated-action guards. Complete the Session 01 lab runner and tests. Demonstrate the normal cited answer and deliberately trigger each limit using offline fixtures. Explain the approximate pre-dispatch token estimate and distinguish reported usage from configured cost. Show which guard caused each failure and why the run stopped. Use lesson-01 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div>
       <div><button class="copy" type="button" data-copy="p4">Copy prompt</button></div>
-      <p class="check">Expect: INC-001 answers <b>connection_pool_exhaustion</b> citing log-acme-001 and rb-pool-v1 after 3 model steps; the repeating provider stops with <b>repeated_action</b>.</p>
+      <p class="check">Expect: INC-001 answers <b>connection_pool_exhaustion</b> citing log-astro-001 and rb-pool-v1 after 3 model steps; the repeating provider stops with <b>repeated_action</b>.</p>
     </div>
   </div>
   <div class="stack">
@@ -683,7 +683,7 @@ class Context:
     "status": "complete",
     "cause": "connection_pool_exhaustion",
     "summary": "INC-001: connection_pool_exhaustion",
-    "evidence": ["log-acme-001", "rb-pool-v1"]
+    "evidence": ["log-astro-001", "rb-pool-v1"]
   },
   "model_steps": 3,
   "repeated_action": "repeated_action"
