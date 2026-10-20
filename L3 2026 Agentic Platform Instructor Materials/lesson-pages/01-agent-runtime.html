@@ -153,6 +153,7 @@ td code { white-space: nowrap; }
 .cards .ans { font: 500 12.5px var(--mono); color: var(--signal); letter-spacing: .02em; }
 tr.now td { background: var(--signal-soft); }
 .cards.six { grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); }
+.cards.pairs { grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr)); }
 
 /* Guards */
 .guards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
@@ -256,8 +257,9 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
   <p class="eyebrow"><span>When to split the work</span></p>
   <h2>When do you need more than one agent?</h2>
   <div class="stack">
-    <div class="cards">
+    <div class="cards pairs">
       <div><span class="q">The work outgrows one context</span><p>The projected work will not fit in one agent's context window. Compacting the history step by step does not help either, because the work splits naturally into parallel parts and each part needs its own isolated context.</p><span class="ans">supervisor and subagents · 06</span></div>
+      <div><span class="q">The work is better done in a clean context</span><p>Even when everything would fit, a sub-task often goes better in its own fresh context. The agent sees only what that task needs, without unrelated history, other branches of the work or earlier mistakes pulling its attention.</p><span class="ans">scoped subagents · 06</span></div>
       <div><span class="q">Each sub-task needs a different model</span><p>A strong model plans and judges, while faster, cheaper models handle routine sub-tasks. Switching models per sub-task changes quality, cost and latency.</p><span class="ans">model routing · 12</span></div>
       <div><span class="q">Access must be isolated</span><p>An agent is bound to one external system or service, or acts for one particular person, and must see only that system's data and that person's permissions.</p><span class="ans">A2A · gateway · identity · 07, 09, 10</span></div>
     </div>
