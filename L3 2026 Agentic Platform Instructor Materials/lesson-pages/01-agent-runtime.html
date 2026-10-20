@@ -203,6 +203,13 @@ tr.now td { background: var(--signal-soft); }
 .excerpt .src { font: 500 12.5px var(--mono); color: var(--muted); padding: 10px 16px; border-bottom: 1px solid var(--rule); }
 .excerpt pre { margin: 0; padding: 14px 16px; font: 14px/1.55 var(--mono); }
 .excerpt .hl { background: var(--signal-soft); display: inline-block; width: 100%; }
+.excerpt .n { color: var(--signal); font-weight: 700; display: inline-block; width: 2.4ch; }
+.excerpt .muted { color: var(--muted); }
+dl.fields { display: grid; grid-template-columns: max-content 1fr; max-width: 72ch; gap: 6px 14px; margin: 0; align-content: start; font-size: 15.5px; }
+dl.fields dt { font-weight: 600; }
+dl.fields dd { margin: 0; }
+dl.fields dd.note { grid-column: 1 / -1; color: var(--muted); font-style: italic; margin-top: 4px; }
+ul.key { margin: 0; padding-left: 22px; display: grid; gap: 6px; max-width: 72ch; }
 
 /* Exercise grid */
 .predict { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
@@ -681,6 +688,15 @@ class Context:
     approved: tuple[str, ...] = ()
     parent_id: str | None = None</pre>
     </div>
+    <dl class="fields">
+      <dt><code>tenant</code></dt><dd>Whose data the run may see. Set from the signed-in user.</dd>
+      <dt><code>run_id</code></dt><dd>Unique per run; ties events, approvals and child runs together.</dd>
+      <dt><code>role</code></dt><dd>What kind of actor this is; later decides who may write.</dd>
+      <dt><code>allowed</code></dt><dd>The only tools this run may call; every call is checked against it.</dd>
+      <dt><code>approved</code></dt><dd>Actions a person has approved; empty until approvals arrive.</dd>
+      <dt><code>parent_id</code></dt><dd>The run that delegated this one; empty until subagents arrive.</dd>
+      <dd class="note">None of these come from the model.</dd>
+    </dl>
     <div class="ask"><span class="label">Ask</span><p class="q">Why not let the model's answer say which tools it may use?</p>
       <details><summary>Show the answer</summary><p>Model output is untrusted. The application builds Context and grants capabilities independently. (<code>approved</code> and <code>parent_id</code> are hooks for approvals and child runs in later sessions.)</p></details></div>
   </div>
@@ -714,7 +730,39 @@ class Context:
   </div>
   <div class="stack">
     <div class="excerpt">
-      <div class="src">one way to write it · incident/core.py · inside run_agent()</div>
+      <div class="src">the whole loop on one screen · incident/core.py · run_agent(), abridged</div>
+<pre class="loop"><span class="n">①</span>async with asyncio.timeout(limits.seconds):               <span class="muted"># the whole run has one deadline</span>
+<span class="n">②</span>    while run.steps &lt; limits.steps:                       <span class="muted"># at most N model turns</span>
+<span class="hl"><span class="n">③</span>        while run.pending:                                <span class="muted"># ACT: run the tools the model asked for</span>
+<span class="n"></span>            ...check for a repeat, execute, append the observation, save...</span>
+<span class="n">④</span>        estimated = len(json.dumps(run.messages)) // 3
+<span class="n"></span>        if run.tokens + estimated + limits.max_output_tokens &gt; limits.tokens:
+<span class="n"></span>            raise ValueError("token_budget")              <span class="muted"># refuse before spending</span>
+<span class="n">⑤</span>        reply = await provider.complete(run.messages, schemas,
+<span class="n"></span>                                        limits.max_output_tokens)  <span class="muted"># THINK: one model turn</span>
+<span class="n"></span>        run.steps += 1
+<span class="n"></span>        run.tokens += reply.tokens
+<span class="n"></span>        run.messages.append(reply.message)
+<span class="n">⑥</span>        calls = reply.message.get("tool_calls", [])
+<span class="n"></span>        if calls:                                         <span class="muted"># the turn asked for tools</span>
+<span class="n"></span>            run.pending = [...one entry per call...]
+<span class="n"></span>            save()                                        <span class="muted"># record before running them</span>
+<span class="n"></span>            continue                                      <span class="muted"># back to ③</span>
+<span class="n">⑦</span>        answer = json.loads(reply.message.get("content") or "{}")
+<span class="n"></span>        ...check the answer's shape and that every cited source was observed...
+<span class="n"></span>        run.status = "completed"                          <span class="muted"># the turn was the final answer</span>
+<span class="n"></span>        return run
+<span class="n">⑧</span>    raise ValueError("step_budget")                       <span class="muted"># out of turns without an answer</span></pre>
+    </div>
+    <ul class="key">
+      <li><b>① ② ④ ⑧ are the limits:</b> one deadline for the whole run, a maximum number of model turns, and a token reservation checked before each call.</li>
+      <li><b>⑤ is the thought:</b> the runtime sends the whole conversation and gets back one turn.</li>
+      <li><b>⑥ and ⑦ classify that turn</b>, the first two rows of "What the model can send back": tool calls become pending work and go back to ③; anything else must be the final answer.</li>
+      <li><b>③ is the action and observation</b>, shown in full below.</li>
+    </ul>
+    <p class="muted">Abridged: the real function also records a run event for every model call and tool call, pauses for approval when a tool requires it, and saves the run if it is cancelled.</p>
+    <div class="excerpt">
+      <div class="src">zoom in on ③ · the act step</div>
 <pre>while run.pending:
     call = run.pending[0]
     key = json.dumps([call["name"], call["args"]], sort_keys=True)
