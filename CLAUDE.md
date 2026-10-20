@@ -15,6 +15,7 @@ Authoring workspace for the Ciklum internal course **Innovate: Building Agentic 
 | `L3 2026 Agentic Platform Instructor Materials/guide-builder/` | Generator and coupling checker for the guides and `LEARNER_PROMPTS.md` (see its README) |
 | `L3 2026 Agentic Platform Instructor Materials/console-screenshots/` | Platform console screenshots taken from the lesson-08…12 checkpoints; embedded in guides 08–12 |
 | `L3 2026 Agentic Platform Instructor Materials/incident-platform/` | Python reference implementation (see "Git layout" below) |
+| `L3 2026 Agentic Platform Instructor Materials/inference-candidates.md` | Untested candidate real-model endpoints (OpenRouter, Groq, Gemini, OpenCode Zen, Ollama), their configuration and the test each must pass before learners use it |
 | `learner-kit/` | Generated course kit for learners: starter project, given files and per-lesson check packs (see `guide-builder/kit.py`) |
 | `L3 2026 Agentic Platform Instructor Materials/lesson-pages/` and `docs/` | Session presenter pages (Session 01 so far); `docs/lesson-NN/index.html` is the same page as a standalone file for GitHub Pages |
 
