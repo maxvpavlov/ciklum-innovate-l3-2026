@@ -15,6 +15,8 @@ Authoring workspace for the Ciklum internal course **Innovate: Building Agentic 
 | `L3 2026 Agentic Platform Instructor Materials/guide-builder/` | Generator and coupling checker for the guides and `LEARNER_PROMPTS.md` (see its README) |
 | `L3 2026 Agentic Platform Instructor Materials/console-screenshots/` | Platform console screenshots taken from the lesson-08…12 checkpoints; embedded in guides 08–12 |
 | `L3 2026 Agentic Platform Instructor Materials/incident-platform/` | Python reference implementation (see "Git layout" below) |
+| `L3 2026 Agentic Platform Instructor Materials/learner-kit/` | Generated public course kit for learners: starter project, given files and per-lesson check packs (see `guide-builder/kit.py`) |
+| `L3 2026 Agentic Platform Instructor Materials/lesson-pages/` and `docs/` | Session presenter pages (Session 01 so far); `docs/lesson-NN/index.html` is the same page as a standalone file for GitHub Pages |
 
 ## Git layout
 
@@ -112,7 +114,8 @@ The live adapters were tested only against mock HTTP. Default to `mock`, and nev
 ## Course content conventions
 
 - **Learners drive their own coding agents.** Learner-facing material gives *prompts*, not terminal command snippets, as stated in the README. The executable CLIs, labs and tests exist for the coding agents to use.
-- **`LEARNER_PROMPTS.md` follows a fixed shape per lesson.** Each lesson has a starting/ending reference tag, then `Prepare the workspace`, `Orient to the reference`, `Build step 1–4`, `Learner exercise`, `Verify the checkpoint`, `Review the result`, and several `Recover when …` troubleshooting prompts. Keep new or edited lessons in this shape.
+- **`LEARNER_PROMPTS.md` follows a fixed shape per lesson.** Each lesson has a kit/answer-key line, then `Prepare the workspace`, `Add the check pack`, `Build step 1–4`, `Learner exercise`, `Verify the checkpoint`, `Review the result`, and several `Recover when …` troubleshooting prompts. Keep new or edited lessons in this shape.
+- **Learners never get the reference.** They build in their own repository in the course GitLab group from the public course kit (`L3 2026 Agentic Platform Instructor Materials/learner-kit/`, to be published as `github.com/maxvpavlov/agentic-platforms-kit`). `guide-builder/kit.py` generates it from the tags: `starter/` (lesson-00) and per lesson `given/` (fixtures, mock providers, `CASES`, the service launcher) and `checks/` (labs and cumulative tests), plus the interfaces the checks import. Run `kit.py --verify` after any re-tag; edit the `GIVEN` list there to change what is given. Session 01 is an instructor demonstration; learners repeat its prompts after class.
 - **Recurring teaching stances to preserve:**
   - A coding agent's completion message is not evidence.
   - Unrun or skipped checks are not passes.

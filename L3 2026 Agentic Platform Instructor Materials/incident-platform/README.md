@@ -23,18 +23,23 @@ learners build each of them:
   platform map, registry, runs and traces, approvals, gateway audit, identity and
   operations (from Session 08, extended in every later session).
 
-## Start with a coding agent prompt
+## How learners work
 
-Give your coding agent access to this repository and your learner workspace.
-Use this brief to begin:
+Learners do not clone this repository. Each learner builds the platform in their own
+repository in the course GitLab group, by prompting a coding agent. The public course kit
+(https://github.com/maxvpavlov/agentic-platforms-kit) supplies what they need and no
+solutions: the starter project (`lesson-00`) and, for every lesson, the given files
+(synthetic data and deterministic test doubles such as the mock model) and a check pack
+(the lesson's demo and the cumulative tests). The kit is generated from these tags by
+`guide-builder/kit.py`, which also verifies each check pack against its tag.
 
-> Prepare my Python learner project for Lesson 01, starting from lesson-00. Locate the supplied reference repository and my existing work; ask for their locations if needed. Preserve my changes and handle repository setup, dependency installation and environment configuration yourself. Use the pinned Python 3.12 environment and offline mock provider. Establish the starting checkpoint without adding this lesson yet. Run the baseline checks and report the workspace, checkpoint, results and any missing prerequisites. Do not ask me to run terminal commands.
+The first prompt creates the learner's project and repository:
+
+> Set up my project for the Building Agentic Platforms course, starting at lesson-00. Clone the public course kit from https://github.com/maxvpavlov/agentic-platforms-kit into ~/agentic-course/kit and treat that folder as read-only. Create my own project in ~/agentic-course/my-platform by copying the kit's starter folder, and make it a fresh Git repository with one initial commit. Install the pinned dependencies with uv for Python 3.12, run the tests with python -m pytest, and confirm that incident/__init__.py says LESSON = 0. Install the GitLab CLI, glab, if it is missing, and sign me in to GitLab; when a browser sign-in is needed, tell me what to do, and never ask me to paste a token into the chat. Ask me for the name of the GitLab group I was invited to, create a private repository for my project in that group, and push my project to it. Report both folder paths, the files in my project, the test result, the GitLab repository address and anything missing, such as uv, Python 3.12, glab or access to the group. Do not ask me to run terminal commands.
 
 Continue with the lesson-specific prompts in [LEARNER_PROMPTS.md](LEARNER_PROMPTS.md).
-They cover preparation, incremental implementation, verification, review and
-targeted recovery for every lesson. Use the current prompts while inspecting
-earlier code checkpoints. The agent may manage branches or isolated snapshots
-internally; participants do not need to issue those commands themselves.
+They cover preparation, adding the check pack, incremental implementation, verification,
+review and targeted recovery for every lesson.
 
 ## Instructor materials
 
@@ -67,9 +72,9 @@ A completion message alone does not establish that a learner's code works.
 | lesson-12 | Tuning, before/after comparison and presentation evidence | 90 |
 
 Total: 12 sessions and 20 contact hours. Preparation and practice are additional.
-The reference tags preserve the implementation at each lesson. Your coding agent
-should compare against the relevant tag while preserving your existing work.
-It should not copy the entire completed course into an early learner checkpoint.
+The reference tags preserve the implementation at each lesson. They are the
+instructor's answer key and the source of the guide excerpts; learners prove their own
+implementation with each lesson's check pack instead.
 
 ## Demonstrate the complete platform
 

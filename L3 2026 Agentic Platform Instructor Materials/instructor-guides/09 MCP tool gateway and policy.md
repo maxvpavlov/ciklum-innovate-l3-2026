@@ -31,17 +31,17 @@ This session builds the MCP tool gateway, which sits between every agent the pla
 
 Bring your Session 08 checkpoint with the registry, run API and console working. Read the MCP tools and security best-practices pages, especially tool poisoning and token passthrough. Prepare one example of a tool your organization would let analysts read but only operators write.
 
-Give your coding agent access to the supplied incident-platform.zip or the reference repository in the [course materials folder](https://drive.google.com/drive/u/0/folders/1wos8PjyC0mTDQxrcZ89b9mG0yYV57Zr3). Ask it to preserve the embedded checkpoint history and identify the learner project separately from the reference.
+Learners need two things: their own project repository in the course GitLab group, and the public [course kit](https://github.com/maxvpavlov/agentic-platforms-kit), which holds the starter project and, for each lesson, the given files and the check pack. The kit contains no solutions; the reference checkpoints stay with the instructor as the answer key.
 
 Your coding agent handles preparation, implementation and execution. You set the scope, inspect its changes and explain the evidence. This development assistant is separate from the investigation agents inside the platform.
 
-> **PROMPT** Prepare my Python learner project for Lesson 09, starting from lesson-08. Locate the supplied reference repository and my existing work; ask for their locations if needed. Preserve my changes and handle repository setup, dependency installation and environment configuration yourself. Use the pinned Python 3.12 environment and offline mock provider. Establish the starting checkpoint without adding this lesson yet. Run the baseline checks and report the workspace, checkpoint, results and any missing prerequisites. Do not ask me to run terminal commands.
+> **PROMPT** Prepare my learner project for Lesson 09. Open my project repository in my course GitLab group, cloning it into ~/agentic-course/my-platform if it is not there, and confirm it holds my completed lesson-08 work with all its checks passing. Update my read-only copy of the course kit in ~/agentic-course/kit, cloning it from https://github.com/maxvpavlov/agentic-platforms-kit if it is missing. Use the pinned Python 3.12 environment and the offline mock provider. Do not add this lesson's work yet. Report the project location, its current checkpoint, the test results and any missing prerequisites. Do not ask me to run terminal commands.
 
-Next, orient the coding agent to the reference while preserving your work.
+Next, have the coding agent read this lesson's check pack and add it to the project before any code is written.
 
-> **PROMPT** Compare my current project with lesson-08 and prepare a read-only view of lesson-09 for this lesson. Preserve my work while arranging any isolation needed. Identify differences, relevant files and the expected capability. Explain the implementation sequence before we begin; do not replace my project with the finished reference or add later lessons.
+> **PROMPT** Read lessons/09 in the course kit: its README, the given files and the check pack. Copy the given files and the check pack into my project exactly as the README says, without changing them, and commit that. Then list the interfaces my code must provide, which checks now fail and why, and the capability they verify. Explain the implementation sequence before we begin. Do not write the implementation yet, and do not look for or use a finished solution.
 
-**Instructor readiness** Have your coding agent rehearse the completed reference and prepare the current tests, fixtures and lab runner before class. Tests may fail until the capability is implemented. During class, use one bounded prompt at a time; learners inspect the change, explain the control decision and review the check evidence.
+**Instructor readiness** Rehearse the session with a learner project built from the course kit, so you see what learners see: the check pack fails until each capability is built. The reference checkpoint remains your answer key for the excerpts below. In class, use one bounded prompt at a time; learners inspect the change, explain the control decision and review the check evidence.
 
 **Offline fallback** Have the coding agent use the offline mock provider for class. If live access fails, restore that configuration and continue. Keep credentials in secure configuration. Adapter request shapes were tested with mock HTTP; live account access was not exercised.
 
@@ -81,7 +81,7 @@ Use SAY for instructor narration, SHOW and REVIEW for the code and evidence part
 
 **SHOW** The current learner implementation and `incident/registry.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 09, continue in my learner project. Extend the registry with tool-server records whose manifest names the transport, the tenants served and each tool's risk as read or write. Validate the name and manifest shape, reject a changed manifest under an existing name, and add a catalog from tool to server, risk, tenants and status. Seed the MCP read server and the local write-action server. Show the catalog and one rejected manifest. Use lesson-09 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 09, continue in my learner project. Extend the registry with tool-server records whose manifest names the transport, the tenants served and each tool's risk as read or write. Validate the name and manifest shape, reject a changed manifest under an existing name, and add a catalog from tool to server, risk, tenants and status. Seed the MCP read server and the local write-action server. Show the catalog and one rejected manifest. Build to the interfaces the Lesson 09 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 111 to 122 at lesson-09; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -106,7 +106,7 @@ def register_tool_server(self, name, manifest):
 
 **Likely answer** Policy decisions and audit rows refer to what the manifest said at the time. A silent update would change their meaning, so a real change needs a new, reviewed registration.
 
-**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference snapshot before accepting the change.
+**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.
 
 ### 2 Decide and audit every call in one place
 
@@ -114,7 +114,7 @@ def register_tool_server(self, name, manifest):
 
 **SHOW** The current learner implementation and `incident/gateway.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 09, continue in my learner project. Create a ToolGateway with an explicit policy: a per-run call budget, a maximum argument size and the roles allowed to use write tools. Check each call in a fixed order, returning a stable reason code for every denial before any upstream connection. Audit every decision with an argument hash, not the raw arguments. Wrap the existing executor for allowed calls so validation, approval and effects stay unchanged. Show one allowed call and three denials with their audit rows. Use lesson-09 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 09, continue in my learner project. Create a ToolGateway with an explicit policy: a per-run call budget, a maximum argument size and the roles allowed to use write tools. Check each call in a fixed order, returning a stable reason code for every denial before any upstream connection. Audit every decision with an argument hash, not the raw arguments. Wrap the existing executor for allowed calls so validation, approval and effects stay unchanged. Show one allowed call and three denials with their audit rows. Build to the interfaces the Lesson 09 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 37 to 53 at lesson-09; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -144,7 +144,7 @@ def check(self, name, args, context):
 
 **Likely answer** Arguments can contain customer data or secrets. A hash still lets an investigator match a call to a known input without making the audit a second copy of sensitive data.
 
-**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference snapshot before accepting the change.
+**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.
 
 ### 3 Share upstream MCP sessions safely
 
@@ -152,7 +152,7 @@ def check(self, name, args, context):
 
 **SHOW** The current learner implementation and `incident/gateway.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 09, continue in my learner project. Replace per-run MCP clients with one upstream session per server and tenant in the gateway, created under a lock and shared by all workers. Open and close each client in a single owner task so its cancel scopes are entered and exited by the same task. Stop waiting callers from cancelling the shared session, drop a session after an upstream error and close all sessions at shutdown. Show the launch count after several runs. Use lesson-09 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 09, continue in my learner project. Replace per-run MCP clients with one upstream session per server and tenant in the gateway, created under a lock and shared by all workers. Open and close each client in a single owner task so its cancel scopes are entered and exited by the same task. Stop waiting callers from cancelling the shared session, drop a session after an upstream error and close all sessions at shutdown. Show the launch count after several runs. Build to the interfaces the Lesson 09 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 92 to 116 at lesson-09; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -190,7 +190,7 @@ return await asyncio.shield(self.sessions[key][0])
 
 **Likely answer** The tenant is bound when the server starts. A shared session would let one tenant's calls read the other's data, which is the boundary the platform exists to keep.
 
-**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference snapshot before accepting the change.
+**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.
 
 ### 4 Pin tool definitions and route every worker through the gateway
 
@@ -198,7 +198,7 @@ return await asyncio.shield(self.sessions[key][0])
 
 **SHOW** The current learner implementation and `incident/registry.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 09, continue in my learner project. Pin each MCP tool definition by hash on the gateway's first connection to a server, and quarantine the server if a later connection reports different definitions. Deny every tool on a quarantined server before any upstream call. Route single runs, team workers and remediation through the gateway, and add the Gateway console view. Show a changed-definition fixture and the resulting quarantine. Use lesson-09 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 09, continue in my learner project. Pin each MCP tool definition by hash on the gateway's first connection to a server, and quarantine the server if a later connection reports different definitions. Deny every tool on a quarantined server before any upstream call. Route single runs, team workers and remediation through the gateway, and add the Gateway console view. Show a changed-definition fixture and the resulting quarantine. Build to the interfaces the Lesson 09 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 124 to 131 at lesson-09; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -219,7 +219,7 @@ def pin_tools(self, name, pins):
 
 **Likely answer** No. It proves only that the definitions have not changed since the first connection. Whether they were safe then still needs review, and pinning says nothing about what the server does with the arguments.
 
-**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference snapshot before accepting the change.
+**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.
 
 ![Point at the policy tiles, then at incident-tools with one session launched and a pinned hash per tool (a pinned server shows the active badge). In the audit, the logs and runbooks rows are a team run's child workers and the analyst rows are a single run; each row has an argument hash, never the arguments.](../console-screenshots/09-gateway.png)
 
@@ -231,7 +231,7 @@ def pin_tools(self, name, pins):
 
 **VERIFY** Give the coding agent the verification prompt below, then inspect its evidence and explain the result in your own words.
 
-> **PROMPT** Verify my Lesson 09 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 9 only when the required capability is present. Run tests/test_lesson09.py, the Session 09 demonstration and the existing regression suite using the offline provider. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result and save a recoverable checkpoint of my work. Do not equate an unrun or skipped check with a pass.
+> **PROMPT** Verify my Lesson 09 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 9 only when the required capability is present. Run the Lesson 09 check pack, which includes tests/test_lesson09.py and the Session 09 demonstration, and the full regression suite, all unchanged and using the offline provider. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my GitLab repository. Do not equate an unrun or skipped check with a pass.
 
 **Expected behaviour** The coding agent returns actual check results and the demonstration’s structured output. Run identifiers and elapsed times vary. Compare the status and capability outcomes with the recorded reference below, and investigate differences.
 
@@ -272,11 +272,11 @@ def pin_tools(self, name, pins):
 - Every decision is audited with an argument hash, and the Gateway view is tenant-scoped.
 - Workers reach tools only through the gateway, and the platform closes upstream sessions on shutdown.
 
-The independently unpacked lesson-09 checkpoint passed its full test suite and this lesson demo. Recorded test result: 37 passed in 9.91s. Have your coding agent save a recoverable learner checkpoint and retain the comparison with lesson-09 (ffd4ea9).
+The independently unpacked lesson-09 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 09 check pack from the course kit. Recorded test result: 37 passed in 9.91s. Learners commit and push their checkpoint to their GitLab repository; lesson-09 (ffd4ea9) remains the instructor's answer key.
 
 ### Files changed in this checkpoint
 
-Use this inventory to scope the coding agent’s work. It includes core files, lab scaffolding, acceptance tests and checkpoint metadata. Ask the agent to explain any additional file changes it needs.
+In the reference, this checkpoint changed the files below. Learners write the implementation files themselves; the lab, the tests and any given files arrive in the Lesson 09 check pack. Ask the agent to explain any additional file changes it needs.
 
 - `incident/__init__.py`
 - `incident/api.py`
@@ -290,7 +290,7 @@ Use this inventory to scope the coding agent’s work. It includes core files, l
 - `incident/supervisor.py`
 - `tests/test_lesson09.py`
 
-> **PROMPT** Compare my completed Lesson 09 work with reference lesson-09. Show the changed files, interfaces and important behavioural differences. Explain how each completion criterion is met with code or test evidence. Preserve deliberate learner improvements and earlier capabilities; do not overwrite my work merely to obtain a textually identical copy.
+> **PROMPT** Review my completed Lesson 09 work against the Lesson 09 check pack and completion criteria. Show the files I changed and the interfaces I provide, and explain how each completion criterion is met with code or test evidence. Point out where my design makes a different choice from the one the lesson presents, and what that choice costs or gains. Preserve deliberate improvements and earlier capabilities.
 
 ## Demo troubleshooting
 

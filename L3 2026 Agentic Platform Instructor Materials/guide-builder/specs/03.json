@@ -53,7 +53,7 @@
       "title": "Apply memory retention and verify provenance",
       "say": "Store a small memory record with an expiry, then read it from the correct and wrong tenants. An expired value returns no result. Explain why a memory store and an artifact store are different: an artifact is a versioned output that we may audit; a memory entry is selected context that can become stale. Run the completed investigation, save its answer as an artifact and inspect the cited source IDs. End by comparing the full-history and selected-context paths. Keep the outcome test alongside any reduction in context size so that optimization does not quietly remove necessary information.",
       "file": "incident/context.py",
-      "prompt": "Add expiring tenant-scoped memory and complete the Session 03 lab and tests. Compare memory with versioned artifacts and the current task history. Demonstrate expiration, provenance and access boundaries, then compare the investigation with full history and bounded context. Report the outcome as well as context size; do not call a smaller prompt an improvement if required evidence is lost.",
+      "prompt": "Add expiring tenant-scoped memory and make the Session 03 check pack pass. Compare memory with versioned artifacts and the current task history. Demonstrate expiration, provenance and access boundaries, then compare the investigation with full history and bounded context. Report the outcome as well as context size; do not call a smaller prompt an improvement if required evidence is lost.",
       "excerpt": {
         "start": 69,
         "end": 71

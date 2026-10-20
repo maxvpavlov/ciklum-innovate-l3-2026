@@ -53,7 +53,7 @@
       "title": "Inject a crash after the effect",
       "say": "Read the injected failure before running it. The wrapper deliberately executes the approved effect and then raises WorkerCrash before the runtime saves the observation. We reopen the database and create a new executor, then resume. Inspect the final status and count the effects table. The result must be completed with exactly one effect. Next, expire an approval and repeat. This time the run must remain waiting. Finally, deny the proposal and show that resume is rejected. Pause until a learner can place each failure on the state diagram and name the durable record used to resolve it.",
       "file": "incident/labs/l05.py",
-      "prompt": "Complete the Session 05 crash-injection demonstration and tests. Simulate worker loss after a committed mock effect but before the result checkpoint, reopen the database and resume. Prove that there is one effect. Also demonstrate expired and denied approvals. Separate this automated fixture test from my manually controlled demonstration, and explain why the local transaction does not guarantee exactly-once behaviour for arbitrary remote APIs.",
+      "prompt": "Make the Session 05 check pack pass, including its crash-injection demonstration. Simulate worker loss after a committed mock effect but before the result checkpoint, reopen the database and resume. Prove that there is one effect. Also demonstrate expired and denied approvals. Separate this automated fixture test from my manually controlled demonstration, and explain why the local transaction does not guarantee exactly-once behaviour for arbitrary remote APIs.",
       "excerpt": {
         "start": 37,
         "end": 39

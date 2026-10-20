@@ -31,17 +31,17 @@ This session builds the platform's tool boundary: validated contracts, applicati
 
 Bring your Session 01 checkpoint. Review JSON Schema, tool contracts and MCP architecture. Pin compatible SDK/protocol versions. Mentor supplies client/server scaffolding; install and smoke-test it before class.
 
-Give your coding agent access to the supplied incident-platform.zip or the reference repository in the [course materials folder](https://drive.google.com/drive/u/0/folders/1wos8PjyC0mTDQxrcZ89b9mG0yYV57Zr3). Ask it to preserve the embedded checkpoint history and identify the learner project separately from the reference.
+Learners need two things: their own project repository in the course GitLab group, and the public [course kit](https://github.com/maxvpavlov/agentic-platforms-kit), which holds the starter project and, for each lesson, the given files and the check pack. The kit contains no solutions; the reference checkpoints stay with the instructor as the answer key.
 
 Your coding agent handles preparation, implementation and execution. You set the scope, inspect its changes and explain the evidence. This development assistant is separate from the investigation agents inside the platform.
 
-> **PROMPT** Prepare my Python learner project for Lesson 02, starting from lesson-01. Locate the supplied reference repository and my existing work; ask for their locations if needed. Preserve my changes and handle repository setup, dependency installation and environment configuration yourself. Use the pinned Python 3.12 environment and offline mock provider. Establish the starting checkpoint without adding this lesson yet. Run the baseline checks and report the workspace, checkpoint, results and any missing prerequisites. Do not ask me to run terminal commands.
+> **PROMPT** Prepare my learner project for Lesson 02. Open my project repository in my course GitLab group, cloning it into ~/agentic-course/my-platform if it is not there, and confirm it holds my completed lesson-01 work with all its checks passing. Update my read-only copy of the course kit in ~/agentic-course/kit, cloning it from https://github.com/maxvpavlov/agentic-platforms-kit if it is missing. Use the pinned Python 3.12 environment and the offline mock provider. Do not add this lesson's work yet. Report the project location, its current checkpoint, the test results and any missing prerequisites. Do not ask me to run terminal commands.
 
-Next, orient the coding agent to the reference while preserving your work.
+Next, have the coding agent read this lesson's check pack and add it to the project before any code is written.
 
-> **PROMPT** Compare my current project with lesson-01 and prepare a read-only view of lesson-02 for this lesson. Preserve my work while arranging any isolation needed. Identify differences, relevant files and the expected capability. Explain the implementation sequence before we begin; do not replace my project with the finished reference or add later lessons.
+> **PROMPT** Read lessons/02 in the course kit: its README, the given files and the check pack. Copy the given files and the check pack into my project exactly as the README says, without changing them, and commit that. Then list the interfaces my code must provide, which checks now fail and why, and the capability they verify. Explain the implementation sequence before we begin. Do not write the implementation yet, and do not look for or use a finished solution.
 
-**Instructor readiness** Have your coding agent rehearse the completed reference and prepare the current tests, fixtures and lab runner before class. Tests may fail until the capability is implemented. During class, use one bounded prompt at a time; learners inspect the change, explain the control decision and review the check evidence.
+**Instructor readiness** Rehearse the session with a learner project built from the course kit, so you see what learners see: the check pack fails until each capability is built. The reference checkpoint remains your answer key for the excerpts below. In class, use one bounded prompt at a time; learners inspect the change, explain the control decision and review the check evidence.
 
 **Offline fallback** Have the coding agent use the offline mock provider for class. If live access fails, restore that configuration and continue. Keep credentials in secure configuration. Adapter request shapes were tested with mock HTTP; live account access was not exercised.
 
@@ -81,7 +81,7 @@ Use SAY for instructor narration, SHOW and REVIEW for the code and evidence part
 
 **SHOW** The current learner implementation and `incident/tools.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 02, continue in my learner project. Implement ToolExecutor in incident/tools.py. Check tool existence, application-owned capabilities and JSON arguments before dispatch. Reject unexpected tenant arguments and oversized results. Return structured errors that distinguish terminal failures from retryable read failures. Preserve the existing agent loop. Demonstrate malformed arguments and an unauthorized write proposal being rejected before a handler performs an effect. Use lesson-02 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 02, continue in my learner project. Implement ToolExecutor in incident/tools.py. Check tool existence, application-owned capabilities and JSON arguments before dispatch. Reject unexpected tenant arguments and oversized results. Return structured errors that distinguish terminal failures from retryable read failures. Preserve the existing agent loop. Demonstrate malformed arguments and an unauthorized write proposal being rejected before a handler performs an effect. Build to the interfaces the Lesson 02 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 34 to 51 at lesson-02; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -112,7 +112,7 @@ async def execute(self, name, args, context):
 
 **Likely answer** No. A well-formed request can still be unauthorized or harmful. Authorization, effect ownership and operational limits are separate checks.
 
-**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference snapshot before accepting the change.
+**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.
 
 ### 2 Bind approval and deduplicate effects
 
@@ -120,7 +120,7 @@ async def execute(self, name, args, context):
 
 **SHOW** The current learner implementation and `incident/tools.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 02, continue in my learner project. Add exact-action approval and idempotent mock remediation to ToolExecutor. Bind the action key to tenant, run, tool name and canonical arguments. Commit the local mock effect and its deduplication record atomically in SQLite. Test the same approved write after reopening the executor and test changed arguments against the original approval. Show that only one local effect exists, and explain the limit of this guarantee for external APIs. Use lesson-02 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 02, continue in my learner project. Add exact-action approval and idempotent mock remediation to ToolExecutor. Bind the action key to tenant, run, tool name and canonical arguments. Commit the local mock effect and its deduplication record atomically in SQLite. Test the same approved write after reopening the executor and test changed arguments against the original approval. Show that only one local effect exists, and explain the limit of this guarantee for external APIs. Build to the interfaces the Lesson 02 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 19 to 21 at lesson-02; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -136,7 +136,7 @@ def action_key(name, args, context):
 
 **Likely answer** The process can crash between the write and recording success. A durable receiver-side idempotency key or reconciliation mechanism is needed.
 
-**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference snapshot before accepting the change.
+**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.
 
 ### 3 Expose capabilities with MCP
 
@@ -144,7 +144,7 @@ def action_key(name, args, context):
 
 **SHOW** The current learner implementation and `incident/mcp_bridge.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 02, continue in my learner project. Implement the MCP server in incident/mcp_bridge.py with the pinned SDK. Expose the existing tenant-scoped log and runbook readers plus the runbook resource. Bind tenant identity in trusted launcher configuration, keep protocol stdout clean, and limit the server to the capabilities required by this lesson. Explain the host, client, server and resource roles before demonstrating discovery. Use lesson-02 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 02, continue in my learner project. Implement the MCP server in incident/mcp_bridge.py with the pinned SDK. Expose the existing tenant-scoped log and runbook readers plus the runbook resource. Bind tenant identity in trusted launcher configuration, keep protocol stdout clean, and limit the server to the capabilities required by this lesson. Explain the host, client, server and resource roles before demonstrating discovery. Build to the interfaces the Lesson 02 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 11 to 29 at lesson-02; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -176,7 +176,7 @@ def make_server(tenant="astro"):
 
 **Likely answer** The host application or operator. Our launcher uses a fixed module and the current interpreter; model output cannot choose the command.
 
-**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference snapshot before accepting the change.
+**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.
 
 ### 4 Run through the client adapter
 
@@ -184,7 +184,7 @@ def make_server(tenant="astro"):
 
 **SHOW** The current learner implementation and `incident/mcp_bridge.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 02, continue in my learner project. Implement the MCP read adapter and connect it behind ToolExecutor. Use the real local stdio transport and the pinned SDK's result shapes. Complete the Session 02 lab and contract tests, show the negotiated protocol and discovered tools, and run the same investigation through the adapter. Confirm that transport discovery does not grant new permissions and show the unchanged cited outcome. Use lesson-02 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 02, continue in my learner project. Implement the MCP read adapter and connect it behind ToolExecutor. Use the real local stdio transport and the pinned SDK's result shapes. Make the Session 02 check pack pass, show the negotiated protocol and discovered tools, and run the same investigation through the adapter. Confirm that transport discovery does not grant new permissions and show the unchanged cited outcome. Build to the interfaces the Lesson 02 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 39 to 50 at lesson-02; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -209,7 +209,7 @@ class MCPReadAdapter:
 
 **Likely answer** No. Discovery is information. The application's allowed capability set and validation policy must explicitly permit use.
 
-**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference snapshot before accepting the change.
+**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.
 
 ## Learner practice and checkpoints
 
@@ -217,7 +217,7 @@ class MCPReadAdapter:
 
 **VERIFY** Give the coding agent the verification prompt below, then inspect its evidence and explain the result in your own words.
 
-> **PROMPT** Verify my Lesson 02 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 2 only when the required capability is present. Run tests/test_lesson02.py, the Session 02 demonstration and the existing regression suite using the offline provider. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result and save a recoverable checkpoint of my work. Do not equate an unrun or skipped check with a pass.
+> **PROMPT** Verify my Lesson 02 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 2 only when the required capability is present. Run the Lesson 02 check pack, which includes tests/test_lesson02.py and the Session 02 demonstration, and the full regression suite, all unchanged and using the offline provider. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my GitLab repository. Do not equate an unrun or skipped check with a pass.
 
 **Expected behaviour** The coding agent returns actual check results and the demonstration’s structured output. Run identifiers and elapsed times vary. Compare the status and capability outcomes with the recorded reference below, and investigate differences.
 
@@ -255,11 +255,11 @@ class MCPReadAdapter:
 - Changing an approved action's arguments requires a new approval.
 - A duplicate approved mock write produces one stored effect.
 
-The independently unpacked lesson-02 checkpoint passed its full test suite and this lesson demo. Recorded test result: 10 passed in 1.96s. Have your coding agent save a recoverable learner checkpoint and retain the comparison with lesson-02 (384c2fb).
+The independently unpacked lesson-02 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 02 check pack from the course kit. Recorded test result: 10 passed in 1.96s. Learners commit and push their checkpoint to their GitLab repository; lesson-02 (384c2fb) remains the instructor's answer key.
 
 ### Files changed in this checkpoint
 
-Use this inventory to scope the coding agent’s work. It includes core files, lab scaffolding, acceptance tests and checkpoint metadata. Ask the agent to explain any additional file changes it needs.
+In the reference, this checkpoint changed the files below. Learners write the implementation files themselves; the lab, the tests and any given files arrive in the Lesson 02 check pack. Ask the agent to explain any additional file changes it needs.
 
 - `incident/__init__.py`
 - `incident/labs/l02.py`
@@ -267,7 +267,7 @@ Use this inventory to scope the coding agent’s work. It includes core files, l
 - `incident/tools.py`
 - `tests/test_lesson02.py`
 
-> **PROMPT** Compare my completed Lesson 02 work with reference lesson-02. Show the changed files, interfaces and important behavioural differences. Explain how each completion criterion is met with code or test evidence. Preserve deliberate learner improvements and earlier capabilities; do not overwrite my work merely to obtain a textually identical copy.
+> **PROMPT** Review my completed Lesson 02 work against the Lesson 02 check pack and completion criteria. Show the files I changed and the interfaces I provide, and explain how each completion criterion is met with code or test evidence. Point out where my design makes a different choice from the one the lesson presents, and what that choice costs or gains. Preserve deliberate improvements and earlier capabilities.
 
 ## Demo troubleshooting
 

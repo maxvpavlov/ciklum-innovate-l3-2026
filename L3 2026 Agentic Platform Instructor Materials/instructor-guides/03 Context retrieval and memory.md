@@ -31,17 +31,17 @@ This session builds the platform's evidence layer: tenant-scoped retrieval, boun
 
 Bring your Session 02 checkpoint. Refresh retrieval and embeddings from 2025. Review context engineering and the distinction between session state and long-term memory stores.
 
-Give your coding agent access to the supplied incident-platform.zip or the reference repository in the [course materials folder](https://drive.google.com/drive/u/0/folders/1wos8PjyC0mTDQxrcZ89b9mG0yYV57Zr3). Ask it to preserve the embedded checkpoint history and identify the learner project separately from the reference.
+Learners need two things: their own project repository in the course GitLab group, and the public [course kit](https://github.com/maxvpavlov/agentic-platforms-kit), which holds the starter project and, for each lesson, the given files and the check pack. The kit contains no solutions; the reference checkpoints stay with the instructor as the answer key.
 
 Your coding agent handles preparation, implementation and execution. You set the scope, inspect its changes and explain the evidence. This development assistant is separate from the investigation agents inside the platform.
 
-> **PROMPT** Prepare my Python learner project for Lesson 03, starting from lesson-02. Locate the supplied reference repository and my existing work; ask for their locations if needed. Preserve my changes and handle repository setup, dependency installation and environment configuration yourself. Use the pinned Python 3.12 environment and offline mock provider. Establish the starting checkpoint without adding this lesson yet. Run the baseline checks and report the workspace, checkpoint, results and any missing prerequisites. Do not ask me to run terminal commands.
+> **PROMPT** Prepare my learner project for Lesson 03. Open my project repository in my course GitLab group, cloning it into ~/agentic-course/my-platform if it is not there, and confirm it holds my completed lesson-02 work with all its checks passing. Update my read-only copy of the course kit in ~/agentic-course/kit, cloning it from https://github.com/maxvpavlov/agentic-platforms-kit if it is missing. Use the pinned Python 3.12 environment and the offline mock provider. Do not add this lesson's work yet. Report the project location, its current checkpoint, the test results and any missing prerequisites. Do not ask me to run terminal commands.
 
-Next, orient the coding agent to the reference while preserving your work.
+Next, have the coding agent read this lesson's check pack and add it to the project before any code is written.
 
-> **PROMPT** Compare my current project with lesson-02 and prepare a read-only view of lesson-03 for this lesson. Preserve my work while arranging any isolation needed. Identify differences, relevant files and the expected capability. Explain the implementation sequence before we begin; do not replace my project with the finished reference or add later lessons.
+> **PROMPT** Read lessons/03 in the course kit: its README, the given files and the check pack. Copy the given files and the check pack into my project exactly as the README says, without changing them, and commit that. Then list the interfaces my code must provide, which checks now fail and why, and the capability they verify. Explain the implementation sequence before we begin. Do not write the implementation yet, and do not look for or use a finished solution.
 
-**Instructor readiness** Have your coding agent rehearse the completed reference and prepare the current tests, fixtures and lab runner before class. Tests may fail until the capability is implemented. During class, use one bounded prompt at a time; learners inspect the change, explain the control decision and review the check evidence.
+**Instructor readiness** Rehearse the session with a learner project built from the course kit, so you see what learners see: the check pack fails until each capability is built. The reference checkpoint remains your answer key for the excerpts below. In class, use one bounded prompt at a time; learners inspect the change, explain the control decision and review the check evidence.
 
 **Offline fallback** Have the coding agent use the offline mock provider for class. If live access fails, restore that configuration and continue. Keep credentials in secure configuration. Adapter request shapes were tested with mock HTTP; live account access was not exercised.
 
@@ -81,7 +81,7 @@ Use SAY for instructor narration, SHOW and REVIEW for the code and evidence part
 
 **SHOW** The current learner implementation and `incident/context.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 03, continue in my learner project. Implement tenant-scoped runbook retrieval and context_tools in incident/context.py. Filter authorized sources before ranking and retain source IDs and versions. Use transparent lexical ranking for this lesson so I can inspect why a record was selected. Compare the same payments query for Astro and Locomotive. Keep the tool contract compatible with the existing executor and explain the returned evidence. Use lesson-03 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 03, continue in my learner project. Implement tenant-scoped runbook retrieval and context_tools in incident/context.py. Filter authorized sources before ranking and retain source IDs and versions. Use transparent lexical ranking for this lesson so I can inspect why a record was selected. Compare the same payments query for Astro and Locomotive. Keep the tool contract compatible with the existing executor and explain the returned evidence. Build to the interfaces the Lesson 03 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 9 to 13 at lesson-03; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -99,7 +99,7 @@ def retrieve(query, tenant, limit=2):
 
 **Likely answer** That can return too few authorized results and risks exposing metadata. Apply the access boundary to the searched population or enforce an equivalent secure retrieval design.
 
-**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference snapshot before accepting the change.
+**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.
 
 ### 2 Select complete conversation rounds
 
@@ -107,7 +107,7 @@ def retrieve(query, tenant, limit=2):
 
 **SHOW** The current learner implementation and `incident/context.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 03, continue in my learner project. Add select_context and connect it to the runtime as selection for the next model request. Preserve the instruction and original task, retain complete assistant/tool rounds within the configured allowance, and keep the full run history separately. Reject a task that cannot fit. Demonstrate a reduced conversation with no orphaned tool-call IDs and explain the evidence that was omitted. Use lesson-03 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 03, continue in my learner project. Add select_context and connect it to the runtime as selection for the next model request. Preserve the instruction and original task, retain complete assistant/tool rounds within the configured allowance, and keep the full run history separately. Reject a task that cannot fit. Demonstrate a reduced conversation with no orphaned tool-call IDs and explain the evidence that was omitted. Build to the interfaces the Lesson 03 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 22 to 40 at lesson-03; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -139,7 +139,7 @@ def select_context(messages, max_chars=6000):
 
 **Likely answer** No. It may discard necessary evidence. Compare task outcomes and context size on the same cases before adopting a compaction policy.
 
-**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference snapshot before accepting the change.
+**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.
 
 ### 3 Version artifacts explicitly
 
@@ -147,7 +147,7 @@ def select_context(messages, max_chars=6000):
 
 **SHOW** The current learner implementation and `incident/context.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 03, continue in my learner project. Implement EvidenceStore's versioned artifact operations. Scope identities by tenant, require the writer's expected version and reject stale updates in a transaction. Demonstrate version one, a conflicting update and a cross-tenant lookup. Preserve newer evidence rather than automatically overwriting it after a conflict. Show how a caller should inspect and reconcile the current artifact before retrying. Use lesson-03 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 03, continue in my learner project. Implement EvidenceStore's versioned artifact operations. Scope identities by tenant, require the writer's expected version and reject stale updates in a transaction. Demonstrate version one, a conflicting update and a cross-tenant lookup. Preserve newer evidence rather than automatically overwriting it after a conflict. Show how a caller should inspect and reconcile the current artifact before retrying. Build to the interfaces the Lesson 03 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 49 to 62 at lesson-03; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -174,7 +174,7 @@ def save_artifact(self, tenant, artifact_id, body, expected_version=0):
 
 **Likely answer** Not without examining the new content. That would turn conflict detection into an unconditional overwrite.
 
-**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference snapshot before accepting the change.
+**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.
 
 ### 4 Apply memory retention and verify provenance
 
@@ -182,7 +182,7 @@ def save_artifact(self, tenant, artifact_id, body, expected_version=0):
 
 **SHOW** The current learner implementation and `incident/context.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 03, continue in my learner project. Add expiring tenant-scoped memory and complete the Session 03 lab and tests. Compare memory with versioned artifacts and the current task history. Demonstrate expiration, provenance and access boundaries, then compare the investigation with full history and bounded context. Report the outcome as well as context size; do not call a smaller prompt an improvement if required evidence is lost. Use lesson-03 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 03, continue in my learner project. Add expiring tenant-scoped memory and make the Session 03 check pack pass. Compare memory with versioned artifacts and the current task history. Demonstrate expiration, provenance and access boundaries, then compare the investigation with full history and bounded context. Report the outcome as well as context size; do not call a smaller prompt an improvement if required evidence is lost. Build to the interfaces the Lesson 03 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 69 to 71 at lesson-03; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -198,7 +198,7 @@ def remember(self, tenant, key, body, ttl=3600):
 
 **Likely answer** Preserve the conflict as evidence, prefer appropriately verified current sources, and avoid treating memory as an instruction or authorization.
 
-**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference snapshot before accepting the change.
+**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.
 
 ## Learner practice and checkpoints
 
@@ -206,7 +206,7 @@ def remember(self, tenant, key, body, ttl=3600):
 
 **VERIFY** Give the coding agent the verification prompt below, then inspect its evidence and explain the result in your own words.
 
-> **PROMPT** Verify my Lesson 03 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 3 only when the required capability is present. Run tests/test_lesson03.py, the Session 03 demonstration and the existing regression suite using the offline provider. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result and save a recoverable checkpoint of my work. Do not equate an unrun or skipped check with a pass.
+> **PROMPT** Verify my Lesson 03 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 3 only when the required capability is present. Run the Lesson 03 check pack, which includes tests/test_lesson03.py and the Session 03 demonstration, and the full regression suite, all unchanged and using the offline provider. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my GitLab repository. Do not equate an unrun or skipped check with a pass.
 
 **Expected behaviour** The coding agent returns actual check results and the demonstration’s structured output. Run identifiers and elapsed times vary. Compare the status and capability outcomes with the recorded reference below, and investigate differences.
 
@@ -237,11 +237,11 @@ def remember(self, tenant, key, body, ttl=3600):
 - Cross-tenant artifact lookup returns no artifact.
 - A stale artifact update fails rather than overwriting the current version.
 
-The independently unpacked lesson-03 checkpoint passed its full test suite and this lesson demo. Recorded test result: 13 passed in 1.03s. Have your coding agent save a recoverable learner checkpoint and retain the comparison with lesson-03 (fa7ce4e).
+The independently unpacked lesson-03 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 03 check pack from the course kit. Recorded test result: 13 passed in 1.03s. Learners commit and push their checkpoint to their GitLab repository; lesson-03 (fa7ce4e) remains the instructor's answer key.
 
 ### Files changed in this checkpoint
 
-Use this inventory to scope the coding agent’s work. It includes core files, lab scaffolding, acceptance tests and checkpoint metadata. Ask the agent to explain any additional file changes it needs.
+In the reference, this checkpoint changed the files below. Learners write the implementation files themselves; the lab, the tests and any given files arrive in the Lesson 03 check pack. Ask the agent to explain any additional file changes it needs.
 
 - `incident/__init__.py`
 - `incident/context.py`
@@ -249,7 +249,7 @@ Use this inventory to scope the coding agent’s work. It includes core files, l
 - `incident/labs/l03.py`
 - `tests/test_lesson03.py`
 
-> **PROMPT** Compare my completed Lesson 03 work with reference lesson-03. Show the changed files, interfaces and important behavioural differences. Explain how each completion criterion is met with code or test evidence. Preserve deliberate learner improvements and earlier capabilities; do not overwrite my work merely to obtain a textually identical copy.
+> **PROMPT** Review my completed Lesson 03 work against the Lesson 03 check pack and completion criteria. Show the files I changed and the interfaces I provide, and explain how each completion criterion is met with code or test evidence. Point out where my design makes a different choice from the one the lesson presents, and what that choice costs or gains. Preserve deliberate improvements and earlier capabilities.
 
 ## Demo troubleshooting
 

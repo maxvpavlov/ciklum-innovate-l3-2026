@@ -31,17 +31,17 @@ This session completes the platform rather than adding a component. A tuning cha
 
 Bring the working Session 11 platform and its checks. Choose a small set of tuning changes, measure before and after results on the same evaluation cases, and prepare a short architecture and demo narrative with code, traces and benchmarks. Before class, apply the tuned version and its recorded release to the platform database the console reads, and rehearse the console route you will present: Overview, Registry, a team run with its trace, Gateway, Identity and Operations.
 
-Give your coding agent access to the supplied incident-platform.zip or the reference repository in the [course materials folder](https://drive.google.com/drive/u/0/folders/1wos8PjyC0mTDQxrcZ89b9mG0yYV57Zr3). Ask it to preserve the embedded checkpoint history and identify the learner project separately from the reference.
+Learners need two things: their own project repository in the course GitLab group, and the public [course kit](https://github.com/maxvpavlov/agentic-platforms-kit), which holds the starter project and, for each lesson, the given files and the check pack. The kit contains no solutions; the reference checkpoints stay with the instructor as the answer key.
 
 Your coding agent handles preparation, implementation and execution. You set the scope, inspect its changes and explain the evidence. This development assistant is separate from the investigation agents inside the platform.
 
-> **PROMPT** Prepare my Python learner project for Lesson 12, starting from lesson-11. Locate the supplied reference repository and my existing work; ask for their locations if needed. Preserve my changes and handle repository setup, dependency installation and environment configuration yourself. Use the pinned Python 3.12 environment and offline mock provider. Establish the starting checkpoint without adding this lesson yet. Run the baseline checks and report the workspace, checkpoint, results and any missing prerequisites. Do not ask me to run terminal commands.
+> **PROMPT** Prepare my learner project for Lesson 12. Open my project repository in my course GitLab group, cloning it into ~/agentic-course/my-platform if it is not there, and confirm it holds my completed lesson-11 work with all its checks passing. Update my read-only copy of the course kit in ~/agentic-course/kit, cloning it from https://github.com/maxvpavlov/agentic-platforms-kit if it is missing. Use the pinned Python 3.12 environment and the offline mock provider. Do not add this lesson's work yet. Report the project location, its current checkpoint, the test results and any missing prerequisites. Do not ask me to run terminal commands.
 
-Next, orient the coding agent to the reference while preserving your work.
+Next, have the coding agent read this lesson's check pack and add it to the project before any code is written.
 
-> **PROMPT** Compare my current project with lesson-11 and prepare a read-only view of lesson-12 for this lesson. Preserve my work while arranging any isolation needed. Identify differences, relevant files and the expected capability. Explain the implementation sequence before we begin; do not replace my project with the finished reference or add later lessons.
+> **PROMPT** Read lessons/12 in the course kit: its README, the given files and the check pack. Copy the given files and the check pack into my project exactly as the README says, without changing them, and commit that. Then list the interfaces my code must provide, which checks now fail and why, and the capability they verify. Explain the implementation sequence before we begin. Do not write the implementation yet, and do not look for or use a finished solution.
 
-**Instructor readiness** Have your coding agent rehearse the completed reference and prepare the current tests, fixtures and lab runner before class. Tests may fail until the capability is implemented. During class, use one bounded prompt at a time; learners inspect the change, explain the control decision and review the check evidence.
+**Instructor readiness** Rehearse the session with a learner project built from the course kit, so you see what learners see: the check pack fails until each capability is built. The reference checkpoint remains your answer key for the excerpts below. In class, use one bounded prompt at a time; learners inspect the change, explain the control decision and review the check evidence.
 
 Require the working Session 11 platform and before and after evidence in advance, including a console that starts on the participant's own platform database. Use review groups or recorded demonstrations for a large cohort so every participant receives review within the 90-minute session. Keep the completed reference and its screenshots ready as a fallback if a live console fails.
 
@@ -86,7 +86,7 @@ Use SAY for instructor narration, SHOW and REVIEW for the code and evidence part
 
 **SHOW** The current learner implementation and `incident/tuning.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 12, continue in my learner project. Review my working Session 11 platform and the capstone reference. Help me state one bounded tuning hypothesis and identify the smallest change needed to test it, expressed as a new immutable registry version. Explain the EfficientMockProvider example, how the platform selects it from the definition's provider profile, and where early completion is safe or unsafe in these fixtures. Preserve the baseline and define the evidence that would justify adopting or rejecting my change before implementing it. Use lesson-12 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 12, continue in my learner project. Review my working Session 11 platform and the Lesson 12 check pack. Help me state one bounded tuning hypothesis and identify the smallest change needed to test it, expressed as a new immutable registry version. Explain the given EfficientMockProvider, how the platform selects it from the definition's provider profile, and where early completion is safe or unsafe in these fixtures. Preserve the baseline and define the evidence that would justify adopting or rejecting my change before implementing it. Build to the interfaces the Lesson 12 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 10 to 20 at lesson-12; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -110,7 +110,7 @@ class EfficientMockProvider(MockProvider):
 
 **Likely answer** Three of five fixture cases finish with 55 simulated usage units, while two retain 75. The mean is (3 times 55 plus 2 times 75) divided by 5, which is 63.
 
-**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference snapshot before accepting the change.
+**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.
 
 ### 2 Run a comparable evaluation and record the release
 
@@ -118,7 +118,7 @@ class EfficientMockProvider(MockProvider):
 
 **SHOW** The current learner implementation and `incident/labs/l12.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 12, continue in my learner project. Apply the selected tuning change as a new registry version. Evaluate before and after on the same cases, partitions and trial conditions, retaining failures and per-case rows. Use the actual platform path. Activate the candidate only if the release gate approves it, and record the decision in the release log either way. Keep fixture usage separate from live-model economics and preserve the original expected outcomes. Show the comparison, the recorded decision and its limitations. Use lesson-12 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 12, continue in my learner project. Apply the selected tuning change as a new registry version. Evaluate before and after on the same cases, partitions and trial conditions, retaining failures and per-case rows. Use the actual platform path. Activate the candidate only if the release gate approves it, and record the decision in the release log either way. Keep fixture usage separate from live-model economics and preserve the original expected outcomes. Show the comparison, the recorded decision and its limitations. Build to the interfaces the Lesson 12 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 15 to 24 at lesson-12; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -141,7 +141,7 @@ try:
 
 **Likely answer** Changing the dataset, hiding failed cases, mixing cold and warm cache conditions, changing pricing assumptions or evaluating a different configuration from the one activated and presented.
 
-**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference snapshot before accepting the change.
+**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.
 
 ![The Operations view after the capstone release: single v1 to v2 with success unchanged at 100%, mean fixture usage 75.0 to 63.0, every gate check allowed and the decision activated. Latency values vary between runs and are not a performance claim.](../console-screenshots/12-operations.png)
 
@@ -153,7 +153,7 @@ try:
 
 **SHOW** The current learner implementation and `incident/tuning.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 12, continue in my learner project. Help me evaluate caching or routing as a separate capstone experiment when relevant. Preserve tenant, configuration, input, schema and freshness boundaries in cache identity, and report cold and warm behaviour separately. Check uncertainty routing without assuming a cheaper provider is always adequate. Run the focused tests and explain the correctness risks and the evidence needed for a live deployment. Use lesson-12 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 12, continue in my learner project. Help me evaluate caching or routing as a separate capstone experiment when relevant. Preserve tenant, configuration, input, schema and freshness boundaries in cache identity, and report cold and warm behaviour separately. Check uncertainty routing without assuming a cheaper provider is always adequate. Run the focused tests and explain the correctness risks and the evidence needed for a live deployment. Build to the interfaces the Lesson 12 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 23 to 39 at lesson-12; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -183,7 +183,7 @@ class CachedProvider:
 
 **Likely answer** It represents a different operating condition. Report the hit rate and separate cold and warm behaviour on a representative workload.
 
-**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference snapshot before accepting the change.
+**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.
 
 ### 4 Present the platform through the console
 
@@ -191,7 +191,7 @@ class CachedProvider:
 
 **SHOW** The current learner implementation and `incident/labs/l12.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 12, continue in my learner project. Prepare a console demonstration of my completed platform and a concise evidence pack: the platform map, the registry with the released version, one end-to-end run with its trace, gateway audit and delegation chain, one permission or recovery failure case, and the recorded before-and-after release. Use actual code and recorded results, clearly identifying anything not demonstrated live. Ask me to explain the tradeoffs in my own words. Do not invent improvements or adopt a change whose evidence is inadequate. Use lesson-12 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 12, continue in my learner project. Prepare a console demonstration of my completed platform and a concise evidence pack: the platform map, the registry with the released version, one end-to-end run with its trace, gateway audit and delegation chain, one permission or recovery failure case, and the recorded before-and-after release. Use actual code and recorded results, clearly identifying anything not demonstrated live. Ask me to explain the tradeoffs in my own words. Do not invent improvements or adopt a change whose evidence is inadequate. Build to the interfaces the Lesson 12 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 29 to 40 at lesson-12; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -216,7 +216,7 @@ return {"baseline_success": baseline["success_rate"], "candidate_success": candi
 
 **Likely answer** Present it honestly, show the rejected decision in the release log, explain what was learned and keep the better baseline active. A justified rejection demonstrates sound engineering judgement.
 
-**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference snapshot before accepting the change.
+**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.
 
 ![The Registry during the presentation: single v2 is active and v1 remains available with its own hash, which is what makes rollback possible. Point also at the pinned Agent Card hash of the remote runbook specialist.](../console-screenshots/12-registry.png)
 
@@ -228,7 +228,7 @@ return {"baseline_success": baseline["success_rate"], "candidate_success": candi
 
 **VERIFY** Give the coding agent the verification prompt below, then inspect its evidence and explain the result in your own words.
 
-> **PROMPT** Verify my Lesson 12 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 12 only when the required capability is present. Run tests/test_lesson12.py, the Session 12 demonstration and the existing regression suite using the offline provider. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result and save a recoverable checkpoint of my work. Do not equate an unrun or skipped check with a pass.
+> **PROMPT** Verify my Lesson 12 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 12 only when the required capability is present. Run the Lesson 12 check pack, which includes tests/test_lesson12.py and the Session 12 demonstration, and the full regression suite, all unchanged and using the offline provider. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my GitLab repository. Do not equate an unrun or skipped check with a pass.
 
 **Expected behaviour** The coding agent returns actual check results and the demonstration’s structured output. Run identifiers and elapsed times vary. Compare the status and capability outcomes with the recorded reference below, and investigate differences.
 
@@ -267,11 +267,11 @@ return {"baseline_success": baseline["success_rate"], "candidate_success": candi
 - Permission, recovery or cancellation behaviour is demonstrated.
 - The presenter can explain code ownership, protocol boundaries, measurements and limitations.
 
-The independently unpacked lesson-12 checkpoint passed its full test suite and this lesson demo. Recorded test result: 51 passed in 20.67s. Have your coding agent save a recoverable learner checkpoint and retain the comparison with lesson-12 (40bd536).
+The independently unpacked lesson-12 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 12 check pack from the course kit. Recorded test result: 51 passed in 20.67s. Learners commit and push their checkpoint to their GitLab repository; lesson-12 (40bd536) remains the instructor's answer key.
 
 ### Files changed in this checkpoint
 
-Use this inventory to scope the coding agent’s work. It includes core files, lab scaffolding, acceptance tests and checkpoint metadata. Ask the agent to explain any additional file changes it needs.
+In the reference, this checkpoint changed the files below. Learners write the implementation files themselves; the lab, the tests and any given files arrive in the Lesson 12 check pack. Ask the agent to explain any additional file changes it needs.
 
 - `incident/__init__.py`
 - `incident/labs/l12.py`
@@ -279,7 +279,7 @@ Use this inventory to scope the coding agent’s work. It includes core files, l
 - `incident/tuning.py`
 - `tests/test_lesson12.py`
 
-> **PROMPT** Compare my completed Lesson 12 work with reference lesson-12. Show the changed files, interfaces and important behavioural differences. Explain how each completion criterion is met with code or test evidence. Preserve deliberate learner improvements and earlier capabilities; do not overwrite my work merely to obtain a textually identical copy.
+> **PROMPT** Review my completed Lesson 12 work against the Lesson 12 check pack and completion criteria. Show the files I changed and the interfaces I provide, and explain how each completion criterion is met with code or test evidence. Point out where my design makes a different choice from the one the lesson presents, and what that choice costs or gains. Preserve deliberate improvements and earlier capabilities.
 
 ## Demo troubleshooting
 

@@ -31,17 +31,17 @@ This session builds the identity component: users and agents become principals, 
 
 Bring your Session 09 checkpoint with the gateway audit working. Read the act claim in RFC 8693 and the token-audience rules in the MCP authorization specification. List where your platform asserts a credential or tenant instead of verifying it: demo API credentials, the static A2A token and the model key in the environment.
 
-Give your coding agent access to the supplied incident-platform.zip or the reference repository in the [course materials folder](https://drive.google.com/drive/u/0/folders/1wos8PjyC0mTDQxrcZ89b9mG0yYV57Zr3). Ask it to preserve the embedded checkpoint history and identify the learner project separately from the reference.
+Learners need two things: their own project repository in the course GitLab group, and the public [course kit](https://github.com/maxvpavlov/agentic-platforms-kit), which holds the starter project and, for each lesson, the given files and the check pack. The kit contains no solutions; the reference checkpoints stay with the instructor as the answer key.
 
 Your coding agent handles preparation, implementation and execution. You set the scope, inspect its changes and explain the evidence. This development assistant is separate from the investigation agents inside the platform.
 
-> **PROMPT** Prepare my Python learner project for Lesson 10, starting from lesson-09. Locate the supplied reference repository and my existing work; ask for their locations if needed. Preserve my changes and handle repository setup, dependency installation and environment configuration yourself. Use the pinned Python 3.12 environment and offline mock provider. Establish the starting checkpoint without adding this lesson yet. Run the baseline checks and report the workspace, checkpoint, results and any missing prerequisites. Do not ask me to run terminal commands.
+> **PROMPT** Prepare my learner project for Lesson 10. Open my project repository in my course GitLab group, cloning it into ~/agentic-course/my-platform if it is not there, and confirm it holds my completed lesson-09 work with all its checks passing. Update my read-only copy of the course kit in ~/agentic-course/kit, cloning it from https://github.com/maxvpavlov/agentic-platforms-kit if it is missing. Use the pinned Python 3.12 environment and the offline mock provider. Do not add this lesson's work yet. Report the project location, its current checkpoint, the test results and any missing prerequisites. Do not ask me to run terminal commands.
 
-Next, orient the coding agent to the reference while preserving your work.
+Next, have the coding agent read this lesson's check pack and add it to the project before any code is written.
 
-> **PROMPT** Compare my current project with lesson-09 and prepare a read-only view of lesson-10 for this lesson. Preserve my work while arranging any isolation needed. Identify differences, relevant files and the expected capability. Explain the implementation sequence before we begin; do not replace my project with the finished reference or add later lessons.
+> **PROMPT** Read lessons/10 in the course kit: its README, the given files and the check pack. Copy the given files and the check pack into my project exactly as the README says, without changing them, and commit that. Then list the interfaces my code must provide, which checks now fail and why, and the capability they verify. Explain the implementation sequence before we begin. Do not write the implementation yet, and do not look for or use a finished solution.
 
-**Instructor readiness** Have your coding agent rehearse the completed reference and prepare the current tests, fixtures and lab runner before class. Tests may fail until the capability is implemented. During class, use one bounded prompt at a time; learners inspect the change, explain the control decision and review the check evidence.
+**Instructor readiness** Rehearse the session with a learner project built from the course kit, so you see what learners see: the check pack fails until each capability is built. The reference checkpoint remains your answer key for the excerpts below. In class, use one bounded prompt at a time; learners inspect the change, explain the control decision and review the check evidence.
 
 **Offline fallback** Have the coding agent use the offline mock provider for class. If live access fails, restore that configuration and continue. Keep credentials in secure configuration. Adapter request shapes were tested with mock HTTP; live account access was not exercised.
 
@@ -81,7 +81,7 @@ Use SAY for instructor narration, SHOW and REVIEW for the code and evidence part
 
 **SHOW** The current learner implementation and `incident/identity.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 10, continue in my learner project. Add a token issuer that signs short-lived JWT-shaped tokens with a configured development key and verifies signature, issuer, expiry and audience with distinct reasons and a constant-time comparison. Let the API exchange a demo credential for a signed platform token and record the signed-in subject on each run. Show tampered, expired and wrong-audience tokens being rejected, and explain why a shared key is a teaching simplification. Use lesson-10 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 10, continue in my learner project. Add a token issuer that signs short-lived JWT-shaped tokens with a configured development key and verifies signature, issuer, expiry and audience with distinct reasons and a constant-time comparison. Let the API exchange a demo credential for a signed platform token and record the signed-in subject on each run. Show tampered, expired and wrong-audience tokens being rejected, and explain why a shared key is a teaching simplification. Build to the interfaces the Lesson 10 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 34 to 56 at lesson-10; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -117,7 +117,7 @@ def verify(self, token, audience):
 
 **Likely answer** An ordinary comparison can stop at the first differing byte and leak timing that helps an attacker guess a valid signature.
 
-**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference snapshot before accepting the change.
+**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.
 
 ### 2 Delegate narrower credentials along the actor chain
 
@@ -125,7 +125,7 @@ def verify(self, token, audience):
 
 **SHOW** The current learner implementation and `incident/identity.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 10, continue in my learner project. Add delegated credentials. Mint a short-lived tool-gateway token for each executing run, with the user as subject, the agent definition as actor and the run's allowed tools as scope. Give each local or remote child a token that only narrows the parent's scope and extends the actor chain. Record grants for inspection, keep token values out of run state, and revoke a run's tokens and its children's when the run ends. Show the three actor chains of a team run. Use lesson-10 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 10, continue in my learner project. Add delegated credentials. Mint a short-lived tool-gateway token for each executing run, with the user as subject, the agent definition as actor and the run's allowed tools as scope. Give each local or remote child a token that only narrows the parent's scope and extends the actor chain. Record grants for inspection, keep token values out of run state, and revoke a run's tokens and its children's when the run ends. Show the three actor chains of a team run. Build to the interfaces the Lesson 10 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 89 to 111 at lesson-10; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -161,7 +161,7 @@ def revoke(self, run_id):
 
 **Likely answer** Each worker would hold scopes it never needs, and the grants would not show which agent acted.
 
-**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference snapshot before accepting the change.
+**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.
 
 ![The Identity view after a team run. Point at the three actor chains ending in the same user, the different audiences and scopes, the revoked tokens, and the signing key listed only by reference with its release audit.](../console-screenshots/10-identity.png)
 
@@ -173,7 +173,7 @@ def revoke(self, run_id):
 
 **SHOW** The current learner implementation and `incident/gateway.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 10, continue in my learner project. Enforce delegated credentials at the tool gateway and the A2A specialist. At the gateway, deny calls without a delegated token, verify it for the gateway audience, and deny a tenant mismatch or a tool outside its scope, auditing each reason. At the specialist, replace the static shared token with a delegated token for its own audience and derive tenant and subject from the verified claims. Show a missing credential, a cross-tenant call and a wrong-audience request being refused. Use lesson-10 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 10, continue in my learner project. Enforce delegated credentials at the tool gateway and the A2A specialist. At the gateway, deny calls without a delegated token, verify it for the gateway audience, and deny a tenant mismatch or a tool outside its scope, auditing each reason. At the specialist, replace the static shared token with a delegated token for its own audience and derive tenant and subject from the verified claims. Show a missing credential, a cross-tenant call and a wrong-audience request being refused. Build to the interfaces the Lesson 10 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 52 to 64 at lesson-10; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -199,7 +199,7 @@ if self.credentials is not None:
 
 **Likely answer** The token was narrowed and signed by the delegation service, and the check still works when the gateway is a separate service.
 
-**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference snapshot before accepting the change.
+**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.
 
 ### 4 Keep secrets by reference and contain hostile input
 
@@ -207,7 +207,7 @@ if self.credentials is not None:
 
 **SHOW** The current learner implementation and `incident/identity.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 10, continue in my learner project. Add a credential store that keeps secrets under secret:// references, releases a value only to a named consumer, audits every release and denial, and wraps values so they cannot be printed or serialized. Lease the model key to the provider adapter and let definitions name credentials only by reference. Keep the hostile-provider, path, endpoint, citation and redaction checks working. Show a denied lease and zero injected effects, and do not describe the store as a vault. Use lesson-10 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 10, continue in my learner project. Add a credential store that keeps secrets under secret:// references, releases a value only to a named consumer, audits every release and denial, and wraps values so they cannot be printed or serialized. Lease the model key to the provider adapter and let definitions name credentials only by reference. Keep the hostile-provider, path, endpoint, citation and redaction checks working. Show a denied lease and zero injected effects, and do not describe the store as a vault. Build to the interfaces the Lesson 10 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 137 to 160 at lesson-10; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -244,7 +244,7 @@ class CredentialStore:
 
 **Likely answer** No. The adapter must reveal it to send it. Access control, audit and rotation in a real vault still matter.
 
-**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference snapshot before accepting the change.
+**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.
 
 ## Learner practice and checkpoints
 
@@ -252,7 +252,7 @@ class CredentialStore:
 
 **VERIFY** Give the coding agent the verification prompt below, then inspect its evidence and explain the result in your own words.
 
-> **PROMPT** Verify my Lesson 10 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 10 only when the required capability is present. Run tests/test_lesson10.py, the Session 10 demonstration and the existing regression suite using the offline provider. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result and save a recoverable checkpoint of my work. Do not equate an unrun or skipped check with a pass.
+> **PROMPT** Verify my Lesson 10 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 10 only when the required capability is present. Run the Lesson 10 check pack, which includes tests/test_lesson10.py and the Session 10 demonstration, and the full regression suite, all unchanged and using the offline provider. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my GitLab repository. Do not equate an unrun or skipped check with a pass.
 
 **Expected behaviour** The coding agent returns actual check results and the demonstration’s structured output. Run identifiers and elapsed times vary. Compare the status and capability outcomes with the recorded reference below, and investigate differences.
 
@@ -298,11 +298,11 @@ class CredentialStore:
 - Secrets are released by reference only to named consumers, with every release audited.
 - Injected writes, path escapes, metadata egress, fabricated citations and credential strings in events are contained or redacted.
 
-The independently unpacked lesson-10 checkpoint passed its full test suite and this lesson demo. Recorded test result: 43 passed in 13.15s. Have your coding agent save a recoverable learner checkpoint and retain the comparison with lesson-10 (9158dfa).
+The independently unpacked lesson-10 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 10 check pack from the course kit. Recorded test result: 43 passed in 13.15s. Learners commit and push their checkpoint to their GitLab repository; lesson-10 (9158dfa) remains the instructor's answer key.
 
 ### Files changed in this checkpoint
 
-Use this inventory to scope the coding agent’s work. It includes core files, lab scaffolding, acceptance tests and checkpoint metadata. Ask the agent to explain any additional file changes it needs.
+In the reference, this checkpoint changed the files below. Learners write the implementation files themselves; the lab, the tests and any given files arrive in the Lesson 10 check pack. Ask the agent to explain any additional file changes it needs.
 
 - `incident/__init__.py`
 - `incident/a2a_client.py`
@@ -322,7 +322,7 @@ Use this inventory to scope the coding agent’s work. It includes core files, l
 - `incident/supervisor.py`
 - `tests/test_lesson10.py`
 
-> **PROMPT** Compare my completed Lesson 10 work with reference lesson-10. Show the changed files, interfaces and important behavioural differences. Explain how each completion criterion is met with code or test evidence. Preserve deliberate learner improvements and earlier capabilities; do not overwrite my work merely to obtain a textually identical copy.
+> **PROMPT** Review my completed Lesson 10 work against the Lesson 10 check pack and completion criteria. Show the files I changed and the interfaces I provide, and explain how each completion criterion is met with code or test evidence. Point out where my design makes a different choice from the one the lesson presents, and what that choice costs or gains. Preserve deliberate improvements and earlier capabilities.
 
 ## Demo troubleshooting
 

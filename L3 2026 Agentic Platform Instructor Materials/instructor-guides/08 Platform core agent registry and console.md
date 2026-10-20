@@ -33,17 +33,17 @@ Bring your Session 07 checkpoint, including the A2A runbook specialist. Read the
 
 Before class, have your coding agent start the completed lesson-08 API on loopback and confirm that all three demo identities can sign into the console.
 
-Give your coding agent access to the supplied incident-platform.zip or the reference repository in the [course materials folder](https://drive.google.com/drive/u/0/folders/1wos8PjyC0mTDQxrcZ89b9mG0yYV57Zr3). Ask it to preserve the embedded checkpoint history and identify the learner project separately from the reference.
+Learners need two things: their own project repository in the course GitLab group, and the public [course kit](https://github.com/maxvpavlov/agentic-platforms-kit), which holds the starter project and, for each lesson, the given files and the check pack. The kit contains no solutions; the reference checkpoints stay with the instructor as the answer key.
 
 Your coding agent handles preparation, implementation and execution. You set the scope, inspect its changes and explain the evidence. This development assistant is separate from the investigation agents inside the platform.
 
-> **PROMPT** Prepare my Python learner project for Lesson 08, starting from lesson-07. Locate the supplied reference repository and my existing work; ask for their locations if needed. Preserve my changes and handle repository setup, dependency installation and environment configuration yourself. Use the pinned Python 3.12 environment and offline mock provider. Establish the starting checkpoint without adding this lesson yet. Run the baseline checks and report the workspace, checkpoint, results and any missing prerequisites. Do not ask me to run terminal commands.
+> **PROMPT** Prepare my learner project for Lesson 08. Open my project repository in my course GitLab group, cloning it into ~/agentic-course/my-platform if it is not there, and confirm it holds my completed lesson-07 work with all its checks passing. Update my read-only copy of the course kit in ~/agentic-course/kit, cloning it from https://github.com/maxvpavlov/agentic-platforms-kit if it is missing. Use the pinned Python 3.12 environment and the offline mock provider. Do not add this lesson's work yet. Report the project location, its current checkpoint, the test results and any missing prerequisites. Do not ask me to run terminal commands.
 
-Next, orient the coding agent to the reference while preserving your work.
+Next, have the coding agent read this lesson's check pack and add it to the project before any code is written.
 
-> **PROMPT** Compare my current project with lesson-07 and prepare a read-only view of lesson-08 for this lesson. Preserve my work while arranging any isolation needed. Identify differences, relevant files and the expected capability. Explain the implementation sequence before we begin; do not replace my project with the finished reference or add later lessons.
+> **PROMPT** Read lessons/08 in the course kit: its README, the given files and the check pack. Copy the given files and the check pack into my project exactly as the README says, without changing them, and commit that. Then list the interfaces my code must provide, which checks now fail and why, and the capability they verify. Explain the implementation sequence before we begin. Do not write the implementation yet, and do not look for or use a finished solution.
 
-**Instructor readiness** Have your coding agent rehearse the completed reference and prepare the current tests, fixtures and lab runner before class. Tests may fail until the capability is implemented. During class, use one bounded prompt at a time; learners inspect the change, explain the control decision and review the check evidence.
+**Instructor readiness** Rehearse the session with a learner project built from the course kit, so you see what learners see: the check pack fails until each capability is built. The reference checkpoint remains your answer key for the excerpts below. In class, use one bounded prompt at a time; learners inspect the change, explain the control decision and review the check evidence.
 
 **Offline fallback** Have the coding agent use the offline mock provider for class. If live access fails, restore that configuration and continue. Keep credentials in secure configuration. Adapter request shapes were tested with mock HTTP; live account access was not exercised.
 
@@ -83,7 +83,7 @@ Use SAY for instructor narration, SHOW and REVIEW for the code and evidence part
 
 **SHOW** The current learner implementation and `incident/registry.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 08, continue in my learner project. Add an agent registry in incident/registry.py on the platform's SQLite file. Validate each definition against a strict schema, require known tools, store a SHA-256 content hash and reject different content under an existing version. Track one active version per agent, allow activating any non-retired version and refuse to retire the active one. Seed single, team and remediator at version 1. Show the rejection codes for an unknown field, an unknown tool and an in-place rewrite. Use lesson-08 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 08, continue in my learner project. Add an agent registry in incident/registry.py on the platform's SQLite file. Validate each definition against a strict schema, require known tools, store a SHA-256 content hash and reject different content under an existing version. Track one active version per agent, allow activating any non-retired version and refuse to retire the active one. Seed single, team and remediator at version 1. Show the rejection codes for an unknown field, an unknown tool and an in-place rewrite. Build to the interfaces the Lesson 08 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 38 to 54 at lesson-08; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -113,7 +113,7 @@ def register(self, name, version, spec):
 
 **Likely answer** Activating or retiring is an operational decision about the same content. If state were hashed, retiring version 1 would change its identity and break the link between old runs and the definition they actually used.
 
-**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference snapshot before accepting the change.
+**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.
 
 ![Registry view as the Astro analyst. Point at the version, state and SHA-256 columns, and at the empty Remote agents section: nothing is pinned until a specialist URL is configured.](../console-screenshots/08-registry.png)
 
@@ -125,7 +125,7 @@ def register(self, name, version, spec):
 
 **SHOW** The current learner implementation and `incident/a2a_client.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 08, continue in my learner project. Register remote A2A agents by pinning the SHA-256 of their Agent Card, and refuse a changed card unless an explicit reviewed acceptance is given. Add discovery by skill across active local agents and pinned remote agents. Make the A2A client check the fetched card against the pin before creating a client, and register the specialist at startup when a remote URL is configured. Demonstrate discovery for the runbooks skill and the refusal of a modified card. Use lesson-08 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 08, continue in my learner project. Register remote A2A agents by pinning the SHA-256 of their Agent Card, and refuse a changed card unless an explicit reviewed acceptance is given. Add discovery by skill across active local agents and pinned remote agents. Make the A2A client check the fetched card against the pin before creating a client, and register the specialist at startup when a remote URL is configured. Demonstrate discovery for the runbooks skill and the refusal of a modified card. Build to the interfaces the Lesson 08 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 14 to 28 at lesson-08; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -153,7 +153,7 @@ async def discover_client(http, url, streaming=True, polling=False, pinned=None)
 
 **Likely answer** Registration only sees the card as it was on that day. The remote service can change its card later; the runtime comparison is what stops a run from following the changed card.
 
-**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference snapshot before accepting the change.
+**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.
 
 ### 3 Resolve definitions in the platform core and run API
 
@@ -161,7 +161,7 @@ async def discover_client(http, url, streaming=True, polling=False, pinned=None)
 
 **SHOW** The current learner implementation and `incident/platform.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 08, continue in my learner project. Build the platform core in incident/platform.py and the run API in incident/api.py. Submission resolves the requested or active definition, refuses retired versions, requires an operator for the remediator, builds the context in application code and saves the queued run with the resolved definition before launch. Claim a durable lease per run. Expose submit, list, inspect, cancel, decision and resume bound to the authenticated tenant, with 404 for another tenant's run and a conflict for a stale action key. Keep every handler asynchronous, because workers and handlers share one SQLite connection. Show both configurations completing with their recorded version and hash. Use lesson-08 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 08, continue in my learner project. Build the platform core in incident/platform.py and the run API in incident/api.py. Submission resolves the requested or active definition, refuses retired versions, requires an operator for the remediator, builds the context in application code and saves the queued run with the resolved definition before launch. Claim a durable lease per run. Expose submit, list, inspect, cancel, decision and resume bound to the authenticated tenant, with 404 for another tenant's run and a conflict for a stale action key. Keep every handler asynchronous, because workers and handlers share one SQLite connection. Show both configurations completing with their recorded version and hash. Build to the interfaces the Lesson 08 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 81 to 99 at lesson-08; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -193,7 +193,7 @@ def launch(self, tenant, run_id):
 
 **Likely answer** A 403 would confirm that the run exists. Loading only within the caller's tenant means another tenant's run is simply not found, so the API reveals nothing about it.
 
-**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference snapshot before accepting the change.
+**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.
 
 ![Run detail for a completed team run. Point at the recorded definition team@1 with its hash, the two child runs and the event timeline; token counts are fixture teaching metrics.](../console-screenshots/08-run-detail.png)
 
@@ -205,7 +205,7 @@ def launch(self, tenant, run_id):
 
 **SHOW** The current learner implementation and `incident/console/app.js`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 08, continue in my learner project. Serve a platform console at /console as a static HTML shell with vanilla ES modules, under a strict same-origin Content-Security-Policy with no inline or external scripts. Render every API value as text through a small element helper, never as HTML. Add Overview with the platform map from a blueprint module, Registry, Runs with run detail, and Approvals. Scope views to the signed-in identity and show operator controls only to operators while the API still enforces them. Show me the response headers and the check for HTML injection sinks. Use lesson-08 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 08, continue in my learner project. Serve a platform console at /console as a static HTML shell with vanilla ES modules, under a strict same-origin Content-Security-Policy with no inline or external scripts. Render every API value as text through a small element helper, never as HTML. Add Overview with the platform map from a blueprint module, Registry, Runs with run detail, and Approvals. Scope views to the signed-in identity and show operator controls only to operators while the API still enforces them. Show me the response headers and the check for HTML injection sinks. Build to the interfaces the Lesson 08 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 8 to 21 at lesson-08; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -232,7 +232,7 @@ export function h(tag, attrs = {}, ...children) {
 
 **Likely answer** Hiding them is usability: analysts do not see actions they cannot take. It is not a control, because anyone can call the API directly. The server-side operator check is the real boundary.
 
-**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference snapshot before accepting the change.
+**PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.
 
 ![Overview rendered from blueprint.py: Sessions 01 to 08 built, 09 to 12 planned. The counters come from the same tenant-scoped API as every other view.](../console-screenshots/08-overview.png)
 
@@ -244,7 +244,7 @@ export function h(tag, attrs = {}, ...children) {
 
 **VERIFY** Give the coding agent the verification prompt below, then inspect its evidence and explain the result in your own words.
 
-> **PROMPT** Verify my Lesson 08 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 8 only when the required capability is present. Run tests/test_lesson08.py, the Session 08 demonstration and the existing regression suite using the offline provider. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result and save a recoverable checkpoint of my work. Do not equate an unrun or skipped check with a pass.
+> **PROMPT** Verify my Lesson 08 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 8 only when the required capability is present. Run the Lesson 08 check pack, which includes tests/test_lesson08.py and the Session 08 demonstration, and the full regression suite, all unchanged and using the offline provider. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my GitLab repository. Do not equate an unrun or skipped check with a pass.
 
 **Expected behaviour** The coding agent returns actual check results and the demonstration’s structured output. Run identifiers and elapsed times vary. Compare the status and capability outcomes with the recorded reference below, and investigate differences.
 
@@ -306,11 +306,11 @@ export function h(tag, attrs = {}, ...children) {
 - A second lease claim is rejected, another tenant's run returns 404, and a decision requires an operator and the current action key.
 - The console is served at /console under a strict Content-Security-Policy, renders API data as text only and shows each identity only its tenant's runs; every API handler is asynchronous.
 
-The independently unpacked lesson-08 checkpoint passed its full test suite and this lesson demo. Recorded test result: 33 passed in 4.35s. Have your coding agent save a recoverable learner checkpoint and retain the comparison with lesson-08 (21a8a6e).
+The independently unpacked lesson-08 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 08 check pack from the course kit. Recorded test result: 33 passed in 4.35s. Learners commit and push their checkpoint to their GitLab repository; lesson-08 (21a8a6e) remains the instructor's answer key.
 
 ### Files changed in this checkpoint
 
-Use this inventory to scope the coding agent’s work. It includes core files, lab scaffolding, acceptance tests and checkpoint metadata. Ask the agent to explain any additional file changes it needs.
+In the reference, this checkpoint changed the files below. Learners write the implementation files themselves; the lab, the tests and any given files arrive in the Lesson 08 check pack. Ask the agent to explain any additional file changes it needs.
 
 - `incident/__init__.py`
 - `incident/a2a_client.py`
@@ -332,7 +332,7 @@ Use this inventory to scope the coding agent’s work. It includes core files, l
 - `incident/supervisor.py`
 - `tests/test_lesson08.py`
 
-> **PROMPT** Compare my completed Lesson 08 work with reference lesson-08. Show the changed files, interfaces and important behavioural differences. Explain how each completion criterion is met with code or test evidence. Preserve deliberate learner improvements and earlier capabilities; do not overwrite my work merely to obtain a textually identical copy.
+> **PROMPT** Review my completed Lesson 08 work against the Lesson 08 check pack and completion criteria. Show the files I changed and the interfaces I provide, and explain how each completion criterion is met with code or test evidence. Point out where my design makes a different choice from the one the lesson presents, and what that choice costs or gains. Preserve deliberate improvements and earlier capabilities.
 
 ## Demo troubleshooting
 

@@ -14,7 +14,7 @@
       "title": "Define cases before scoring runs",
       "say": "Read each case as a requirement. The missing incident should not inherit the most common runbook's cause. The ambiguous case should finish with insufficient evidence. The other-tenant case should use a different source population. Mark the held-out cases before tuning, and do not repeatedly edit them to accommodate a favoured implementation. Show the dataset hash in the result. It is a practical way to detect whether two reports evaluated the same case definitions. Ask learners to propose one additional failure case and state its expected outcome before running the agent.",
       "file": "incident/evaluate.py",
-      "prompt": "Create the versioned evaluation cases in incident/evaluate.py. Cover supported diagnoses, missing evidence, ambiguity and another tenant, with explicit expected outcomes and development versus held-out partitions. Preserve the supplied acceptance scenarios and record dataset identity. Explain each case before running the agent. Do not change expected answers simply to make the current implementation pass.",
+      "prompt": "Add the given versioned evaluation cases to incident/evaluate.py unchanged. They cover supported diagnoses, missing evidence, ambiguity and another tenant, with explicit expected outcomes and development versus held-out partitions. Record dataset identity. Explain each case before running the agent. Do not change expected answers simply to make the current implementation pass.",
       "excerpt": {
         "start": 14,
         "end": 20
@@ -27,7 +27,7 @@
       "title": "Grade outcomes and policy separately",
       "say": "Inspect the three checks returned by grade. The outcome check includes both cause and evidence-sufficiency status. The evidence check requires support for a known cause. The policy check rejects remediation during an investigation. Run the intentionally wrong answer test: it sounds plausible but names the wrong cause, so it fails. Explain the correction made to the offline provider in this checkpoint. A generic runbook is not proof of an incident's cause. The missing-evidence case exposed that mistaken inference, and the fixture now preserves unknown when diagnostic log evidence is absent.",
       "file": "incident/evaluate.py",
-      "prompt": "Implement separate outcome, evidence and tool-policy checks in grade. Demonstrate rejection of a plausible but wrong diagnosis. Check the offline provider's missing-evidence behaviour and make the smallest required correction in incident/providers.py so a generic runbook does not become proof of an incident cause. Preserve the original test expectations and show the regression evidence.",
+      "prompt": "Implement separate outcome, evidence and tool-policy checks in grade. Demonstrate rejection of a plausible but wrong diagnosis. Check the offline provider's missing-evidence behaviour, then replace MockProvider with the given Lesson 04 version and explain how it stops a generic runbook from becoming proof of an incident cause. Preserve the original test expectations and show the regression evidence.",
       "excerpt": {
         "start": 23,
         "end": 30
@@ -53,7 +53,7 @@
       "title": "Calibrate an optional model judge",
       "say": "Use a small labelled set to demonstrate agreement calculation and inspect the disagreement index. Then open model_judge. The expected outcome and agent answer are sent as data with a bounded grading request. The agent answer remains untrusted even inside an evaluation prompt. A judge response must have the expected type. Explain that deterministic checks remain useful even when a judge is present, especially for permission violations and missing source IDs. For this session, the optional live judge is not required: use the supplied labelled example and show where real human labels and a verified live adapter would enter.",
       "file": "incident/evaluate.py",
-      "prompt": "Implement paired human-versus-judge agreement checks and the optional model_judge interface. Validate judge output, treat the agent answer as untrusted grading input and expose disagreements for human review. Complete the Session 04 lab and tests using offline calibration examples. Explain what is verified locally and what would still require a calibrated live judge and authorized provider access.",
+      "prompt": "Implement paired human-versus-judge agreement checks and the optional model_judge interface. Validate judge output, treat the agent answer as untrusted grading input and expose disagreements for human review. Make the Session 04 check pack pass using its offline calibration examples. Explain what is verified locally and what would still require a calibrated live judge and authorized provider access.",
       "excerpt": {
         "start": 33,
         "end": 37

@@ -90,6 +90,7 @@ code, .mono { font-family: var(--mono); font-size: .9em; }
 .ask .label { font: 600 11.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .ask details summary { cursor: pointer; color: var(--muted); font-size: 15px; }
 .ask details p { margin-top: 6px; }
+.ask ol.steps { margin: 4px 0 0; padding-left: 22px; display: grid; gap: 4px; }
 
 /* Hero */
 .hero { padding-block: 64px 56px; display: grid; gap: 22px; }
@@ -489,7 +490,7 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
 <section class="ch" id="transcript">
   <p class="eyebrow"><span>A real run</span></p>
   <h2>One run of INC-001, step by step</h2>
-  <p class="lede">This is the actual run from the reference checkpoint, with the deterministic mock as the model. Three parties take turns: the model proposes, the runtime checks, executes and carries results back, and the tool returns data.</p>
+  <p class="lede">This is the actual run of the course's finished Session 01 code, with the deterministic mock as the model. Three parties take turns: the model proposes, the runtime checks, executes and carries results back, and the tool returns data.</p>
   <div class="stack">
     <div class="transcript" role="list">
       <div class="turn" role="listitem"><span class="who rt">Runtime</span><div><p>Starts the run. Sends the model the instructions, the task and the two tool definitions.</p><pre>system  Investigate the supplied sandbox incident using tools. …
@@ -552,9 +553,9 @@ tools   log_lookup(incident_id) · runbook_search(query)</pre></div></div>
 
 <section class="ch" id="build">
   <p class="eyebrow"><span>Guided build</span></p>
-  <h2>Now we build it, one bounded prompt at a time</h2>
+  <h2>How you build it: one bounded prompt at a time</h2>
   <div class="prose">
-    <p>Learners do not type the code. Each step is one prompt to their own coding agent. The agent makes the change and runs the checks; then we compare it with the reference checkpoint and ask it to explain any difference.</p>
+    <p>In class, watch the instructor run every prompt below on a fresh project. After class, you run the same prompts, in the same order, in your own project. You do not type the code: each step is one prompt to your coding agent, which makes the change and runs the checks, and you judge the result.</p>
     <p class="muted">Rule for the whole build: a coding agent saying "done" is not evidence. Look at the diff and at the check output.</p>
   </div>
 
@@ -562,46 +563,46 @@ tools   log_lookup(incident_id) · runbook_search(query)</pre></div></div>
     <h3>Where the code lives: two folders</h3>
     <div class="cards">
       <div><span class="q">Your project</span><p>Where your coding agent writes. It starts as the <code>lesson-00</code> checkpoint: an almost empty Python project whose package is called <code>incident</code>. Every session adds to this same project, and you push it to your own repository in the course GitLab group.</p><span class="ans">my-platform/ · read and write · pushed to GitLab</span></div>
-      <div><span class="q">The reference</span><p>The course repository, with one finished checkpoint per session tagged <code>lesson-00</code> to <code>lesson-12</code>. Nobody edits it. When a prompt says "use lesson-01 read-only", the agent compares your work with the finished Session 01 code there.</p><span class="ans">reference/ · read only</span></div>
+      <div><span class="q">The course kit</span><p>Public and read-only. It holds the starter project and, for each lesson, the given files and a check pack: tests that fail until you have built the capability. It contains no solutions; you build the platform, and the checks prove it.</p><span class="ans">kit/ · read only · github.com/maxvpavlov/agentic-platforms-kit</span></div>
     </div>
     <div class="stack" style="margin-top:0">
       <div class="excerpt">
-        <div class="src">my-platform/ · today's changes</div>
+        <div class="src">my-platform/ · after Session 01</div>
 <pre>pyproject.toml, uv.lock   <span class="muted">pinned Python 3.12 dependencies</span>
 incident/
   __init__.py             <span class="muted">LESSON = 0, raised to 1 when verified</span>
   lab.py                  <span class="muted">runs a session's demo</span>
-<span class="hl">  core.py                 new · the runtime: contracts and the loop</span>
-<span class="hl">  providers.py            new · model adapters, incl. the mock</span>
-<span class="hl">  fixtures.py             new · synthetic Astro data and two tools</span>
+<span class="hl">  core.py                 you build · the runtime: contracts and the loop</span>
+<span class="hl">  providers.py            you build · model adapters; the mock is given</span>
+<span class="hl">  fixtures.py             given · synthetic Astro data and two tools</span>
   labs/
-<span class="hl">    l01.py                new · the Session 01 demo</span>
+<span class="hl">    l01.py                check pack · the Session 01 demo</span>
 tests/
   test_setup.py           <span class="muted">the one test that exists today</span>
-<span class="hl">  test_lesson01.py        new · today's checks</span></pre>
+<span class="hl">  test_lesson01.py        check pack · today's checks</span></pre>
       </div>
       <div class="prose" style="margin-top:0">
         <p><b><code>core.py</code> is the heart of the platform.</b> It holds the agent runtime from the diagram above: the data the application owns (who is asking, what is allowed, the limits), the shape of a model's reply and of a run, and the loop itself. Every later session builds on this file.</p>
-        <p>Step 1 creates it with the data contracts only. Step 3 adds the loop to the same file. The other new files are small helpers around it.</p>
+        <p>Step 1 creates it with the data contracts only. Step 3 adds the loop to the same file. The given files are data and a scripted mock model that everyone shares, so every learner gets the same results; they are not what this session teaches.</p>
       </div>
     </div>
   </div>
 
   <div class="terminal" id="setup">
-    <div class="bar"><span class="switch">Switch to terminal · The lesson-00 prompt · Set up your workspace</span><span class="file">creates reference/ and my-platform/ · pushes to GitLab</span></div>
+    <div class="bar"><span class="switch">Switch to terminal · The lesson-00 prompt · Set up your workspace</span><span class="file">creates kit/ and my-platform/ · pushes to GitLab</span></div>
     <div class="body">
-      <p class="goal">Everyone runs this first, in class. Nothing is needed beforehand. It installs the GitLab CLI, sets up both folders, puts your project at the starting checkpoint and pushes it to a new repository in the GitLab group you were invited to.</p>
-      <div class="prompt" id="p0"><span class="pfx">PROMPT ▸ </span>Set up my workspace for the Building Agentic Platforms course, starting at lesson-00. Clone the course reference repository, including its tags, from the address my instructor gave me (ask me for it if you do not have it) into ~/agentic-course/reference, and treat that folder as read-only from now on. Create my own project in ~/agentic-course/my-platform from the lesson-00 checkpoint only, exported from the reference, and make it a fresh Git repository with one initial commit. Install the pinned dependencies with uv for Python 3.12, run the tests with python -m pytest, and confirm that incident/__init__.py says LESSON = 0. Install the GitLab CLI, glab, if it is missing, and sign me in to GitLab; when a browser sign-in is needed, tell me what to do, and never ask me to paste a token into the chat. Ask me for the name of the GitLab group I was invited to, create a private repository for my project in that group, and push my project to it. Do not copy any later lesson into my project. Report both folder paths, the files in my project, the test result, the GitLab repository address and anything missing, such as uv, Python 3.12, glab or access. Do not ask me to run terminal commands.</div>
+      <p class="goal">Your first prompt after class; nothing is needed beforehand. It downloads the course kit, creates your project from the starter, installs the GitLab CLI and pushes the project to a new private repository in the GitLab group you were invited to.</p>
+      <div class="prompt" id="p0"><span class="pfx">PROMPT ▸ </span>Set up my project for the Building Agentic Platforms course, starting at lesson-00. Clone the public course kit from https://github.com/maxvpavlov/agentic-platforms-kit into ~/agentic-course/kit and treat that folder as read-only. Create my own project in ~/agentic-course/my-platform by copying the kit's starter folder, and make it a fresh Git repository with one initial commit. Install the pinned dependencies with uv for Python 3.12, run the tests with python -m pytest, and confirm that incident/__init__.py says LESSON = 0. Install the GitLab CLI, glab, if it is missing, and sign me in to GitLab; when a browser sign-in is needed, tell me what to do, and never ask me to paste a token into the chat. Ask me for the name of the GitLab group I was invited to, create a private repository for my project in that group, and push my project to it. Report both folder paths, the files in my project, the test result, the GitLab repository address and anything missing, such as uv, Python 3.12, glab or access to the group. Do not ask me to run terminal commands.</div>
       <div><button class="copy" type="button" data-copy="p0">Copy prompt</button></div>
       <p class="check">Expect: <b>1 passed</b> in my-platform, <code>LESSON = 0</code>, and your project visible in your GitLab group.</p>
     </div>
   </div>
 
   <div class="terminal" id="orient">
-    <div class="bar"><span class="switch">Switch to terminal · Orient</span><span class="file">reads both folders, changes nothing</span></div>
+    <div class="bar"><span class="switch">Switch to terminal · Add the check pack</span><span class="file">copies the given files and checks · no implementation yet</span></div>
     <div class="body">
-      <p class="goal">Start of the build. The agent compares your project with the reference and explains the plan before writing anything.</p>
-      <div class="prompt" id="pO"><span class="pfx">PROMPT ▸ </span>Compare my current project with lesson-00 and prepare a read-only view of lesson-01 for this lesson. Preserve my work while arranging any isolation needed. Identify differences, relevant files and the expected capability. Explain the implementation sequence before we begin; do not replace my project with the finished reference or add later lessons.</div>
+      <p class="goal">Start of the build. The agent copies the Session 01 given files and check pack into your project, shows which checks fail and why, and explains the plan before writing any code.</p>
+      <div class="prompt" id="pO"><span class="pfx">PROMPT ▸ </span>Read lessons/01 in the course kit: its README, the given files and the check pack. Copy the given files and the check pack into my project exactly as the README says, without changing them, and commit that. Then list the interfaces my code must provide, which checks now fail and why, and the capability they verify. Explain the implementation sequence before we begin. Do not write the implementation yet, and do not look for or use a finished solution.</div>
       <div><button class="copy" type="button" data-copy="pO">Copy prompt</button></div>
     </div>
   </div>
@@ -610,13 +611,13 @@ tests/
     <div class="bar"><span class="switch">Switch to terminal · Build step 1 of 4</span><span class="file">new file · incident/core.py · contracts</span></div>
     <div class="body">
       <p class="goal">Define the run contract: Context, Limits, Reply and Run. Separate what the application owns from what the model produces.</p>
-      <div class="prompt" id="p1"><span class="pfx">PROMPT ▸ </span>For Lesson 01, continue in my learner project. Create the Context, Limits, Reply and Run contracts in incident/core.py. Separate application-owned tenant identity, permissions and run identifiers from model messages and results. Make run state serializable and give the runtime explicit step, token and time limits. Keep this step focused on the contracts; do not implement later platform features. Show the fields, their owners and one example of a value the model must not control. Use lesson-01 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div>
+      <div class="prompt" id="p1"><span class="pfx">PROMPT ▸ </span>For Lesson 01, continue in my learner project. Create the Context, Limits, Reply and Run contracts in incident/core.py. Separate application-owned tenant identity, permissions and run identifiers from model messages and results. Make run state serializable and give the runtime explicit step, token and time limits. Keep this step focused on the contracts; do not implement later platform features. Show the fields, their owners and one example of a value the model must not control. Build to the interfaces the Lesson 01 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div>
       <div><button class="copy" type="button" data-copy="p1">Copy prompt</button></div>
     </div>
   </div>
   <div class="stack">
     <div class="excerpt">
-      <div class="src">reference · incident/core.py · lesson-01 · lines 10–17</div>
+      <div class="src">one way to write it · incident/core.py · lines 10–17</div>
 <pre>@dataclass
 class Context:
     tenant: str = "astro"
@@ -634,7 +635,7 @@ class Context:
     <div class="bar"><span class="switch">Switch to terminal · Build step 2 of 4</span><span class="file">new file · incident/providers.py</span></div>
     <div class="body">
       <p class="goal">Normalize model access: a deterministic offline provider plus OpenAI-compatible and Anthropic adapters, all returning one Reply shape.</p>
-      <div class="prompt" id="p2"><span class="pfx">PROMPT ▸ </span>For Lesson 01, continue in my learner project. Implement the provider interface in incident/providers.py using the current core contracts. Add the deterministic offline provider and configurable OpenAI-compatible and Anthropic adapters. Normalize messages, tool calls, errors and usage into Reply. Use mock HTTP responses to check both adapter request shapes without paid calls. Explain how provider selection and secrets are configured without exposing credentials. Use lesson-01 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div>
+      <div class="prompt" id="p2"><span class="pfx">PROMPT ▸ </span>For Lesson 01, continue in my learner project. Implement the provider interface in incident/providers.py using the current core contracts. Add the given MockProvider from the course kit unchanged, and implement configurable OpenAI-compatible and Anthropic adapters. Normalize messages, tool calls, errors and usage into Reply. Use mock HTTP responses to check both adapter request shapes without paid calls. Explain how provider selection and secrets are configured without exposing credentials. Build to the interfaces the Lesson 01 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div>
       <div><button class="copy" type="button" data-copy="p2">Copy prompt</button></div>
     </div>
   </div>
@@ -653,13 +654,13 @@ class Context:
     <div class="bar"><span class="switch">Switch to terminal · Build step 3 of 4</span><span class="file">incident/core.py · adds the loop · new incident/fixtures.py</span></div>
     <div class="body">
       <p class="goal">Implement the loop: record each proposed call as pending before running it, keep the call ID on the observation, finish with a structured, cited answer.</p>
-      <div class="prompt" id="p3"><span class="pfx">PROMPT ▸ </span>For Lesson 01, continue in my learner project. Implement run_agent in incident/core.py and connect the synthetic readers in incident/fixtures.py. Preserve assistant tool-call IDs when appending observations, track pending calls before dispatch, and finish with a structured answer and observed evidence IDs. Use the existing provider interface. Show the complete model-to-tool-to-observation path for INC-001 and explain how the same loop can later support checkpointing. Use lesson-01 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div>
+      <div class="prompt" id="p3"><span class="pfx">PROMPT ▸ </span>For Lesson 01, continue in my learner project. Implement run_agent in incident/core.py and connect the synthetic readers in the given incident/fixtures.py. Preserve assistant tool-call IDs when appending observations, track pending calls before dispatch, and finish with a structured answer and observed evidence IDs. Use the existing provider interface. Show the complete model-to-tool-to-observation path for INC-001 and explain how the same loop can later support checkpointing. Build to the interfaces the Lesson 01 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div>
       <div><button class="copy" type="button" data-copy="p3">Copy prompt</button></div>
     </div>
   </div>
   <div class="stack">
     <div class="excerpt">
-      <div class="src">reference · incident/core.py · lesson-01 · inside run_agent()</div>
+      <div class="src">one way to write it · incident/core.py · inside run_agent()</div>
 <pre>while run.pending:
     call = run.pending[0]
     key = json.dumps([call["name"], call["args"]], sort_keys=True)
@@ -680,7 +681,7 @@ class Context:
     <div class="bar"><span class="switch">Switch to terminal · Build step 4 of 4</span><span class="file">incident/core.py · new lab and tests</span></div>
     <div class="body">
       <p class="goal">Bound and verify execution: run the happy path first, then trigger every guard on purpose and explain why each run stopped.</p>
-      <div class="prompt" id="p4"><span class="pfx">PROMPT ▸ </span>For Lesson 01, continue in my learner project. Review and enforce the runtime's step, token, elapsed-time and repeated-action guards. Complete the Session 01 lab runner and tests. Demonstrate the normal cited answer and deliberately trigger each limit using offline fixtures. Explain the approximate pre-dispatch token estimate and distinguish reported usage from configured cost. Show which guard caused each failure and why the run stopped. Use lesson-01 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div>
+      <div class="prompt" id="p4"><span class="pfx">PROMPT ▸ </span>For Lesson 01, continue in my learner project. Review and enforce the runtime's step, token, elapsed-time and repeated-action guards. Make the Session 01 check pack pass. Demonstrate the normal cited answer and deliberately trigger each limit using offline fixtures. Explain the approximate pre-dispatch token estimate and distinguish reported usage from configured cost. Show which guard caused each failure and why the run stopped. Build to the interfaces the Lesson 01 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div>
       <div><button class="copy" type="button" data-copy="p4">Copy prompt</button></div>
       <p class="check">Expect: INC-001 answers <b>connection_pool_exhaustion</b> citing log-astro-001 and rb-pool-v1 after 3 model steps; the repeating provider stops with <b>repeated_action</b>.</p>
     </div>
@@ -697,7 +698,7 @@ class Context:
   <p class="eyebrow"><span>Learner exercise</span></p>
   <h2>Break it on purpose: predict first, then run</h2>
   <div class="stack">
-    <p class="lede">Each learner changes one limit at a time, writes down the failure they expect, then runs it. Restore the normal limits and confirm the cited answer comes back.</p>
+    <p class="lede">Change one limit at a time, write down the failure you expect, then run it. In class we predict together and the instructor runs it; after class you do it in your own project. Restore the normal limits and confirm the cited answer comes back.</p>
     <div class="predict">
       <div><span class="set">Limits(steps=1)</span><span class="out">step_budget</span><span class="muted">One step cannot both call a tool and answer.</span></div>
       <div><span class="set">Limits(tokens=1)</span><span class="out">token_budget</span><span class="muted">Refused before the first model call.</span></div>
@@ -721,8 +722,8 @@ class Context:
     <div class="two">
       <div class="prose" style="margin-top:0">
         <p class="big">7 passed</p>
-        <p>The reference <code>lesson-01</code> checkpoint passes its full suite of seven tests offline in under a second: the cited happy path, each of the three limits, and both provider request shapes checked against mock HTTP.</p>
-        <p class="muted">Unrun or skipped checks are not passes. Ask learners to show the actual output.</p>
+        <p>Your project is done when the Session 01 check pack passes: seven tests, offline, in under a second. They cover the cited happy path, each of the three limits, and both provider request shapes checked against mock HTTP. The verify prompt then commits your work and pushes it to GitLab.</p>
+        <p class="muted">Unrun or skipped checks are not passes. Look at the actual output, not the agent's summary.</p>
       </div>
       <figure>
 <pre class="result">{
@@ -740,10 +741,12 @@ class Context:
       </figure>
     </div>
     <div class="terminal" style="margin-top:0">
-      <div class="bar"><span class="switch">Switch to terminal · Verify</span><span class="file">tests/test_lesson01.py · lab 1</span></div>
+      <div class="bar"><span class="switch">Switch to terminal · Verify and push</span><span class="file">check pack · full suite · push to GitLab</span></div>
       <div class="body">
-        <div class="prompt" id="p6"><span class="pfx">PROMPT ▸ </span>Verify my Lesson 01 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 1 only when the required capability is present. Run tests/test_lesson01.py, the Session 01 demonstration and the existing regression suite using the offline provider. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result and save a recoverable checkpoint of my work. Do not equate an unrun or skipped check with a pass.</div>
+        <div class="prompt" id="p6"><span class="pfx">PROMPT ▸ </span>Verify my Lesson 01 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 1 only when the required capability is present. Run the Lesson 01 check pack, which includes tests/test_lesson01.py and the Session 01 demonstration, and the full regression suite, all unchanged and using the offline provider. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my GitLab repository. Do not equate an unrun or skipped check with a pass.</div>
         <div><button class="copy" type="button" data-copy="p6">Copy prompt</button></div>
+        <div class="prompt" id="p7"><span class="pfx">PROMPT ▸ </span>Review my completed Lesson 01 work against the Lesson 01 check pack and completion criteria. Show the files I changed and the interfaces I provide, and explain how each completion criterion is met with code or test evidence. Point out where my design makes a different choice from the one the lesson presents, and what that choice costs or gains. Preserve deliberate improvements and earlier capabilities.</div>
+        <div><button class="copy" type="button" data-copy="p7">Copy prompt</button></div>
       </div>
     </div>
   </div>
@@ -759,13 +762,15 @@ class Context:
       <div><b>Every run is bounded</b>and every stop has a name and a reason.</div>
       <div><b>Completed is not solved</b>look for cited evidence or an honest "insufficient evidence".</div>
     </div>
+    <div class="ask"><span class="label">After class</span><p class="q">Run today's prompts in your own project, in this order</p>
+      <ol class="steps"><li><a href="#setup">The lesson-00 prompt</a>: your project, the kit and your GitLab repository</li><li><a href="#orient">Add the check pack</a></li><li><a href="#step1">Build steps 1 to 4</a>, one at a time, reading each change</li><li><a href="#exercise">Break it on purpose</a></li><li><a href="#verify">Verify and push, then review</a></li></ol></div>
     <p class="say">Keep your blueprint. Later, the platform console will show these same run events as a timeline.</p>
     <div class="ask"><span class="label">Next session</span><p class="q">Reliable tools and MCP integration</p><p>Validated tool contracts, application-owned permissions, an approval gate for a mock remediation, and real MCP transport. Bring your Session 01 checkpoint.</p></div>
   </div>
 </section>
 
 <footer>
-  <p>Instructor guide: <code>instructor-guides/01 Agent architecture and the ReAct runtime.md</code> · reference checkpoint <code>lesson-01</code> · all incident data are synthetic.</p>
+  <p>Course kit: <a href="https://github.com/maxvpavlov/agentic-platforms-kit">github.com/maxvpavlov/agentic-platforms-kit</a>, lessons/01 · all incident data are synthetic.</p>
   <p>Further reading: <a href="https://www.anthropic.com/engineering/building-effective-agents">Building effective agents</a> · <a href="https://arxiv.org/abs/2210.03629">ReAct: Synergizing Reasoning and Acting in Language Models</a></p>
 </footer>
 </main>

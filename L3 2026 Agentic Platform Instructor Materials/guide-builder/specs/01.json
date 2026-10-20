@@ -5,7 +5,7 @@
   "outcome": "A working, bounded single-agent runtime in the learner's own repository, with interchangeable model access and observable tool use.",
   "platform_role": "This session builds the core of the platform: the bounded agent runtime that every later component wraps rather than replaces. The agent registry (Session 08), MCP tool gateway (Session 09), identity and credentials (Session 10) and operations (Session 11) all sit around this loop. The run's event log, which records each model step, tool observation and failure, is the data that the console's Runs view renders as an event timeline from Session 08; today learners read it as JSON.",
   "preparation": [
-    "Refresh 2025 LLM/prompting/RAG basics and HTTP, JSON, async programming and tests. Set up your repository, mock data, five acceptance scenarios and a workflow baseline. Mentor prepares a staged reference repository with runnable checkpoints and checks for each demo. Read the architecture, ReAct and chosen model API tool-calling references.",
+    "Refresh 2025 LLM/prompting/RAG basics and HTTP, JSON, async programming and tests. Prepare a demonstration project from the course kit's starter exactly as a learner would, with a GitLab repository in the course group, and rehearse all thirteen prompts on it. Keep the reference checkpoints at hand as the answer key for the excerpts. Read the architecture, ReAct and chosen model API tool-calling references.",
     "Sketch the target platform that you will draw in the opening, labelling each component with the session that builds it; the platform table above gives the order."
   ],
   "opening_say": "Today we begin the platform that you will extend throughout this programme, so first draw where it is going. Put the agent runtime in the centre. Around it, sketch an agent registry of versioned definitions, remote agents and tool servers (Session 08); one MCP tool gateway that applies policy to every tool call and keeps an audit trail (Session 09); agent identity with delegated, short-lived credentials and a credential store (Session 10); and operations with evaluated releases (Session 11). Across the top, draw the platform console: a web UI that shows the registry, runs and approvals from Session 08, and later the gateway audit, identity and operations. Today we build only the centre box. Our incident is a payments service that slowed after a deployment; we want an investigation with cited evidence from mock logs and runbooks. Ask what a successful investigation should contain: a likely cause, the source of that claim, and a clear statement when evidence is insufficient. A fluent paragraph by itself is not an acceptance test. Our first checkpoint must also stop when it exhausts its allowance or begins repeating an action.",
@@ -28,7 +28,7 @@
       "title": "Normalize model access",
       "say": "Keep provider-specific response shapes out of the loop. MockProvider and HTTPProvider both return a Reply containing an assistant message and usage. Show how an OpenAI tool call becomes an internal name and JSON arguments. Then show the Anthropic conversion, where tool results are user content blocks associated with a tool-use identifier. These are adapters around the same runtime. The environment selects the provider and model; credentials never go into the repository. Point out that changing a base URL is a configuration choice, not an instruction the agent is permitted to make during an investigation. For today's build, keep MODEL_PROVIDER set to mock.",
       "file": "incident/providers.py",
-      "prompt": "Implement the provider interface in incident/providers.py using the current core contracts. Add the deterministic offline provider and configurable OpenAI-compatible and Anthropic adapters. Normalize messages, tool calls, errors and usage into Reply. Use mock HTTP responses to check both adapter request shapes without paid calls. Explain how provider selection and secrets are configured without exposing credentials.",
+      "prompt": "Implement the provider interface in incident/providers.py using the current core contracts. Add the given MockProvider from the course kit unchanged, and implement configurable OpenAI-compatible and Anthropic adapters. Normalize messages, tool calls, errors and usage into Reply. Use mock HTTP responses to check both adapter request shapes without paid calls. Explain how provider selection and secrets are configured without exposing credentials.",
       "excerpt": {
         "start": 106,
         "end": 117
@@ -41,7 +41,7 @@
       "title": "Implement the loop and pending calls",
       "say": "Now follow one iteration with a concrete call to log_lookup for INC-001. We record the proposed tool call before executing it, dispatch the name and arguments, and attach the observation using the same call identifier. The next model request includes that observation. Pause here and ask a learner to trace the identifier from assistant message to tool message. A repeated action with identical arguments is detected within the run. Later, pending calls will also become our recovery boundary. Notice that the model never invokes Python directly: the runtime calls the supplied executor. This makes the first implementation small enough to inspect and gives us one place to add contracts and authorization in Session 02.",
       "file": "incident/core.py",
-      "prompt": "Implement run_agent in incident/core.py and connect the synthetic readers in incident/fixtures.py. Preserve assistant tool-call IDs when appending observations, track pending calls before dispatch, and finish with a structured answer and observed evidence IDs. Use the existing provider interface. Show the complete model-to-tool-to-observation path for INC-001 and explain how the same loop can later support checkpointing.",
+      "prompt": "Implement run_agent in incident/core.py and connect the synthetic readers in the given incident/fixtures.py. Preserve assistant tool-call IDs when appending observations, track pending calls before dispatch, and finish with a structured answer and observed evidence IDs. Use the existing provider interface. Show the complete model-to-tool-to-observation path for INC-001 and explain how the same loop can later support checkpointing.",
       "excerpt": {
         "start": 91,
         "end": 111
@@ -54,7 +54,7 @@
       "title": "Bound and verify execution",
       "say": "Run the happy path before introducing failures. The fixture requests logs, requests a runbook, and returns a final answer after three model steps. It cites log-astro-001 and rb-pool-v1. Next, run the limit tests and the repeating-provider example. Explain each failure as a controlled outcome rather than an unexplained exception. A one-step allowance prevents completion, a tiny token allowance prevents dispatch, and a deadline cancels an outstanding operation. Ask everyone to change one limit, predict the error, and then run the check. Close this section by locating the event records. We record actions and usage, and do not need access to hidden model reasoning to diagnose the loop. From Session 08, the platform console renders these same records as a run's event timeline, so keep them structured and complete.",
       "file": "incident/core.py",
-      "prompt": "Review and enforce the runtime's step, token, elapsed-time and repeated-action guards. Complete the Session 01 lab runner and tests. Demonstrate the normal cited answer and deliberately trigger each limit using offline fixtures. Explain the approximate pre-dispatch token estimate and distinguish reported usage from configured cost. Show which guard caused each failure and why the run stopped.",
+      "prompt": "Review and enforce the runtime's step, token, elapsed-time and repeated-action guards. Make the Session 01 check pack pass. Demonstrate the normal cited answer and deliberately trigger each limit using offline fixtures. Explain the approximate pre-dispatch token estimate and distinguish reported usage from configured cost. Show which guard caused each failure and why the run stopped.",
       "excerpt": {
         "start": 111,
         "end": 130
@@ -100,7 +100,7 @@
     {
       "heading": "The lesson command says the checkpoint is too early",
       "diagnostic": "incident/__init__.py still identifies the starting checkpoint.",
-      "recovery": "After completing the lesson changes, set LESSON to 1 or use the completed reference snapshot."
+      "recovery": "After completing the lesson changes, set LESSON to 1. If you are a lesson behind, ask your instructor for a catch-up checkpoint."
     },
     {
       "heading": "A native Python package cannot load on macOS",
@@ -114,7 +114,7 @@
     "Redraw the platform blueprint in your own notes and mark the box today's checkpoint fills. For each later console view, note whether today's event log already records the data it needs."
   ],
   "verification_scope": ["@tested", "@not_tested"],
-  "close_say": "You now own the loop that every later agent will use: the centre box of the platform you drew today. Have your coding agent save this checkpoint and be ready to explain how one action moves from model proposal to tool observation. Keep your blueprint; we will add a component to it in most sessions, and from Session 08 the console will render these same run events. In the next session we make that tool boundary reliable and connect the same capabilities through MCP.",
+  "close_say": "You now own the loop that every later agent will use: the centre box of the platform you drew today. After class, repeat today's prompts in your own project, starting with the setup prompt, and push your checkpoint to your GitLab repository. Be ready to explain how one action moves from model proposal to tool observation. Keep your blueprint; we will add a component to it in most sessions, and from Session 08 the console will render these same run events. In the next session we make that tool boundary reliable and connect the same capabilities through MCP.",
   "references": [
     {
       "title": "Building effective agents",
@@ -124,5 +124,43 @@
       "title": "ReAct paper",
       "url": "https://arxiv.org/abs/2210.03629"
     }
+  ],
+  "overrides": {
+    "prepare_prompt": "Set up my project for the Building Agentic Platforms course, starting at lesson-00. Clone the public course kit from https://github.com/maxvpavlov/agentic-platforms-kit into ~/agentic-course/kit and treat that folder as read-only. Create my own project in ~/agentic-course/my-platform by copying the kit's starter folder, and make it a fresh Git repository with one initial commit. Install the pinned dependencies with uv for Python 3.12, run the tests with python -m pytest, and confirm that incident/__init__.py says LESSON = 0. Install the GitLab CLI, glab, if it is missing, and sign me in to GitLab; when a browser sign-in is needed, tell me what to do, and never ask me to paste a token into the chat. Ask me for the name of the GitLab group I was invited to, create a private repository for my project in that group, and push my project to it. Report both folder paths, the files in my project, the test result, the GitLab repository address and anything missing, such as uv, Python 3.12, glab or access to the group. Do not ask me to run terminal commands."
+  },
+  "agenda": [
+    [
+      "00 to 17",
+      "Course opening: why agent teams, when to split work, why a platform, its parts, and the incident premise",
+      "Discussion"
+    ],
+    [
+      "17 to 30",
+      "Concept script: the ReAct loop, one real run, who owns identity and limits",
+      "Discussion"
+    ],
+    [
+      "30 to 75",
+      "Instructor demonstration of the setup prompt, the check pack and build steps 1 to 4 on a fresh project",
+      "Instructor demo"
+    ],
+    [
+      "75 to 95",
+      "Break it on purpose: learners predict each guard's failure, the instructor runs it",
+      "Discussion"
+    ],
+    [
+      "95 to 110",
+      "Verification evidence, the review prompt and pushing the checkpoint to GitLab",
+      "Instructor demo"
+    ],
+    [
+      "110 to 120",
+      "Questions and the after-class assignment: repeat every prompt in your own project",
+      "Discussion"
+    ]
+  ],
+  "readiness_notes": [
+    "Session 01 is a demonstration. Learners need nothing before class and do not build during it: after class they repeat every prompt in their own project, starting with the setup prompt that creates their repository in the course GitLab group. Show each prompt exactly as they will use it, and point out where the check pack, the given files and the push happen."
   ]
 }

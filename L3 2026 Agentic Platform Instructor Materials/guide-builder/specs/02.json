@@ -53,7 +53,7 @@
       "title": "Run through the client adapter",
       "say": "Replace only the read handler with MCPReadAdapter and run the original investigation. The executor still validates and authorizes calls before the adapter sends them. Inspect the discovered names and negotiated protocol, then compare the final source IDs with Session 01. Highlight the SDK's snake_case result fields, including is_error and structured_content. A version mismatch here is an integration problem, not an agent reasoning problem. Finally, test denied writes, extra arguments and oversized results. Pause until each participant can explain where an MCP failure becomes an application error and why terminal failures should not trigger a retry storm.",
       "file": "incident/mcp_bridge.py",
-      "prompt": "Implement the MCP read adapter and connect it behind ToolExecutor. Use the real local stdio transport and the pinned SDK's result shapes. Complete the Session 02 lab and contract tests, show the negotiated protocol and discovered tools, and run the same investigation through the adapter. Confirm that transport discovery does not grant new permissions and show the unchanged cited outcome.",
+      "prompt": "Implement the MCP read adapter and connect it behind ToolExecutor. Use the real local stdio transport and the pinned SDK's result shapes. Make the Session 02 check pack pass, show the negotiated protocol and discovered tools, and run the same investigation through the adapter. Confirm that transport discovery does not grant new permissions and show the unchanged cited outcome.",
       "excerpt": {
         "start": 39,
         "end": 50

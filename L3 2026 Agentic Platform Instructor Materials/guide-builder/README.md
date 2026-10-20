@@ -29,6 +29,7 @@ $PY build.py --out-guides /tmp/guides --out-prompts /tmp/LEARNER_PROMPTS.md   # 
 $PY build.py                                   # build in place (real guides + LEARNER_PROMPTS.md)
 $PY build.py --lessons 5,6 --out-guides /tmp/g # build some guides only (no prompts file)
 $PY check.py                                   # coupling check of the real guides + prompts
+python3 kit.py --verify                        # regenerate ../learner-kit and test each check pack against its tag
 $PY check.py --guides /tmp/guides --prompts /tmp/LEARNER_PROMPTS.md
 $PY extract.py --out /tmp/specs                # re-derive specs from the existing guides
 $PY roundtrip.py --work /tmp/rt                # extract -> build -> compare with the originals
