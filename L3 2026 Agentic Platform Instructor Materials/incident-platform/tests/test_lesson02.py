@@ -6,7 +6,7 @@ from incident.tools import ToolExecutor, action_key
 
 async def test_authorization_schema_and_bounded_output():
     tools, ctx = ToolExecutor(), Context()
-    assert (await tools.execute("log_lookup", {"incident_id": "INC-001", "tenant": "globex"}, ctx))["error"] == "invalid_arguments"
+    assert (await tools.execute("log_lookup", {"incident_id": "INC-001", "tenant": "locomotive"}, ctx))["error"] == "invalid_arguments"
     assert (await tools.execute("mock_remediate", {}, ctx))["error"] == "permission_denied"
     tools.output_limit = 10
     assert (await tools.execute("log_lookup", {"incident_id": "INC-001"}, ctx))["error"] == "output_too_large"

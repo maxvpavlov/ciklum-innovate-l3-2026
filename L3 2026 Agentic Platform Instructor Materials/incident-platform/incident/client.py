@@ -16,7 +16,7 @@ def main():
     parser.add_argument("--wait", action="store_true")
     parser.add_argument("--output", default="var/trace.html")
     args = parser.parse_args()
-    with httpx.Client(base_url=args.url, headers={"Authorization": "Bearer "+os.getenv("PLATFORM_TOKEN", "demo-acme")}, timeout=15) as client:
+    with httpx.Client(base_url=args.url, headers={"Authorization": "Bearer "+os.getenv("PLATFORM_TOKEN", "demo-astro")}, timeout=15) as client:
         if args.command == "submit":
             response = client.post("/runs", json={"incident_id": args.value, "agent": args.agent})
             response.raise_for_status(); result = response.json()

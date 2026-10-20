@@ -12,11 +12,11 @@ from incident.providers import MockProvider, provider_from_env
 from incident.tools import ToolExecutor
 
 CASES = [
-    {"id": "pool", "tenant": "acme", "incident": "INC-001", "cause": "connection_pool_exhaustion", "split": "development"},
-    {"id": "clock", "tenant": "acme", "incident": "INC-002", "cause": "clock_skew", "split": "development"},
-    {"id": "missing", "tenant": "acme", "incident": "INC-404", "cause": "unknown", "split": "development"},
-    {"id": "ambiguous", "tenant": "acme", "incident": "INC-003", "cause": "unknown", "split": "held_out"},
-    {"id": "other_tenant", "tenant": "globex", "incident": "INC-001", "cause": "quota_exhaustion", "split": "held_out"},
+    {"id": "pool", "tenant": "astro", "incident": "INC-001", "cause": "connection_pool_exhaustion", "split": "development"},
+    {"id": "clock", "tenant": "astro", "incident": "INC-002", "cause": "clock_skew", "split": "development"},
+    {"id": "missing", "tenant": "astro", "incident": "INC-404", "cause": "unknown", "split": "development"},
+    {"id": "ambiguous", "tenant": "astro", "incident": "INC-003", "cause": "unknown", "split": "held_out"},
+    {"id": "other_tenant", "tenant": "locomotive", "incident": "INC-001", "cause": "quota_exhaustion", "split": "held_out"},
 ]
 
 

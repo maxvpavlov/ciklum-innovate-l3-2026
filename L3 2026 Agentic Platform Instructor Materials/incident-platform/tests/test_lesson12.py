@@ -19,11 +19,11 @@ async def test_cache_separates_tenants_versions_and_expiry():
             self.calls += 1
             return Reply({"role": "assistant", "content": "{}"}, 10)
     source, cache = Counting(), {}
-    one = CachedProvider(source, "acme", "v1", cache)
+    one = CachedProvider(source, "astro", "v1", cache)
     await one.complete([], []); assert (await one.complete([], [])).tokens == 0
-    await CachedProvider(source, "globex", "v1", cache).complete([], [])
-    await CachedProvider(source, "acme", "v2", cache).complete([], [])
-    expired = CachedProvider(source, "acme", "expired", cache, ttl=-1)
+    await CachedProvider(source, "locomotive", "v1", cache).complete([], [])
+    await CachedProvider(source, "astro", "v2", cache).complete([], [])
+    expired = CachedProvider(source, "astro", "expired", cache, ttl=-1)
     await expired.complete([], []); await expired.complete([], [])
     assert source.calls == 5
 

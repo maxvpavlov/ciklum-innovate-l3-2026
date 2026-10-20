@@ -13,18 +13,18 @@ async def demo():
                                 admission=Admission(max_pending=2, per_second=1000))
             try:
                 await platform.register_remote_agent(url)
-                run_id = platform.submit("acme", "analyst", "INC-001", "team", subject="user:dana")
-                run = await platform.wait("acme", run_id)
+                run_id = platform.submit("astro", "analyst", "INC-001", "team", subject="user:dana")
+                run = await platform.wait("astro", run_id)
                 assert run.status == "completed", run.snapshot()
-                trace = build_trace(platform.store, "acme", run_id)
+                trace = build_trace(platform.store, "astro", run_id)
                 assert len(trace["nodes"]) == 3
                 output = Path("var/trace.html"); output.parent.mkdir(exist_ok=True)
                 output.write_text(trace_html(trace))
                 ids, rejected = [], 0
                 for _ in range(6):
-                    try: ids.append(platform.submit("acme", "analyst", "INC-001"))
+                    try: ids.append(platform.submit("astro", "analyst", "INC-001"))
                     except CapacityError: rejected += 1
-                await asyncio.gather(*(platform.wait("acme", key) for key in ids))
+                await asyncio.gather(*(platform.wait("astro", key) for key in ids))
                 assert rejected == 4
                 baseline = await evaluate_platform(platform, "single", 1)
                 spec = platform.registry.get("single", 1)["spec"]

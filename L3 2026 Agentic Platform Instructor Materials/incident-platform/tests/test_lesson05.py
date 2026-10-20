@@ -20,5 +20,5 @@ async def test_expired_and_denied_approvals(tmp_path):
     with pytest.raises(PermissionError):
         await resume_run(store, ctx.tenant, ctx.run_id, provider, tools)
     with pytest.raises(KeyError):
-        store.load("globex", ctx.run_id)
+        store.load("locomotive", ctx.run_id)
 

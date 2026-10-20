@@ -46,7 +46,7 @@
         "end": 116
       },
       "explain": "Sharing sessions cuts process launches without widening access, because the key includes the tenant. The owner task respects the anyio rule that a cancel scope belongs to one task, and asyncio.shield stops one cancelled worker from cancelling the session for everyone.",
-      "ask": "Why not share one MCP session across Acme and Globex to save another process?",
+      "ask": "Why not share one MCP session across Astro and Locomotive to save another process?",
       "answer": "The tenant is bound when the server starts. A shared session would let one tenant's calls read the other's data, which is the boundary the platform exists to keep."
     },
     {
@@ -78,7 +78,7 @@
       "single"
     ],
     "mcp_sessions_launched": {
-      "incident-tools/acme": 1
+      "incident-tools/astro": 1
     },
     "denials": {
       "not_granted": "not_granted",
@@ -96,7 +96,7 @@
     }
   },
   "completion_criteria": [
-    "Two team runs and one single run complete for Acme through one shared upstream MCP session.",
+    "Two team runs and one single run complete for Astro through one shared upstream MCP session.",
     "Ungranted tools, writes without an operator role and oversized arguments are denied with stable reason codes before any upstream connection.",
     "A changed tool description quarantines the server, and later calls to it are denied.",
     "Every decision is audited with an argument hash, and the Gateway view is tenant-scoped.",

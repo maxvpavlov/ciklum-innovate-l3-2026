@@ -3,18 +3,18 @@ from incident.context import EvidenceStore, retrieve, select_context
 
 
 def test_retrieval_provenance_and_tenant():
-    assert retrieve("connection_pool_exhaustion", "acme")[0]["source_id"] == "rb-pool-v1"
-    assert all(r["tenant"] == "globex" for r in retrieve("payments", "globex"))
+    assert retrieve("connection_pool_exhaustion", "astro")[0]["source_id"] == "rb-pool-v1"
+    assert all(r["tenant"] == "locomotive" for r in retrieve("payments", "locomotive"))
 
 
 def test_version_conflict_and_expired_memory():
     store = EvidenceStore()
-    store.save_artifact("acme", "report", {"source": "log-acme-001"})
+    store.save_artifact("astro", "report", {"source": "log-astro-001"})
     with pytest.raises(ValueError, match="stale_artifact"):
-        store.save_artifact("acme", "report", {})
-    assert store.artifact("globex", "report") is None
-    store.remember("acme", "report", {"answer": "stale"}, ttl=-1)
-    assert store.recall("acme", "report") is None
+        store.save_artifact("astro", "report", {})
+    assert store.artifact("locomotive", "report") is None
+    store.remember("astro", "report", {"answer": "stale"}, ttl=-1)
+    assert store.recall("astro", "report") is None
 
 
 def test_compaction_retains_complete_rounds():

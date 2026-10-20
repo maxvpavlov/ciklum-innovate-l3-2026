@@ -13,7 +13,7 @@
   "steps": [
     {
       "title": "Define the run contract",
-      "say": "Start with the values that application code controls. Tenant, run identifier, role and permitted tools belong in the execution context. They must not be supplied by a retrieved document. Keep the evolving messages and result in Run. This separation will matter when we persist a run or create a child: we can serialize task state while deliberately constructing its authority. Walk through one example context for Acme, then point to Limits. We have separate limits on steps, reported tokens, elapsed time and maximum requested output. These limits address different failure modes. Ask participants to identify the limit that catches a provider that hangs without producing any tokens.",
+      "say": "Start with the values that application code controls. Tenant, run identifier, role and permitted tools belong in the execution context. They must not be supplied by a retrieved document. Keep the evolving messages and result in Run. This separation will matter when we persist a run or create a child: we can serialize task state while deliberately constructing its authority. Walk through one example context for Astro, then point to Limits. We have separate limits on steps, reported tokens, elapsed time and maximum requested output. These limits address different failure modes. Ask participants to identify the limit that catches a provider that hangs without producing any tokens.",
       "file": "incident/core.py",
       "prompt": "Create the Context, Limits, Reply and Run contracts in incident/core.py. Separate application-owned tenant identity, permissions and run identifiers from model messages and results. Make run state serializable and give the runtime explicit step, token and time limits. Keep this step focused on the contracts; do not implement later platform features. Show the fields, their owners and one example of a value the model must not control.",
       "excerpt": {
@@ -52,7 +52,7 @@
     },
     {
       "title": "Bound and verify execution",
-      "say": "Run the happy path before introducing failures. The fixture requests logs, requests a runbook, and returns a final answer after three model steps. It cites log-acme-001 and rb-pool-v1. Next, run the limit tests and the repeating-provider example. Explain each failure as a controlled outcome rather than an unexplained exception. A one-step allowance prevents completion, a tiny token allowance prevents dispatch, and a deadline cancels an outstanding operation. Ask everyone to change one limit, predict the error, and then run the check. Close this section by locating the event records. We record actions and usage, and do not need access to hidden model reasoning to diagnose the loop. From Session 08, the platform console renders these same records as a run's event timeline, so keep them structured and complete.",
+      "say": "Run the happy path before introducing failures. The fixture requests logs, requests a runbook, and returns a final answer after three model steps. It cites log-astro-001 and rb-pool-v1. Next, run the limit tests and the repeating-provider example. Explain each failure as a controlled outcome rather than an unexplained exception. A one-step allowance prevents completion, a tiny token allowance prevents dispatch, and a deadline cancels an outstanding operation. Ask everyone to change one limit, predict the error, and then run the check. Close this section by locating the event records. We record actions and usage, and do not need access to hidden model reasoning to diagnose the loop. From Session 08, the platform console renders these same records as a run's event timeline, so keep them structured and complete.",
       "file": "incident/core.py",
       "prompt": "Review and enforce the runtime's step, token, elapsed-time and repeated-action guards. Complete the Session 01 lab runner and tests. Demonstrate the normal cited answer and deliberately trigger each limit using offline fixtures. Explain the approximate pre-dispatch token estimate and distinguish reported usage from configured cost. Show which guard caused each failure and why the run stopped.",
       "excerpt": {
@@ -71,7 +71,7 @@
       "status": "complete",
       "cause": "connection_pool_exhaustion",
       "summary": "INC-001: connection_pool_exhaustion",
-      "evidence": ["log-acme-001", "rb-pool-v1"]
+      "evidence": ["log-astro-001", "rb-pool-v1"]
     },
     "model_steps": 3,
     "repeated_action": "repeated_action"

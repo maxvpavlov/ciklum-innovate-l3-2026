@@ -4,7 +4,7 @@
 
 **Outcome** Agents become validated, immutable registry definitions that run through one platform API, remote A2A agents are pinned by Agent Card hash, and analysts and operators inspect the platform in a tenant-scoped console.
 
-Duration: 90 minutes. Starting checkpoint: lesson-07. Ending checkpoint: lesson-08 (059921a).
+Duration: 90 minutes. Starting checkpoint: lesson-07. Ending checkpoint: lesson-08 (21a8a6e).
 
 Word version: [08 Platform core agent registry and console.docx](08%20Platform%20core%20agent%20registry%20and%20console.docx)
 
@@ -115,9 +115,9 @@ def register(self, name, version, spec):
 
 **PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference snapshot before accepting the change.
 
-![Registry view as the Acme analyst. Point at the version, state and SHA-256 columns, and at the empty Remote agents section: nothing is pinned until a specialist URL is configured.](../console-screenshots/08-registry.png)
+![Registry view as the Astro analyst. Point at the version, state and SHA-256 columns, and at the empty Remote agents section: nothing is pinned until a specialist URL is configured.](../console-screenshots/08-registry.png)
 
-**CONSOLE** Registry view as the Acme analyst. Point at the version, state and SHA-256 columns, and at the empty Remote agents section: nothing is pinned until a specialist URL is configured.
+**CONSOLE** Registry view as the Astro analyst. Point at the version, state and SHA-256 columns, and at the empty Remote agents section: nothing is pinned until a specialist URL is configured.
 
 ### 2 Pin remote agents and discover by skill
 
@@ -240,7 +240,7 @@ export function h(tag, attrs = {}, ...children) {
 
 ## Learner practice and checkpoints
 
-> **PROMPT** Help me carry out the Lesson 08 learner exercise in my existing project: Start the platform API on loopback with the offline provider and a temporary database, and give me the console address. I will sign in as demo-acme, submit INC-001 with single and team, and compare the two run details. As demo-globex I will confirm that the Acme runs are absent. As demo-operator I will compare the Registry and Approvals views with the analyst's, submit the remediator and decide the pending action myself. Then run a registry version experiment: register single version 2 with a smaller context budget, attempt to rewrite version 1, let me activate version 2 as the operator, submit a run, retire version 1 and try to run it. Confirm that the older run still records version 1 and its hash. First state the expected outcomes, then run the experiment in a recoverable state. Show the observed results and explain any discrepancy. Keep the original acceptance criteria and restore temporary experiments when finished.
+> **PROMPT** Help me carry out the Lesson 08 learner exercise in my existing project: Start the platform API on loopback with the offline provider and a temporary database, and give me the console address. I will sign in as demo-astro, submit INC-001 with single and team, and compare the two run details. As demo-locomotive I will confirm that the Astro runs are absent. As demo-operator I will compare the Registry and Approvals views with the analyst's, submit the remediator and decide the pending action myself. Then run a registry version experiment: register single version 2 with a smaller context budget, attempt to rewrite version 1, let me activate version 2 as the operator, submit a run, retire version 1 and try to run it. Confirm that the older run still records version 1 and its hash. First state the expected outcomes, then run the experiment in a recoverable state. Show the observed results and explain any discrepancy. Keep the original acceptance criteria and restore temporary experiments when finished.
 
 **VERIFY** Give the coding agent the verification prompt below, then inspect its evidence and explain the result in your own words.
 
@@ -306,7 +306,7 @@ export function h(tag, attrs = {}, ...children) {
 - A second lease claim is rejected, another tenant's run returns 404, and a decision requires an operator and the current action key.
 - The console is served at /console under a strict Content-Security-Policy, renders API data as text only and shows each identity only its tenant's runs; every API handler is asynchronous.
 
-The independently unpacked lesson-08 checkpoint passed its full test suite and this lesson demo. Recorded test result: 33 passed in 4.35s. Have your coding agent save a recoverable learner checkpoint and retain the comparison with lesson-08 (059921a).
+The independently unpacked lesson-08 checkpoint passed its full test suite and this lesson demo. Recorded test result: 33 passed in 4.35s. Have your coding agent save a recoverable learner checkpoint and retain the comparison with lesson-08 (21a8a6e).
 
 ### Files changed in this checkpoint
 

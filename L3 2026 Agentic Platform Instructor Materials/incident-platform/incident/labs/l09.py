@@ -28,8 +28,8 @@ async def demo():
         # A second gateway over the same registry and audit ledger demonstrates policy directly.
         gateway = ToolGateway(platform.registry, path)
         try:
-            ids = [platform.submit("acme", "analyst", "INC-001", agent) for agent in ["team", "team", "single"]]
-            runs = [await platform.wait("acme", run_id) for run_id in ids]
+            ids = [platform.submit("astro", "analyst", "INC-001", agent) for agent in ["team", "team", "single"]]
+            runs = [await platform.wait("astro", run_id) for run_id in ids]
             assert all(run.status == "completed" for run in runs), [r.error for r in runs]
             sessions = {f"{server}/{tenant}": count for (server, tenant), count in platform.gateway.launches.items()}
             denials = {
@@ -46,7 +46,7 @@ async def demo():
             assert changed["error"] == after["error"] == "tool_definition_changed"
             assert all(result["ok"] is False for result in denials.values())
             decisions = {}
-            for row in gateway.recent("acme", limit=1000):
+            for row in gateway.recent("astro", limit=1000):
                 decisions[row["decision"]] = decisions.get(row["decision"], 0)+1
             return {"completed_runs": [r.configuration["name"] for r in runs], "mcp_sessions_launched": sessions,
                     "denials": {k: v["error"] for k, v in denials.items()},

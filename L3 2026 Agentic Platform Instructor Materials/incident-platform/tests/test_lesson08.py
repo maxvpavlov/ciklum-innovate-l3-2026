@@ -19,14 +19,14 @@ async def test_approval_api_binds_reviewed_key(tmp_path):
         headers={"Authorization": "Bearer demo-operator"}) as client:
         response = await client.post("/runs", json={"incident_id": "INC-001", "agent": "remediator"})
         run_id = response.json()["id"]
-        await platform.wait("acme", run_id)
+        await platform.wait("astro", run_id)
         report = (await client.get(f"/runs/{run_id}")).json()
         assert report["status"] == "waiting_approval" and not report["approved"]
         assert (await client.post(f"/runs/{run_id}/decision", json={"key": "wrong"})).status_code == 409
         assert (await client.post(f"/runs/{run_id}/decision", json={"key": report["proposal"]["key"]})).status_code == 200
         assert (await client.get(f"/runs/{run_id}")).json()["approved"]
         await client.post(f"/runs/{run_id}/resume")
-        assert (await platform.wait("acme", run_id)).status == "completed"
+        assert (await platform.wait("astro", run_id)).status == "completed"
 
 
 def test_definition_validation_immutability_and_lease_ownership(tmp_path):
@@ -38,9 +38,9 @@ def test_definition_validation_immutability_and_lease_ownership(tmp_path):
         platform.registry.register("single", 2, {**spec, "api_key": "sk-inline-secret"})
     with pytest.raises(ValueError, match="unknown_tool"):
         platform.registry.register("single", 2, {**spec, "allowed": ["shell_exec"]})
-    platform.store.claim("acme", "example", "worker-a")
+    platform.store.claim("astro", "example", "worker-a")
     with pytest.raises(ValueError, match="already_owned"):
-        platform.store.claim("acme", "example", "worker-b")
+        platform.store.claim("astro", "example", "worker-b")
 
 
 async def test_lifecycle_discovery_and_pinned_remote_card(tmp_path):
@@ -52,7 +52,7 @@ async def test_lifecycle_discovery_and_pinned_remote_card(tmp_path):
     registry.activate("single", 2)
     registry.retire("single", 1)
     with pytest.raises(ValueError, match="retired_version"):
-        platform.submit("acme", "analyst", "INC-001", "single", 1)
+        platform.submit("astro", "analyst", "INC-001", "single", 1)
     with pytest.raises(ValueError, match="retired_version"):
         registry.activate("single", 1)
     card = {"name": "Runbook specialist", "skills": [{"id": "runbooks"}]}
@@ -68,12 +68,12 @@ async def test_console_is_tenant_scoped_and_renders_text_only(tmp_path):
     transport = httpx.ASGITransport(create_app(platform))
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
         assert (await client.get("/runs")).status_code == 401
-        acme = {"Authorization": "Bearer demo-acme"}
-        run_id = (await client.post("/runs", json={"incident_id": "INC-001"}, headers=acme)).json()["id"]
-        await platform.wait("acme", run_id)
-        assert [r["id"] for r in (await client.get("/runs", headers=acme)).json()] == [run_id]
-        assert (await client.get("/runs", headers={"Authorization": "Bearer demo-globex"})).json() == []
-        assert (await client.post("/registry/agents/single/activate", json={"version": 1}, headers=acme)).status_code == 403
+        astro = {"Authorization": "Bearer demo-astro"}
+        run_id = (await client.post("/runs", json={"incident_id": "INC-001"}, headers=astro)).json()["id"]
+        await platform.wait("astro", run_id)
+        assert [r["id"] for r in (await client.get("/runs", headers=astro)).json()] == [run_id]
+        assert (await client.get("/runs", headers={"Authorization": "Bearer demo-locomotive"})).json() == []
+        assert (await client.post("/registry/agents/single/activate", json={"version": 1}, headers=astro)).status_code == 403
         page = await client.get("/console/")
         assert "frame-ancestors 'none'" in page.headers["content-security-policy"]
     console = Path(__file__).parents[1]/"incident"/"console"

@@ -10,7 +10,7 @@ async def test_loop_uses_evidence_and_stops():
     run = await run_agent(MockProvider(), simple_tools, SCHEMAS, "INC-001")
     assert run.status == "completed"
     assert run.answer["cause"] == "connection_pool_exhaustion"
-    assert "log-acme-001" in run.answer["evidence"]
+    assert "log-astro-001" in run.answer["evidence"]
     assert run.steps == 3
 
 

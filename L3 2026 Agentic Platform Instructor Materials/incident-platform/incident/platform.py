@@ -66,9 +66,9 @@ SEED_AGENTS = {
 }
 
 SEED_TOOL_SERVERS = {
-    "incident-tools": {"transport": "mcp-stdio", "tenants": ["acme", "globex"],
+    "incident-tools": {"transport": "mcp-stdio", "tenants": ["astro", "locomotive"],
                        "tools": {"log_lookup": {"risk": "read"}, "runbook_search": {"risk": "read"}}},
-    "platform-actions": {"transport": "local", "tenants": ["acme", "globex"],
+    "platform-actions": {"transport": "local", "tenants": ["astro", "locomotive"],
                          "tools": {"mock_remediate": {"risk": "write"}}},
 }
 

@@ -57,7 +57,7 @@ function signOut() {
 }
 
 function loginView() {
-  const input = h("input", { name: "credential", required: true, autocomplete: "off", placeholder: "demo-acme" });
+  const input = h("input", { name: "credential", required: true, autocomplete: "off", placeholder: "demo-astro" });
   const status = h("div");
   const form = h("form", { onsubmit: async (event) => {
     event.preventDefault();
@@ -65,7 +65,7 @@ function loginView() {
     catch (error) { status.replaceChildren(h("div", { class: "error" }, error.message)); }
   } },
     h("label", {}, "Demo credential", input),
-    h("p", { class: "muted" }, "Local demo identities: demo-acme (analyst), demo-operator (operator), demo-globex (analyst). "
+    h("p", { class: "muted" }, "Local demo identities: demo-astro (analyst), demo-operator (operator), demo-locomotive (analyst). "
       + "They are for loopback use only and are exchanged for a one-hour signed token."),
     h("button", { type: "submit" }, "Sign in"));
   return h("section", { class: "panel login" }, h("h1", {}, "Sign in"), status, form);

@@ -68,7 +68,7 @@
     {
       "after": "step1",
       "image": "08-registry.png",
-      "caption": "Registry view as the Acme analyst. Point at the version, state and SHA-256 columns, and at the empty Remote agents section: nothing is pinned until a specialist URL is configured."
+      "caption": "Registry view as the Astro analyst. Point at the version, state and SHA-256 columns, and at the empty Remote agents section: nothing is pinned until a specialist URL is configured."
     },
     {
       "after": "step3",
@@ -86,7 +86,7 @@
       "caption": "Approvals as demo-operator with a pending mock_remediate proposal. Point at the exact arguments and the action key; an analyst sees only a notice here, and resuming is a separate step."
     }
   ],
-  "exercise": "Start the platform API on loopback with the offline provider and a temporary database, and give me the console address. I will sign in as demo-acme, submit INC-001 with single and team, and compare the two run details. As demo-globex I will confirm that the Acme runs are absent. As demo-operator I will compare the Registry and Approvals views with the analyst's, submit the remediator and decide the pending action myself. Then run a registry version experiment: register single version 2 with a smaller context budget, attempt to rewrite version 1, let me activate version 2 as the operator, submit a run, retire version 1 and try to run it. Confirm that the older run still records version 1 and its hash.",
+  "exercise": "Start the platform API on loopback with the offline provider and a temporary database, and give me the console address. I will sign in as demo-astro, submit INC-001 with single and team, and compare the two run details. As demo-locomotive I will confirm that the Astro runs are absent. As demo-operator I will compare the Registry and Approvals views with the analyst's, submit the remediator and decide the pending action myself. Then run a registry version experiment: register single version 2 with a smaller context budget, attempt to rewrite version 1, let me activate version 2 as the operator, submit a run, retire version 1 and try to run it. Confirm that the older run still records version 1 and its hash.",
   "expected_json": {
     "registered_agents": ["remediator", "single", "team"],
     "configurations": [

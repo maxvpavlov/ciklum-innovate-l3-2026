@@ -4,7 +4,7 @@
 
 **Outcome** Participants present the platform they built through its own console, justify a bounded tuning change with comparable, recorded evidence and explain the architecture, the four platform components, failures and remaining limitations.
 
-Duration: 90 minutes. Starting checkpoint: lesson-11. Ending checkpoint: lesson-12 (00c1e41).
+Duration: 90 minutes. Starting checkpoint: lesson-11. Ending checkpoint: lesson-12 (40bd536).
 
 Word version: [12 Tune and present your agentic platform.docx](12%20Tune%20and%20present%20your%20agentic%20platform.docx)
 
@@ -267,7 +267,7 @@ return {"baseline_success": baseline["success_rate"], "candidate_success": candi
 - Permission, recovery or cancellation behaviour is demonstrated.
 - The presenter can explain code ownership, protocol boundaries, measurements and limitations.
 
-The independently unpacked lesson-12 checkpoint passed its full test suite and this lesson demo. Recorded test result: 51 passed in 20.67s. Have your coding agent save a recoverable learner checkpoint and retain the comparison with lesson-12 (00c1e41).
+The independently unpacked lesson-12 checkpoint passed its full test suite and this lesson demo. Recorded test result: 51 passed in 20.67s. Have your coding agent save a recoverable learner checkpoint and retain the comparison with lesson-12 (40bd536).
 
 ### Files changed in this checkpoint
 

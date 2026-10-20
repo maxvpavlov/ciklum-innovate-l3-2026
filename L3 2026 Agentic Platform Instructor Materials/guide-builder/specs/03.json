@@ -12,9 +12,9 @@
   "steps": [
     {
       "title": "Retrieve within the tenant boundary",
-      "say": "Read the tenant filter before discussing ranking quality. We filter the source population by the authenticated tenant and only then rank the remaining runbooks. The score is the overlap between query words and source text, with a deterministic source-ID tie break. Show the same payments query for Acme and Globex. The results must differ because the permitted data differs. Keep source IDs and versions in the returned records. A downstream explanation can then cite the exact evidence it used. Ask a learner to replace the query and predict the leading source before running it.",
+      "say": "Read the tenant filter before discussing ranking quality. We filter the source population by the authenticated tenant and only then rank the remaining runbooks. The score is the overlap between query words and source text, with a deterministic source-ID tie break. Show the same payments query for Astro and Locomotive. The results must differ because the permitted data differs. Keep source IDs and versions in the returned records. A downstream explanation can then cite the exact evidence it used. Ask a learner to replace the query and predict the leading source before running it.",
       "file": "incident/context.py",
-      "prompt": "Implement tenant-scoped runbook retrieval and context_tools in incident/context.py. Filter authorized sources before ranking and retain source IDs and versions. Use transparent lexical ranking for this lesson so I can inspect why a record was selected. Compare the same payments query for Acme and Globex. Keep the tool contract compatible with the existing executor and explain the returned evidence.",
+      "prompt": "Implement tenant-scoped runbook retrieval and context_tools in incident/context.py. Filter authorized sources before ranking and retain source IDs and versions. Use transparent lexical ranking for this lesson so I can inspect why a record was selected. Compare the same payments query for Astro and Locomotive. Keep the tool contract compatible with the existing executor and explain the returned evidence.",
       "excerpt": {
         "start": 9,
         "end": 13
@@ -63,13 +63,13 @@
       "answer": "Preserve the conflict as evidence, prefer appropriately verified current sources, and avoid treating memory as an instruction or authorization."
     }
   ],
-  "exercise": "Run the same retrieval for Acme and Globex, inspect source IDs, and attempt a stale artifact write. Build a long synthetic conversation and reduce max_chars while checking valid tool-call pairs. Compare the investigation outcome before and after context selection.",
+  "exercise": "Run the same retrieval for Astro and Locomotive, inspect source IDs, and attempt a stale artifact write. Build a long synthetic conversation and reduce max_chars while checking valid tool-call pairs. Compare the investigation outcome before and after context selection.",
   "expected_json": {
     "answer": {
       "status": "complete",
       "cause": "connection_pool_exhaustion",
       "summary": "INC-001: connection_pool_exhaustion",
-      "evidence": ["log-acme-001", "rb-pool-v1"]
+      "evidence": ["log-astro-001", "rb-pool-v1"]
     },
     "artifact_version": 1,
     "expired_memory": null,

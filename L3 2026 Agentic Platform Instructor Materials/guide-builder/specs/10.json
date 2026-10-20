@@ -7,7 +7,7 @@
   "preparation": [
     "Bring your Session 09 checkpoint with the gateway audit working. Read the act claim in RFC 8693 and the token-audience rules in the MCP authorization specification. List where your platform asserts a credential or tenant instead of verifying it: demo API credentials, the static A2A token and the model key in the environment."
   ],
-  "opening_say": "Until now the platform trusted a tenant and role that the API attached to a Context. The gateway checked that Context, and the A2A specialist accepted one static shared token and assumed Acme. That does not say who a run acts for, and it gives every remote caller the same power. Today we make identity explicit. A user is a principal, each agent acts on that user's behalf, and every boundary checks a signed, short-lived token instead of trusting the caller. We also keep the containment checks for hostile input: an injected write, path escapes, unapproved egress, fabricated citations and redaction.",
+  "opening_say": "Until now the platform trusted a tenant and role that the API attached to a Context. The gateway checked that Context, and the A2A specialist accepted one static shared token and assumed Astro. That does not say who a run acts for, and it gives every remote caller the same power. Today we make identity explicit. A user is a principal, each agent acts on that user's behalf, and every boundary checks a signed, short-lived token instead of trusting the caller. We also keep the containment checks for hostile input: an injected write, path escapes, unapproved egress, fabricated citations and redaction.",
   "concept_say": "Separate authentication, which establishes who is calling, from delegation, which records who acts for whom. RFC 8693 token exchange expresses delegation with a nested act claim: the outermost actor is acting now, and the subject remains the human who started the work. Each token names one audience, so a token minted for the tool gateway is useless at the API or at a remote agent. The MCP authorization specification applies the same rule and forbids passing a client's token through to an upstream service. Delegated tokens expire in minutes and are revoked when the run ends, so they are never saved with run state. Upstream secrets are a separate problem: a credential store names them by reference and releases them only to named consumers, with an audit record.",
   "steps": [
     {
@@ -74,7 +74,7 @@
   "expected_json": {
     "injected_write_effects": 0,
     "blocked": [
-      "../globex/report.txt",
+      "../locomotive/report.txt",
       "/etc/passwd",
       "metadata egress"
     ],

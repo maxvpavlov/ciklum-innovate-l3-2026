@@ -9,7 +9,7 @@ from incident.context import context_tools
 from incident.fixtures import RUNBOOKS
 
 
-def make_server(tenant="acme"):
+def make_server(tenant="astro"):
     server = MCPServer("incident-tools")
     context = Context(tenant=tenant)
 
@@ -30,7 +30,7 @@ def make_server(tenant="acme"):
     return server
 
 
-def stdio_client(tenant="acme"):
+def stdio_client(tenant="astro"):
     return Client(StdioServerParameters(command=sys.executable,
         args=["-m", "incident.mcp_bridge"], env={"INCIDENT_TENANT": tenant,
         **({"PYTHONPATH": os.environ["PYTHONPATH"]} if "PYTHONPATH" in os.environ else {})}),
@@ -52,4 +52,4 @@ class MCPReadAdapter:
 
 
 if __name__ == "__main__":
-    make_server(os.getenv("INCIDENT_TENANT", "acme")).run(transport="stdio")
+    make_server(os.getenv("INCIDENT_TENANT", "astro")).run(transport="stdio")

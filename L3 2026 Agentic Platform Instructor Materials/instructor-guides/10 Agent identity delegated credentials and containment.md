@@ -4,7 +4,7 @@
 
 **Outcome** Every run acts for a named user through short-lived, audience-bound tokens that narrow at each child or remote agent. The gateway and the A2A specialist verify them, secrets are released only by reference, and hostile inputs are contained.
 
-Duration: 90 minutes. Starting checkpoint: lesson-09. Ending checkpoint: lesson-10 (0e0a5ba).
+Duration: 90 minutes. Starting checkpoint: lesson-09. Ending checkpoint: lesson-10 (9158dfa).
 
 Word version: [10 Agent identity delegated credentials and containment.docx](10%20Agent%20identity%20delegated%20credentials%20and%20containment.docx)
 
@@ -65,7 +65,7 @@ Use SAY for instructor narration, SHOW and REVIEW for the code and evidence part
 
 ### Opening and orientation
 
-**SAY** Until now the platform trusted a tenant and role that the API attached to a Context. The gateway checked that Context, and the A2A specialist accepted one static shared token and assumed Acme. That does not say who a run acts for, and it gives every remote caller the same power. Today we make identity explicit. A user is a principal, each agent acts on that user's behalf, and every boundary checks a signed, short-lived token instead of trusting the caller. We also keep the containment checks for hostile input: an injected write, path escapes, unapproved egress, fabricated citations and redaction.
+**SAY** Until now the platform trusted a tenant and role that the API attached to a Context. The gateway checked that Context, and the A2A specialist accepted one static shared token and assumed Astro. That does not say who a run acts for, and it gives every remote caller the same power. Today we make identity explicit. A user is a principal, each agent acts on that user's behalf, and every boundary checks a signed, short-lived token instead of trusting the caller. We also keep the containment checks for hostile input: an injected write, path escapes, unapproved egress, fabricated citations and redaction.
 
 **SHOW** The coding agent’s baseline report, current learner project, synthetic incident records and lesson outcome. Ask participants to explain what already works before authorizing the next bounded change.
 
@@ -260,7 +260,7 @@ class CredentialStore:
 {
   "injected_write_effects": 0,
   "blocked": [
-    "../globex/report.txt",
+    "../locomotive/report.txt",
     "/etc/passwd",
     "metadata egress"
   ],
@@ -298,7 +298,7 @@ class CredentialStore:
 - Secrets are released by reference only to named consumers, with every release audited.
 - Injected writes, path escapes, metadata egress, fabricated citations and credential strings in events are contained or redacted.
 
-The independently unpacked lesson-10 checkpoint passed its full test suite and this lesson demo. Recorded test result: 43 passed in 13.15s. Have your coding agent save a recoverable learner checkpoint and retain the comparison with lesson-10 (0e0a5ba).
+The independently unpacked lesson-10 checkpoint passed its full test suite and this lesson demo. Recorded test result: 43 passed in 13.15s. Have your coding agent save a recoverable learner checkpoint and retain the comparison with lesson-10 (9158dfa).
 
 ### Files changed in this checkpoint
 

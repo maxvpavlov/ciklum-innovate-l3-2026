@@ -81,7 +81,7 @@
       "status": "complete",
       "cause": "connection_pool_exhaustion",
       "summary": "Combined bounded worker evidence",
-      "evidence": ["log-acme-001", "rb-pool-v1"]
+      "evidence": ["log-astro-001", "rb-pool-v1"]
     },
     "trace_nodes": 3,
     "trace_roles": ["analyst", "logs", "remote_runbooks"],

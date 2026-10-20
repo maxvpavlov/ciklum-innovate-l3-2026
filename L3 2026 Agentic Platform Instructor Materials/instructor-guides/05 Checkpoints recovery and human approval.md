@@ -4,7 +4,7 @@
 
 **Outcome** Runs persist across worker loss, pause for exact-action approval, resume safely and reject denied or expired approvals.
 
-Duration: 90 minutes. Starting checkpoint: lesson-04. Ending checkpoint: lesson-05 (5f34f24).
+Duration: 90 minutes. Starting checkpoint: lesson-04. Ending checkpoint: lesson-05 (ac763f6).
 
 Word version: [05 Checkpoints recovery and human approval.docx](05%20Checkpoints%20recovery%20and%20human%20approval.docx)
 
@@ -225,7 +225,7 @@ async def crash_after_write(name, args, context):
 - An expired approval does not execute the action.
 - Denied and cancelled runs cannot be resumed as approved work.
 
-The independently unpacked lesson-05 checkpoint passed its full test suite and this lesson demo. Recorded test result: 17 passed in 1.24s. Have your coding agent save a recoverable learner checkpoint and retain the comparison with lesson-05 (5f34f24).
+The independently unpacked lesson-05 checkpoint passed its full test suite and this lesson demo. Recorded test result: 17 passed in 1.24s. Have your coding agent save a recoverable learner checkpoint and retain the comparison with lesson-05 (ac763f6).
 
 ### Files changed in this checkpoint
 

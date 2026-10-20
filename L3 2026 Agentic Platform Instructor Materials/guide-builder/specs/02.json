@@ -71,7 +71,7 @@
       "status": "complete",
       "cause": "connection_pool_exhaustion",
       "summary": "INC-001: connection_pool_exhaustion",
-      "evidence": ["log-acme-001", "rb-pool-v1"]
+      "evidence": ["log-astro-001", "rb-pool-v1"]
     },
     "write_without_capability": {
       "ok": false,

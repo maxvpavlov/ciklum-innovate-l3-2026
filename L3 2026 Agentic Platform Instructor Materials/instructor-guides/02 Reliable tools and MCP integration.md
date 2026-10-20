@@ -4,7 +4,7 @@
 
 **Outcome** Validated local and MCP tools share an application-owned permission boundary, exact-action approval and idempotent mock writes.
 
-Duration: 120 minutes. Starting checkpoint: lesson-01. Ending checkpoint: lesson-02 (0f5108e).
+Duration: 120 minutes. Starting checkpoint: lesson-01. Ending checkpoint: lesson-02 (384c2fb).
 
 Word version: [02 Reliable tools and MCP integration.docx](02%20Reliable%20tools%20and%20MCP%20integration.docx)
 
@@ -149,7 +149,7 @@ def action_key(name, args, context):
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 11 to 29 at lesson-02; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
 ```python
-def make_server(tenant="acme"):
+def make_server(tenant="astro"):
     server = MCPServer("incident-tools")
     context = Context(tenant=tenant)
 
@@ -233,7 +233,7 @@ class MCPReadAdapter:
     "cause": "connection_pool_exhaustion",
     "summary": "INC-001: connection_pool_exhaustion",
     "evidence": [
-      "log-acme-001",
+      "log-astro-001",
       "rb-pool-v1"
     ]
   },
@@ -255,7 +255,7 @@ class MCPReadAdapter:
 - Changing an approved action's arguments requires a new approval.
 - A duplicate approved mock write produces one stored effect.
 
-The independently unpacked lesson-02 checkpoint passed its full test suite and this lesson demo. Recorded test result: 10 passed in 1.96s. Have your coding agent save a recoverable learner checkpoint and retain the comparison with lesson-02 (0f5108e).
+The independently unpacked lesson-02 checkpoint passed its full test suite and this lesson demo. Recorded test result: 10 passed in 1.96s. Have your coding agent save a recoverable learner checkpoint and retain the comparison with lesson-02 (384c2fb).
 
 ### Files changed in this checkpoint
 

@@ -50,7 +50,7 @@ class SpecialistExecutor(AgentExecutor):
 def make_app(base_url=None, issuer=None):
     base_url = base_url or os.getenv("A2A_BASE_URL", "http://127.0.0.1:8010")
     issuer = issuer or TokenIssuer()
-    card = p.AgentCard(name="Runbook specialist", description="Read-only Acme runbook evidence",
+    card = p.AgentCard(name="Runbook specialist", description="Read-only Astro runbook evidence",
         version="1.0.0", default_input_modes=["text/plain"], default_output_modes=["application/json"],
         supported_interfaces=[p.AgentInterface(url=base_url+"/a2a", protocol_binding="JSONRPC", protocol_version="1.0")],
         capabilities=p.AgentCapabilities(streaming=True),

@@ -4,7 +4,7 @@
 
 **Outcome** Tenant-scoped retrieval, bounded conversation context, expiring memory and versioned evidence artifacts extend the same platform.
 
-Duration: 90 minutes. Starting checkpoint: lesson-02. Ending checkpoint: lesson-03 (3ea553c).
+Duration: 90 minutes. Starting checkpoint: lesson-02. Ending checkpoint: lesson-03 (fa7ce4e).
 
 Word version: [03 Context retrieval and memory.docx](03%20Context%20retrieval%20and%20memory.docx)
 
@@ -77,11 +77,11 @@ Use SAY for instructor narration, SHOW and REVIEW for the code and evidence part
 
 ### 1 Retrieve within the tenant boundary
 
-**SAY** Read the tenant filter before discussing ranking quality. We filter the source population by the authenticated tenant and only then rank the remaining runbooks. The score is the overlap between query words and source text, with a deterministic source-ID tie break. Show the same payments query for Acme and Globex. The results must differ because the permitted data differs. Keep source IDs and versions in the returned records. A downstream explanation can then cite the exact evidence it used. Ask a learner to replace the query and predict the leading source before running it.
+**SAY** Read the tenant filter before discussing ranking quality. We filter the source population by the authenticated tenant and only then rank the remaining runbooks. The score is the overlap between query words and source text, with a deterministic source-ID tie break. Show the same payments query for Astro and Locomotive. The results must differ because the permitted data differs. Keep source IDs and versions in the returned records. A downstream explanation can then cite the exact evidence it used. Ask a learner to replace the query and predict the leading source before running it.
 
 **SHOW** The current learner implementation and `incident/context.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 03, continue in my learner project. Implement tenant-scoped runbook retrieval and context_tools in incident/context.py. Filter authorized sources before ranking and retain source IDs and versions. Use transparent lexical ranking for this lesson so I can inspect why a record was selected. Compare the same payments query for Acme and Globex. Keep the tool contract compatible with the existing executor and explain the returned evidence. Use lesson-03 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 03, continue in my learner project. Implement tenant-scoped runbook retrieval and context_tools in incident/context.py. Filter authorized sources before ranking and retain source IDs and versions. Use transparent lexical ranking for this lesson so I can inspect why a record was selected. Compare the same payments query for Astro and Locomotive. Keep the tool contract compatible with the existing executor and explain the returned evidence. Use lesson-03 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 9 to 13 at lesson-03; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -202,7 +202,7 @@ def remember(self, tenant, key, body, ttl=3600):
 
 ## Learner practice and checkpoints
 
-> **PROMPT** Help me carry out the Lesson 03 learner exercise in my existing project: Run the same retrieval for Acme and Globex, inspect source IDs, and attempt a stale artifact write. Build a long synthetic conversation and reduce max_chars while checking valid tool-call pairs. Compare the investigation outcome before and after context selection. First state the expected outcomes, then run the experiment in a recoverable state. Show the observed results and explain any discrepancy. Keep the original acceptance criteria and restore temporary experiments when finished.
+> **PROMPT** Help me carry out the Lesson 03 learner exercise in my existing project: Run the same retrieval for Astro and Locomotive, inspect source IDs, and attempt a stale artifact write. Build a long synthetic conversation and reduce max_chars while checking valid tool-call pairs. Compare the investigation outcome before and after context selection. First state the expected outcomes, then run the experiment in a recoverable state. Show the observed results and explain any discrepancy. Keep the original acceptance criteria and restore temporary experiments when finished.
 
 **VERIFY** Give the coding agent the verification prompt below, then inspect its evidence and explain the result in your own words.
 
@@ -217,7 +217,7 @@ def remember(self, tenant, key, body, ttl=3600):
     "cause": "connection_pool_exhaustion",
     "summary": "INC-001: connection_pool_exhaustion",
     "evidence": [
-      "log-acme-001",
+      "log-astro-001",
       "rb-pool-v1"
     ]
   },
@@ -237,7 +237,7 @@ def remember(self, tenant, key, body, ttl=3600):
 - Cross-tenant artifact lookup returns no artifact.
 - A stale artifact update fails rather than overwriting the current version.
 
-The independently unpacked lesson-03 checkpoint passed its full test suite and this lesson demo. Recorded test result: 13 passed in 1.03s. Have your coding agent save a recoverable learner checkpoint and retain the comparison with lesson-03 (3ea553c).
+The independently unpacked lesson-03 checkpoint passed its full test suite and this lesson demo. Recorded test result: 13 passed in 1.03s. Have your coding agent save a recoverable learner checkpoint and retain the comparison with lesson-03 (fa7ce4e).
 
 ### Files changed in this checkpoint
 

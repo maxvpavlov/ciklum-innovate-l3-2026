@@ -4,7 +4,7 @@
 
 **Outcome** A supervisor delegates bounded work to isolated log and runbook agents under typed contracts and a shared budget, runs independent work concurrently with a deadline, and coordinates correlated replies, versioned artifacts and bounded review.
 
-Duration: 120 minutes. Starting checkpoint: lesson-05. Ending checkpoint: lesson-06 (e0d4992).
+Duration: 120 minutes. Starting checkpoint: lesson-05. Ending checkpoint: lesson-06 (299316a).
 
 Word version: [06 Supervisor subagents and parallel coordination.docx](06%20Supervisor%20subagents%20and%20parallel%20coordination.docx)
 
@@ -258,7 +258,7 @@ async def bounded_review(artifact, producer, reviewer, max_rounds=2):
     "cause": "connection_pool_exhaustion",
     "summary": "Combined bounded worker evidence",
     "evidence": [
-      "log-acme-001",
+      "log-astro-001",
       "rb-pool-v1"
     ]
   },
@@ -315,7 +315,7 @@ async def bounded_review(artifact, producer, reviewer, max_rounds=2):
 - A deadline preserves completed results and cancels unfinished work; cycles are rejected.
 - Mismatched or stale replies fail validation, and non-converging review escalates.
 
-The independently unpacked lesson-06 checkpoint passed its full test suite and this lesson demo. Recorded test result: 25 passed in 1.81s. Have your coding agent save a recoverable learner checkpoint and retain the comparison with lesson-06 (e0d4992).
+The independently unpacked lesson-06 checkpoint passed its full test suite and this lesson demo. Recorded test result: 25 passed in 1.81s. Have your coding agent save a recoverable learner checkpoint and retain the comparison with lesson-06 (299316a).
 
 ### Files changed in this checkpoint
 

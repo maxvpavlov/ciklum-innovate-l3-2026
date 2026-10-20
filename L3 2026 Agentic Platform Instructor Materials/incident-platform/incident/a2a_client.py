@@ -53,7 +53,7 @@ class RemoteSpecialist:
         self.url, self.token_source, self.card_sha256 = url, token_source, card_sha256
 
     async def investigate(self, task, context, token=None):
-        if context.tenant != "acme":
+        if context.tenant != "astro":
             raise PermissionError("specialist_tenant_mismatch")
         token = token or self.token_source(context)
         async with httpx.AsyncClient(headers={"Authorization": "Bearer "+token}, timeout=10) as http:

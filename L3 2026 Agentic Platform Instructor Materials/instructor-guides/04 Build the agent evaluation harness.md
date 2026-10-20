@@ -4,7 +4,7 @@
 
 **Outcome** A reproducible evaluation harness records single-agent quality, usage and latency, with held-out cases and a calibrated-judge workflow.
 
-Duration: 90 minutes. Starting checkpoint: lesson-03. Ending checkpoint: lesson-04 (585a04a).
+Duration: 90 minutes. Starting checkpoint: lesson-03. Ending checkpoint: lesson-04 (2352816).
 
 Word version: [04 Build the agent evaluation harness.docx](04%20Build%20the%20agent%20evaluation%20harness.docx)
 
@@ -87,11 +87,11 @@ Use SAY for instructor narration, SHOW and REVIEW for the code and evidence part
 
 ```python
 CASES = [
-    {"id": "pool", "tenant": "acme", "incident": "INC-001", "cause": "connection_pool_exhaustion", "split": "development"},
-    {"id": "clock", "tenant": "acme", "incident": "INC-002", "cause": "clock_skew", "split": "development"},
-    {"id": "missing", "tenant": "acme", "incident": "INC-404", "cause": "unknown", "split": "development"},
-    {"id": "ambiguous", "tenant": "acme", "incident": "INC-003", "cause": "unknown", "split": "held_out"},
-    {"id": "other_tenant", "tenant": "globex", "incident": "INC-001", "cause": "quota_exhaustion", "split": "held_out"},
+    {"id": "pool", "tenant": "astro", "incident": "INC-001", "cause": "connection_pool_exhaustion", "split": "development"},
+    {"id": "clock", "tenant": "astro", "incident": "INC-002", "cause": "clock_skew", "split": "development"},
+    {"id": "missing", "tenant": "astro", "incident": "INC-404", "cause": "unknown", "split": "development"},
+    {"id": "ambiguous", "tenant": "astro", "incident": "INC-003", "cause": "unknown", "split": "held_out"},
+    {"id": "other_tenant", "tenant": "locomotive", "incident": "INC-001", "cause": "quota_exhaustion", "split": "held_out"},
 ]
 ```
 
@@ -214,7 +214,7 @@ def judge_agreement(human_labels, judge_labels):
 
 ```json
 {
-  "dataset_sha256": "90d1f50a6663c9e7ec24a2d3951b0238d92114eefc8797c5317a42c428ddbc3f",
+  "dataset_sha256": "7d345084bda36fe61cbcf61755387b76bdd342456554b7e7422a588900b35f29",
   "provider": "MockProvider",
   "trials": 2,
   "split": "all",
@@ -242,7 +242,7 @@ def judge_agreement(human_labels, judge_labels):
 - Reports identify the dataset and retain per-trial results.
 - Judge calibration identifies the mismatching labels.
 
-The independently unpacked lesson-04 checkpoint passed its full test suite and this lesson demo. Recorded test result: 15 passed in 1.08s. Have your coding agent save a recoverable learner checkpoint and retain the comparison with lesson-04 (585a04a).
+The independently unpacked lesson-04 checkpoint passed its full test suite and this lesson demo. Recorded test result: 15 passed in 1.08s. Have your coding agent save a recoverable learner checkpoint and retain the comparison with lesson-04 (2352816).
 
 ### Files changed in this checkpoint
 

@@ -102,7 +102,7 @@ the existing entry points to choose how to execute them.
 > signed token into chat or a file. Stop the services you started when finished.
 
 The console is served by the platform at `/console`. It uses the demo identities
-`demo-acme` (analyst), `demo-operator` and `demo-globex`, which it exchanges once for a
+`demo-astro` (analyst), `demo-operator` and `demo-locomotive`, which it exchanges once for a
 one-hour signed token. Those demo credentials are for loopback use only. The console
 renders every API value as text and runs under a strict Content-Security-Policy,
 because model answers and tool evidence are untrusted.

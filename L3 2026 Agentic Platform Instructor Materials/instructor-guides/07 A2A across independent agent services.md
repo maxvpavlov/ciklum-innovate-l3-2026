@@ -4,7 +4,7 @@
 
 **Outcome** An independently hosted runbook specialist is discovered and invoked through the official A2A SDK, with streamed artifacts, authentication and remote cancellation.
 
-Duration: 90 minutes. Starting checkpoint: lesson-06. Ending checkpoint: lesson-07 (7713de0).
+Duration: 90 minutes. Starting checkpoint: lesson-06. Ending checkpoint: lesson-07 (974fd16).
 
 Word version: [07 A2A across independent agent services.docx](07%20A2A%20across%20independent%20agent%20services.docx)
 
@@ -71,7 +71,7 @@ Use SAY for instructor narration, SHOW and REVIEW for the code and evidence part
 
 ### Concept discussion
 
-**SAY** Draw the platform client, Agent Card endpoint and A2A task endpoint. The card advertises interfaces, protocol version, capabilities and a runbook skill. A task has a lifecycle and may produce artifacts as it progresses. The application must still validate the discovered capability, authenticate requests, respect tenant boundaries and decide how remote failure affects the parent. The reference pins a2a-sdk 1.1.2 and uses its A2A 1.0 JSON-RPC binding. Its public types are Protocol Buffer messages, so request and response construction differs from older 0.3 examples. The specialist is deliberately bound to Acme and read-only runbook tools. Its remote task store is in memory; durable production task storage is a separate service responsibility. Nothing pins the card yet, and one shared token identifies no caller; Sessions 08 and 10 close those gaps.
+**SAY** Draw the platform client, Agent Card endpoint and A2A task endpoint. The card advertises interfaces, protocol version, capabilities and a runbook skill. A task has a lifecycle and may produce artifacts as it progresses. The application must still validate the discovered capability, authenticate requests, respect tenant boundaries and decide how remote failure affects the parent. The reference pins a2a-sdk 1.1.2 and uses its A2A 1.0 JSON-RPC binding. Its public types are Protocol Buffer messages, so request and response construction differs from older 0.3 examples. The specialist is deliberately bound to Astro and read-only runbook tools. Its remote task store is in memory; durable production task storage is a separate service responsibility. Nothing pins the card yet, and one shared token identifies no caller; Sessions 08 and 10 close those gaps.
 
 **PAUSE** Invite one learner to trace the control flow and another to identify a failure boundary. Resolve different interpretations before opening the implementation.
 
@@ -86,7 +86,7 @@ Use SAY for instructor narration, SHOW and REVIEW for the code and evidence part
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 45 to 59 at lesson-07; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
 ```python
-card = p.AgentCard(name="Runbook specialist", description="Read-only Acme runbook evidence",
+card = p.AgentCard(name="Runbook specialist", description="Read-only Astro runbook evidence",
     version="1.0.0", default_input_modes=["text/plain"], default_output_modes=["application/json"],
     supported_interfaces=[p.AgentInterface(url=base_url+"/a2a", protocol_binding="JSONRPC", protocol_version="1.0")],
     capabilities=p.AgentCapabilities(streaming=True),
@@ -113,7 +113,7 @@ async def authenticate(request, call_next):
 
 ### 2 Publish task lifecycle events and artifacts
 
-**SAY** The executor first enqueues a Task, then sends a working status. That ordering is required by the SDK's event flow. It runs the same agent loop with runbook-only capabilities and publishes the result as an artifact before marking completion. Walk through the slow-task branch used by the cancellation test. Ask what the client should report if the stream ends before a completed status or before the evidence artifact arrives. It must not manufacture a successful result from a partial stream. Also point out that failure and completion are distinct terminal states. The tenant is hard-coded to Acme here; in Session 10 it comes from verified token claims, never from the message.
+**SAY** The executor first enqueues a Task, then sends a working status. That ordering is required by the SDK's event flow. It runs the same agent loop with runbook-only capabilities and publishes the result as an artifact before marking completion. Walk through the slow-task branch used by the cancellation test. Ask what the client should report if the stream ends before a completed status or before the evidence artifact arrives. It must not manufacture a successful result from a partial stream. Also point out that failure and completion are distinct terminal states. The tenant is hard-coded to Astro here; in Session 10 it comes from verified token claims, never from the message.
 
 **SHOW** The current learner implementation and `incident/a2a_service.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
@@ -130,7 +130,7 @@ async def execute(self, context, event_queue):
     task = context.get_user_input()
     if "SLOW" in task:
         await asyncio.sleep(2)
-    ctx = Context(tenant="acme", allowed=("runbook_search",))
+    ctx = Context(tenant="astro", allowed=("runbook_search",))
     tools = ToolExecutor(read_handler=context_tools)
     run = await run_agent(provider_from_env(), tools.execute, tools.available(ctx), task, ctx)
     if run.status != "completed":
@@ -160,7 +160,7 @@ async def execute(self, context, event_queue):
 
 ```python
 async def investigate(self, task, context):
-    if context.tenant != "acme":
+    if context.tenant != "astro":
         raise PermissionError("specialist_tenant_mismatch")
     async with httpx.AsyncClient(headers={"Authorization": "Bearer "+self.token}, timeout=10) as http:
         client = await discover_client(http, self.url)
@@ -259,7 +259,7 @@ async def cancel_slow_task(url):
 - The client rejects an incompatible tenant before making a request.
 - The slow remote task reaches TASK_STATE_CANCELED.
 
-The independently unpacked lesson-07 checkpoint passed its full test suite and this lesson demo. Recorded test result: 27 passed in 2.88s. Have your coding agent save a recoverable learner checkpoint and retain the comparison with lesson-07 (7713de0).
+The independently unpacked lesson-07 checkpoint passed its full test suite and this lesson demo. Recorded test result: 27 passed in 2.88s. Have your coding agent save a recoverable learner checkpoint and retain the comparison with lesson-07 (974fd16).
 
 ### Files changed in this checkpoint
 

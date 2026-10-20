@@ -31,8 +31,8 @@ async def containment():
     assert effects == 0 and any(e.get("ok") is False for e in run.events)
     blocked = []
     with tempfile.TemporaryDirectory() as root:
-        for relative in ["../globex/report.txt", "/etc/passwd"]:
-            try: sandbox_path(root, "acme", relative)
+        for relative in ["../locomotive/report.txt", "/etc/passwd"]:
+            try: sandbox_path(root, "astro", relative)
             except PermissionError: blocked.append(relative)
     try: validate_endpoint("http://169.254.169.254/latest/meta-data", {"api.openai.com"})
     except ValueError: blocked.append("metadata egress")
@@ -46,12 +46,12 @@ async def demo():
         path = str(Path(directory)/"platform.db")
         platform = Platform(path)
         try:
-            run = await platform.wait("acme", platform.submit("acme", "analyst", "INC-001", "team", subject="user:dana"))
+            run = await platform.wait("astro", platform.submit("astro", "analyst", "INC-001", "team", subject="user:dana"))
             assert run.status == "completed", run.error
-            chains = sorted(" -> ".join(g["actors"]+[g["subject"]]) for g in platform.credentials.grants("acme"))
+            chains = sorted(" -> ".join(g["actors"]+[g["subject"]]) for g in platform.credentials.grants("astro"))
             stored = " ".join(row[0] for row in sqlite3.connect(path).execute("SELECT body FROM runs"))
             gateway = platform.gateway
-            claims = {"sub": "user:dana", "tenant": "acme", "role": "analyst", "aud": "tool-gateway",
+            claims = {"sub": "user:dana", "tenant": "astro", "role": "analyst", "aud": "tool-gateway",
                       "scope": "log_lookup", "act": {"sub": "agent:single@v1"}}
             forged = TokenIssuer("attacker-key").issue(claims)
             rejected = {}
@@ -64,8 +64,8 @@ async def demo():
             platform.credentials.for_run(parent, "user:dana", "agent:single@v1")
             try: platform.credentials.for_child(parent, Context(allowed=("log_lookup",), parent_id=parent.run_id))
             except PermissionError as exc: rejected["child_widening"] = str(exc)
-            globex = Context(tenant="globex", run_id=parent.run_id, allowed=("runbook_search",))
-            cross_tenant = await gateway.execute("runbook_search", {"query": "quota"}, globex)
+            locomotive = Context(tenant="locomotive", run_id=parent.run_id, allowed=("runbook_search",))
+            cross_tenant = await gateway.execute("runbook_search", {"query": "quota"}, locomotive)
             platform.secrets.put("secret://model/api-key", "sk-course-demo-key-0001", {"model-adapter"})
             try: platform.secrets.lease("secret://model/api-key", "tool-gateway")
             except PermissionError as exc: rejected["secret_to_wrong_consumer"] = str(exc)

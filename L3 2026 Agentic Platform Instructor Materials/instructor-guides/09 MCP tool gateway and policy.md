@@ -4,7 +4,7 @@
 
 **Outcome** Every agent tool call passes one gateway that applies policy, audits the decision, shares one upstream MCP session per server and tenant, and quarantines a server whose pinned tool definitions change.
 
-Duration: 90 minutes. Starting checkpoint: lesson-08. Ending checkpoint: lesson-09 (99cfe82).
+Duration: 90 minutes. Starting checkpoint: lesson-08. Ending checkpoint: lesson-09 (ffd4ea9).
 
 Word version: [09 MCP tool gateway and policy.docx](09%20MCP%20tool%20gateway%20and%20policy.docx)
 
@@ -186,7 +186,7 @@ return await asyncio.shield(self.sessions[key][0])
 
 **Explain the choice** Sharing sessions cuts process launches without widening access, because the key includes the tenant. The owner task respects the anyio rule that a cancel scope belongs to one task, and asyncio.shield stops one cancelled worker from cancelling the session for everyone.
 
-**ASK** Why not share one MCP session across Acme and Globex to save another process?
+**ASK** Why not share one MCP session across Astro and Locomotive to save another process?
 
 **Likely answer** The tenant is bound when the server starts. A shared session would let one tenant's calls read the other's data, which is the boundary the platform exists to keep.
 
@@ -243,7 +243,7 @@ def pin_tools(self, name, pins):
     "single"
   ],
   "mcp_sessions_launched": {
-    "incident-tools/acme": 1
+    "incident-tools/astro": 1
   },
   "denials": {
     "not_granted": "not_granted",
@@ -266,13 +266,13 @@ def pin_tools(self, name, pins):
 
 ## Completion criteria
 
-- Two team runs and one single run complete for Acme through one shared upstream MCP session.
+- Two team runs and one single run complete for Astro through one shared upstream MCP session.
 - Ungranted tools, writes without an operator role and oversized arguments are denied with stable reason codes before any upstream connection.
 - A changed tool description quarantines the server, and later calls to it are denied.
 - Every decision is audited with an argument hash, and the Gateway view is tenant-scoped.
 - Workers reach tools only through the gateway, and the platform closes upstream sessions on shutdown.
 
-The independently unpacked lesson-09 checkpoint passed its full test suite and this lesson demo. Recorded test result: 37 passed in 9.91s. Have your coding agent save a recoverable learner checkpoint and retain the comparison with lesson-09 (99cfe82).
+The independently unpacked lesson-09 checkpoint passed its full test suite and this lesson demo. Recorded test result: 37 passed in 9.91s. Have your coding agent save a recoverable learner checkpoint and retain the comparison with lesson-09 (ffd4ea9).
 
 ### Files changed in this checkpoint
 

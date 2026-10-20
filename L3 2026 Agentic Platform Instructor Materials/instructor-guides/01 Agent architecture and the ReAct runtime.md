@@ -4,7 +4,7 @@
 
 **Outcome** A working, bounded single-agent runtime in the learner's own repository, with interchangeable model access and observable tool use.
 
-Duration: 120 minutes. Starting checkpoint: lesson-00. Ending checkpoint: lesson-01 (d51219c).
+Duration: 120 minutes. Starting checkpoint: lesson-00. Ending checkpoint: lesson-01 (7133fdc).
 
 Word version: [01 Agent architecture and the ReAct runtime.docx](01%20Agent%20architecture%20and%20the%20ReAct%20runtime.docx)
 
@@ -79,7 +79,7 @@ Use SAY for instructor narration, SHOW and REVIEW for the code and evidence part
 
 ### 1 Define the run contract
 
-**SAY** Start with the values that application code controls. Tenant, run identifier, role and permitted tools belong in the execution context. They must not be supplied by a retrieved document. Keep the evolving messages and result in Run. This separation will matter when we persist a run or create a child: we can serialize task state while deliberately constructing its authority. Walk through one example context for Acme, then point to Limits. We have separate limits on steps, reported tokens, elapsed time and maximum requested output. These limits address different failure modes. Ask participants to identify the limit that catches a provider that hangs without producing any tokens.
+**SAY** Start with the values that application code controls. Tenant, run identifier, role and permitted tools belong in the execution context. They must not be supplied by a retrieved document. Keep the evolving messages and result in Run. This separation will matter when we persist a run or create a child: we can serialize task state while deliberately constructing its authority. Walk through one example context for Astro, then point to Limits. We have separate limits on steps, reported tokens, elapsed time and maximum requested output. These limits address different failure modes. Ask participants to identify the limit that catches a provider that hangs without producing any tokens.
 
 **SHOW** The current learner implementation and `incident/core.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
@@ -90,7 +90,7 @@ Use SAY for instructor narration, SHOW and REVIEW for the code and evidence part
 ```python
 @dataclass
 class Context:
-    tenant: str = "acme"
+    tenant: str = "astro"
     run_id: str = field(default_factory=lambda: uuid.uuid4().hex)
     role: str = "investigator"
     allowed: tuple[str, ...] = ("log_lookup", "runbook_search")
@@ -183,7 +183,7 @@ estimated_input = len(json.dumps(run.messages)) // 3
 
 ### 4 Bound and verify execution
 
-**SAY** Run the happy path before introducing failures. The fixture requests logs, requests a runbook, and returns a final answer after three model steps. It cites log-acme-001 and rb-pool-v1. Next, run the limit tests and the repeating-provider example. Explain each failure as a controlled outcome rather than an unexplained exception. A one-step allowance prevents completion, a tiny token allowance prevents dispatch, and a deadline cancels an outstanding operation. Ask everyone to change one limit, predict the error, and then run the check. Close this section by locating the event records. We record actions and usage, and do not need access to hidden model reasoning to diagnose the loop. From Session 08, the platform console renders these same records as a run's event timeline, so keep them structured and complete.
+**SAY** Run the happy path before introducing failures. The fixture requests logs, requests a runbook, and returns a final answer after three model steps. It cites log-astro-001 and rb-pool-v1. Next, run the limit tests and the repeating-provider example. Explain each failure as a controlled outcome rather than an unexplained exception. A one-step allowance prevents completion, a tiny token allowance prevents dispatch, and a deadline cancels an outstanding operation. Ask everyone to change one limit, predict the error, and then run the check. Close this section by locating the event records. We record actions and usage, and do not need access to hidden model reasoning to diagnose the loop. From Session 08, the platform console renders these same records as a run's event timeline, so keep them structured and complete.
 
 **SHOW** The current learner implementation and `incident/core.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
@@ -240,7 +240,7 @@ if calls:
     "cause": "connection_pool_exhaustion",
     "summary": "INC-001: connection_pool_exhaustion",
     "evidence": [
-      "log-acme-001",
+      "log-astro-001",
       "rb-pool-v1"
     ]
   },
@@ -258,7 +258,7 @@ if calls:
 - Step, token and elapsed-time limits produce the expected failures.
 - Both live-provider request-shape tests pass without using real credentials.
 
-The independently unpacked lesson-01 checkpoint passed its full test suite and this lesson demo. Recorded test result: 7 passed in 0.25s. Have your coding agent save a recoverable learner checkpoint and retain the comparison with lesson-01 (d51219c).
+The independently unpacked lesson-01 checkpoint passed its full test suite and this lesson demo. Recorded test result: 7 passed in 0.25s. Have your coding agent save a recoverable learner checkpoint and retain the comparison with lesson-01 (7133fdc).
 
 ### Files changed in this checkpoint
 

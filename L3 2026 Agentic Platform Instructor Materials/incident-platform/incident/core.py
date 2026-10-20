@@ -9,7 +9,7 @@ from typing import Awaitable, Callable
 
 @dataclass
 class Context:
-    tenant: str = "acme"
+    tenant: str = "astro"
     run_id: str = field(default_factory=lambda: uuid.uuid4().hex)
     role: str = "investigator"
     allowed: tuple[str, ...] = ("log_lookup", "runbook_search")

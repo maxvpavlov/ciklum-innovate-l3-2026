@@ -23,7 +23,7 @@ async def demo():
             platform.registry.activate("single", 2)
             platform.releases.record(baseline, candidate, gate, activated=True)
             tools, ctx = ToolExecutor(read_handler=context_tools), Context()
-            cached = CachedProvider(MockProvider(), "acme", "single-v1")
+            cached = CachedProvider(MockProvider(), "astro", "single-v1")
             cold = await run_agent(cached, tools.execute, tools.available(ctx), "INC-001", ctx)
             warm = await run_agent(cached, tools.execute, tools.available(ctx), "INC-001", ctx)
             report = {"interpretation": "Synthetic fixture policy experiment; not a live model benchmark.",

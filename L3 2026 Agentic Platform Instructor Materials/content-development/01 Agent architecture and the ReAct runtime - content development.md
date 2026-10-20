@@ -394,7 +394,7 @@ Provide examples that can stand on their own in e-learning. Include enough conte
 
 **Your input:**
 
-**Example 1: a supported answer.** INC-001 (tenant acme): logs show DB pool wait of 900 ms after deploy d42; the runbook matches connection-pool exhaustion. After three model steps the agent answers 'connection_pool_exhaustion', citing log-acme-001 and rb-pool-v1.
+**Example 1: a supported answer.** INC-001 (tenant astro): logs show DB pool wait of 900 ms after deploy d42; the runbook matches connection-pool exhaustion. After three model steps the agent answers 'connection_pool_exhaustion', citing log-astro-001 and rb-pool-v1.
 
 **Example 2: an honest 'insufficient evidence'.** INC-003: latency is elevated but there are no diagnostic logs. A good agent returns status insufficient_evidence instead of guessing; the run still completes successfully.
 
@@ -430,7 +430,7 @@ Create a task that can be completed without attending the live session. Include 
 
 **Context:** The four build prompts and the verification prompt are in LEARNER_PROMPTS.md (Lesson 01); no paid model account is needed.
 
-**Expected output:** a repository whose Lesson 01 tests pass, the lab output for INC-001 citing log-acme-001 and rb-pool-v1, and a short note explaining each guard you triggered.
+**Expected output:** a repository whose Lesson 01 tests pass, the lab output for INC-001 citing log-astro-001 and rb-pool-v1, and a short note explaining each guard you triggered.
 
 **Estimated time:** 2–3 hours.
 

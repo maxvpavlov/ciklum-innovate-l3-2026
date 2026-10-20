@@ -17,9 +17,9 @@ from incident.platform import Platform
 from incident.tools import action_key
 
 DEMO_IDENTITIES = {
-    "demo-acme": {"tenant": "acme", "role": "analyst"},
-    "demo-operator": {"tenant": "acme", "role": "operator"},
-    "demo-globex": {"tenant": "globex", "role": "analyst"},
+    "demo-astro": {"tenant": "astro", "role": "analyst"},
+    "demo-operator": {"tenant": "astro", "role": "operator"},
+    "demo-locomotive": {"tenant": "locomotive", "role": "analyst"},
 }
 CONSOLE = Path(__file__).parent/"console"
 # The console renders model output and tool evidence, so it treats both as untrusted text.

@@ -1,24 +1,24 @@
 """Synthetic data. Tenant identity is supplied by application code."""
 INCIDENTS = {
-    "acme": {
-        "INC-001": {"source_id": "log-acme-001", "service": "payments",
+    "astro": {
+        "INC-001": {"source_id": "log-astro-001", "service": "payments",
                     "cause": "connection_pool_exhaustion", "signal": "DB pool wait 900ms after deploy d42"},
-        "INC-002": {"source_id": "log-acme-002", "service": "login",
+        "INC-002": {"source_id": "log-astro-002", "service": "login",
                     "cause": "clock_skew", "signal": "Token expiry errors; host clock +180s"},
-        "INC-003": {"source_id": "log-acme-003", "service": "payments",
+        "INC-003": {"source_id": "log-astro-003", "service": "payments",
                     "cause": "unknown", "signal": "Latency elevated; no diagnostic logs"},
     },
-    "globex": {"INC-001": {"source_id": "log-globex-001", "service": "payments",
+    "locomotive": {"INC-001": {"source_id": "log-locomotive-001", "service": "payments",
                            "cause": "quota_exhaustion", "signal": "Provider quota exhausted"}},
 }
 RUNBOOKS = [
-    {"source_id": "rb-pool-v1", "tenant": "acme", "version": 1,
+    {"source_id": "rb-pool-v1", "tenant": "astro", "version": 1,
      "text": "payments connection pool exhaustion DB wait after deployment",
      "cause": "connection_pool_exhaustion", "action": "Consider rollback after approval"},
-    {"source_id": "rb-clock-v1", "tenant": "acme", "version": 1,
+    {"source_id": "rb-clock-v1", "tenant": "astro", "version": 1,
      "text": "login token expiration clock skew time sync",
      "cause": "clock_skew", "action": "Check time synchronization"},
-    {"source_id": "rb-quota-v1", "tenant": "globex", "version": 1,
+    {"source_id": "rb-quota-v1", "tenant": "locomotive", "version": 1,
      "text": "payments provider quota exhausted",
      "cause": "quota_exhaustion", "action": "Check tenant quota"},
 ]

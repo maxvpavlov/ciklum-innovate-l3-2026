@@ -28,7 +28,7 @@ async def demo():
     async def unchanged(artifact, decision):
         return artifact
     review = await bounded_review(run.answer, unchanged, reject)
-    version = EvidenceStore().save_artifact("acme", "reviewed-report", review["artifact"])
+    version = EvidenceStore().save_artifact("astro", "reviewed-report", review["artifact"])
     assert partial["status"] == "partial" and review["status"] == "escalated"
     return {"parent": parent.context.run_id, "answer": parent.answer,
             "children": [{"role": c.context.role, "tools": c.context.allowed,

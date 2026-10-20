@@ -4,7 +4,7 @@
 
 **Outcome** A runnable end-to-end platform combines the registry, the tool gateway, delegated credentials and a pinned A2A specialist with admission controls, correlated traces and evaluated, recorded rollout and rollback that operators can inspect in the console.
 
-Duration: 120 minutes. Starting checkpoint: lesson-10. Ending checkpoint: lesson-11 (fa17a36).
+Duration: 120 minutes. Starting checkpoint: lesson-10. Ending checkpoint: lesson-11 (b0c78fa).
 
 Word version: [11 Operating and releasing agent platforms.docx](11%20Operating%20and%20releasing%20agent%20platforms.docx)
 
@@ -195,9 +195,9 @@ def release_gate(baseline, candidate, min_success=1.0, max_latency_ms=1000, max_
 ```python
 ids, rejected = [], 0
 for _ in range(6):
-    try: ids.append(platform.submit("acme", "analyst", "INC-001"))
+    try: ids.append(platform.submit("astro", "analyst", "INC-001"))
     except CapacityError: rejected += 1
-await asyncio.gather(*(platform.wait("acme", key) for key in ids))
+await asyncio.gather(*(platform.wait("astro", key) for key in ids))
 assert rejected == 4
 baseline = await evaluate_platform(platform, "single", 1)
 spec = platform.registry.get("single", 1)["spec"]
@@ -240,7 +240,7 @@ platform.registry.activate("single", 1)
     "cause": "connection_pool_exhaustion",
     "summary": "Combined bounded worker evidence",
     "evidence": [
-      "log-acme-001",
+      "log-astro-001",
       "rb-pool-v1"
     ]
   },
@@ -279,7 +279,7 @@ platform.registry.activate("single", 1)
 - A tiny shared parent-and-child budget prevents execution.
 - A degraded or mismatched evaluation blocks release, every decision appears in the release log and the Operations view, and activation can return to the previous version.
 
-The independently unpacked lesson-11 checkpoint passed its full test suite and this lesson demo. Recorded test result: 48 passed in 18.72s. Have your coding agent save a recoverable learner checkpoint and retain the comparison with lesson-11 (fa17a36).
+The independently unpacked lesson-11 checkpoint passed its full test suite and this lesson demo. Recorded test result: 48 passed in 18.72s. Have your coding agent save a recoverable learner checkpoint and retain the comparison with lesson-11 (b0c78fa).
 
 ### Files changed in this checkpoint
 

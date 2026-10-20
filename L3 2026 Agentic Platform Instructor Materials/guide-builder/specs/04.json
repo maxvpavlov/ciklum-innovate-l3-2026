@@ -65,7 +65,7 @@
   ],
   "exercise": "Add one unsupported-answer case and one tool-policy violation to a local test. Verify that the relevant check fails. Run two repeated trials on the held-out partition and locate every per-case result. Use the calibration example to explain why the flagged disagreement needs human review.",
   "expected_json": {
-    "dataset_sha256": "90d1f50a6663c9e7ec24a2d3951b0238d92114eefc8797c5317a42c428ddbc3f",
+    "dataset_sha256": "7d345084bda36fe61cbcf61755387b76bdd342456554b7e7422a588900b35f29",
     "provider": "MockProvider",
     "trials": 2,
     "split": "all",

@@ -11,23 +11,23 @@ async def demo():
         app = create_app(platform)
         reports = []
         async with httpx.AsyncClient(transport=httpx.ASGITransport(app), base_url="http://test",
-                                     headers={"Authorization": "Bearer demo-acme"}) as client:
+                                     headers={"Authorization": "Bearer demo-astro"}) as client:
             registry = (await client.get("/registry")).json()
             for agent in ["single", "team"]:
                 response = await client.post("/runs", json={"incident_id": "INC-001", "agent": agent})
                 assert response.status_code == 202
                 run_id = response.json()["id"]
-                await platform.wait("acme", run_id)
+                await platform.wait("astro", run_id)
                 report = (await client.get(f"/runs/{run_id}")).json()
                 assert report["status"] == "completed", report
                 reports.append({"agent": agent, "status": report["status"],
                                 "definition_version": report["configuration"]["version"],
                                 "child_runs": len(report["children"])})
-            foreign = await client.get(f"/runs/{run_id}", headers={"Authorization": "Bearer demo-globex"})
+            foreign = await client.get(f"/runs/{run_id}", headers={"Authorization": "Bearer demo-locomotive"})
             assert foreign.status_code == 404
             platform.registry.register("single", 2, {**platform.registry.get("single", 1)["spec"], "context_chars": 4500})
             pinned = (await client.post("/runs", json={"incident_id": "INC-001", "agent": "single", "version": 1})).json()
-            await platform.wait("acme", pinned["id"])
+            await platform.wait("astro", pinned["id"])
             console = await client.get("/console/")
             overview = (await client.get("/platform")).json()
             assert console.status_code == 200 and "script-src 'self'" in console.headers["content-security-policy"]
