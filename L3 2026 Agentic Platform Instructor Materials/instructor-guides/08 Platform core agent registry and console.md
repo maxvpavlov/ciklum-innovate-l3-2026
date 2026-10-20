@@ -73,7 +73,7 @@ Use SAY for instructor narration, SHOW and REVIEW for the code and evidence part
 
 ### Concept discussion
 
-**SAY** Draw three boxes. The registry is the platform's catalogue: which agents exist, who owns them, which tools and skills they declare, and which version is active or retired. The run service takes an authenticated request, resolves a definition, snapshots it into the run and hands the work to a worker that holds a lease. The console is a client of the same API with no privileged back door, so it sees exactly what the signed-in identity may see. Keep two scopes apart: the registry is platform-wide, while runs, approvals and evidence are tenant-scoped. Then name the trust boundaries: definitions are reviewed input, model answers and tool evidence are untrusted text, and a remote agent is trusted only as far as the card we pinned.
+**SAY** Draw three boxes. The registry is the platform's catalogue: which agents exist, who owns them, which tools and skills they declare, and which version is active or retired. The run service takes an authenticated request, resolves a definition, snapshots it into the run and hands the work to a worker that holds a lease. The console is a client of the same API with no privileged back door, so it sees exactly what the signed-in identity may see. Keep two scopes apart: the registry is platform-wide, while runs, approvals and evidence are tenant-scoped. Then name the trust boundaries: definitions are reviewed input, model answers and tool evidence are untrusted text, and a remote agent is trusted only as far as the card we pinned. Be explicit about one teaching compromise. Our workers run each agent inside the platform's own process, next to the API, the database connection and the credential store. In production the control plane and agent execution are separate: agents run in their own worker processes or sandboxed containers, often one per run, so a misbehaving or compromised agent cannot reach the platform's memory, data or secrets, and the runtime is a library those workers share. We keep them together so the whole platform runs on a laptop with one command; the A2A specialist from Session 07 already shows the out-of-process shape, with its own identity and its own token.
 
 **PAUSE** Invite one learner to trace the control flow and another to identify a failure boundary. Resolve different interpretations before opening the implementation.
 
@@ -368,6 +368,8 @@ Live model credentials, paid provider calls, live model judging, third-party MCP
 The SQLite mock-effect ledger proves its local transaction boundary. It does not guarantee exactly-once effects for arbitrary external APIs. The A2A specialist task store is in memory. The restricted Compose sandbox uses temporary writable state; persistent deployment storage requires separate configuration and validation.
 
 At lesson-08 the API and console authenticate with fixed demo bearer strings that are for loopback use only; Session 10 replaces them with short-lived signed tokens. Remote Agent Cards are pinned on first registration without review, and every store shares one SQLite file.
+
+Agents run inside the platform process as a teaching compromise. Process or container isolation between the control plane and agent execution was not built or tested.
 
 ## Session close
 

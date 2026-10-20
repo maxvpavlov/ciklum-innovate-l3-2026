@@ -10,7 +10,7 @@ Word version: [01 Agent architecture and the ReAct runtime.docx](01%20Agent%20ar
 
 ## Where this session sits in the platform
 
-This session builds the core of the platform: the bounded agent runtime that every later component wraps rather than replaces. The agent registry (Session 08), MCP tool gateway (Session 09), identity and credentials (Session 10) and operations (Session 11) all sit around this loop. The run's event log, which records each model step, tool observation and failure, is the data that the console's Runs view renders as an event timeline from Session 08; today learners read it as JSON.
+This session builds the agent runtime that the platform will host: the bounded ReAct loop that every agent runs on, and that every later component wraps rather than replaces. The runtime is the core of the agent, not of the platform; from Session 08 the platform hosts it, and in this course the platform runs agents in its own process as a teaching compromise. The agent registry (Session 08), MCP tool gateway (Session 09), identity and credentials (Session 10) and operations (Session 11) all sit around this loop. The run's event log, which records each model step, tool observation and failure, is the data that the console's Runs view renders as an event timeline from Session 08; today learners read it as JSON.
 
 | Session | Platform component | Status |
 |---|---|---|

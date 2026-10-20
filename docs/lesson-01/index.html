@@ -310,7 +310,7 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
       <table>
         <thead><tr><th>Part</th><th>The question it answers</th></tr></thead>
         <tbody>
-          <tr class="now"><td><b>Agent runtime</b> · today</td><td>How does one agent act, and how is it forced to stop?</td></tr>
+          <tr class="now"><td><b>Agent runtime</b> · today</td><td>How does one agent act, and how is it forced to stop? (the library every agent runs on)</td></tr>
           <tr><td><b>Tools and MCP</b></td><td>How do agents use real systems through reliable, permissioned contracts?</td></tr>
           <tr><td><b>Context and memory</b></td><td>What does the agent know, from which sources, and for how long?</td></tr>
           <tr><td><b>Evaluation</b></td><td>Is it actually good, and better than the last version?</td></tr>
@@ -640,8 +640,9 @@ tests/
 <span class="hl">  test_lesson01.py        check pack · today's checks</span></pre>
       </div>
       <div class="prose" style="margin-top:0">
-        <p><b><code>core.py</code> is the heart of the platform.</b> It holds the agent runtime from the diagram above: the data the application owns (who is asking, what is allowed, the limits), the shape of a model's reply and of a run, and the loop itself. Every later session builds on this file.</p>
+        <p><b><code>core.py</code> is the agent runtime: the core of every agent you will run.</b> It holds the data the application owns (who is asking, what is allowed, the limits), the shape of a model's reply and of a run, and the ReAct loop. From Session 08 the platform hosts it: it chooses which agent version runs, queues and limits the run, gives it an identity, and records what happened. A supervisor agent built from this same loop coordinates other agents from Session 06.</p>
         <p>Step 1 creates it with the data contracts only. Step 3 adds the loop to the same file. The given files are data and a scripted mock model that everyone shares, so every learner gets the same results; they are not what this session teaches.</p>
+        <p class="muted">The platform and its agents are separate concerns. In production, agents run in their own processes or sandboxed containers, apart from the platform's control plane, so a misbehaving agent cannot reach the platform's data or secrets. In this course the platform runs agents in its own process, a compromise that keeps everything runnable on a laptop while you learn the concepts; the remote specialist in Session 07 shows the separate-process version.</p>
       </div>
     </div>
   </div>
