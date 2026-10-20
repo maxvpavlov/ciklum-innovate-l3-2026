@@ -705,7 +705,7 @@ class Context:
     });
   });
 
-  // N / P jump between sections.
+  // N / P jump between sections; V switches between Read and Present.
   const stops = [...document.querySelectorAll("#start, section.ch, .terminal[id]")];
   const current = () => {
     const y = window.scrollY + window.innerHeight * 0.25;
@@ -716,6 +716,7 @@ class Context:
   document.addEventListener("keydown", (event) => {
     if (event.target.closest("input, textarea, [contenteditable]") || event.metaKey || event.ctrlKey || event.altKey) return;
     const key = event.key.toLowerCase();
+    if (key === "v") { setView(document.body.classList.contains("present") ? "read" : "present"); event.preventDefault(); return; }
     if (key !== "n" && key !== "p") return;
     const next = Math.max(0, Math.min(stops.length - 1, current() + (key === "n" ? 1 : -1)));
     stops[next].scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
