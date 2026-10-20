@@ -554,7 +554,7 @@ tools   log_lookup(incident_id) · runbook_search(query)</pre></div></div>
   <div class="stack">
     <h3>Where the code lives: two folders</h3>
     <div class="cards">
-      <div><span class="q">Your project</span><p>Where your coding agent writes. It starts as the <code>lesson-00</code> checkpoint: an almost empty Python project whose package is called <code>incident</code>. Every session adds to this same project.</p><span class="ans">my-platform/ · read and write</span></div>
+      <div><span class="q">Your project</span><p>Where your coding agent writes. It starts as the <code>lesson-00</code> checkpoint: an almost empty Python project whose package is called <code>incident</code>. Every session adds to this same project, and you push it to your own repository in the course GitLab group.</p><span class="ans">my-platform/ · read and write · pushed to GitLab</span></div>
       <div><span class="q">The reference</span><p>The course repository, with one finished checkpoint per session tagged <code>lesson-00</code> to <code>lesson-12</code>. Nobody edits it. When a prompt says "use lesson-01 read-only", the agent compares your work with the finished Session 01 code there.</p><span class="ans">reference/ · read only</span></div>
     </div>
     <div class="stack" style="margin-top:0">
@@ -581,12 +581,12 @@ tests/
   </div>
 
   <div class="terminal" id="setup">
-    <div class="bar"><span class="switch">Before class · Set up the workspace</span><span class="file">creates reference/ and my-platform/</span></div>
+    <div class="bar"><span class="switch">Switch to terminal · The lesson-00 prompt · Set up your workspace</span><span class="file">creates reference/ and my-platform/ · pushes to GitLab</span></div>
     <div class="body">
-      <p class="goal">Run once before the session. It gives you both folders, with your project at the starting checkpoint and its one test passing.</p>
-      <div class="prompt" id="p0"><span class="pfx">PROMPT ▸ </span>Set up my Session 01 workspace for the Building Agentic Platforms course. Clone the course repository github.com/maxvpavlov/ciklum-innovate-l3-2026, including its tags, into ~/agentic-course/reference and treat that folder as read-only from now on. Create my own project in ~/agentic-course/my-platform from the lesson-00 checkpoint only, exported from the reference, and make it a fresh Git repository with one initial commit. In my project, install the pinned dependencies with uv for Python 3.12, run the tests with python -m pytest, and confirm that incident/__init__.py says LESSON = 0. Do not copy any later lesson into my project. Report both folder paths, the files in my project, the test result, and anything missing, such as uv, Python 3.12 or access to the repository. Do not ask me to run terminal commands.</div>
+      <p class="goal">Everyone runs this first, in class. Nothing is needed beforehand. It installs the GitLab CLI, sets up both folders, puts your project at the starting checkpoint and pushes it to a new repository in the GitLab group you were invited to.</p>
+      <div class="prompt" id="p0"><span class="pfx">PROMPT ▸ </span>Set up my workspace for the Building Agentic Platforms course, starting at lesson-00. Clone the course reference repository, including its tags, from the address my instructor gave me (ask me for it if you do not have it) into ~/agentic-course/reference, and treat that folder as read-only from now on. Create my own project in ~/agentic-course/my-platform from the lesson-00 checkpoint only, exported from the reference, and make it a fresh Git repository with one initial commit. Install the pinned dependencies with uv for Python 3.12, run the tests with python -m pytest, and confirm that incident/__init__.py says LESSON = 0. Install the GitLab CLI, glab, if it is missing, and sign me in to GitLab; when a browser sign-in is needed, tell me what to do, and never ask me to paste a token into the chat. Ask me for the name of the GitLab group I was invited to, create a private repository for my project in that group, and push my project to it. Do not copy any later lesson into my project. Report both folder paths, the files in my project, the test result, the GitLab repository address and anything missing, such as uv, Python 3.12, glab or access. Do not ask me to run terminal commands.</div>
       <div><button class="copy" type="button" data-copy="p0">Copy prompt</button></div>
-      <p class="check">Expect: <b>1 passed</b> in my-platform, and <code>LESSON = 0</code>.</p>
+      <p class="check">Expect: <b>1 passed</b> in my-platform, <code>LESSON = 0</code>, and your project visible in your GitLab group.</p>
     </div>
   </div>
 
