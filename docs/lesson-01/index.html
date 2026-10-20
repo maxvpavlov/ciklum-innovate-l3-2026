@@ -765,7 +765,7 @@ class Context:
       <li><b>① ② ④ ⑧ are the limits:</b> one deadline for the whole run, a maximum number of model turns, and a token reservation checked before each call.</li>
       <li><b>⑤ is the thought:</b> the runtime sends the whole conversation and gets back one turn.</li>
       <li><b>⑥ and ⑦ classify that turn</b>, the first two rows of "What the model can send back": tool calls become pending work and go back to ③; anything else must be the final answer.</li>
-      <li><b>③ is the action and observation</b>, shown in full below.</li>
+      <li><b>③ is the action and observation.</b> ③ and ⑦ are shown in full below.</li>
     </ul>
     <p class="muted">Abridged: the real function also records a run event for every model call and tool call, pauses for approval when a tool requires it, and saves the run if it is cancelled.</p>
     <div class="excerpt">
@@ -784,6 +784,28 @@ class Context:
     </div>
     <div class="ask"><span class="label">Ask</span><p class="q">What goes wrong if we append a tool result without its assistant tool call?</p>
       <details><summary>Show the answer</summary><p>The conversation is no longer a valid request and result pair; providers may reject it, and we lose the evidence needed to explain the run. Saving pending calls before execution is also what lets a run pause and resume later.</p></details></div>
+    <div class="excerpt">
+      <div class="src">zoom in on ⑦ · the answer check · incident/core.py · lines 131–140</div>
+<pre>answer = json.loads(reply.message.get("content") or "{}")
+if not {"status", "cause", "summary", "evidence"} &lt;= answer.keys():
+    raise ValueError("invalid_final_answer")
+<span class="hl">observed = " ".join(m["content"] for m in run.messages if m["role"] == "tool")
+if any(source not in observed for source in answer["evidence"]):
+    raise ValueError("unobserved_citation")</span>
+run.answer = answer
+run.status = "completed"
+save()
+return run</pre>
+    </div>
+    <ul class="key">
+      <li><b>Parse.</b> The turn's text must be bare JSON. <code>or "{}"</code> turns an empty reply into an empty object, which then fails the next check with a named reason. Text that is not JSON at all, such as prose or JSON inside a code fence, fails here without a named reason: the gap noted in "What the model can send back".</li>
+      <li><b>Shape.</b> The answer must have all four fields the system prompt asks for: <code>status</code>, <code>cause</code>, <code>summary</code> and <code>evidence</code>. Otherwise the run fails with <code>invalid_final_answer</code>. Their values are not checked yet.</li>
+      <li><b>Evidence.</b> All tool results in the conversation are joined into one text, and every source the answer cites must appear in it. An invented source fails the run with <code>unobserved_citation</code>. An empty list passes, which is right for an honest <code>insufficient_evidence</code> answer.</li>
+      <li><b>Accept.</b> Only then is the answer stored, the run marked <code>completed</code> and saved.</li>
+    </ul>
+    <p class="muted">Later this check moves into <code>security.validate_answer</code> and gets stricter: <code>status</code> must be <code>complete</code> or <code>insufficient_evidence</code>, <code>cause</code> and <code>summary</code> must be text, <code>evidence</code> a short list of strings, and each citation must equal a source ID a tool actually returned, not just appear somewhere in the text.</p>
+    <div class="ask"><span class="label">Ask</span><p class="q">The model answers with evidence ["log-astro-001", "rb-rollback-v9"]. What happens?</p>
+      <details><summary>Show the answer</summary><p>The run fails with <code>unobserved_citation</code>: no tool ever returned <code>rb-rollback-v9</code>. The runtime refuses an answer that cites a source it cannot show, however plausible the rest of it reads.</p></details></div>
   </div>
 
   <div class="terminal" id="step4">
