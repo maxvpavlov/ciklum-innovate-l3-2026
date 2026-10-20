@@ -110,6 +110,7 @@ The live adapters were tested only against mock HTTP. Default to `mock`, and nev
 - **Learners drive their own coding agents.** Learner-facing material gives *prompts*, not terminal command snippets, as stated in the README. The executable CLIs, labs and tests exist for the coding agents to use.
 - **`LEARNER_PROMPTS.md` follows a fixed shape per lesson.** Each lesson has a kit/answer-key line, then `Prepare the workspace`, `Add the check pack`, `Build step 1–4`, `Learner exercise`, `Verify the checkpoint`, `Review the result`, and several `Recover when …` troubleshooting prompts. Keep new or edited lessons in this shape.
 - **Learners build from the kit, not the reference.** They build in their own repository in the course GitLab group from the learner kit (`learner-kit/` at the repository root). The repository is public, so the reference is visible too; the prompts ask the agent not to use it, and the check packs, not the code, prove the learning. `guide-builder/kit.py` generates it from the tags: `starter/` (lesson-00) and per lesson `given/` (fixtures, mock providers, `CASES`, the service launcher) and `checks/` (labs and cumulative tests), plus the interfaces the checks import. Run `kit.py --verify` after any re-tag; edit the `GIVEN` list there to change what is given. Session 01 is an instructor demonstration; learners repeat its prompts after class.
+- **Terminology: never call a fixed-step program a "workflow".** Say "hard-coded sequence" (as opposed to an agent-driven investigation). In platform engineering "workflow" means a business process, so keep the word for that, and for GitHub Actions workflows.
 - **Recurring teaching stances to preserve:**
   - A coding agent's completion message is not evidence.
   - Unrun or skipped checks are not passes.
@@ -137,6 +138,6 @@ The live adapters were tested only against mock HTTP. Default to `mock`, and nev
   - The guides are destined for Google Docs in the course Drive folder; the README says that publication is still pending.
   - The `instructor-guides.zip` and `incident-platform.zip` files referenced in the text do not exist.
   - Guide 12's agenda has no build slot, yet it keeps the four build-step prompts.
-  - Several guides promise mentor-supplied "scaffolding" that has no separate artifact: 01's workflow baseline, and scaffolding in 02, 07 and 11.
+  - Several guides promise mentor-supplied "scaffolding" that has no separate artifact: scaffolding in 02, 07 and 11.
   - Guide 11 mentions optional Kubernetes, but there are no Kubernetes files.
   - Neither the guides nor the README use the "Innovate"/Ciklum branding.

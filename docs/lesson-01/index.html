@@ -459,27 +459,27 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
       <figcaption>The model never calls code. It proposes; the runtime decides whether and how to execute. That one boundary is where authorization, limits and auditing live for the rest of the course.</figcaption>
     </figure>
 
-    <h3>Does this investigation need a loop at all?</h3>
+    <h3>Why an agent, not a hard-coded sequence</h3>
     <div class="prose" style="margin-top:0">
-      <p>For INC-001 you could write the investigation as three fixed steps, and it would work. So before building the loop, be clear about when it earns its extra cost. A <b>workflow</b> is the right tool when the steps are known in advance. An <b>agent</b> earns its place when the next step depends on what was just observed.</p>
-      <p>Our three tickets show the difference. For INC-002 the log points to clock skew, so the runbook search must ask a different question. For INC-003 the log has no diagnosis, so the right move is to stop and say there is not enough evidence rather than force a cause. A fixed sequence cannot make those choices; a loop can, which is also why it needs limits.</p>
+      <p>An AI investigation platform is worth building only where incidents are too varied and too entangled to follow a path written in advance. The next step depends on what the last one revealed, the evidence is spread across systems, and the investigation should end in a fix that a person approves. An agent orchestrates that: it chooses each next step from what it has observed, within limits the platform enforces.</p>
+      <p>Our sandbox tickets are deliberately small, so you can watch every step. INC-001 alone could be a hard-coded sequence. The loop matters as soon as cases differ: INC-002 needs a different runbook question once the log is read, and INC-003 should end with an honest "not enough evidence". Real incidents chain many more such decisions, and later sessions add the parts that handle them: subagents, remote specialists and approved fixes.</p>
     </div>
 
     <div class="compare">
       <div>
-        <h3>A workflow</h3>
-        <p class="muted">Steps are fixed in advance by the developer.</p>
+        <h3>A hard-coded sequence</h3>
+        <p class="muted">The developer fixes every step in advance.</p>
         <ol><li>read the log</li><li>search the runbook</li><li>write the summary</li></ol>
-        <p>Predictable and cheap. Keep it as your baseline.</p>
+        <p>Predictable, but it breaks on the first case that does not follow the script.</p>
       </div>
       <div>
-        <h3>An agent</h3>
+        <h3>An agent-driven investigation</h3>
         <p class="muted">The next permitted step is chosen from what was just observed.</p>
         <ol><li>propose → run → observe</li><li>propose → run → observe</li><li>… then answer, or stop</li></ol>
-        <p>Flexible, so it needs explicit limits and evidence.</p>
+        <p>Adapts to each case, so it needs explicit limits, cited evidence and approval before any fix.</p>
       </div>
     </div>
-    <p class="say">Keep the workflow as your baseline. If the agent does not do better on the same cases, its flexibility is not worth the cost. Measuring every change against a baseline is a habit the whole course keeps, up to the before/after comparison in the capstone.</p>
+    <p class="say">Every change you make is measured against a baseline on the same cases, starting with this single agent.</p>
 
     <div class="prose">
       <p>Our default model is a <b>deterministic mock provider</b>. It is a scripted policy, not intelligence: it reads the log, then searches the runbook for the cause it saw, then answers from the sources it observed. Everyone gets the same behaviour with no credentials and no network variability.</p>
@@ -715,7 +715,7 @@ class Context:
     <div class="terminal" style="margin-top:0">
       <div class="bar"><span class="switch">Switch to terminal · Exercise</span><span class="file">learners' own projects</span></div>
       <div class="body">
-        <div class="prompt" id="p5"><span class="pfx">PROMPT ▸ </span>Help me carry out the Lesson 01 learner exercise in my existing project: Change Limits in a small local invocation to allow one step, then a tiny token budget, then a short deadline with a slow MockProvider. Predict and observe step_budget, token_budget and TimeoutError. Restore the normal limits and verify the cited happy-path answer. Keep your workflow baseline for comparison. First state the expected outcomes, then run the experiment in a recoverable state. Show the observed results and explain any discrepancy. Keep the original acceptance criteria and restore temporary experiments when finished.</div>
+        <div class="prompt" id="p5"><span class="pfx">PROMPT ▸ </span>Help me carry out the Lesson 01 learner exercise in my existing project: Change Limits in a small local invocation to allow one step, then a tiny token budget, then a short deadline with a slow MockProvider. Predict and observe step_budget, token_budget and TimeoutError. Restore the normal limits and verify the cited happy-path answer. First state the expected outcomes, then run the experiment in a recoverable state. Show the observed results and explain any discrepancy. Keep the original acceptance criteria and restore temporary experiments when finished.</div>
         <div><button class="copy" type="button" data-copy="p5">Copy prompt</button></div>
       </div>
     </div>

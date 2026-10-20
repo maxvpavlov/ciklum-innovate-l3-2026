@@ -2,7 +2,7 @@
   "number": 4,
   "title": "Build the agent evaluation harness",
   "duration": 90,
-  "outcome": "A reproducible evaluation harness records single-agent quality, usage and latency, with held-out cases and a calibrated-judge workflow.",
+  "outcome": "A reproducible evaluation harness records single-agent quality, usage and latency, with held-out cases and judge calibration.",
   "platform_role": "This session builds the platform's measuring instrument: a dataset with a recorded identity, repeated trials, a held-out split and per-trial quality, usage and latency. In Session 11 the same harness becomes the release gate that decides whether a new agent version may be activated, and the console's Operations view lists those release decisions. The single-agent baseline recorded today is also the comparison point for the Session 12 capstone.",
   "preparation": [
     "Bring your Session 03 checkpoint, acceptance scenarios and recorded runs. Read the evaluation reference and tool-evaluation guidance."

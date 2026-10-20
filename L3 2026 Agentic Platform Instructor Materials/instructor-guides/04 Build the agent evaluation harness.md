@@ -2,7 +2,7 @@
 
 *Instructor guide for the L3 agentic platform programme*
 
-**Outcome** A reproducible evaluation harness records single-agent quality, usage and latency, with held-out cases and a calibrated-judge workflow.
+**Outcome** A reproducible evaluation harness records single-agent quality, usage and latency, with held-out cases and judge calibration.
 
 Duration: 90 minutes. Starting checkpoint: lesson-03. Ending checkpoint: lesson-04 (2352816).
 

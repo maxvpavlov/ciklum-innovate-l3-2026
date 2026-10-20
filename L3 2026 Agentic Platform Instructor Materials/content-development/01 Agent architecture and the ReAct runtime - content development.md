@@ -16,7 +16,7 @@ Write 2–4 sentences explaining what the topic is about, why it matters and wha
 
 **Your input:**
 
-This first session of "Building Agentic Platforms" explains how an AI agent actually works: a model proposes an action, a runtime decides whether to execute it, and a tool returns an observation, in a loop bounded by explicit limits. It matters because every later capability of the platform (tools, memory, subagents, remote agents, the tool gateway, identity and the console) is built around this one loop. Learners compare workflows with agents, see the target platform they will build over 12 sessions, and direct their own coding agent to build a bounded, observable single-agent runtime for a sandbox incident investigation.
+This first session of "Building Agentic Platforms" explains how an AI agent actually works: a model proposes an action, a runtime decides whether to execute it, and a tool returns an observation, in a loop bounded by explicit limits. It matters because every later capability of the platform (tools, memory, subagents, remote agents, the tool gateway, identity and the console) is built around this one loop. Learners see why the platform uses an agent rather than a hard-coded sequence, see the target platform they will build over 12 sessions, and direct their own coding agent to build a bounded, observable single-agent runtime for a sandbox incident investigation.
 
 ### 1.3 Level
 
@@ -97,7 +97,7 @@ By the end of this topic, you will be able to:
 
 **Objective 1:**
 
-Compare a fixed workflow with an agent loop and choose which one fits a given incident-investigation task.
+Contrast a hard-coded sequence with an agent loop and explain why incident investigation needs the loop, and where its flexibility needs limits.
 
 **Objective 2:**
 
@@ -131,7 +131,7 @@ If nothing is required, write: “No pre-work required.”
 
 • Set up a personal Git repository and a working AI coding agent; ask it to prepare the Lesson 01 workspace from the reference repository (prompt provided in the course materials). Confirm the baseline checks run.
 
-• Write five acceptance scenarios for the sample incident and a simple fixed-workflow baseline to compare against later.
+• Write five acceptance scenarios for the sample incident.
 
 • Sketch the target platform you expect to build, labelling each component with the session that builds it.
 
@@ -146,7 +146,7 @@ Provide the proposed flow and approximate timing.
 | Section | Topic | Approx. time | Format |
 |---|---|---|---|
 | 1 | Opening: the incident, the target platform blueprint | 0–10 min | Discussion |
-| 2 | Concept: model, runtime and tools; workflows vs agents; limits | 10–30 min | Presentation + discussion |
+| 2 | Concept: model, runtime and tools; agent vs hard-coded sequence; limits | 10–30 min | Presentation + discussion |
 | 3 | Build steps 1–2: run contract; provider adapters | 30–50 min | Live demo + guided build |
 | 4 | Build steps 3–4: the loop and pending calls; guards and evidence | 50–75 min | Live demo + guided build |
 | 5 | Learner exercise: fault injection on limits | 75–100 min | Hands-on exercise |
@@ -167,11 +167,11 @@ Key message — the one thing participants should remember from this section.
 
 **Section 1:**
 
-From workflows to agents, and the platform we will build
+From hard-coded sequences to agents, and the platform we will build
 
-**Key concepts:** a workflow prescribes steps in advance; an agent chooses the next permitted action from observations. An agentic platform wraps the agent runtime with an agent registry, an MCP tool gateway, identity and delegated credentials, a web console and operations. Today builds only the runtime at the centre.
+**Key concepts:** a hard-coded sequence prescribes steps in advance; an agent chooses the next permitted action from observations. An agentic platform wraps the agent runtime with an agent registry, an MCP tool gateway, identity and delegated credentials, a web console and operations. Today builds only the runtime at the centre.
 
-**Common misconceptions:** agents always beat workflows (keep the workflow baseline and compare); a fluent answer is a successful investigation (success needs a cause, cited evidence, or an explicit insufficient-evidence result).
+**Common misconceptions:** an agent is always better than a hard-coded sequence (measure every change against a baseline on the same cases); a fluent answer is a successful investigation (success needs a cause, cited evidence, or an explicit insufficient-evidence result).
 
 **Key message:** the runtime is the core every later platform component wraps, so its contracts and events must be explicit.
 
@@ -234,13 +234,13 @@ Describe what participants will actually do.
 
 **Task:**
 
-Extend your Session 01 checkpoint with one new acceptance scenario and a workflow-versus-agent comparison.
+Extend your Session 01 checkpoint with one new acceptance scenario and a comparison with a hard-coded sequence.
 
 **Instructions:**
 
 • Ask your coding agent to add a missing-incident scenario (for example INC-404) and define what a supported insufficient_evidence answer looks like.
 
-• Run the workflow baseline and the agent loop on the same fixtures; record step counts, stop reasons and error handling.
+• Write INC-001's investigation as a hard-coded sequence and run it and the agent loop on all three tickets; record step counts, stop reasons and error handling.
 
 • Redraw the platform blueprint and note which later console views the event log can already feed.
 
@@ -254,7 +254,7 @@ A committed checkpoint with the new scenario and passing checks (7 tests at the 
 
 • Did the coding agent's claims match the check output? Unrun or skipped checks are not passes.
 
-• Where did the workflow outperform the agent, and why?
+• Where did the hard-coded sequence give a wrong or unsupported answer, and why?
 
 • Which limit fired first in each failure case, and was the failure explained rather than an unexplained exception?
 
@@ -276,7 +276,7 @@ Draft outline (Context → Concept → Example → Application → Practice → 
 
 • 3. The target platform blueprint: runtime, registry, tool gateway, identity, console, operations; session map.
 
-• 4. Concept: workflow vs agent; model, runtime and tools as three boxes.
+• 4. Concept: agent vs hard-coded sequence; model, runtime and tools as three boxes.
 
 • 5. Concept: the run contract (Context, Run, Limits) and who owns each field.
 
@@ -332,7 +332,7 @@ Suggested framing: “Before moving on, consider:”
 
 **Reflection question 1:**
 
-Which task in your current project would be better served by a fixed workflow than by an agent, and why?
+Which task in your current project would be better served by a hard-coded sequence than by an agent, and why?
 
 **Reflection question 2:**
 
@@ -374,7 +374,7 @@ L&D structures, edits and adapts the content for self-paced learning. SME can pr
 
 Outline for a 20–25 minute self-paced version:
 
-• Video 1 (5 min): what an agent is, workflow vs agent, and the platform blueprint.
+• Video 1 (5 min): what an agent is, agent vs hard-coded sequence, and the platform blueprint.
 
 • Video 2 (6 min): the run contract and why the application owns authority.
 
@@ -504,7 +504,7 @@ List terminology that must be used consistently.
 
 **Your input:**
 
-• Agent vs workflow: an agent chooses the next permitted action from observations; a workflow's steps are fixed in advance.
+• Agent vs hard-coded sequence: an agent chooses the next permitted action from observations; a hard-coded sequence's steps are fixed in advance.
 
 • Runtime (the loop): the code that calls the model, executes permitted tools and enforces limits.
 
@@ -538,7 +538,7 @@ List frequent misunderstandings. This will inform explanations, examples, knowle
 
 • 'Offline tests prove the model works.' They prove the loop and boundaries; live quality needs a separate benchmark.
 
-• 'Agents are always better than workflows.' Keep a workflow baseline and compare on the same cases.
+• 'An agent is always better than a hard-coded sequence.' Measure against a baseline on the same cases.
 
 ### 9.3 Important Nuances
 

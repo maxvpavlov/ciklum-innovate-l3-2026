@@ -74,7 +74,7 @@ Use SAY for instructor narration, SHOW and REVIEW for the code and evidence part
 
 ### Concept discussion
 
-**SAY** Now zoom into the centre box and draw the model, runtime and tools as three separate boxes. The model proposes an action, the runtime decides whether and how to execute it, and the tool returns an observation. Every later capability, including subagents and remote agents, reuses this loop. A workflow can prescribe the sequence in advance. An agent can choose the next permitted action from observations. Both may be useful for this incident, so keep the simple workflow baseline. Explain that our default provider is a deterministic fixture policy. It produces a known series of requests, so everyone can debug the same behaviour without credentials or network variability. OpenAI-compatible and Anthropic adapters normalize real provider responses into that same internal contract. A passing offline test validates the loop and its boundaries; assessing live-model reasoning will require a separate benchmark. Finish by asking which component owns a timeout. The runtime owns it, because a model instruction cannot enforce elapsed time.
+**SAY** Now zoom into the centre box and draw the model, runtime and tools as three separate boxes. The model proposes an action, the runtime decides whether and how to execute it, and the tool returns an observation. Every later capability, including subagents and remote agents, reuses this loop. A hard-coded sequence can prescribe the steps in advance, and for INC-001 alone it would work. An AI investigation platform is worth building because real incidents do not follow a path written in advance: the next step depends on what the last one revealed, and the investigation should end in an approved fix. An agent chooses the next permitted action from what it has observed, and later sessions add subagents, remote specialists and approved remediation around this loop. Explain that our default provider is a deterministic fixture policy. It produces a known series of requests, so everyone can debug the same behaviour without credentials or network variability. OpenAI-compatible and Anthropic adapters normalize real provider responses into that same internal contract. A passing offline test validates the loop and its boundaries; assessing live-model reasoning will require a separate benchmark. Finish by asking which component owns a timeout. The runtime owns it, because a model instruction cannot enforce elapsed time.
 
 **PAUSE** Invite one learner to trace the control flow and another to identify a failure boundary. Resolve different interpretations before opening the implementation.
 
@@ -225,7 +225,7 @@ if calls:
 
 ## Learner practice and checkpoints
 
-> **PROMPT** Help me carry out the Lesson 01 learner exercise in my existing project: Change Limits in a small local invocation to allow one step, then a tiny token budget, then a short deadline with a slow MockProvider. Predict and observe step_budget, token_budget and TimeoutError. Restore the normal limits and verify the cited happy-path answer. Keep your workflow baseline for comparison. First state the expected outcomes, then run the experiment in a recoverable state. Show the observed results and explain any discrepancy. Keep the original acceptance criteria and restore temporary experiments when finished.
+> **PROMPT** Help me carry out the Lesson 01 learner exercise in my existing project: Change Limits in a small local invocation to allow one step, then a tiny token budget, then a short deadline with a slow MockProvider. Predict and observe step_budget, token_budget and TimeoutError. Restore the normal limits and verify the cited happy-path answer. First state the expected outcomes, then run the experiment in a recoverable state. Show the observed results and explain any discrepancy. Keep the original acceptance criteria and restore temporary experiments when finished.
 
 **VERIFY** Give the coding agent the verification prompt below, then inspect its evidence and explain the result in your own words.
 
@@ -295,7 +295,7 @@ In the reference, this checkpoint changed the files below. Learners write the im
 ## Practice and discussion
 
 - Add a missing-incident acceptance scenario and explain what a supported insufficient-evidence response should look like.
-- Compare the workflow baseline and agent loop on the same fixtures, including their step counts and error handling.
+- Write INC-001's investigation as a hard-coded sequence and run it and the agent loop on all three tickets. Note where the sequence gives a wrong or unsupported answer, and compare step counts and stop reasons.
 - Redraw the platform blueprint in your own notes and mark the box today's checkpoint fills. For each later console view, note whether today's event log already records the data it needs.
 
 **Discussion prompt** Which decision would change for a larger or more sensitive workload, and what additional evidence would you require before changing it? Tie the answer to the code, the task requirements and the acceptance checks.
