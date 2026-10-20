@@ -39,7 +39,7 @@ Your coding agent handles preparation, implementation and execution. You set the
 
 Next, have the coding agent read this lesson's check pack and add it to the project before any code is written.
 
-> **PROMPT** Read learner-kit/lessons/12 in the course repository: its README, the given files and the check pack. Copy the given files and the check pack into my project exactly as the README says, without changing them, and commit that. Then list the interfaces my code must provide, which checks now fail and why, and the capability they verify. Explain the implementation sequence before we begin. Do not write the implementation yet, and do not look for or use a finished solution.
+> **PROMPT** Read learner-kit/lessons/12 in the course repository: its README, the given files and the check pack. Copy the whole given files and the check pack into my project exactly as the README says, without changing them, and commit that; a given definition that must be pasted into a module is added in the build step that creates or changes that module. Then run the tests and report what fails and why: at first this lesson's test file may fail to import, because the modules it needs do not exist yet. List the interfaces my code must provide, with the exact names, signatures, fields and error codes the tests use, and the capability they verify. Explain the implementation sequence before we begin. Do not write the implementation yet, and do not look for or use a finished solution.
 
 **Instructor readiness** Rehearse the session with a learner project built from the course kit, so you see what learners see: the check pack fails until each capability is built. The reference checkpoint remains your answer key for the excerpts below. In class, use one bounded prompt at a time; learners inspect the change, explain the control decision and review the check evidence.
 
@@ -224,11 +224,11 @@ return {"baseline_success": baseline["success_rate"], "candidate_success": candi
 
 ## Learner practice and checkpoints
 
-> **PROMPT** Help me carry out the Lesson 12 learner exercise in my existing project: Before class, select a small tuning intervention, apply it as a new registry version and generate a comparable before-and-after report with a recorded release decision. During class, present the working platform through its console and demonstrate one failure-control case. Explain the evidence, tradeoffs and adoption decision. Use the fixture experiment only as a rehearsal when live model access is unavailable. First state the expected outcomes, then run the experiment in a recoverable state. Show the observed results and explain any discrepancy. Keep the original acceptance criteria and restore temporary experiments when finished.
+> **PROMPT** Help me carry out the Lesson 12 learner exercise in my existing project: Before class, select a small tuning intervention, apply it as a new registry version and generate a comparable before-and-after report with a recorded release decision. During class, present the working platform through its console and demonstrate one failure-control case. Explain the evidence, tradeoffs and adoption decision. Use the fixture experiment only as a rehearsal when live model access is unavailable. First state the expected outcomes, then run the experiment in a throwaway script outside tests/, or from a clean Git state you can restore. Show the observed results and explain any discrepancy. Keep the original acceptance criteria and restore temporary experiments when finished.
 
 **VERIFY** Give the coding agent the verification prompt below, then inspect its evidence and explain the result in your own words.
 
-> **PROMPT** Verify my Lesson 12 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 12 only when the required capability is present. Run the Lesson 12 check pack, which includes tests/test_lesson12.py and the Session 12 demonstration, and the full regression suite, all unchanged and using the offline provider. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my GitLab repository. Do not equate an unrun or skipped check with a pass.
+> **PROMPT** Verify my Lesson 12 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 12 only when the required capability is present. Run the full test suite, which includes the Lesson 12 check pack and every earlier lesson's tests, and then the Session 12 demonstration with python -m incident.lab 12, all unchanged and using the offline provider. Confirm that the passing count matches the one in the Lesson 12 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my GitLab repository. Do not equate an unrun or skipped check with a pass.
 
 **Expected behaviour** The coding agent returns actual check results and the demonstration’s structured output. Run identifiers and elapsed times vary. Compare the status and capability outcomes with the recorded reference below, and investigate differences.
 
@@ -279,7 +279,7 @@ In the reference, this checkpoint changed the files below. Learners write the im
 - `incident/tuning.py`
 - `tests/test_lesson12.py`
 
-> **PROMPT** Review my completed Lesson 12 work against the Lesson 12 check pack and completion criteria. Show the files I changed and the interfaces I provide, and explain how each completion criterion is met with code or test evidence. Point out where my design makes a different choice from the one the lesson presents, and what that choice costs or gains. Preserve deliberate improvements and earlier capabilities.
+> **PROMPT** Review my completed Lesson 12 work against the Lesson 12 check pack and completion criteria. Show the files I changed and the interfaces I provide, and explain how each completion criterion is met with code or test evidence. Point out the design choices I made that the check pack does not force, and what each one costs or gains. Preserve deliberate improvements and earlier capabilities.
 
 ## Demo troubleshooting
 

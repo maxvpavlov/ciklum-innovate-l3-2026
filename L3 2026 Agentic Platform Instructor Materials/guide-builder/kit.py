@@ -155,13 +155,16 @@ def build_lesson(n, known_given):
             if name is None:
                 lines.append(f"- `given/{path}`: copy to `{path}`.")
             else:
-                verb = "replace" if changed else "add"
-                lines.append(f"- `given/{name}.py`: {verb} `{name}` in `{path}`.")
+                if changed:
+                    lines.append(f"- `given/{name}.py`: replace `{name}` in `{path}` with this version.")
+                else:
+                    lines.append(f"- `given/{name}.py`: add `{name}` to `{path}` in the build step that creates that file.")
         lines.append("")
     lines += ["## Checks", "",
               "Copy `checks/` into your project root unchanged: it holds this lesson's demo in",
               "`incident/labs/` and the tests for this lesson and every earlier one in `tests/`.",
-              "This lesson's tests fail until you have built the capability. Never edit them to",
+              "This lesson's tests fail until you have built the capability; at first its test file may",
+              "fail to import, because the modules it needs do not exist yet. Never edit the tests to",
               "make them pass.", "",
               f"When everything is built, set `LESSON = {n}` in `incident/__init__.py`. The full",
               f"suite should then report **{TEST_COUNTS[n]} passed**, and `python -m incident.lab {n}`",

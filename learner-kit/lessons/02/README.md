@@ -4,7 +4,8 @@
 
 Copy `checks/` into your project root unchanged: it holds this lesson's demo in
 `incident/labs/` and the tests for this lesson and every earlier one in `tests/`.
-This lesson's tests fail until you have built the capability. Never edit them to
+This lesson's tests fail until you have built the capability; at first its test file may
+fail to import, because the modules it needs do not exist yet. Never edit the tests to
 make them pass.
 
 When everything is built, set `LESSON = 2` in `incident/__init__.py`. The full
