@@ -424,7 +424,7 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
 
 <section class="ch" id="loop">
   <p class="eyebrow"><span>Today's build: the runtime</span></p>
-  <h2>Model, runtime, tool: three boxes, one loop</h2>
+  <h2>The ReAct loop: reason, act, observe</h2>
   <div class="stack">
     <p class="say">Today we build only the centre box of the platform. Every later capability, including subagents, remote agents, the gateway and identity, reuses this loop.</p>
     <figure>
@@ -458,6 +458,31 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
       </div>
       <figcaption>The model never calls code. It proposes; the runtime decides whether and how to execute. That one boundary is where authorization, limits and auditing live for the rest of the course.</figcaption>
     </figure>
+
+    <div class="prose">
+      <p><b>ReAct</b> (reasoning and acting) describes an agent as a repeating cycle: a <b>thought</b> about what to do next, an <b>action</b>, and an <b>observation</b> of the result, until the agent can answer. With today's native tool calling the cycle maps directly onto the API. The model's turn may contain its reasoning and a request to call a tool; the runtime runs the tool; the result goes back to the model as an observation.</p>
+    </div>
+
+    <h3>What the model can send back</h3>
+    <div class="prose" style="margin-top:0">
+      <p>Every call to the model returns one assistant turn, and the provider also reports why the turn ended. The runtime decides what happens next from that structure, never from the wording.</p>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>The turn contains</th><th>Why it ended (OpenAI / Anthropic)</th><th>What the runtime does</th></tr></thead>
+        <tbody>
+          <tr><td><b>One or more tool calls</b>, often with some text before them</td><td><code>tool_calls</code> / <code>tool_use</code></td><td>Runs the permitted calls, appends each observation with the same call ID, and calls the model again.</td></tr>
+          <tr><td><b>Text only</b></td><td><code>stop</code> / <code>end_turn</code></td><td>The model considers itself done, so this is a <i>candidate</i> final answer. The runtime checks it against the answer contract: the required shape, and citations that were actually observed.</td></tr>
+          <tr><td><b>Text that was cut off</b></td><td><code>length</code> / <code>max_tokens</code></td><td>Not an answer. Stop with a named reason, or continue with a larger budget.</td></tr>
+          <tr><td><b>A refusal or filtered output</b></td><td><code>content_filter</code> / <code>refusal</code></td><td>Not an answer. Stop with a named reason.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="prose">
+      <p><b>Where the thought goes.</b> Reasoning appears either as visible text in the turn, often just before a tool call ("the log shows a pool wait, so I will search the runbooks"), or as separate reasoning the provider produces: hidden reasoning tokens in OpenAI's reasoning models, or thinking blocks in Anthropic's extended thinking, which must be sent back unchanged during a tool loop. Either way, reasoning is never an action and never evidence. The runtime acts only on tool calls and accepts only an answer that passes its checks, which is why the event log records actions and usage, not thoughts.</p>
+      <p><b>Text that is not the answer.</b> A model can reply with text and no tool call that is not a final answer, such as "let me check the logs next". With native tool calling, a turn without a tool call ends the loop, so the runtime must decide explicitly: accept it as the answer, reject it with a named reason, or ask the model to continue or to answer in the required format, counting that as another step. It must never guess.</p>
+      <p class="muted">Our first runtime handles the first two rows: a turn with tool calls means act, anything else must be the final JSON answer. A cut-off or refused reply, non-final text or an answer wrapped in extra formatting fails without a named reason. The mock model never produces those cases; we harden the runtime for them when we switch to a real model.</p>
+    </div>
 
     <h3>Why an agent, not a hard-coded sequence</h3>
     <div class="prose" style="margin-top:0">
