@@ -91,6 +91,14 @@ code, .mono { font-family: var(--mono); font-size: .9em; }
 .ask details summary { cursor: pointer; color: var(--muted); font-size: 15px; }
 .ask details p { margin-top: 6px; }
 .ask ol.steps { margin: 4px 0 0; padding-left: 22px; display: grid; gap: 4px; }
+ol.howto { margin: 0; padding-left: 24px; display: grid; gap: 10px; max-width: 72ch; }
+ol.howto li::marker { font: 700 16px var(--display); color: var(--signal); }
+.links { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.links a { display: grid; gap: 4px; padding: 14px 16px; background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; text-decoration: none; min-width: 0; }
+.links a:hover { border-color: var(--signal); }
+.links .q { font: 700 16px var(--display); font-variation-settings: "wdth" 90; color: var(--ink); }
+.links .mono { font-size: 13px; color: var(--signal); overflow-wrap: anywhere; }
+.links .muted { font-size: 13.5px; }
 
 /* Hero */
 .hero { padding-block: 64px 56px; display: grid; gap: 22px; }
@@ -592,14 +600,32 @@ tools   log_lookup(incident_id) · runbook_search(query)</pre></div></div>
   </div>
 
   <div class="stack">
-    <h3>Where the code lives: two folders</h3>
-    <div class="cards">
-      <div><span class="q">Your project</span><p>Where your coding agent writes. It starts as the <code>lesson-00</code> checkpoint: an almost empty Python project whose package is called <code>incident</code>. Every session adds to this same project, and you push it to your own repository in the course GitLab group.</p><span class="ans">my-platform/ · read and write · pushed to GitLab</span></div>
-      <div><span class="q">The course kit</span><p>The <code>learner-kit</code> folder of the public course repository, which your agent keeps as a read-only copy. It holds the starter project and, for each lesson, the given files and a check pack: tests that fail until you have built the capability. You build the platform yourself, and the checks prove it.</p><span class="ans">course/learner-kit · read only</span></div>
+    <h3>Start here: from an empty folder to your own repository</h3>
+    <ol class="howto">
+      <li><b>Create an empty folder</b>, for example <code>~/agentic-course</code>, and start your coding agent in it. Nothing else is needed first: no clone, no Python setup.</li>
+      <li><b>Paste the lesson-00 prompt</b> from <a href="#setup">"Set up your workspace"</a> below. Your agent clones the public course repository, creates your project from the starter, installs everything, runs the first test, signs you in to GitLab and pushes your project to a new private repository in the course group.</li>
+      <li><b>Run the other prompts below in order</b>: add the check pack, build steps 1 to 4, break it on purpose, verify and push, review. Each has a Copy button. Read each change before you run the next prompt.</li>
+      <li><b>You are done</b> when the verify prompt reports <b>7 passed</b>, <code>LESSON = 1</code> and a push to your GitLab repository.</li>
+      <li><b>In every later session</b>, start your coding agent in the same <code>~/agentic-course</code> folder; the prompts refer to both folders in it.</li>
+    </ol>
+    <div class="links">
+      <a href="https://github.com/maxvpavlov/ciklum-innovate-l3-2026"><span class="q">Course repository</span><span class="mono">github.com/maxvpavlov/ciklum-innovate-l3-2026</span><span class="muted">public · your agent clones it</span></a>
+      <a href="https://github.com/maxvpavlov/ciklum-innovate-l3-2026/tree/main/learner-kit/lessons/01"><span class="q">Session 01 kit</span><span class="mono">learner-kit/lessons/01</span><span class="muted">given files and check pack</span></a>
+      <a href="https://github.com/maxvpavlov/ciklum-innovate-l3-2026/blob/main/L3%202026%20Agentic%20Platform%20Instructor%20Materials/incident-platform/LEARNER_PROMPTS.md#01-agent-architecture-and-the-react-runtime"><span class="q">Every session's prompts</span><span class="mono">LEARNER_PROMPTS.md</span><span class="muted">the same prompts as this page</span></a>
+      <a href="https://maxvpavlov.github.io/ciklum-innovate-l3-2026/lesson-01/"><span class="q">This page</span><span class="mono">maxvpavlov.github.io/…/lesson-01</span><span class="muted">bookmark it for after class</span></a>
+    </div>
+    <div class="excerpt">
+      <div class="src">~/agentic-course · after the lesson-00 prompt</div>
+<pre>~/agentic-course/
+  course/                 <span class="muted">read-only copy of the public course repository</span>
+    learner-kit/
+      starter/            <span class="muted">copied once to create my-platform</span>
+      lessons/01/         <span class="muted">Session 01 given files and check pack</span>
+<span class="hl">  my-platform/            your project · your agent writes here · pushed to GitLab</span></pre>
     </div>
     <div class="stack" style="margin-top:0">
       <div class="excerpt">
-        <div class="src">my-platform/ · after Session 01</div>
+        <div class="src">~/agentic-course/my-platform · after Session 01</div>
 <pre>pyproject.toml, uv.lock   <span class="muted">pinned Python 3.12 dependencies</span>
 incident/
   __init__.py             <span class="muted">LESSON = 0, raised to 1 when verified</span>
