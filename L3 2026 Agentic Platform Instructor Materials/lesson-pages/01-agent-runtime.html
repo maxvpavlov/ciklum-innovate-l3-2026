@@ -551,8 +551,56 @@ tools   log_lookup(incident_id) · runbook_search(query)</pre></div></div>
     <p class="muted">Rule for the whole build: a coding agent saying "done" is not evidence. Look at the diff and at the check output.</p>
   </div>
 
+  <div class="stack">
+    <h3>Where the code lives: two folders</h3>
+    <div class="cards">
+      <div><span class="q">Your project</span><p>Where your coding agent writes. It starts as the <code>lesson-00</code> checkpoint: an almost empty Python project whose package is called <code>incident</code>. Every session adds to this same project.</p><span class="ans">my-platform/ · read and write</span></div>
+      <div><span class="q">The reference</span><p>The course repository, with one finished checkpoint per session tagged <code>lesson-00</code> to <code>lesson-12</code>. Nobody edits it. When a prompt says "use lesson-01 read-only", the agent compares your work with the finished Session 01 code there.</p><span class="ans">reference/ · read only</span></div>
+    </div>
+    <div class="stack" style="margin-top:0">
+      <div class="excerpt">
+        <div class="src">my-platform/ · today's changes</div>
+<pre>pyproject.toml, uv.lock   <span class="muted">pinned Python 3.12 dependencies</span>
+incident/
+  __init__.py             <span class="muted">LESSON = 0, raised to 1 when verified</span>
+  lab.py                  <span class="muted">runs a session's demo</span>
+<span class="hl">  core.py                 new · the runtime: contracts and the loop</span>
+<span class="hl">  providers.py            new · model adapters, incl. the mock</span>
+<span class="hl">  fixtures.py             new · synthetic Astro data and two tools</span>
+  labs/
+<span class="hl">    l01.py                new · the Session 01 demo</span>
+tests/
+  test_setup.py           <span class="muted">the one test that exists today</span>
+<span class="hl">  test_lesson01.py        new · today's checks</span></pre>
+      </div>
+      <div class="prose" style="margin-top:0">
+        <p><b><code>core.py</code> is the heart of the platform.</b> It holds the agent runtime from the diagram above: the data the application owns (who is asking, what is allowed, the limits), the shape of a model's reply and of a run, and the loop itself. Every later session builds on this file.</p>
+        <p>Step 1 creates it with the data contracts only. Step 3 adds the loop to the same file. The other new files are small helpers around it.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="terminal" id="setup">
+    <div class="bar"><span class="switch">Before class · Set up the workspace</span><span class="file">creates reference/ and my-platform/</span></div>
+    <div class="body">
+      <p class="goal">Run once before the session. It gives you both folders, with your project at the starting checkpoint and its one test passing.</p>
+      <div class="prompt" id="p0"><span class="pfx">PROMPT ▸ </span>Set up my Session 01 workspace for the Building Agentic Platforms course. Clone the course repository github.com/maxvpavlov/ciklum-innovate-l3-2026, including its tags, into ~/agentic-course/reference and treat that folder as read-only from now on. Create my own project in ~/agentic-course/my-platform from the lesson-00 checkpoint only, exported from the reference, and make it a fresh Git repository with one initial commit. In my project, install the pinned dependencies with uv for Python 3.12, run the tests with python -m pytest, and confirm that incident/__init__.py says LESSON = 0. Do not copy any later lesson into my project. Report both folder paths, the files in my project, the test result, and anything missing, such as uv, Python 3.12 or access to the repository. Do not ask me to run terminal commands.</div>
+      <div><button class="copy" type="button" data-copy="p0">Copy prompt</button></div>
+      <p class="check">Expect: <b>1 passed</b> in my-platform, and <code>LESSON = 0</code>.</p>
+    </div>
+  </div>
+
+  <div class="terminal" id="orient">
+    <div class="bar"><span class="switch">Switch to terminal · Orient</span><span class="file">reads both folders, changes nothing</span></div>
+    <div class="body">
+      <p class="goal">Start of the build. The agent compares your project with the reference and explains the plan before writing anything.</p>
+      <div class="prompt" id="pO"><span class="pfx">PROMPT ▸ </span>Compare my current project with lesson-00 and prepare a read-only view of lesson-01 for this lesson. Preserve my work while arranging any isolation needed. Identify differences, relevant files and the expected capability. Explain the implementation sequence before we begin; do not replace my project with the finished reference or add later lessons.</div>
+      <div><button class="copy" type="button" data-copy="pO">Copy prompt</button></div>
+    </div>
+  </div>
+
   <div class="terminal" id="step1">
-    <div class="bar"><span class="switch">Switch to terminal · Build step 1 of 4</span><span class="file">incident/core.py</span></div>
+    <div class="bar"><span class="switch">Switch to terminal · Build step 1 of 4</span><span class="file">new file · incident/core.py · contracts</span></div>
     <div class="body">
       <p class="goal">Define the run contract: Context, Limits, Reply and Run. Separate what the application owns from what the model produces.</p>
       <div class="prompt" id="p1"><span class="pfx">PROMPT ▸ </span>For Lesson 01, continue in my learner project. Create the Context, Limits, Reply and Run contracts in incident/core.py. Separate application-owned tenant identity, permissions and run identifiers from model messages and results. Make run state serializable and give the runtime explicit step, token and time limits. Keep this step focused on the contracts; do not implement later platform features. Show the fields, their owners and one example of a value the model must not control. Use lesson-01 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div>
@@ -576,7 +624,7 @@ class Context:
   </div>
 
   <div class="terminal" id="step2">
-    <div class="bar"><span class="switch">Switch to terminal · Build step 2 of 4</span><span class="file">incident/providers.py</span></div>
+    <div class="bar"><span class="switch">Switch to terminal · Build step 2 of 4</span><span class="file">new file · incident/providers.py</span></div>
     <div class="body">
       <p class="goal">Normalize model access: a deterministic offline provider plus OpenAI-compatible and Anthropic adapters, all returning one Reply shape.</p>
       <div class="prompt" id="p2"><span class="pfx">PROMPT ▸ </span>For Lesson 01, continue in my learner project. Implement the provider interface in incident/providers.py using the current core contracts. Add the deterministic offline provider and configurable OpenAI-compatible and Anthropic adapters. Normalize messages, tool calls, errors and usage into Reply. Use mock HTTP responses to check both adapter request shapes without paid calls. Explain how provider selection and secrets are configured without exposing credentials. Use lesson-01 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div>
@@ -595,7 +643,7 @@ class Context:
   </div>
 
   <div class="terminal" id="step3">
-    <div class="bar"><span class="switch">Switch to terminal · Build step 3 of 4</span><span class="file">incident/core.py</span></div>
+    <div class="bar"><span class="switch">Switch to terminal · Build step 3 of 4</span><span class="file">incident/core.py · adds the loop · new incident/fixtures.py</span></div>
     <div class="body">
       <p class="goal">Implement the loop: record each proposed call as pending before running it, keep the call ID on the observation, finish with a structured, cited answer.</p>
       <div class="prompt" id="p3"><span class="pfx">PROMPT ▸ </span>For Lesson 01, continue in my learner project. Implement run_agent in incident/core.py and connect the synthetic readers in incident/fixtures.py. Preserve assistant tool-call IDs when appending observations, track pending calls before dispatch, and finish with a structured answer and observed evidence IDs. Use the existing provider interface. Show the complete model-to-tool-to-observation path for INC-001 and explain how the same loop can later support checkpointing. Use lesson-01 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div>
@@ -622,7 +670,7 @@ class Context:
   </div>
 
   <div class="terminal" id="step4">
-    <div class="bar"><span class="switch">Switch to terminal · Build step 4 of 4</span><span class="file">incident/core.py · labs · tests</span></div>
+    <div class="bar"><span class="switch">Switch to terminal · Build step 4 of 4</span><span class="file">incident/core.py · new lab and tests</span></div>
     <div class="body">
       <p class="goal">Bound and verify execution: run the happy path first, then trigger every guard on purpose and explain why each run stopped.</p>
       <div class="prompt" id="p4"><span class="pfx">PROMPT ▸ </span>For Lesson 01, continue in my learner project. Review and enforce the runtime's step, token, elapsed-time and repeated-action guards. Complete the Session 01 lab runner and tests. Demonstrate the normal cited answer and deliberately trigger each limit using offline fixtures. Explain the approximate pre-dispatch token estimate and distinguish reported usage from configured cost. Show which guard caused each failure and why the run stopped. Use lesson-01 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div>
