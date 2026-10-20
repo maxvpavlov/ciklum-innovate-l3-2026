@@ -11,8 +11,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
-/* Layout: one long presenter scroll on drafting-paper ground; a quiet session rail on the left,
-   chapters that alternate prose and evidence, and full-width "switch to terminal" bands. */
+/* Layout: one long scroll on drafting-paper ground; chapters that alternate prose and evidence,
+   full-width "switch to terminal" bands, and a Read/Present toggle that hides reading prose. */
 :root {
   --paper: #f2f4f6;        /* cool drafting paper */
   --sheet: #fbfcfd;        /* raised surfaces */
@@ -53,25 +53,11 @@ body {
 a { color: inherit; }
 :focus-visible { outline: 2px solid var(--signal); outline-offset: 3px; }
 
-/* Session rail (wide screens only) */
-.rail {
-  position: fixed; top: calc(24px + env(safe-area-inset-top, 0px)); left: max(16px, env(safe-area-inset-left, 0px));
-  width: 190px; display: none; font: 500 12.5px/1.35 var(--mono); z-index: 5;
-}
-.rail ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
-.rail a { display: grid; grid-template-columns: 44px 1fr; gap: 6px; padding: 5px 8px; border-radius: 6px;
-  text-decoration: none; color: var(--muted); }
-.rail a:hover { background: var(--sheet); color: var(--ink); }
-.rail a[aria-current="true"] { color: var(--ink); background: var(--sheet); box-shadow: inset 2px 0 0 var(--signal); }
-.rail .t { font-variant-numeric: tabular-nums; }
-@media (min-width: 1240px) { .rail { display: block; } main { margin-left: 210px; } }
-
 main { max-width: 1040px; margin: 0 auto; }
 section.ch { padding-block: 72px 24px; border-top: 1px solid var(--rule); scroll-margin-top: 8px; }
 section.ch:first-of-type { border-top: 0; }
 .eyebrow { font: 600 12.5px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--signal);
   display: flex; gap: 14px; flex-wrap: wrap; }
-.eyebrow .min { color: var(--muted); }
 h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; }
 h2 { font-size: clamp(30px, 4.4vw, 46px); font-variation-settings: "wdth" 82; font-weight: 750;
   line-height: 1.05; letter-spacing: -.01em; margin-top: 14px; }
@@ -85,6 +71,16 @@ code, .mono { font-family: var(--mono); font-size: .9em; }
 .stack > * { min-width: 0; }
 .two { display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
 .two > * { min-width: 0; }
+
+/* Read / Present toggle: always visible; Present hides reading prose and keeps headings, diagrams and key points */
+.view { position: fixed; z-index: 10; top: calc(14px + env(safe-area-inset-top, 0px)); right: max(14px, env(safe-area-inset-right, 0px));
+  display: flex; padding: 3px; gap: 2px; background: var(--sheet); border: 1px solid var(--rule); border-radius: 999px;
+  box-shadow: 0 2px 10px rgba(15, 21, 29, .12); }
+.view button { font: 600 12.5px var(--mono); letter-spacing: .04em; color: var(--muted); background: transparent; border: 0;
+  border-radius: 999px; padding: 6px 14px; cursor: pointer; }
+.view button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.present .lede, .present .prose, .present figcaption, .present .say, .present .cards > div > p,
+.present .turn .note, .present .terminal .goal, .present .read { display: none; }
 
 /* Say-this lines */
 .say { border-left: 3px solid var(--ink); padding: 4px 0 4px 18px; font-size: 19px; font-style: italic; max-width: 60ch; }
@@ -215,27 +211,10 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
 }
 </style>
 
-<nav class="rail" aria-label="Session sections">
-  <ol id="rail">
-    <li><a href="#start"><span class="t">00:00</span><span>Course</span></a></li>
-    <li><a href="#teams"><span class="t">00:00</span><span>Beyond one agent</span></a></li>
-    <li><a href="#when"><span class="t">00:03</span><span>When to use many</span></a></li>
-    <li><a href="#why"><span class="t">00:06</span><span>Why a platform</span></a></li>
-    <li><a href="#parts"><span class="t">00:09</span><span>Parts of a platform</span></a></li>
-    <li><a href="#how"><span class="t">00:12</span><span>How we work</span></a></li>
-    <li><a href="#incident"><span class="t">00:14</span><span>The premise</span></a></li>
-    <li><a href="#loop"><span class="t">00:17</span><span>The ReAct loop</span></a></li>
-    <li><a href="#transcript"><span class="t">00:23</span><span>One real run</span></a></li>
-    <li><a href="#guards"><span class="t">00:27</span><span>Who owns limits</span></a></li>
-    <li><a href="#step1"><span class="t">00:30</span><span>Build 1 · contract</span></a></li>
-    <li><a href="#step2"><span class="t">00:40</span><span>Build 2 · providers</span></a></li>
-    <li><a href="#step3"><span class="t">00:50</span><span>Build 3 · loop</span></a></li>
-    <li><a href="#step4"><span class="t">01:03</span><span>Build 4 · guards</span></a></li>
-    <li><a href="#exercise"><span class="t">01:15</span><span>Break it on purpose</span></a></li>
-    <li><a href="#verify"><span class="t">01:40</span><span>Evidence</span></a></li>
-    <li><a href="#close"><span class="t">01:55</span><span>Close</span></a></li>
-  </ol>
-</nav>
+<div class="view" role="group" aria-label="View">
+  <button type="button" data-view="read" aria-pressed="true">Read</button>
+  <button type="button" data-view="present" aria-pressed="false">Present</button>
+</div>
 
 <main>
 
@@ -247,7 +226,7 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
 </header>
 
 <section class="ch" id="teams">
-  <p class="eyebrow"><span>Course opening</span><span class="min">00:00–00:03</span></p>
+  <p class="eyebrow"><span>Course opening</span></p>
   <h2>Single agents are everyday tools. Enterprise work needs agents that work together.</h2>
   <div class="stack">
     <div class="prose" style="margin-top:0">
@@ -281,7 +260,7 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
 </section>
 
 <section class="ch" id="when">
-  <p class="eyebrow"><span>Course opening</span><span class="min">00:03–00:06</span></p>
+  <p class="eyebrow"><span>Course opening</span></p>
   <h2>When do you need more than one agent?</h2>
   <div class="stack">
     <div class="cards">
@@ -294,7 +273,7 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
 </section>
 
 <section class="ch" id="why">
-  <p class="eyebrow"><span>Course opening</span><span class="min">00:06–00:09</span></p>
+  <p class="eyebrow"><span>Course opening</span></p>
   <h2>A platform is the natural next step for agentic applications</h2>
   <div class="stack">
     <p class="lede" style="margin-top:0">Once you run many agents, something has to <b>spawn</b> them, <b>configure</b> them, <b>host</b> them and give everyone one place to <b>manage</b> what they do. That is the agentic platform: the central hub for agentic operations. It also adds the traceability and control points that a single agent cannot provide on its own.</p>
@@ -311,7 +290,7 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
 </section>
 
 <section class="ch" id="parts">
-  <p class="eyebrow"><span>Course opening</span><span class="min">00:09–00:12</span></p>
+  <p class="eyebrow"><span>Course opening</span></p>
   <h2>The main parts of an agentic platform</h2>
   <div class="stack">
     <div class="tablewrap">
@@ -374,7 +353,7 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
 </section>
 
 <section class="ch" id="how">
-  <p class="eyebrow"><span>Course opening</span><span class="min">00:12–00:14</span></p>
+  <p class="eyebrow"><span>Course opening</span></p>
   <h2>How we work in this course</h2>
   <div class="stack">
     <div class="cards">
@@ -388,7 +367,7 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
 </section>
 
 <section class="ch" id="incident">
-  <p class="eyebrow"><span>Our premise</span><span class="min">00:14–00:17</span></p>
+  <p class="eyebrow"><span>Our premise</span></p>
   <h2>The platform we build investigates incidents</h2>
   <div class="stack">
     <div class="prose" style="margin-top:0">
@@ -419,7 +398,7 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
 </section>
 
 <section class="ch" id="loop">
-  <p class="eyebrow"><span>Today's box · concept</span><span class="min">00:17–00:23</span></p>
+  <p class="eyebrow"><span>Today's box · concept</span></p>
   <h2>Model, runtime, tool: three boxes, one loop</h2>
   <div class="stack">
     <p class="say">Today we build only the centre box of the platform. Every later capability, including subagents, remote agents, the gateway and identity, reuses this loop.</p>
@@ -484,7 +463,7 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
 </section>
 
 <section class="ch" id="transcript">
-  <p class="eyebrow"><span>Concept</span><span class="min">00:23–00:27</span></p>
+  <p class="eyebrow"><span>Concept</span></p>
   <h2>One real run of INC-001, message by message</h2>
   <p class="lede">This is the actual output of the reference checkpoint. Trace the call ID from the proposal to its observation.</p>
   <div class="stack">
@@ -511,7 +490,7 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
 </section>
 
 <section class="ch" id="guards">
-  <p class="eyebrow"><span>Concept</span><span class="min">00:27–00:30</span></p>
+  <p class="eyebrow"><span>Concept</span></p>
   <h2>The application owns identity and limits. The model owns nothing.</h2>
   <div class="stack">
     <div class="tablewrap">
@@ -537,7 +516,7 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
 </section>
 
 <section class="ch" id="build">
-  <p class="eyebrow"><span>Guided build</span><span class="min">00:30–01:15</span></p>
+  <p class="eyebrow"><span>Guided build</span></p>
   <h2>Now we build it, one bounded prompt at a time</h2>
   <div class="prose">
     <p>Learners do not type the code. Each step is one prompt to their own coding agent. The agent makes the change and runs the checks; then we compare it with the reference checkpoint and ask it to explain any difference.</p>
@@ -545,7 +524,7 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
   </div>
 
   <div class="terminal" id="step1">
-    <div class="bar"><span class="switch">Switch to terminal · Build step 1 of 4</span><span class="file">incident/core.py · 00:30–00:40</span></div>
+    <div class="bar"><span class="switch">Switch to terminal · Build step 1 of 4</span><span class="file">incident/core.py</span></div>
     <div class="body">
       <p class="goal">Define the run contract: Context, Limits, Reply and Run. Separate what the application owns from what the model produces.</p>
       <div class="prompt" id="p1"><span class="pfx">PROMPT ▸ </span>For Lesson 01, continue in my learner project. Create the Context, Limits, Reply and Run contracts in incident/core.py. Separate application-owned tenant identity, permissions and run identifiers from model messages and results. Make run state serializable and give the runtime explicit step, token and time limits. Keep this step focused on the contracts; do not implement later platform features. Show the fields, their owners and one example of a value the model must not control. Use lesson-01 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div>
@@ -569,7 +548,7 @@ class Context:
   </div>
 
   <div class="terminal" id="step2">
-    <div class="bar"><span class="switch">Switch to terminal · Build step 2 of 4</span><span class="file">incident/providers.py · 00:40–00:50</span></div>
+    <div class="bar"><span class="switch">Switch to terminal · Build step 2 of 4</span><span class="file">incident/providers.py</span></div>
     <div class="body">
       <p class="goal">Normalize model access: a deterministic offline provider plus OpenAI-compatible and Anthropic adapters, all returning one Reply shape.</p>
       <div class="prompt" id="p2"><span class="pfx">PROMPT ▸ </span>For Lesson 01, continue in my learner project. Implement the provider interface in incident/providers.py using the current core contracts. Add the deterministic offline provider and configurable OpenAI-compatible and Anthropic adapters. Normalize messages, tool calls, errors and usage into Reply. Use mock HTTP responses to check both adapter request shapes without paid calls. Explain how provider selection and secrets are configured without exposing credentials. Use lesson-01 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div>
@@ -588,7 +567,7 @@ class Context:
   </div>
 
   <div class="terminal" id="step3">
-    <div class="bar"><span class="switch">Switch to terminal · Build step 3 of 4</span><span class="file">incident/core.py · 00:50–01:03</span></div>
+    <div class="bar"><span class="switch">Switch to terminal · Build step 3 of 4</span><span class="file">incident/core.py</span></div>
     <div class="body">
       <p class="goal">Implement the loop: record each proposed call as pending before running it, keep the call ID on the observation, finish with a structured, cited answer.</p>
       <div class="prompt" id="p3"><span class="pfx">PROMPT ▸ </span>For Lesson 01, continue in my learner project. Implement run_agent in incident/core.py and connect the synthetic readers in incident/fixtures.py. Preserve assistant tool-call IDs when appending observations, track pending calls before dispatch, and finish with a structured answer and observed evidence IDs. Use the existing provider interface. Show the complete model-to-tool-to-observation path for INC-001 and explain how the same loop can later support checkpointing. Use lesson-01 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div>
@@ -615,7 +594,7 @@ class Context:
   </div>
 
   <div class="terminal" id="step4">
-    <div class="bar"><span class="switch">Switch to terminal · Build step 4 of 4</span><span class="file">incident/core.py · labs · tests · 01:03–01:15</span></div>
+    <div class="bar"><span class="switch">Switch to terminal · Build step 4 of 4</span><span class="file">incident/core.py · labs · tests</span></div>
     <div class="body">
       <p class="goal">Bound and verify execution: run the happy path first, then trigger every guard on purpose and explain why each run stopped.</p>
       <div class="prompt" id="p4"><span class="pfx">PROMPT ▸ </span>For Lesson 01, continue in my learner project. Review and enforce the runtime's step, token, elapsed-time and repeated-action guards. Complete the Session 01 lab runner and tests. Demonstrate the normal cited answer and deliberately trigger each limit using offline fixtures. Explain the approximate pre-dispatch token estimate and distinguish reported usage from configured cost. Show which guard caused each failure and why the run stopped. Use lesson-01 read-only to check compatibility. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div>
@@ -632,7 +611,7 @@ class Context:
 </section>
 
 <section class="ch" id="exercise">
-  <p class="eyebrow"><span>Learner exercise</span><span class="min">01:15–01:40</span></p>
+  <p class="eyebrow"><span>Learner exercise</span></p>
   <h2>Break it on purpose: predict first, then run</h2>
   <div class="stack">
     <p class="lede">Each learner changes one limit at a time, writes down the failure they expect, then runs it. Restore the normal limits and confirm the cited answer comes back.</p>
@@ -653,7 +632,7 @@ class Context:
 </section>
 
 <section class="ch" id="verify">
-  <p class="eyebrow"><span>Verification</span><span class="min">01:40–01:55</span></p>
+  <p class="eyebrow"><span>Verification</span></p>
   <h2>Evidence, not claims</h2>
   <div class="stack">
     <div class="two">
@@ -688,7 +667,7 @@ class Context:
 </section>
 
 <section class="ch" id="close">
-  <p class="eyebrow"><span>Close</span><span class="min">01:55–02:00</span></p>
+  <p class="eyebrow"><span>Close</span></p>
   <h2>You own the loop every later agent will use</h2>
   <div class="stack">
     <div class="criteria">
@@ -726,9 +705,8 @@ class Context:
     });
   });
 
-  // N / P jump between sections for presenting; the rail highlights the current one.
+  // N / P jump between sections.
   const stops = [...document.querySelectorAll("#start, section.ch, .terminal[id]")];
-  const links = [...document.querySelectorAll("#rail a")];
   const current = () => {
     const y = window.scrollY + window.innerHeight * 0.25;
     let index = 0;
@@ -743,17 +721,18 @@ class Context:
     stops[next].scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
     event.preventDefault();
   });
-  const mark = () => {
-    const id = stops[current()].id;
-    let active = links.find((a) => a.getAttribute("href") === "#" + id);
-    if (!active) {
-      const section = stops[current()].closest("section");
-      active = links.find((a) => section && a.getAttribute("href") === "#" + section.id);
-    }
-    links.forEach((a) => a.setAttribute("aria-current", a === active ? "true" : "false"));
+
+  // Read / Present toggle; keeps the reader's place and remembers the choice in this browser.
+  const buttons = [...document.querySelectorAll(".view button")];
+  const setView = (view) => {
+    const anchor = stops[current()];
+    document.body.classList.toggle("present", view === "present");
+    buttons.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.view === view)));
+    anchor.scrollIntoView({ block: "start" });
+    try { localStorage.setItem("lesson-view", view); } catch (e) { /* storage unavailable */ }
   };
-  window.addEventListener("scroll", () => requestAnimationFrame(mark), { passive: true });
-  mark();
+  buttons.forEach((b) => b.addEventListener("click", () => setView(b.dataset.view)));
+  try { if (localStorage.getItem("lesson-view") === "present") setView("present"); } catch (e) { /* default view */ }
 })();
 </script>
 
