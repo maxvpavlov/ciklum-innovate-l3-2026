@@ -25,17 +25,17 @@ learners build each of them:
 
 ## How learners work
 
-Learners do not clone this repository. Each learner builds the platform in their own
-repository in the course GitLab group, by prompting a coding agent. The public course kit
-(https://github.com/maxvpavlov/agentic-platforms-kit) supplies what they need and no
-solutions: the starter project (`lesson-00`) and, for every lesson, the given files
+Each learner builds the platform in their own repository in the course GitLab group, by
+prompting a coding agent. The `learner-kit/` folder at the root of the public course repository
+(https://github.com/maxvpavlov/ciklum-innovate-l3-2026) supplies the starter project
+(`lesson-00`) and, for every lesson, the given files
 (synthetic data and deterministic test doubles such as the mock model) and a check pack
 (the lesson's demo and the cumulative tests). The kit is generated from these tags by
 `guide-builder/kit.py`, which also verifies each check pack against its tag.
 
 The first prompt creates the learner's project and repository:
 
-> Set up my project for the Building Agentic Platforms course, starting at lesson-00. Clone the public course kit from https://github.com/maxvpavlov/agentic-platforms-kit into ~/agentic-course/kit and treat that folder as read-only. Create my own project in ~/agentic-course/my-platform by copying the kit's starter folder, and make it a fresh Git repository with one initial commit. Install the pinned dependencies with uv for Python 3.12, run the tests with python -m pytest, and confirm that incident/__init__.py says LESSON = 0. Install the GitLab CLI, glab, if it is missing, and sign me in to GitLab; when a browser sign-in is needed, tell me what to do, and never ask me to paste a token into the chat. Ask me for the name of the GitLab group I was invited to, create a private repository for my project in that group, and push my project to it. Report both folder paths, the files in my project, the test result, the GitLab repository address and anything missing, such as uv, Python 3.12, glab or access to the group. Do not ask me to run terminal commands.
+> Set up my project for the Building Agentic Platforms course, starting at lesson-00. Clone the public course repository from https://github.com/maxvpavlov/ciklum-innovate-l3-2026 into ~/agentic-course/course and treat that folder as read-only; its learner-kit folder is the course kit. Create my own project in ~/agentic-course/my-platform by copying learner-kit/starter, and make it a fresh Git repository with one initial commit. Install the pinned dependencies with uv for Python 3.12, run the tests with python -m pytest, and confirm that incident/__init__.py says LESSON = 0. Install the GitLab CLI, glab, if it is missing, and sign me in to GitLab; when a browser sign-in is needed, tell me what to do, and never ask me to paste a token into the chat. Ask me for the name of the GitLab group I was invited to, create a private repository for my project in that group, and push my project to it. Report both folder paths, the files in my project, the test result, the GitLab repository address and anything missing, such as uv, Python 3.12, glab or access to the group. Do not ask me to run terminal commands.
 
 Continue with the lesson-specific prompts in [LEARNER_PROMPTS.md](LEARNER_PROMPTS.md).
 They cover preparation, adding the check pack, incremental implementation, verification,

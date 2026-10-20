@@ -3,7 +3,7 @@
 Learners do not clone the reference. They start from the kit's starter project, copy each
 lesson's given files and check pack into their own project, and build the rest themselves.
 
-    uv run python kit.py            # regenerate ../learner-kit from the lesson tags
+    uv run python kit.py            # regenerate learner-kit/ at the repository root from the lesson tags
     uv run python kit.py --verify   # also run every lesson's checks against its reference tag
 
 For lesson N the kit holds:
@@ -24,8 +24,8 @@ from pathlib import Path
 
 from guidelib import HERE as REPO, MATERIALS, tag_name
 
-KIT = MATERIALS / "learner-kit"
-KIT_URL = "https://github.com/maxvpavlov/agentic-platforms-kit"
+KIT = MATERIALS.parent / "learner-kit"
+KIT_URL = "https://github.com/maxvpavlov/ciklum-innovate-l3-2026/tree/main/learner-kit"
 
 # What is given rather than built: synthetic data, deterministic model doubles and the
 # local service launcher. (path, definition) with definition None for a whole file.
@@ -120,7 +120,7 @@ def build_starter():
         "The default model is an offline, deterministic mock, so the checks need no API keys and",
         "everyone sees the same results. Its usage figures are teaching measurements, not costs.",
         "",
-        "Each lesson's given files and checks are in the course kit:",
+        "Each lesson's given files and checks are in the learner kit of the course repository:",
         KIT_URL,
         "",
     ]))

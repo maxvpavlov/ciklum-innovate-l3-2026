@@ -556,7 +556,7 @@ tools   log_lookup(incident_id) · runbook_search(query)</pre></div></div>
     <h3>Where the code lives: two folders</h3>
     <div class="cards">
       <div><span class="q">Your project</span><p>Where your coding agent writes. It starts as the <code>lesson-00</code> checkpoint: an almost empty Python project whose package is called <code>incident</code>. Every session adds to this same project, and you push it to your own repository in the course GitLab group.</p><span class="ans">my-platform/ · read and write · pushed to GitLab</span></div>
-      <div><span class="q">The course kit</span><p>Public and read-only. It holds the starter project and, for each lesson, the given files and a check pack: tests that fail until you have built the capability. It contains no solutions; you build the platform, and the checks prove it.</p><span class="ans">kit/ · read only · github.com/maxvpavlov/agentic-platforms-kit</span></div>
+      <div><span class="q">The course kit</span><p>The <code>learner-kit</code> folder of the public course repository, which your agent keeps as a read-only copy. It holds the starter project and, for each lesson, the given files and a check pack: tests that fail until you have built the capability. You build the platform yourself, and the checks prove it.</p><span class="ans">course/learner-kit · read only</span></div>
     </div>
     <div class="stack" style="margin-top:0">
       <div class="excerpt">
@@ -582,10 +582,10 @@ tests/
   </div>
 
   <div class="terminal" id="setup">
-    <div class="bar"><span class="switch">Switch to terminal · The lesson-00 prompt · Set up your workspace</span><span class="file">creates kit/ and my-platform/ · pushes to GitLab</span></div>
+    <div class="bar"><span class="switch">Switch to terminal · The lesson-00 prompt · Set up your workspace</span><span class="file">creates course/ and my-platform/ · pushes to GitLab</span></div>
     <div class="body">
-      <p class="goal">Your first prompt after class; nothing is needed beforehand. It downloads the course kit, creates your project from the starter, installs the GitLab CLI and pushes the project to a new private repository in the GitLab group you were invited to.</p>
-      <div class="prompt" id="p0"><span class="pfx">PROMPT ▸ </span>Set up my project for the Building Agentic Platforms course, starting at lesson-00. Clone the public course kit from https://github.com/maxvpavlov/agentic-platforms-kit into ~/agentic-course/kit and treat that folder as read-only. Create my own project in ~/agentic-course/my-platform by copying the kit's starter folder, and make it a fresh Git repository with one initial commit. Install the pinned dependencies with uv for Python 3.12, run the tests with python -m pytest, and confirm that incident/__init__.py says LESSON = 0. Install the GitLab CLI, glab, if it is missing, and sign me in to GitLab; when a browser sign-in is needed, tell me what to do, and never ask me to paste a token into the chat. Ask me for the name of the GitLab group I was invited to, create a private repository for my project in that group, and push my project to it. Report both folder paths, the files in my project, the test result, the GitLab repository address and anything missing, such as uv, Python 3.12, glab or access to the group. Do not ask me to run terminal commands.</div>
+      <p class="goal">Your first prompt after class; nothing is needed beforehand. It downloads the course repository, creates your project from the kit's starter, installs the GitLab CLI and pushes the project to a new private repository in the GitLab group you were invited to.</p>
+      <div class="prompt" id="p0"><span class="pfx">PROMPT ▸ </span>Set up my project for the Building Agentic Platforms course, starting at lesson-00. Clone the public course repository from https://github.com/maxvpavlov/ciklum-innovate-l3-2026 into ~/agentic-course/course and treat that folder as read-only; its learner-kit folder is the course kit. Create my own project in ~/agentic-course/my-platform by copying learner-kit/starter, and make it a fresh Git repository with one initial commit. Install the pinned dependencies with uv for Python 3.12, run the tests with python -m pytest, and confirm that incident/__init__.py says LESSON = 0. Install the GitLab CLI, glab, if it is missing, and sign me in to GitLab; when a browser sign-in is needed, tell me what to do, and never ask me to paste a token into the chat. Ask me for the name of the GitLab group I was invited to, create a private repository for my project in that group, and push my project to it. Report both folder paths, the files in my project, the test result, the GitLab repository address and anything missing, such as uv, Python 3.12, glab or access to the group. Do not ask me to run terminal commands.</div>
       <div><button class="copy" type="button" data-copy="p0">Copy prompt</button></div>
       <p class="check">Expect: <b>1 passed</b> in my-platform, <code>LESSON = 0</code>, and your project visible in your GitLab group.</p>
     </div>
@@ -595,7 +595,7 @@ tests/
     <div class="bar"><span class="switch">Switch to terminal · Add the check pack</span><span class="file">copies the given files and checks · no implementation yet</span></div>
     <div class="body">
       <p class="goal">Start of the build. The agent copies the Session 01 given files and check pack into your project, shows which checks fail and why, and explains the plan before writing any code.</p>
-      <div class="prompt" id="pO"><span class="pfx">PROMPT ▸ </span>Read lessons/01 in the course kit: its README, the given files and the check pack. Copy the given files and the check pack into my project exactly as the README says, without changing them, and commit that. Then list the interfaces my code must provide, which checks now fail and why, and the capability they verify. Explain the implementation sequence before we begin. Do not write the implementation yet, and do not look for or use a finished solution.</div>
+      <div class="prompt" id="pO"><span class="pfx">PROMPT ▸ </span>Read learner-kit/lessons/01 in the course repository: its README, the given files and the check pack. Copy the given files and the check pack into my project exactly as the README says, without changing them, and commit that. Then list the interfaces my code must provide, which checks now fail and why, and the capability they verify. Explain the implementation sequence before we begin. Do not write the implementation yet, and do not look for or use a finished solution.</div>
       <div><button class="copy" type="button" data-copy="pO">Copy prompt</button></div>
     </div>
   </div>
@@ -756,14 +756,14 @@ class Context:
       <div><b>Completed is not solved</b>look for cited evidence or an honest "insufficient evidence".</div>
     </div>
     <div class="ask"><span class="label">After class</span><p class="q">Run today's prompts in your own project, in this order</p>
-      <ol class="steps"><li><a href="#setup">The lesson-00 prompt</a>: your project, the kit and your GitLab repository</li><li><a href="#orient">Add the check pack</a></li><li><a href="#step1">Build steps 1 to 4</a>, one at a time, reading each change</li><li><a href="#exercise">Break it on purpose</a></li><li><a href="#verify">Verify and push, then review</a></li></ol></div>
+      <ol class="steps"><li><a href="#setup">The lesson-00 prompt</a>: your project, the course repository and your GitLab repository</li><li><a href="#orient">Add the check pack</a></li><li><a href="#step1">Build steps 1 to 4</a>, one at a time, reading each change</li><li><a href="#exercise">Break it on purpose</a></li><li><a href="#verify">Verify and push, then review</a></li></ol></div>
     <p class="say">Keep your blueprint. Later, the platform console will show these same run events as a timeline.</p>
     <div class="ask"><span class="label">Next session</span><p class="q">Reliable tools and MCP integration</p><p>Validated tool contracts, application-owned permissions, an approval gate for a mock remediation, and real MCP transport. Bring your Session 01 checkpoint.</p></div>
   </div>
 </section>
 
 <footer>
-  <p>Course kit: <a href="https://github.com/maxvpavlov/agentic-platforms-kit">github.com/maxvpavlov/agentic-platforms-kit</a>, lessons/01 · all incident data are synthetic.</p>
+  <p>Course repository: <a href="https://github.com/maxvpavlov/ciklum-innovate-l3-2026">github.com/maxvpavlov/ciklum-innovate-l3-2026</a> · kit: <code>learner-kit/lessons/01</code> · all incident data are synthetic.</p>
   <p>Further reading: <a href="https://www.anthropic.com/engineering/building-effective-agents">Building effective agents</a> · <a href="https://arxiv.org/abs/2210.03629">ReAct: Synergizing Reasoning and Acting in Language Models</a></p>
 </footer>
 </main>

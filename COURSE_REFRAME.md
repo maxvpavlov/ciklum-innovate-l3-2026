@@ -53,7 +53,7 @@ taught and built explicitly, and the platform has a web console that shows what 
   by `build.py`, and `check.py` enforces the guide–code coupling (13 prompts and 4 exact code
   excerpts per guide, files-changed lists, tag hashes, prompts present in `LEARNER_PROMPTS.md`).
   Every guide now opens with "Where this session sits in the platform".
-- `L3 Update.xlsx`, sheet `Curriculum scope 2026`: rows 01, 02 and 06–12 were rewritten; the
+- `L3 Update.xlsx` (since replaced by `Building Agentic Platforms - programme.xlsx`), sheet `Curriculum scope 2026`: rows 01, 02 and 06–12 were rewritten; the
   session-count formula now shows 12; the mentor name in column P now sits on rows 06 and 07
   (the old multi-agent and A2A sessions). Only that sheet and its hyperlinks were changed.
 
