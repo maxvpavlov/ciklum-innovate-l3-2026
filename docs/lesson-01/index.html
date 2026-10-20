@@ -265,10 +265,10 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
   <h2>When do you need more than one agent?</h2>
   <div class="stack">
     <div class="cards pairs">
-      <div><span class="q">The work outgrows one context</span><p>The projected work will not fit in one agent's context window. Compacting the history step by step does not help either, because the work splits naturally into parallel parts and each part needs its own isolated context.</p><span class="ans">supervisor and subagents · 06</span></div>
-      <div><span class="q">The work is better done in a clean context</span><p>Even when everything would fit, a sub-task often goes better in its own fresh context. The agent sees only what that task needs, without unrelated history, other branches of the work or earlier mistakes pulling its attention.</p><span class="ans">scoped subagents · 06</span></div>
-      <div><span class="q">Each sub-task needs a different model</span><p>A strong model plans and judges, while faster, cheaper models handle routine sub-tasks. Switching models per sub-task changes quality, cost and latency.</p><span class="ans">model routing · 12</span></div>
-      <div><span class="q">Access must be isolated</span><p>An agent is bound to one external system or service, or acts for one particular person, and must see only that system's data and that person's permissions.</p><span class="ans">A2A · gateway · identity · 07, 09, 10</span></div>
+      <div><span class="q">The work outgrows one context</span><p>The projected work will not fit in one agent's context window. Compacting the history step by step does not help either, because the work splits naturally into parallel parts and each part needs its own isolated context.</p><span class="ans">supervisor and subagents</span></div>
+      <div><span class="q">The work is better done in a clean context</span><p>Even when everything would fit, a sub-task often goes better in its own fresh context. The agent sees only what that task needs, without unrelated history, other branches of the work or earlier mistakes pulling its attention.</p><span class="ans">scoped subagents</span></div>
+      <div><span class="q">Each sub-task needs a different model</span><p>A strong model plans and judges, while faster, cheaper models handle routine sub-tasks. Switching models per sub-task changes quality, cost and latency.</p><span class="ans">model routing</span></div>
+      <div><span class="q">Access must be isolated</span><p>An agent is bound to one external system or service, or acts for one particular person, and must see only that system's data and that person's permissions.</p><span class="ans">A2A · gateway · identity</span></div>
     </div>
     <p class="say">If none of these applies, one agent is the right design. Adding agents adds cost, latency and failure modes, so each one has to earn its place.</p>
   </div>
@@ -297,20 +297,20 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
   <div class="stack">
     <div class="tablewrap">
       <table>
-        <thead><tr><th>Part</th><th>The question it answers</th><th>Session</th></tr></thead>
+        <thead><tr><th>Part</th><th>The question it answers</th></tr></thead>
         <tbody>
-          <tr class="now"><td><b>Agent runtime</b></td><td>How does one agent act, and how is it forced to stop?</td><td>01 · today</td></tr>
-          <tr><td><b>Tools and MCP</b></td><td>How do agents use real systems through reliable, permissioned contracts?</td><td>02</td></tr>
-          <tr><td><b>Context and memory</b></td><td>What does the agent know, from which sources, and for how long?</td><td>03</td></tr>
-          <tr><td><b>Evaluation</b></td><td>Is it actually good, and better than the last version?</td><td>04</td></tr>
-          <tr><td><b>Durability and approval</b></td><td>What survives a crash, and who signs off before an effect happens?</td><td>05</td></tr>
-          <tr><td><b>Orchestration</b></td><td>How does a supervisor split work across scoped subagents and combine it?</td><td>06</td></tr>
-          <tr><td><b>Agent-to-agent (A2A)</b></td><td>How do independent agent services discover and call each other?</td><td>07</td></tr>
-          <tr><td><b>Registry and console</b></td><td>Which agents exist, which version ran, and what happened?</td><td>08</td></tr>
-          <tr><td><b>Tool gateway</b></td><td>Is every tool call checked against one policy and recorded?</td><td>09</td></tr>
-          <tr><td><b>Identity and credentials</b></td><td>On whose behalf does each agent act, and with which secrets?</td><td>10</td></tr>
-          <tr><td><b>Operations and releases</b></td><td>Can we trace, throttle, roll out and roll back safely?</td><td>11</td></tr>
-          <tr><td><b>Capstone</b></td><td>Can you show a measured improvement and defend your design?</td><td>12</td></tr>
+          <tr class="now"><td><b>Agent runtime</b> · today</td><td>How does one agent act, and how is it forced to stop?</td></tr>
+          <tr><td><b>Tools and MCP</b></td><td>How do agents use real systems through reliable, permissioned contracts?</td></tr>
+          <tr><td><b>Context and memory</b></td><td>What does the agent know, from which sources, and for how long?</td></tr>
+          <tr><td><b>Evaluation</b></td><td>Is it actually good, and better than the last version?</td></tr>
+          <tr><td><b>Durability and approval</b></td><td>What survives a crash, and who signs off before an effect happens?</td></tr>
+          <tr><td><b>Orchestration</b></td><td>How does a supervisor split work across scoped subagents and combine it?</td></tr>
+          <tr><td><b>Agent-to-agent (A2A)</b></td><td>How do independent agent services discover and call each other?</td></tr>
+          <tr><td><b>Registry and console</b></td><td>Which agents exist, which version ran, and what happened?</td></tr>
+          <tr><td><b>Tool gateway</b></td><td>Is every tool call checked against one policy and recorded?</td></tr>
+          <tr><td><b>Identity and credentials</b></td><td>On whose behalf does each agent act, and with which secrets?</td></tr>
+          <tr><td><b>Operations and releases</b></td><td>Can we trace, throttle, roll out and roll back safely?</td></tr>
+          <tr><td><b>Capstone</b></td><td>Can you show a measured improvement and defend your design?</td></tr>
         </tbody>
       </table>
     </div>
@@ -320,36 +320,36 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
           <title id="bpTitle">Platform blueprint: the agent runtime at the centre, surrounded by later components</title>
           <rect class="box" x="40" y="20" width="780" height="62" rx="8"/>
           <text class="lbl" x="60" y="48">Platform console</text>
-          <text class="small" x="60" y="68">registry · runs · approvals · gateway audit · identity · operations   (08–12)</text>
+          <text class="small" x="60" y="68">registry · runs · approvals · gateway audit · identity · operations</text>
           <rect class="box" x="40" y="112" width="220" height="200" rx="8"/>
           <text class="lbl" x="58" y="142">Agent registry</text>
           <text class="small" x="58" y="162">versioned agents, remote</text>
-          <text class="small" x="58" y="178">agents, tool servers (08)</text>
+          <text class="small" x="58" y="178">agents, tool servers</text>
           <text class="lbl" x="58" y="224">Supervisor + A2A</text>
-          <text class="small" x="58" y="244">subagents (06), remote</text>
-          <text class="small" x="58" y="260">specialists (07)</text>
+          <text class="small" x="58" y="244">subagents, remote</text>
+          <text class="small" x="58" y="260">specialists</text>
           <rect class="today" x="300" y="122" width="260" height="180" rx="10"/>
           <text class="lbl" x="322" y="156">Agent runtime</text>
           <text class="small" x="322" y="178">bounded ReAct loop</text>
           <text class="small" x="322" y="196">run contract · limits · events</text>
-          <text x="322" y="276" class="sig" style="font-weight:600;font-size:14px">TODAY · Session 01</text>
+          <text x="322" y="276" class="sig" style="font-weight:600;font-size:14px">TODAY</text>
           <rect class="box" x="600" y="112" width="220" height="200" rx="8"/>
           <text class="lbl" x="618" y="142">MCP tool gateway</text>
           <text class="small" x="618" y="162">policy and audit on</text>
-          <text class="small" x="618" y="178">every tool call (02, 09)</text>
+          <text class="small" x="618" y="178">every tool call</text>
           <text class="lbl" x="618" y="224">Identity</text>
           <text class="small" x="618" y="244">delegated, short-lived</text>
-          <text class="small" x="618" y="260">credentials (10)</text>
+          <text class="small" x="618" y="260">credentials</text>
           <rect class="box" x="40" y="342" width="780" height="62" rx="8"/>
           <text class="lbl" x="60" y="370">Context · evaluation · durability · operations</text>
-          <text class="small" x="60" y="390">memory (03) · eval harness (04) · checkpoints and approval (05) · traces and releases (11) · tuning (12)</text>
+          <text class="small" x="60" y="390">memory · eval harness · checkpoints and approval · traces and releases · tuning</text>
           <path class="ink" d="M260 212 H296"/><path class="arrowhead" d="M300 212 l-8 -5 v10z"/>
           <path class="ink" d="M600 212 H564"/><path class="arrowhead" d="M560 212 l8 -5 v10z"/>
           <path class="ink" d="M430 122 V86"/><path class="arrowhead" d="M430 82 l-5 8 h10z"/>
           <path class="ink" d="M430 302 V338"/><path class="arrowhead" d="M430 342 l-5 -8 h10z"/>
         </svg>
       </div>
-      <figcaption>The platform we build over twelve sessions. Session numbers show when each part arrives; the highlighted box is today's work, and everything else wraps it rather than replacing it.</figcaption>
+      <figcaption>The platform we build over twelve sessions. The highlighted box is today's work, and everything else wraps it rather than replacing it.</figcaption>
     </figure>
   </div>
 </section>
@@ -503,7 +503,7 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
           <tr><td><code>allowed</code> tools</td><td class="own-app">application</td><td>Permissions are granted by code, never claimed in model output.</td></tr>
           <tr><td><code>Limits</code>: steps, tokens, seconds, output size</td><td class="own-app">application</td><td>Each limit catches a different failure; together they bound every run.</td></tr>
           <tr><td><code>messages</code>, proposed tool calls, the answer</td><td class="own-model">model</td><td>Untrusted input. The runtime validates it before acting on it.</td></tr>
-          <tr><td><code>events</code></td><td class="own-app">runtime</td><td>What happened, step by step. From Session 08 the console shows it as a run timeline.</td></tr>
+          <tr><td><code>events</code></td><td class="own-app">runtime</td><td>What happened, step by step. Later, the platform console shows it as a run timeline.</td></tr>
         </tbody>
       </table>
     </div>
@@ -546,7 +546,7 @@ class Context:
     parent_id: str | None = None</pre>
     </div>
     <div class="ask"><span class="label">Ask</span><p class="q">Why not let the model's answer say which tools it may use?</p>
-      <details><summary>Show the answer</summary><p>Model output is untrusted. The application builds Context and grants capabilities independently. (<code>approved</code> and <code>parent_id</code> are hooks for approvals in Session 05 and child runs in Session 06.)</p></details></div>
+      <details><summary>Show the answer</summary><p>Model output is untrusted. The application builds Context and grants capabilities independently. (<code>approved</code> and <code>parent_id</code> are hooks for approvals and child runs in later sessions.)</p></details></div>
   </div>
 
   <div class="terminal" id="step2">
@@ -678,8 +678,8 @@ class Context:
       <div><b>Every run is bounded</b>and every stop has a name and a reason.</div>
       <div><b>Completed is not solved</b>look for cited evidence or an honest "insufficient evidence".</div>
     </div>
-    <p class="say">Keep your blueprint. From Session 08 the console will show these same run events as a timeline.</p>
-    <div class="ask"><span class="label">Next session · 02</span><p class="q">Reliable tools and MCP integration</p><p>Validated tool contracts, application-owned permissions, an approval gate for a mock remediation, and real MCP transport. Bring your Session 01 checkpoint.</p></div>
+    <p class="say">Keep your blueprint. Later, the platform console will show these same run events as a timeline.</p>
+    <div class="ask"><span class="label">Next session</span><p class="q">Reliable tools and MCP integration</p><p>Validated tool contracts, application-owned permissions, an approval gate for a mock remediation, and real MCP transport. Bring your Session 01 checkpoint.</p></div>
   </div>
 </section>
 
