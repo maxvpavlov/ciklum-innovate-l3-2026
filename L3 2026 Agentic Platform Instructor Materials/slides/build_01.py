@@ -451,18 +451,19 @@ s = slide("Quote Slide 2", "Does a completed run mean the incident is solved?",
           "supported by evidence are different checks.")
 
 # ------------------------------------------------------------------ 21 ownership
-s = slide(CONTENT, "The application owns the limits",
-          "The model owns nothing. Tenant, run, role, permitted tools and limits are set by application code; model output "
-          "is untrusted input that the runtime validates before acting on it. Events record what happened step by step; "
+s = slide(CONTENT, "Platform, runtime, model",
+          "The platform sets who a run is for, what it may use and how far it may go. Until Session 08 the code that starts "
+          "the run plays the platform: today the lab or a test; from Session 08, Platform.submit. The runtime, core.py, enforces "
+          "the limits and validates model output, which is untrusted input, before acting on it. Events record what happened step by step; "
           "later the console shows them as a run timeline.")
-table(s, 0.4, 1.0, 9.0, [["Field", "Owner", "Why it matters"],
-                         ["`tenant, run_id, role", "application", "A retrieved document must never be able to switch tenant or identity"],
-                         ["`allowed tools", "application", "Permissions are granted by code, never claimed in model output"],
-                         ["`Limits: steps, tokens, seconds", "application", "Each limit catches a different failure; together they bound every run"],
+table(s, 0.4, 1.0, 9.0, [["Field", "Set by", "Why it matters"],
+                         ["`tenant, run_id, role", "platform", "A retrieved document must never be able to switch tenant or identity"],
+                         ["`allowed tools", "platform", "Permissions are granted by code, never claimed in model output"],
+                         ["`Limits: steps, tokens, seconds", "platform", "Each limit catches a different failure; the runtime enforces them"],
                          ["`messages, tool calls, answer", "model", "Untrusted input: the runtime validates it before acting on it"],
                          ["`events", "runtime", "What happened, step by step; later the console's run timeline"]],
       [2.7, 1.3, 5.0], size=10.5, row_h=0.5)
-text(s, 0.4, 4.25, 9.0, 0.4, [[("The model owns nothing.", {"font": MED, "size": 14, "color": BLUE})]])
+text(s, 0.4, 4.25, 9.0, 0.4, [[("The platform sets. The runtime enforces. The model owns nothing.", {"font": MED, "size": 14, "color": BLUE})]])
 
 # ------------------------------------------------------------------ 22 guards
 s = slide(CONTENT, "Four guards: every stop has a name",
@@ -527,7 +528,7 @@ code(s, 4.8, 1.1, 4.6, 2.6, "~/agentic-course/\n  course/          read-only cop
 
 # ------------------------------------------------------------------ 26 what you build
 s = slide(CONTENT, "What you build today",
-          "core.py is the agent runtime: the core of every agent you will run. It holds the data the application owns, the "
+          "core.py is the agent runtime: the core of every agent you will run. It holds the data the platform sets, the "
           "shape of a model's reply and of a run, and the ReAct loop. From Session 08 the platform hosts it; a supervisor "
           "built from the same loop coordinates other agents from Session 06. The given files are data and a scripted mock "
           "model everyone shares. In production agents run in separate processes or sandboxes, apart from the platform's "
@@ -537,7 +538,7 @@ code(s, 0.4, 1.0, 5.2, 3.6, "my-platform/\n  incident/\n    __init__.py   LESSON
      "    core.py       you build: the runtime\n    providers.py  you build; mock is given\n    fixtures.py   given: synthetic data\n"
      "    labs/l01.py   check pack: the demo\n  tests/\n    test_setup.py\n    test_lesson01.py  check pack", size=10, hl=(4, 5))
 text(s, 5.9, 1.0, 3.6, 3.6, [[("core.py is the agent runtime", {"font": MED, "size": 14, "color": NAVY})],
-                             "The data the application owns, the shape of a model's reply and of a run, and the ReAct loop. "
+                             "The data the platform sets, the shape of a model's reply and of a run, and the ReAct loop. "
                              "Every later session builds on it.",
                              [("Given files", {"font": MED, "size": 13, "color": NAVY})],
                              "Synthetic data and a scripted mock model everyone shares, so results are comparable.",
@@ -548,8 +549,8 @@ text(s, 5.9, 1.0, 3.6, 3.6, [[("core.py is the agent runtime", {"font": MED, "si
 # ------------------------------------------------------------------ 27 step 1
 s = slide(CONTENT, "Build step 1: the run contract",
           "Step 1 creates core.py with the data contracts only: Context, Limits, Reply and Run. Separate what the "
-          "application owns from what the model produces. None of these fields come from the model. Ask: why not let the "
-          "model's answer say which tools it may use? Because model output is untrusted; the application builds Context.")
+          "platform sets from what the model produces. None of these fields come from the model. Ask: why not let the "
+          "model's answer say which tools it may use? Because model output is untrusted; the platform builds Context.")
 code(s, 0.4, 1.0, 4.9, 2.35, "@dataclass\nclass Context:\n    tenant: str = \"astro\"\n    run_id: str = field(default_factory=...)\n"
      "    role: str = \"investigator\"\n    allowed: tuple = (\"log_lookup\",\n                      \"runbook_search\")\n"
      "    approved: tuple = ()\n    parent_id: str | None = None", size=10)
@@ -671,7 +672,7 @@ s = slide(CONTENT, "You own the loop",
           "Completed is not solved: look for cited evidence or an honest insufficient evidence. Keep your blueprint; later "
           "the console shows these same run events as a timeline.")
 tk = [("An agent is a loop", "the model proposes, the runtime decides and executes, the tool observes."),
-      ("Authority is code", "tenant, role and permitted tools are set by the application, never by model output."),
+      ("Authority is code", "tenant, role and permitted tools are set by the platform, never by model output."),
       ("Every run is bounded", "and every stop has a name and a reason."),
       ("Completed is not solved", "look for cited evidence or an honest \"insufficient evidence\".")]
 for i, (h, b) in enumerate(tk):

@@ -13,7 +13,7 @@
   "steps": [
     {
       "title": "Define the run contract",
-      "say": "Start with the values that application code controls. Tenant, run identifier, role and permitted tools belong in the execution context. They must not be supplied by a retrieved document. Keep the evolving messages and result in Run. This separation will matter when we persist a run or create a child: we can serialize task state while deliberately constructing its authority. Walk through one example context for Astro, then point to Limits. We have separate limits on steps, reported tokens, elapsed time and maximum requested output. These limits address different failure modes. Ask participants to identify the limit that catches a provider that hangs without producing any tokens.",
+      "say": "Start with the values the platform controls; in this session, the code that starts the run plays the platform. Tenant, run identifier, role and permitted tools belong in the execution context. They must not be supplied by a retrieved document. Keep the evolving messages and result in Run. This separation will matter when we persist a run or create a child: we can serialize task state while deliberately constructing its authority. Walk through one example context for Astro, then point to Limits. We have separate limits on steps, reported tokens, elapsed time and maximum requested output. These limits address different failure modes. Ask participants to identify the limit that catches a provider that hangs without producing any tokens.",
       "file": "incident/core.py",
       "prompt": "Create the Context, Limits, Reply and Run contracts in incident/core.py. Separate application-owned tenant identity, permissions and run identifiers from model messages and results. Make run state serializable and give the runtime explicit step, token and time limits. The check pack needs these exact shapes: Limits takes the keywords steps, tokens and seconds, plus max_output_tokens, with defaults large enough for a three-step investigation (for example 8 steps, 8000 tokens, 20 seconds, 500 output tokens); a Context whose defaults work without arguments, because the checks call the runtime without one: tenant astro, a generated run_id, role investigator, allowed tools log_lookup and runbook_search, no approved actions and no parent_id; Reply(message, tokens=0, cost_usd=0); and a Run that exposes its context, messages, status (running, completed or failed), steps (model calls), tokens, cost_usd, pending, answer and error. Keep this step focused on the contracts; do not implement later platform features. No lesson test can run until run_agent exists, so check the contracts with a short script. Show the fields, their owners and one example of a value the model must not control.",
       "excerpt": {
@@ -22,7 +22,7 @@
       },
       "explain": "Typed dataclasses make ownership visible without introducing an orchestration framework. Run.snapshot exposes serializable state for later checkpoints. Token admission uses an approximate character-based input estimate at this stage; the provider's returned usage is checked again after each response.",
       "ask": "Why not place allowed tools inside the model's answer?",
-      "answer": "An answer is untrusted output. The application constructs Context and decides the permitted capabilities independently."
+      "answer": "An answer is untrusted output. The platform constructs Context and decides the permitted capabilities independently."
     },
     {
       "title": "Normalize model access",

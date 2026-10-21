@@ -80,7 +80,7 @@ Use SAY for instructor narration, SHOW and REVIEW for the code and evidence part
 
 ### 1 Define the run contract
 
-**SAY** Start with the values that application code controls. Tenant, run identifier, role and permitted tools belong in the execution context. They must not be supplied by a retrieved document. Keep the evolving messages and result in Run. This separation will matter when we persist a run or create a child: we can serialize task state while deliberately constructing its authority. Walk through one example context for Astro, then point to Limits. We have separate limits on steps, reported tokens, elapsed time and maximum requested output. These limits address different failure modes. Ask participants to identify the limit that catches a provider that hangs without producing any tokens.
+**SAY** Start with the values the platform controls; in this session, the code that starts the run plays the platform. Tenant, run identifier, role and permitted tools belong in the execution context. They must not be supplied by a retrieved document. Keep the evolving messages and result in Run. This separation will matter when we persist a run or create a child: we can serialize task state while deliberately constructing its authority. Walk through one example context for Astro, then point to Limits. We have separate limits on steps, reported tokens, elapsed time and maximum requested output. These limits address different failure modes. Ask participants to identify the limit that catches a provider that hangs without producing any tokens.
 
 **SHOW** The current learner implementation and `incident/core.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
@@ -103,7 +103,7 @@ class Context:
 
 **ASK** Why not place allowed tools inside the model's answer?
 
-**Likely answer** An answer is untrusted output. The application constructs Context and decides the permitted capabilities independently.
+**Likely answer** An answer is untrusted output. The platform constructs Context and decides the permitted capabilities independently.
 
 **PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.
 

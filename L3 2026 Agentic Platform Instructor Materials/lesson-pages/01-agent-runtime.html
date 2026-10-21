@@ -572,20 +572,21 @@ tools   log_lookup(incident_id) · runbook_search(query)</pre></div></div>
 
 <section class="ch" id="guards">
   <p class="eyebrow"><span>Ownership and limits</span></p>
-  <h2>The application owns identity and limits. The model owns nothing.</h2>
+  <h2>The platform sets identity and limits. The runtime enforces them. The model owns nothing.</h2>
   <div class="stack">
     <div class="tablewrap">
       <table>
-        <thead><tr><th>Field</th><th>Owner</th><th>Why it matters</th></tr></thead>
+        <thead><tr><th>Field</th><th>Set by</th><th>Why it matters</th></tr></thead>
         <tbody>
-          <tr><td><code>tenant</code>, <code>run_id</code>, <code>role</code></td><td class="own-app">application</td><td>A retrieved document must never be able to switch tenant or identity.</td></tr>
-          <tr><td><code>allowed</code> tools</td><td class="own-app">application</td><td>Permissions are granted by code, never claimed in model output.</td></tr>
-          <tr><td><code>Limits</code>: steps, tokens, seconds, output size</td><td class="own-app">application</td><td>Each limit catches a different failure; together they bound every run.</td></tr>
+          <tr><td><code>tenant</code>, <code>run_id</code>, <code>role</code></td><td class="own-app">platform</td><td>A retrieved document must never be able to switch tenant or identity.</td></tr>
+          <tr><td><code>allowed</code> tools</td><td class="own-app">platform</td><td>Permissions are granted by code, never claimed in model output.</td></tr>
+          <tr><td><code>Limits</code>: steps, tokens, seconds, output size</td><td class="own-app">platform</td><td>Each limit catches a different failure; the runtime enforces them, and together they bound every run.</td></tr>
           <tr><td><code>messages</code>, proposed tool calls, the answer</td><td class="own-model">model</td><td>Untrusted input. The runtime validates it before acting on it.</td></tr>
           <tr><td><code>events</code></td><td class="own-app">runtime</td><td>What happened, step by step. Later, the platform console shows it as a run timeline.</td></tr>
         </tbody>
       </table>
     </div>
+    <p class="muted"><b>Platform, runtime, model.</b> The platform sets who a run is for, what it may use and how far it may go. Until Session 08 the code that starts a run plays the platform: today the lab or a test calling <code>run_agent</code>; from Session 08 it is <code>Platform.submit</code>, which takes the tenant and role from the signed-in user and the permitted tools from the agent's registry definition. The runtime, <code>core.py</code>, enforces the limits, validates what the model sends and records events. The model only proposes. Where the prompts say "application-owned", they mean set by the platform side, never by the model.</p>
     <div class="guards">
       <div class="guard"><span class="code">step_budget</span><span class="lim">default 8 model steps</span><p>Stops a loop that never converges.</p></div>
       <div class="guard"><span class="code">token_budget</span><span class="lim">default 8,000, checked before each call</span><p>Reserves room for the reply before dispatch, then rechecks reported usage.</p></div>
@@ -651,7 +652,7 @@ tests/
 <span class="hl">  test_lesson01.py        check pack · today's checks</span></pre>
       </div>
       <div class="prose" style="margin-top:0">
-        <p><b><code>core.py</code> is the agent runtime: the core of every agent you will run.</b> It holds the data the application owns (who is asking, what is allowed, the limits), the shape of a model's reply and of a run, and the ReAct loop. From Session 08 the platform hosts it: it chooses which agent version runs, queues and limits the run, gives it an identity, and records what happened. A supervisor agent built from this same loop coordinates other agents from Session 06.</p>
+        <p><b><code>core.py</code> is the agent runtime: the core of every agent you will run.</b> It holds the data the platform sets (who is asking, what is allowed, the limits), the shape of a model's reply and of a run, and the ReAct loop. From Session 08 the platform hosts it: it chooses which agent version runs, queues and limits the run, gives it an identity, and records what happened. A supervisor agent built from this same loop coordinates other agents from Session 06.</p>
         <p>Step 1 creates it with the data contracts only. Step 3 adds the loop to the same file. The given files are data and a scripted mock model that everyone shares, so every learner gets the same results; they are not what this session teaches.</p>
         <p class="muted">The platform and its agents are separate concerns. In production, agents run in their own processes or sandboxed containers, apart from the platform's control plane, so a misbehaving agent cannot reach the platform's data or secrets. In this course the platform runs agents in its own process, a compromise that keeps everything runnable on a laptop while you learn the concepts; the remote specialist in Session 07 shows the separate-process version.</p>
       </div>
@@ -671,7 +672,7 @@ tests/
   <div class="terminal" id="step1">
     <div class="bar"><span class="switch">Switch to terminal · Build step 1 of 4</span><span class="file">new file · incident/core.py · contracts</span></div>
     <div class="body">
-      <p class="goal">Define the run contract: Context, Limits, Reply and Run. Separate what the application owns from what the model produces.</p>
+      <p class="goal">Define the run contract: Context, Limits, Reply and Run. Separate what the platform sets from what the model produces.</p>
       <div class="prompt" id="p1"><span class="pfx">PROMPT ▸ </span>Create the Context, Limits, Reply and Run contracts in incident/core.py. Separate application-owned tenant identity, permissions and run identifiers from model messages and results. Make run state serializable and give the runtime explicit step, token and time limits. The check pack needs these exact shapes: Limits takes the keywords steps, tokens and seconds, plus max_output_tokens, with defaults large enough for a three-step investigation (for example 8 steps, 8000 tokens, 20 seconds, 500 output tokens); a Context whose defaults work without arguments, because the checks call the runtime without one: tenant astro, a generated run_id, role investigator, allowed tools log_lookup and runbook_search, no approved actions and no parent_id; Reply(message, tokens=0, cost_usd=0); and a Run that exposes its context, messages, status (running, completed or failed), steps (model calls), tokens, cost_usd, pending, answer and error. Keep this step focused on the contracts; do not implement later platform features. No lesson test can run until run_agent exists, so check the contracts with a short script. Show the fields, their owners and one example of a value the model must not control.</div>
       <div><button class="copy" type="button" data-copy="p1">Copy prompt</button></div>
     </div>
@@ -698,7 +699,7 @@ class Context:
       <dd class="note">None of these come from the model.</dd>
     </dl>
     <div class="ask"><span class="label">Ask</span><p class="q">Why not let the model's answer say which tools it may use?</p>
-      <details><summary>Show the answer</summary><p>Model output is untrusted. The application builds Context and grants capabilities independently. (<code>approved</code> and <code>parent_id</code> are hooks for approvals and child runs in later sessions.)</p></details></div>
+      <details><summary>Show the answer</summary><p>Model output is untrusted. The platform builds Context and grants capabilities independently. (<code>approved</code> and <code>parent_id</code> are hooks for approvals and child runs in later sessions.)</p></details></div>
   </div>
 
   <div class="terminal" id="step2">
@@ -883,7 +884,7 @@ return run</pre>
   <div class="stack">
     <div class="criteria">
       <div><b>An agent is a loop</b>the model proposes, the runtime decides and executes, the tool observes.</div>
-      <div><b>Authority is code</b>tenant, role and permitted tools are set by the application, never by model output.</div>
+      <div><b>Authority is code</b>tenant, role and permitted tools are set by the platform, never by model output.</div>
       <div><b>Every run is bounded</b>and every stop has a name and a reason.</div>
       <div><b>Completed is not solved</b>look for cited evidence or an honest "insufficient evidence".</div>
     </div>
