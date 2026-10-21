@@ -1,8 +1,8 @@
 # Incident platform: your project
 
 This is the starting point for your own agentic platform in the course *Building Agentic
-Platforms*. Your coding agent copies it into a new repository in your course GitLab group,
-and every session adds to it.
+Platforms*. Your coding agent copies it into a new repository in your course GitLab group on
+gitlab.ciklum.net, and every session adds to it.
 
 The default model is an offline, deterministic mock, so the checks need no API keys and
 everyone sees the same results. Its usage figures are teaching measurements, not costs.

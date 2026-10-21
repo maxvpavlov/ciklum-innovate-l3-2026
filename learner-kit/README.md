@@ -6,7 +6,7 @@ platform yourself and prove it with the checks.
 
 | Folder | What it is |
 |---|---|
-| `starter/` | The starting project (checkpoint lesson-00). Your coding agent copies it into a new private repository in your course GitLab group. |
+| `starter/` | The starting project (checkpoint lesson-00). Your coding agent copies it into a new private repository in your course GitLab group on gitlab.ciklum.net. |
 | `lessons/NN/given/` | Synthetic data and deterministic test doubles, such as the mock model, that everyone uses unchanged. |
 | `lessons/NN/checks/` | The lesson's demo and tests, cumulative. Copy them unchanged; they fail until you build the capability. |
 | `lessons/NN/README.md` | What to copy where, and the interfaces your code must provide. |

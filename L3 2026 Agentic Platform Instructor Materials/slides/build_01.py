@@ -511,11 +511,11 @@ text(s, 0.4, 3.6, 9.0, 0.9, [[("Rule for the whole build: ", {"font": MED, "colo
 s = slide(CONTENT, "Set up: the lesson-00 prompt",
           "Create an empty folder such as ~/agentic-course, start your coding agent in it, and paste the lesson-00 prompt "
           "from the session page. It clones the public course repository as a read-only copy, creates your project from the "
-          "kit's starter, installs everything, runs the first test, installs glab, signs you in to GitLab and pushes your "
-          "project to a new private repository in the course group. Start your agent in the same folder every later session.")
+          "kit's starter, installs everything, runs the first test, installs glab, signs you in to gitlab.ciklum.net (keeping any "
+          "other GitLab sign-ins) and pushes your project to a new private repository in the course group there. Start your agent in the same folder every later session.")
 steps = [("1", "Create an empty folder", "~/agentic-course, and start your coding agent in it"),
          ("2", "Paste the lesson-00 prompt", "from the session page; it does the rest"),
-         ("3", "Expect", "1 passed · LESSON = 0 · your project in your GitLab group")]
+         ("3", "Expect", "1 passed · LESSON = 0 · your project on gitlab.ciklum.net")]
 for i, (n, h, b) in enumerate(steps):
     y = 1.1 + i * 1.05
     box(s, 0.4, y, 0.55, 0.55, fill=BLUE, line=None, shape=MSO_SHAPE.OVAL)

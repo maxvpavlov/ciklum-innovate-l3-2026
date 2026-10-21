@@ -1,6 +1,6 @@
 # Coding agent prompts for the course
 
-Each learner builds their own platform in their own repository in the course GitLab group, by prompting a coding agent. The learner kit in the public course repository (https://github.com/maxvpavlov/ciklum-innovate-l3-2026/tree/main/learner-kit) supplies the starter project and, for every lesson, the given files and a check pack of tests that fail until the capability is built. It contains no solutions. The agent handles setup, repository operations, execution and verification. You set scope, inspect code and decide whether the observed evidence meets the lesson criteria.
+Each learner builds their own platform in their own repository in the course GitLab group on gitlab.ciklum.net, by prompting a coding agent. The learner kit in the public course repository (https://github.com/maxvpavlov/ciklum-innovate-l3-2026/tree/main/learner-kit) supplies the starter project and, for every lesson, the given files and a check pack of tests that fail until the capability is built. It contains no solutions. The agent handles setup, repository operations, execution and verification. You set scope, inspect code and decide whether the observed evidence meets the lesson criteria.
 
 These prompts guide a learner implementation; a coding agent’s completion message is not proof that its result passed the checks. Use offline fixtures unless you deliberately configure and authorize a live integration.
 
@@ -10,7 +10,7 @@ Course kit: learner-kit/lessons/01. Instructor answer key: lesson-00 to lesson-0
 
 ### Prepare the workspace
 
-> Set up my project for the Building Agentic Platforms course, starting at lesson-00. Clone the public course repository from https://github.com/maxvpavlov/ciklum-innovate-l3-2026 into ~/agentic-course/course and treat that folder as read-only; its learner-kit folder is the course kit. Create my own project in ~/agentic-course/my-platform by copying learner-kit/starter, and make it a fresh Git repository on branch main with one initial commit; if Git has no user name or email, set them for this repository only and tell me. Install the pinned dependencies with uv for Python 3.12, run the tests with python -m pytest, and confirm that incident/__init__.py says LESSON = 0. Install the GitLab CLI, glab, if it is missing, and sign me in to GitLab; when a browser sign-in is needed, tell me what to do, and never ask me to paste a token into the chat. Ask me for the name of the GitLab group I was invited to, create a private repository for my project in that group, and push my project to it. Report both folder paths, the files in my project, the test result, the GitLab repository address and anything missing, such as uv, Python 3.12, glab or access to the group. Do not ask me to run terminal commands.
+> Set up my project for the Building Agentic Platforms course, starting at lesson-00. Clone the public course repository from https://github.com/maxvpavlov/ciklum-innovate-l3-2026 into ~/agentic-course/course and treat that folder as read-only; its learner-kit folder is the course kit. Create my own project in ~/agentic-course/my-platform by copying learner-kit/starter, and make it a fresh Git repository on branch main with one initial commit; if Git has no user name or email, set them for this repository only and tell me. Install the pinned dependencies with uv for Python 3.12, run the tests with python -m pytest, and confirm that incident/__init__.py says LESSON = 0. Install the GitLab CLI, glab, if it is missing, and sign me in to the course GitLab at gitlab.ciklum.net. glab may already be signed in to other GitLab hosts, such as gitlab.com: keep those sign-ins, add gitlab.ciklum.net alongside them, and name gitlab.ciklum.net as the host in every glab command, because glab otherwise uses a default host. When a browser sign-in is needed, tell me what to do, and never ask me to paste a token into the chat. Ask me for the name of the group I was invited to on gitlab.ciklum.net, create a private repository for my project in that group, set it as the origin remote and push my project to it. Report both folder paths, the files in my project, the test result, the GitLab repository address and anything missing, such as uv, Python 3.12, glab or access to the group on gitlab.ciklum.net. Do not ask me to run terminal commands.
 
 ### Add the check pack
 
@@ -38,7 +38,7 @@ Course kit: learner-kit/lessons/01. Instructor answer key: lesson-00 to lesson-0
 
 ### Verify the checkpoint
 
-> Verify my Lesson 01 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 1 only when the required capability is present. Run the full test suite, which includes the Lesson 01 check pack and every earlier lesson's tests, and then the Session 01 demonstration with python -m incident.lab 1, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 01 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my GitLab repository. Do not equate an unrun or skipped check with a pass.
+> Verify my Lesson 01 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 1 only when the required capability is present. Run the full test suite, which includes the Lesson 01 check pack and every earlier lesson's tests, and then the Session 01 demonstration with python -m incident.lab 1, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 01 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my repository on gitlab.ciklum.net; if glab is also signed in to other GitLab hosts, make sure the push goes to gitlab.ciklum.net. Do not equate an unrun or skipped check with a pass.
 
 ### Review the result
 
@@ -66,7 +66,7 @@ Course kit: learner-kit/lessons/02. Instructor answer key: lesson-01 to lesson-0
 
 ### Prepare the workspace
 
-> Prepare my learner project for Lesson 02. Open my project repository in my course GitLab group, cloning it into ~/agentic-course/my-platform if it is not there, and confirm it holds my completed lesson-01 work with all its checks passing. Update my read-only copy of the course repository in ~/agentic-course/course, cloning it from https://github.com/maxvpavlov/ciklum-innovate-l3-2026 if it is missing; its learner-kit folder is the course kit. Use the pinned Python 3.12 environment and the offline mock provider. Do not add this lesson's work yet. Report the project location, its current checkpoint, the test results and any missing prerequisites. Do not ask me to run terminal commands.
+> Prepare my learner project for Lesson 02. Open my project repository in my course GitLab group on gitlab.ciklum.net, cloning it into ~/agentic-course/my-platform if it is not there, and confirm it holds my completed lesson-01 work with all its checks passing. Update my read-only copy of the course repository in ~/agentic-course/course, cloning it from https://github.com/maxvpavlov/ciklum-innovate-l3-2026 if it is missing; its learner-kit folder is the course kit. Use the pinned Python 3.12 environment and the offline mock provider. Do not add this lesson's work yet. Report the project location, its current checkpoint, the test results and any missing prerequisites. Do not ask me to run terminal commands.
 
 ### Add the check pack
 
@@ -94,7 +94,7 @@ Course kit: learner-kit/lessons/02. Instructor answer key: lesson-01 to lesson-0
 
 ### Verify the checkpoint
 
-> Verify my Lesson 02 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 2 only when the required capability is present. Run the full test suite, which includes the Lesson 02 check pack and every earlier lesson's tests, and then the Session 02 demonstration with python -m incident.lab 2, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 02 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my GitLab repository. Do not equate an unrun or skipped check with a pass.
+> Verify my Lesson 02 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 2 only when the required capability is present. Run the full test suite, which includes the Lesson 02 check pack and every earlier lesson's tests, and then the Session 02 demonstration with python -m incident.lab 2, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 02 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my repository on gitlab.ciklum.net; if glab is also signed in to other GitLab hosts, make sure the push goes to gitlab.ciklum.net. Do not equate an unrun or skipped check with a pass.
 
 ### Review the result
 
@@ -122,7 +122,7 @@ Course kit: learner-kit/lessons/03. Instructor answer key: lesson-02 to lesson-0
 
 ### Prepare the workspace
 
-> Prepare my learner project for Lesson 03. Open my project repository in my course GitLab group, cloning it into ~/agentic-course/my-platform if it is not there, and confirm it holds my completed lesson-02 work with all its checks passing. Update my read-only copy of the course repository in ~/agentic-course/course, cloning it from https://github.com/maxvpavlov/ciklum-innovate-l3-2026 if it is missing; its learner-kit folder is the course kit. Use the pinned Python 3.12 environment and the offline mock provider. Do not add this lesson's work yet. Report the project location, its current checkpoint, the test results and any missing prerequisites. Do not ask me to run terminal commands.
+> Prepare my learner project for Lesson 03. Open my project repository in my course GitLab group on gitlab.ciklum.net, cloning it into ~/agentic-course/my-platform if it is not there, and confirm it holds my completed lesson-02 work with all its checks passing. Update my read-only copy of the course repository in ~/agentic-course/course, cloning it from https://github.com/maxvpavlov/ciklum-innovate-l3-2026 if it is missing; its learner-kit folder is the course kit. Use the pinned Python 3.12 environment and the offline mock provider. Do not add this lesson's work yet. Report the project location, its current checkpoint, the test results and any missing prerequisites. Do not ask me to run terminal commands.
 
 ### Add the check pack
 
@@ -150,7 +150,7 @@ Course kit: learner-kit/lessons/03. Instructor answer key: lesson-02 to lesson-0
 
 ### Verify the checkpoint
 
-> Verify my Lesson 03 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 3 only when the required capability is present. Run the full test suite, which includes the Lesson 03 check pack and every earlier lesson's tests, and then the Session 03 demonstration with python -m incident.lab 3, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 03 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my GitLab repository. Do not equate an unrun or skipped check with a pass.
+> Verify my Lesson 03 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 3 only when the required capability is present. Run the full test suite, which includes the Lesson 03 check pack and every earlier lesson's tests, and then the Session 03 demonstration with python -m incident.lab 3, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 03 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my repository on gitlab.ciklum.net; if glab is also signed in to other GitLab hosts, make sure the push goes to gitlab.ciklum.net. Do not equate an unrun or skipped check with a pass.
 
 ### Review the result
 
@@ -178,7 +178,7 @@ Course kit: learner-kit/lessons/04. Instructor answer key: lesson-03 to lesson-0
 
 ### Prepare the workspace
 
-> Prepare my learner project for Lesson 04. Open my project repository in my course GitLab group, cloning it into ~/agentic-course/my-platform if it is not there, and confirm it holds my completed lesson-03 work with all its checks passing. Update my read-only copy of the course repository in ~/agentic-course/course, cloning it from https://github.com/maxvpavlov/ciklum-innovate-l3-2026 if it is missing; its learner-kit folder is the course kit. Use the pinned Python 3.12 environment and the offline mock provider. Do not add this lesson's work yet. Report the project location, its current checkpoint, the test results and any missing prerequisites. Do not ask me to run terminal commands.
+> Prepare my learner project for Lesson 04. Open my project repository in my course GitLab group on gitlab.ciklum.net, cloning it into ~/agentic-course/my-platform if it is not there, and confirm it holds my completed lesson-03 work with all its checks passing. Update my read-only copy of the course repository in ~/agentic-course/course, cloning it from https://github.com/maxvpavlov/ciklum-innovate-l3-2026 if it is missing; its learner-kit folder is the course kit. Use the pinned Python 3.12 environment and the offline mock provider. Do not add this lesson's work yet. Report the project location, its current checkpoint, the test results and any missing prerequisites. Do not ask me to run terminal commands.
 
 ### Add the check pack
 
@@ -206,7 +206,7 @@ Course kit: learner-kit/lessons/04. Instructor answer key: lesson-03 to lesson-0
 
 ### Verify the checkpoint
 
-> Verify my Lesson 04 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 4 only when the required capability is present. Run the full test suite, which includes the Lesson 04 check pack and every earlier lesson's tests, and then the Session 04 demonstration with python -m incident.lab 4, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 04 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my GitLab repository. Do not equate an unrun or skipped check with a pass.
+> Verify my Lesson 04 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 4 only when the required capability is present. Run the full test suite, which includes the Lesson 04 check pack and every earlier lesson's tests, and then the Session 04 demonstration with python -m incident.lab 4, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 04 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my repository on gitlab.ciklum.net; if glab is also signed in to other GitLab hosts, make sure the push goes to gitlab.ciklum.net. Do not equate an unrun or skipped check with a pass.
 
 ### Review the result
 
@@ -234,7 +234,7 @@ Course kit: learner-kit/lessons/05. Instructor answer key: lesson-04 to lesson-0
 
 ### Prepare the workspace
 
-> Prepare my learner project for Lesson 05. Open my project repository in my course GitLab group, cloning it into ~/agentic-course/my-platform if it is not there, and confirm it holds my completed lesson-04 work with all its checks passing. Update my read-only copy of the course repository in ~/agentic-course/course, cloning it from https://github.com/maxvpavlov/ciklum-innovate-l3-2026 if it is missing; its learner-kit folder is the course kit. Use the pinned Python 3.12 environment and the offline mock provider. Do not add this lesson's work yet. Report the project location, its current checkpoint, the test results and any missing prerequisites. Do not ask me to run terminal commands.
+> Prepare my learner project for Lesson 05. Open my project repository in my course GitLab group on gitlab.ciklum.net, cloning it into ~/agentic-course/my-platform if it is not there, and confirm it holds my completed lesson-04 work with all its checks passing. Update my read-only copy of the course repository in ~/agentic-course/course, cloning it from https://github.com/maxvpavlov/ciklum-innovate-l3-2026 if it is missing; its learner-kit folder is the course kit. Use the pinned Python 3.12 environment and the offline mock provider. Do not add this lesson's work yet. Report the project location, its current checkpoint, the test results and any missing prerequisites. Do not ask me to run terminal commands.
 
 ### Add the check pack
 
@@ -262,7 +262,7 @@ Course kit: learner-kit/lessons/05. Instructor answer key: lesson-04 to lesson-0
 
 ### Verify the checkpoint
 
-> Verify my Lesson 05 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 5 only when the required capability is present. Run the full test suite, which includes the Lesson 05 check pack and every earlier lesson's tests, and then the Session 05 demonstration with python -m incident.lab 5, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 05 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my GitLab repository. Do not equate an unrun or skipped check with a pass.
+> Verify my Lesson 05 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 5 only when the required capability is present. Run the full test suite, which includes the Lesson 05 check pack and every earlier lesson's tests, and then the Session 05 demonstration with python -m incident.lab 5, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 05 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my repository on gitlab.ciklum.net; if glab is also signed in to other GitLab hosts, make sure the push goes to gitlab.ciklum.net. Do not equate an unrun or skipped check with a pass.
 
 ### Review the result
 
@@ -290,7 +290,7 @@ Course kit: learner-kit/lessons/06. Instructor answer key: lesson-05 to lesson-0
 
 ### Prepare the workspace
 
-> Prepare my learner project for Lesson 06. Open my project repository in my course GitLab group, cloning it into ~/agentic-course/my-platform if it is not there, and confirm it holds my completed lesson-05 work with all its checks passing. Update my read-only copy of the course repository in ~/agentic-course/course, cloning it from https://github.com/maxvpavlov/ciklum-innovate-l3-2026 if it is missing; its learner-kit folder is the course kit. Use the pinned Python 3.12 environment and the offline mock provider. Do not add this lesson's work yet. Report the project location, its current checkpoint, the test results and any missing prerequisites. Do not ask me to run terminal commands.
+> Prepare my learner project for Lesson 06. Open my project repository in my course GitLab group on gitlab.ciklum.net, cloning it into ~/agentic-course/my-platform if it is not there, and confirm it holds my completed lesson-05 work with all its checks passing. Update my read-only copy of the course repository in ~/agentic-course/course, cloning it from https://github.com/maxvpavlov/ciklum-innovate-l3-2026 if it is missing; its learner-kit folder is the course kit. Use the pinned Python 3.12 environment and the offline mock provider. Do not add this lesson's work yet. Report the project location, its current checkpoint, the test results and any missing prerequisites. Do not ask me to run terminal commands.
 
 ### Add the check pack
 
@@ -318,7 +318,7 @@ Course kit: learner-kit/lessons/06. Instructor answer key: lesson-05 to lesson-0
 
 ### Verify the checkpoint
 
-> Verify my Lesson 06 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 6 only when the required capability is present. Run the full test suite, which includes the Lesson 06 check pack and every earlier lesson's tests, and then the Session 06 demonstration with python -m incident.lab 6, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 06 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my GitLab repository. Do not equate an unrun or skipped check with a pass.
+> Verify my Lesson 06 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 6 only when the required capability is present. Run the full test suite, which includes the Lesson 06 check pack and every earlier lesson's tests, and then the Session 06 demonstration with python -m incident.lab 6, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 06 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my repository on gitlab.ciklum.net; if glab is also signed in to other GitLab hosts, make sure the push goes to gitlab.ciklum.net. Do not equate an unrun or skipped check with a pass.
 
 ### Review the result
 
@@ -346,7 +346,7 @@ Course kit: learner-kit/lessons/07. Instructor answer key: lesson-06 to lesson-0
 
 ### Prepare the workspace
 
-> Prepare my learner project for Lesson 07. Open my project repository in my course GitLab group, cloning it into ~/agentic-course/my-platform if it is not there, and confirm it holds my completed lesson-06 work with all its checks passing. Update my read-only copy of the course repository in ~/agentic-course/course, cloning it from https://github.com/maxvpavlov/ciklum-innovate-l3-2026 if it is missing; its learner-kit folder is the course kit. Use the pinned Python 3.12 environment and the offline mock provider. Do not add this lesson's work yet. Report the project location, its current checkpoint, the test results and any missing prerequisites. Do not ask me to run terminal commands.
+> Prepare my learner project for Lesson 07. Open my project repository in my course GitLab group on gitlab.ciklum.net, cloning it into ~/agentic-course/my-platform if it is not there, and confirm it holds my completed lesson-06 work with all its checks passing. Update my read-only copy of the course repository in ~/agentic-course/course, cloning it from https://github.com/maxvpavlov/ciklum-innovate-l3-2026 if it is missing; its learner-kit folder is the course kit. Use the pinned Python 3.12 environment and the offline mock provider. Do not add this lesson's work yet. Report the project location, its current checkpoint, the test results and any missing prerequisites. Do not ask me to run terminal commands.
 
 ### Add the check pack
 
@@ -374,7 +374,7 @@ Course kit: learner-kit/lessons/07. Instructor answer key: lesson-06 to lesson-0
 
 ### Verify the checkpoint
 
-> Verify my Lesson 07 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 7 only when the required capability is present. Run the full test suite, which includes the Lesson 07 check pack and every earlier lesson's tests, and then the Session 07 demonstration with python -m incident.lab 7, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 07 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my GitLab repository. Do not equate an unrun or skipped check with a pass.
+> Verify my Lesson 07 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 7 only when the required capability is present. Run the full test suite, which includes the Lesson 07 check pack and every earlier lesson's tests, and then the Session 07 demonstration with python -m incident.lab 7, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 07 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my repository on gitlab.ciklum.net; if glab is also signed in to other GitLab hosts, make sure the push goes to gitlab.ciklum.net. Do not equate an unrun or skipped check with a pass.
 
 ### Review the result
 
@@ -402,7 +402,7 @@ Course kit: learner-kit/lessons/08. Instructor answer key: lesson-07 to lesson-0
 
 ### Prepare the workspace
 
-> Prepare my learner project for Lesson 08. Open my project repository in my course GitLab group, cloning it into ~/agentic-course/my-platform if it is not there, and confirm it holds my completed lesson-07 work with all its checks passing. Update my read-only copy of the course repository in ~/agentic-course/course, cloning it from https://github.com/maxvpavlov/ciklum-innovate-l3-2026 if it is missing; its learner-kit folder is the course kit. Use the pinned Python 3.12 environment and the offline mock provider. Do not add this lesson's work yet. Report the project location, its current checkpoint, the test results and any missing prerequisites. Do not ask me to run terminal commands.
+> Prepare my learner project for Lesson 08. Open my project repository in my course GitLab group on gitlab.ciklum.net, cloning it into ~/agentic-course/my-platform if it is not there, and confirm it holds my completed lesson-07 work with all its checks passing. Update my read-only copy of the course repository in ~/agentic-course/course, cloning it from https://github.com/maxvpavlov/ciklum-innovate-l3-2026 if it is missing; its learner-kit folder is the course kit. Use the pinned Python 3.12 environment and the offline mock provider. Do not add this lesson's work yet. Report the project location, its current checkpoint, the test results and any missing prerequisites. Do not ask me to run terminal commands.
 
 ### Add the check pack
 
@@ -430,7 +430,7 @@ Course kit: learner-kit/lessons/08. Instructor answer key: lesson-07 to lesson-0
 
 ### Verify the checkpoint
 
-> Verify my Lesson 08 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 8 only when the required capability is present. Run the full test suite, which includes the Lesson 08 check pack and every earlier lesson's tests, and then the Session 08 demonstration with python -m incident.lab 8, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 08 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my GitLab repository. Do not equate an unrun or skipped check with a pass.
+> Verify my Lesson 08 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 8 only when the required capability is present. Run the full test suite, which includes the Lesson 08 check pack and every earlier lesson's tests, and then the Session 08 demonstration with python -m incident.lab 8, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 08 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my repository on gitlab.ciklum.net; if glab is also signed in to other GitLab hosts, make sure the push goes to gitlab.ciklum.net. Do not equate an unrun or skipped check with a pass.
 
 ### Review the result
 
@@ -458,7 +458,7 @@ Course kit: learner-kit/lessons/09. Instructor answer key: lesson-08 to lesson-0
 
 ### Prepare the workspace
 
-> Prepare my learner project for Lesson 09. Open my project repository in my course GitLab group, cloning it into ~/agentic-course/my-platform if it is not there, and confirm it holds my completed lesson-08 work with all its checks passing. Update my read-only copy of the course repository in ~/agentic-course/course, cloning it from https://github.com/maxvpavlov/ciklum-innovate-l3-2026 if it is missing; its learner-kit folder is the course kit. Use the pinned Python 3.12 environment and the offline mock provider. Do not add this lesson's work yet. Report the project location, its current checkpoint, the test results and any missing prerequisites. Do not ask me to run terminal commands.
+> Prepare my learner project for Lesson 09. Open my project repository in my course GitLab group on gitlab.ciklum.net, cloning it into ~/agentic-course/my-platform if it is not there, and confirm it holds my completed lesson-08 work with all its checks passing. Update my read-only copy of the course repository in ~/agentic-course/course, cloning it from https://github.com/maxvpavlov/ciklum-innovate-l3-2026 if it is missing; its learner-kit folder is the course kit. Use the pinned Python 3.12 environment and the offline mock provider. Do not add this lesson's work yet. Report the project location, its current checkpoint, the test results and any missing prerequisites. Do not ask me to run terminal commands.
 
 ### Add the check pack
 
@@ -486,7 +486,7 @@ Course kit: learner-kit/lessons/09. Instructor answer key: lesson-08 to lesson-0
 
 ### Verify the checkpoint
 
-> Verify my Lesson 09 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 9 only when the required capability is present. Run the full test suite, which includes the Lesson 09 check pack and every earlier lesson's tests, and then the Session 09 demonstration with python -m incident.lab 9, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 09 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my GitLab repository. Do not equate an unrun or skipped check with a pass.
+> Verify my Lesson 09 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 9 only when the required capability is present. Run the full test suite, which includes the Lesson 09 check pack and every earlier lesson's tests, and then the Session 09 demonstration with python -m incident.lab 9, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 09 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my repository on gitlab.ciklum.net; if glab is also signed in to other GitLab hosts, make sure the push goes to gitlab.ciklum.net. Do not equate an unrun or skipped check with a pass.
 
 ### Review the result
 
@@ -514,7 +514,7 @@ Course kit: learner-kit/lessons/10. Instructor answer key: lesson-09 to lesson-1
 
 ### Prepare the workspace
 
-> Prepare my learner project for Lesson 10. Open my project repository in my course GitLab group, cloning it into ~/agentic-course/my-platform if it is not there, and confirm it holds my completed lesson-09 work with all its checks passing. Update my read-only copy of the course repository in ~/agentic-course/course, cloning it from https://github.com/maxvpavlov/ciklum-innovate-l3-2026 if it is missing; its learner-kit folder is the course kit. Use the pinned Python 3.12 environment and the offline mock provider. Do not add this lesson's work yet. Report the project location, its current checkpoint, the test results and any missing prerequisites. Do not ask me to run terminal commands.
+> Prepare my learner project for Lesson 10. Open my project repository in my course GitLab group on gitlab.ciklum.net, cloning it into ~/agentic-course/my-platform if it is not there, and confirm it holds my completed lesson-09 work with all its checks passing. Update my read-only copy of the course repository in ~/agentic-course/course, cloning it from https://github.com/maxvpavlov/ciklum-innovate-l3-2026 if it is missing; its learner-kit folder is the course kit. Use the pinned Python 3.12 environment and the offline mock provider. Do not add this lesson's work yet. Report the project location, its current checkpoint, the test results and any missing prerequisites. Do not ask me to run terminal commands.
 
 ### Add the check pack
 
@@ -542,7 +542,7 @@ Course kit: learner-kit/lessons/10. Instructor answer key: lesson-09 to lesson-1
 
 ### Verify the checkpoint
 
-> Verify my Lesson 10 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 10 only when the required capability is present. Run the full test suite, which includes the Lesson 10 check pack and every earlier lesson's tests, and then the Session 10 demonstration with python -m incident.lab 10, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 10 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my GitLab repository. Do not equate an unrun or skipped check with a pass.
+> Verify my Lesson 10 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 10 only when the required capability is present. Run the full test suite, which includes the Lesson 10 check pack and every earlier lesson's tests, and then the Session 10 demonstration with python -m incident.lab 10, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 10 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my repository on gitlab.ciklum.net; if glab is also signed in to other GitLab hosts, make sure the push goes to gitlab.ciklum.net. Do not equate an unrun or skipped check with a pass.
 
 ### Review the result
 
@@ -570,7 +570,7 @@ Course kit: learner-kit/lessons/11. Instructor answer key: lesson-10 to lesson-1
 
 ### Prepare the workspace
 
-> Prepare my learner project for Lesson 11. Open my project repository in my course GitLab group, cloning it into ~/agentic-course/my-platform if it is not there, and confirm it holds my completed lesson-10 work with all its checks passing. Update my read-only copy of the course repository in ~/agentic-course/course, cloning it from https://github.com/maxvpavlov/ciklum-innovate-l3-2026 if it is missing; its learner-kit folder is the course kit. Use the pinned Python 3.12 environment and the offline mock provider. Do not add this lesson's work yet. Report the project location, its current checkpoint, the test results and any missing prerequisites. Do not ask me to run terminal commands.
+> Prepare my learner project for Lesson 11. Open my project repository in my course GitLab group on gitlab.ciklum.net, cloning it into ~/agentic-course/my-platform if it is not there, and confirm it holds my completed lesson-10 work with all its checks passing. Update my read-only copy of the course repository in ~/agentic-course/course, cloning it from https://github.com/maxvpavlov/ciklum-innovate-l3-2026 if it is missing; its learner-kit folder is the course kit. Use the pinned Python 3.12 environment and the offline mock provider. Do not add this lesson's work yet. Report the project location, its current checkpoint, the test results and any missing prerequisites. Do not ask me to run terminal commands.
 
 ### Add the check pack
 
@@ -598,7 +598,7 @@ Course kit: learner-kit/lessons/11. Instructor answer key: lesson-10 to lesson-1
 
 ### Verify the checkpoint
 
-> Verify my Lesson 11 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 11 only when the required capability is present. Run the full test suite, which includes the Lesson 11 check pack and every earlier lesson's tests, and then the Session 11 demonstration with python -m incident.lab 11, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 11 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my GitLab repository. Do not equate an unrun or skipped check with a pass.
+> Verify my Lesson 11 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 11 only when the required capability is present. Run the full test suite, which includes the Lesson 11 check pack and every earlier lesson's tests, and then the Session 11 demonstration with python -m incident.lab 11, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 11 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my repository on gitlab.ciklum.net; if glab is also signed in to other GitLab hosts, make sure the push goes to gitlab.ciklum.net. Do not equate an unrun or skipped check with a pass.
 
 ### Review the result
 
@@ -626,7 +626,7 @@ Course kit: learner-kit/lessons/12. Instructor answer key: lesson-11 to lesson-1
 
 ### Prepare the workspace
 
-> Prepare my learner project for Lesson 12. Open my project repository in my course GitLab group, cloning it into ~/agentic-course/my-platform if it is not there, and confirm it holds my completed lesson-11 work with all its checks passing. Update my read-only copy of the course repository in ~/agentic-course/course, cloning it from https://github.com/maxvpavlov/ciklum-innovate-l3-2026 if it is missing; its learner-kit folder is the course kit. Use the pinned Python 3.12 environment and the offline mock provider. Do not add this lesson's work yet. Report the project location, its current checkpoint, the test results and any missing prerequisites. Do not ask me to run terminal commands.
+> Prepare my learner project for Lesson 12. Open my project repository in my course GitLab group on gitlab.ciklum.net, cloning it into ~/agentic-course/my-platform if it is not there, and confirm it holds my completed lesson-11 work with all its checks passing. Update my read-only copy of the course repository in ~/agentic-course/course, cloning it from https://github.com/maxvpavlov/ciklum-innovate-l3-2026 if it is missing; its learner-kit folder is the course kit. Use the pinned Python 3.12 environment and the offline mock provider. Do not add this lesson's work yet. Report the project location, its current checkpoint, the test results and any missing prerequisites. Do not ask me to run terminal commands.
 
 ### Add the check pack
 
@@ -654,7 +654,7 @@ Course kit: learner-kit/lessons/12. Instructor answer key: lesson-11 to lesson-1
 
 ### Verify the checkpoint
 
-> Verify my Lesson 12 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 12 only when the required capability is present. Run the full test suite, which includes the Lesson 12 check pack and every earlier lesson's tests, and then the Session 12 demonstration with python -m incident.lab 12, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 12 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my GitLab repository. Do not equate an unrun or skipped check with a pass.
+> Verify my Lesson 12 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 12 only when the required capability is present. Run the full test suite, which includes the Lesson 12 check pack and every earlier lesson's tests, and then the Session 12 demonstration with python -m incident.lab 12, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 12 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my repository on gitlab.ciklum.net; if glab is also signed in to other GitLab hosts, make sure the push goes to gitlab.ciklum.net. Do not equate an unrun or skipped check with a pass.
 
 ### Review the result
 
