@@ -1,6 +1,6 @@
 # Candidate model endpoints for real-model runs
 
-Status: **not tested.** Session 01 and every check pack run on the offline mock model. This page lists
+Status: **Google AI Studio (Gemini) partly tested on 22 October 2026 (see the test log); the others are not tested.** Session 01 and every check pack run on the offline mock model. This page lists
 endpoints learners could use later for real-model runs, and the test each one has to pass before the
 course recommends it. Researched on 20 October 2026; free tiers, limits and model lists change monthly,
 so re-check them before testing.
@@ -29,7 +29,7 @@ configured", never "free".
 |---|---|---|---|---|---|
 | 1 | OpenRouter | `https://openrouter.ai/api/v1` | Individual account, free key | About 20 requests/min and 50/day with no credits; a one-off $10 top-up reportedly raises it to 1,000/day | One key, many models. Free models appear and disappear, and tool calling varies per model, so name two or three. Reported tool-capable free options include `qwen/qwen3-coder:free` and MiniMax M3 (free). `openrouter/free` routes to free models only. |
 | 2 | Groq | `https://api.groq.com/openai/v1` | Free account | Per model; e.g. about 30/min and 1,000/day for `openai/gpt-oss-120b`, with a tokens-per-minute cap | Fast and comparatively stable. Confirm tool calling for the chosen model. |
-| 3 | Google AI Studio (Gemini) | Google's OpenAI-compatible Gemini endpoint (take the URL from Google's docs) | Google account, no card | Generous daily quota; sources disagree on the numbers | Free-tier prompts may be used to improve Google's products. Acceptable only because all course data is synthetic. |
+| 3 | Google AI Studio (Gemini) | `https://generativelanguage.googleapis.com/v1beta/openai` | Google account, no card: the default key on the API keys page works on the free tier. Close the "Link a paid API key" dialog; it is the optional paid upgrade. | Measured: 5 requests/min per model on `gemini-3.6-flash`; daily limit not measured | Free-tier prompts may be used to improve Google's products, except for users in the EEA, Switzerland and the UK. Acceptable only because all course data is synthetic. Pro, image, video and music models need billing. |
 | 4 | OpenCode Zen | `https://opencode.ai/zen/v1` | opencode.ai account | Several free models listed, e.g. `deepseek-v4-flash-free`, `qwen3.6-plus-free`, `minimax-m3-free` | Uncertain: one source says access without paying was shut off for non-official clients on 23 September 2026; others mention a deposit or billing details. Live list: `GET /zen/v1/models`. |
 | 5 | Local Ollama | `http://localhost:11434/v1` | None | No limits or cost | Works offline; needs a capable laptop. Small local models are often weak at tool calling. Set `MODEL_ALLOWED_HOSTS=localhost`. |
 
@@ -70,7 +70,17 @@ That fits OpenRouter's 50/day only with few retries, and fits Groq or Gemini com
 
 | Date | Provider | Model | Steps passed | Requests | Notes |
 |---|---|---|---|---|---|
-| | | | | | |
+| 2026-10-22 | Google AI Studio | `gemini-flash-lite-latest` | 1, 2 and 3 only with a fix (see notes); 4 done; 6 not run | 34 calls in total across all models | Every final answer (6 of 6) came in a ```` ```json ```` fence, so the unmodified runtime fails with "Expecting value". Adding "Reply with the JSON object only: no Markdown code fence and no other text." to the system prompt fixed it (3 of 3 bare JSON). With the fence stripped, INC-001 completed with the right cause and cited evidence, and INC-003 returned `insufficient_evidence`. With the prompt fix, one INC-003 run instead concluded `connection_pool_exhaustion` from `rb-pool-v1`, which it had really retrieved, so the citation check passed an unsupported cause. Two calls exceeded the 15 s HTTP timeout (`provider_ReadTimeout`); one took 10.4 s. Tool-call IDs were unique, thought signatures (`extra_content`) round-tripped without errors, and parallel tool calls in one turn worked. |
+| 2026-10-22 | Google AI Studio | `gemini-3.5-flash` (served as `gemini-3.6-flash`) | 1; 2 failed on the fence | in the 34 above | 3 to 4 calls per investigation. Hit 429 after about 5 requests in a minute (free tier: 5 requests/min per model). `usage.total_tokens` exceeds `prompt_tokens + completion_tokens` (1063 vs 684) because of thinking tokens, which `HTTPProvider` does not count, so token budgets and reports undercount. |
+| 2026-10-22 | Google AI Studio | `gemini-3.8-flash`, `gemini-flash-latest` | none | 2 | 503 "high demand" on the first call: temporary capacity errors on Google's side. |
+
+### What the Gemini test means for the course
+
+- A free key with no card is enough, and the existing `openai-compatible` adapter needs no code change to reach Gemini.
+- Before learners use a real model, the runtime needs the hardening deferred from Session 01: accept the JSON answer inside a Markdown fence, or tell the model not to use one, and turn HTTP 429, 503 and timeouts into named, explained failures instead of `provider_HTTPStatusError` or `provider_ReadTimeout`.
+- 5 requests per minute allows about one investigation a minute. The Session 04 evaluation (about 30 requests) needs pacing or retries with the server's `retryDelay`.
+- Counting `total_tokens`, not prompt plus completion, would include thinking tokens.
+- The INC-003 over-claim is a real-model example for the evaluation session: an observed citation is necessary but not sufficient, so the evaluation must also judge whether the evidence supports the cause.
 
 ## Sources
 
