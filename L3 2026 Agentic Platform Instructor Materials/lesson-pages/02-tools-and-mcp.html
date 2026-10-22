@@ -1,0 +1,961 @@
+<title>Session 02: Tools and MCP</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: one long scroll on drafting-paper ground; chapters that alternate prose and evidence,
+   full-width "switch to terminal" bands, and a Read/Present toggle that hides reading prose. */
+:root {
+  --paper: #f2f4f6;        /* cool drafting paper */
+  --sheet: #fbfcfd;        /* raised surfaces */
+  --ink: #15202e;          /* navy ink */
+  --muted: #586678;
+  --rule: #cfd6df;
+  --signal: #d9481f;       /* incident signal: today's box, guards, terminal cues */
+  --signal-soft: #fbe4dc;
+  --model: #3f5bd0;        /* the model's turn in transcripts */
+  --tool: #1d7a62;         /* tool observations */
+  --term-bg: #10161f;
+  --term-fg: #dfe6ee;
+  --display: "Archivo", "Arial Narrow", system-ui, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0f151d; --sheet: #161e29; --ink: #e5ebf2; --muted: #9aa8b8; --rule: #2a3542;
+    --signal: #ff7a4d; --signal-soft: #3a1d14; --model: #8ea2ff; --tool: #57c9a6;
+    --term-bg: #0a0e14; --term-fg: #dfe6ee; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0f151d; --sheet: #161e29; --ink: #e5ebf2; --muted: #9aa8b8; --rule: #2a3542;
+  --signal: #ff7a4d; --signal-soft: #3a1d14; --model: #8ea2ff; --tool: #57c9a6;
+  --term-bg: #0a0e14; --term-fg: #dfe6ee; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  background: var(--paper); color: var(--ink); font: 17px/1.6 var(--body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--signal); outline-offset: 3px; }
+
+main { max-width: 1040px; margin: 0 auto; }
+section.ch { padding-block: 72px 24px; border-top: 1px solid var(--rule); scroll-margin-top: 8px; }
+section.ch:first-of-type { border-top: 0; }
+.eyebrow { font: 600 12.5px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--signal);
+  display: flex; gap: 14px; flex-wrap: wrap; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; }
+h2 { font-size: clamp(30px, 4.4vw, 46px); font-variation-settings: "wdth" 82; font-weight: 750;
+  line-height: 1.05; letter-spacing: -.01em; margin-top: 14px; }
+h3 { font-size: 21px; font-weight: 650; font-variation-settings: "wdth" 92; }
+p { margin: 0; }
+.lede { font-size: 20px; line-height: 1.55; max-width: 62ch; color: var(--ink); margin-top: 18px; }
+.prose { max-width: 66ch; display: grid; gap: 14px; margin-top: 18px; }
+.muted { color: var(--muted); }
+code, .mono { font-family: var(--mono); font-size: .9em; }
+.stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; margin-top: 34px; }
+.stack > * { min-width: 0; }
+.two { display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.two > * { min-width: 0; }
+
+/* Read / Present toggle: always visible; Present hides reading prose and keeps headings, diagrams and key points */
+.view { position: fixed; z-index: 10; top: calc(14px + env(safe-area-inset-top, 0px)); right: max(14px, env(safe-area-inset-right, 0px));
+  display: flex; padding: 3px; gap: 2px; background: var(--sheet); border: 1px solid var(--rule); border-radius: 999px;
+  box-shadow: 0 2px 10px rgba(15, 21, 29, .12); }
+.view button { font: 600 12.5px var(--mono); letter-spacing: .04em; color: var(--muted); background: transparent; border: 0;
+  border-radius: 999px; padding: 6px 14px; cursor: pointer; }
+.view button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.present .lede, .present .prose, .present figcaption, .present .say, .present .cards > div > p,
+.present .turn .note, .present .terminal .goal, .present .read { display: none; }
+
+/* Say-this lines */
+.say { border-left: 3px solid var(--ink); padding: 4px 0 4px 18px; font-size: 19px; font-style: italic; max-width: 60ch; }
+.ask { display: grid; gap: 6px; padding: 18px 20px; background: var(--sheet); border: 1px solid var(--rule);
+  border-radius: 10px; max-width: 68ch; }
+.ask .q { font: 650 19px/1.35 var(--display); font-variation-settings: "wdth" 92; }
+.ask .label { font: 600 11.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.ask details summary { cursor: pointer; color: var(--muted); font-size: 15px; }
+.ask details p { margin-top: 6px; }
+.ask ol.steps { margin: 4px 0 0; padding-left: 22px; display: grid; gap: 4px; }
+.route { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 6px; font: 600 13.5px var(--mono); }
+.route a { text-decoration: none; color: var(--ink); background: var(--sheet); border: 1px solid var(--rule); border-radius: 999px; padding: 6px 12px; }
+.route a:hover { border-color: var(--signal); color: var(--signal); }
+.route .arr { color: var(--muted); }
+pre.layout { margin: 0; font: 13.5px/1.55 var(--mono); background: #18212d; border: 1px solid #263140; border-radius: 8px; padding: 12px 16px; overflow-x: auto; color: var(--term-fg); }
+pre.layout .dim { color: #8193a8; }
+pre.layout .mark { background: rgba(255, 155, 116, .16); display: inline-block; width: 100%; }
+.links { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.links a { display: grid; gap: 4px; padding: 14px 16px; background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; text-decoration: none; min-width: 0; }
+.links a:hover { border-color: var(--signal); }
+.links .q { font: 700 16px var(--display); font-variation-settings: "wdth" 90; color: var(--ink); }
+.links .mono { font-size: 13px; color: var(--signal); overflow-wrap: anywhere; }
+.links .muted { font-size: 13.5px; }
+
+/* Hero */
+.hero { padding-block: 64px 56px; display: grid; gap: 22px; }
+.hero .course { font: 600 13px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.hero h1 { font-size: clamp(44px, 8.2vw, 104px); line-height: .92; font-weight: 800;
+  font-variation-settings: "wdth" 68; letter-spacing: -.015em; }
+.hero h1 .sub { display: block; font-weight: 500; font-variation-settings: "wdth" 100; font-size: .34em;
+  letter-spacing: 0; line-height: 1.2; margin-top: 18px; color: var(--muted); }
+.facts { display: flex; flex-wrap: wrap; gap: 10px 26px; font: 500 14px var(--mono); color: var(--muted); }
+.facts b { color: var(--ink); font-weight: 600; }
+
+/* Incident ticket */
+.ticket { background: var(--sheet); border: 1px solid var(--rule); border-radius: 12px; overflow: hidden; max-width: 760px; }
+.ticket header { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 14px 20px;
+  border-bottom: 1px solid var(--rule); font: 600 14px var(--mono); }
+.sev { color: var(--signal); }
+.ticket dl { display: grid; grid-template-columns: max-content 1fr; gap: 8px 22px; margin: 0; padding: 18px 20px; }
+.ticket dt { font: 500 13px var(--mono); color: var(--muted); }
+.ticket dd { margin: 0; }
+.criteria { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); counter-reset: c; }
+.criteria div { padding-top: 14px; border-top: 2px solid var(--ink); }
+.criteria b { display: block; font: 650 18px var(--display); font-variation-settings: "wdth" 92; margin-bottom: 4px; }
+
+/* Diagrams */
+figure { margin: 0; }
+.diagram { background: var(--sheet); border: 1px solid var(--rule); border-radius: 12px; padding: 18px; overflow-x: auto; }
+.diagram svg { display: block; width: 100%; min-width: 620px; height: auto; }
+figcaption { font-size: 14.5px; color: var(--muted); margin: 10px auto 0; max-width: 70ch; text-align: center; }
+svg text { font-family: var(--mono); fill: var(--ink); }
+svg .lbl { font-family: var(--body); font-size: 15px; font-weight: 600; }
+svg .small { font-size: 12px; fill: var(--muted); }
+svg .box { fill: var(--paper); stroke: var(--rule); stroke-width: 1.5; }
+svg .today { fill: var(--signal-soft); stroke: var(--signal); stroke-width: 2.5; }
+svg .ink { stroke: var(--ink); fill: none; stroke-width: 1.8; }
+svg .arrowhead { fill: var(--ink); }
+svg .sig { fill: var(--signal); }
+
+/* Comparison */
+.compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
+.compare > div { background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; padding: 20px; display: grid; gap: 10px; align-content: start; }
+.compare ol { margin: 0; padding-left: 20px; font-family: var(--mono); font-size: 14.5px; display: grid; gap: 4px; }
+
+/* Transcript */
+.transcript { display: grid; gap: 0; max-width: 900px; }
+.turn { display: grid; grid-template-columns: 92px 1fr; gap: 16px; padding: 14px 0; border-bottom: 1px dashed var(--rule); }
+.turn:last-child { border-bottom: 0; }
+.who { font: 600 12.5px/1.3 var(--mono); text-transform: uppercase; letter-spacing: .06em; padding-top: 3px; }
+.who.rt { color: var(--ink); }
+.who.m { color: var(--model); } .who.t { color: var(--tool); } .who.u { color: var(--muted); } .who.r { color: var(--signal); }
+.turn pre { margin: 0; font: 14px/1.5 var(--mono); white-space: pre-wrap; word-break: break-word; min-width: 0; }
+.turn .note { font-size: 14.5px; color: var(--muted); margin-top: 6px; }
+.turn p + pre { margin-top: 8px; }
+.tally { display: flex; flex-wrap: wrap; gap: 10px 28px; font: 500 14px var(--mono); color: var(--muted); margin-top: 14px; }
+.tally b { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* Tables */
+.tablewrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 10px; background: var(--sheet); }
+table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 15.5px; }
+th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font: 600 12px var(--mono); text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+tr:last-child td { border-bottom: 0; }
+td code { white-space: nowrap; }
+.own-app { color: var(--tool); font-weight: 600; }
+.own-model { color: var(--model); font-weight: 600; }
+
+/* Course-opening cards */
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.cards > div { background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; padding: 18px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.cards .q { font: 700 19px/1.25 var(--display); font-variation-settings: "wdth" 88; }
+.cards .ans { font: 500 12.5px var(--mono); color: var(--signal); letter-spacing: .02em; }
+tr.now td { background: var(--signal-soft); }
+.cards.six { grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); }
+.cards.pairs { grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr)); }
+
+/* Guards */
+.guards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+.guard { background: var(--sheet); border: 1px solid var(--rule); border-top: 3px solid var(--signal); border-radius: 8px;
+  padding: 16px 18px; display: grid; gap: 8px; align-content: start; }
+.guard .code { font: 600 15px var(--mono); color: var(--signal); }
+.guard .lim { font: 500 13px var(--mono); color: var(--muted); }
+
+/* Terminal bands */
+.terminal { margin-block: 30px 6px; background: var(--term-bg); color: var(--term-fg); border-radius: 14px; overflow: hidden; }
+.terminal .bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;
+  padding: 14px 20px; border-bottom: 1px solid #263140; }
+.terminal .switch { font: 700 13px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: #ff9b74;
+  display: flex; align-items: center; gap: 10px; }
+.terminal .switch::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: #ff9b74;
+  box-shadow: 0 0 0 4px rgba(255, 155, 116, .18); }
+.terminal .file { font: 500 13px var(--mono); color: #9fb0c3; }
+.terminal .body { padding: 18px 20px 20px; display: grid; gap: 14px; }
+.terminal .goal { font-size: 16px; color: #c4cfdb; max-width: 70ch; }
+.prompt { position: relative; font: 14.5px/1.6 var(--mono); background: #18212d; border: 1px solid #263140; border-radius: 8px;
+  padding: 14px 16px 14px 16px; white-space: pre-wrap; word-break: break-word; }
+.prompt .pfx { color: #ff9b74; user-select: none; }
+.copy { font: 600 12.5px var(--mono); color: var(--term-fg); background: transparent; border: 1px solid #3a4a5e;
+  border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+.copy:hover { border-color: #ff9b74; color: #ff9b74; }
+.terminal .check { font: 500 13.5px var(--mono); color: #9fb0c3; }
+.terminal .check b { color: #8fe0c3; font-weight: 600; }
+
+/* Code excerpt */
+.excerpt { background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; overflow-x: auto; }
+.excerpt .src { font: 500 12.5px var(--mono); color: var(--muted); padding: 10px 16px; border-bottom: 1px solid var(--rule); }
+.excerpt pre { margin: 0; padding: 14px 16px; font: 14px/1.55 var(--mono); }
+.excerpt .hl { background: var(--signal-soft); display: inline-block; width: 100%; }
+.excerpt .n { color: var(--signal); font-weight: 700; display: inline-block; width: 2.4ch; }
+.excerpt .muted { color: var(--muted); }
+dl.fields { display: grid; grid-template-columns: max-content 1fr; max-width: 72ch; gap: 6px 14px; margin: 0; align-content: start; font-size: 15.5px; }
+dl.fields dt { font-weight: 600; }
+dl.fields dd { margin: 0; }
+dl.fields dd.note { grid-column: 1 / -1; color: var(--muted); font-style: italic; margin-top: 4px; }
+ul.key { margin: 0; padding-left: 22px; display: grid; gap: 6px; max-width: 72ch; }
+
+/* Exercise grid */
+.predict { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+.predict div { border: 1px solid var(--rule); border-radius: 10px; padding: 16px; background: var(--sheet); display: grid; gap: 6px; }
+.predict .set { font: 500 14px var(--mono); }
+.predict .out { font: 600 15px var(--mono); color: var(--signal); }
+
+.result { font: 14px/1.5 var(--mono); background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; padding: 16px 18px; overflow-x: auto; margin: 0; }
+.big { font: 800 clamp(56px, 9vw, 96px)/1 var(--display); font-variation-settings: "wdth" 70; color: var(--signal); }
+footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 14px; display: grid; gap: 8px; }
+@media (max-width: 560px) {
+  .turn { grid-template-columns: 1fr; gap: 4px; }
+  .ticket dl { grid-template-columns: 1fr; gap: 2px 0; }
+  .ticket dd { margin-bottom: 8px; }
+  body { font-size: 16px; }
+}
+/* Session 02 additions */
+.guard.ok { border-top-color: var(--tool); }
+.guard.ok .code { color: var(--tool); }
+#review { display: grid; gap: 14px; }
+.terminal .rlabel { font-size: 16px; color: #c4cfdb; max-width: 70ch; }
+</style>
+
+<div class="view" role="group" aria-label="View">
+  <button type="button" data-view="read" aria-pressed="true">Read</button>
+  <button type="button" data-view="present" aria-pressed="false">Present</button>
+</div>
+
+<main>
+
+<header class="hero" id="start">
+  <p class="course">Innovate · L3 · 2026 · Session 02 of 12</p>
+  <h1>Reliable tools and MCP<span class="sub">Turn the loop's most consequential line into a boundary the model cannot talk its way through</span></h1>
+  <p class="lede">In Session 01 the model proposed and the runtime executed. Today we decide what "execute" is allowed to mean: which tools exist, which ones this run may use, what arguments are acceptable, what happens before any effect, and how the same rules hold when the tools live behind a real protocol.</p>
+  <div class="facts"><span><b>120 min</b> · 30 discussion + 90 guided build</span><span>from <b>lesson-01</b> to <b>lesson-02</b></span><span>check pack: <b>10 passed</b></span><span>offline · real MCP over stdio</span></div>
+</header>
+
+<section class="ch" id="today">
+  <p class="eyebrow"><span>Where we are</span></p>
+  <h2>Yesterday the model could ask for anything. Today the platform decides what a tool call may do.</h2>
+  <div class="stack">
+    <div class="prose" style="margin-top:0">
+      <p>Open your Session 01 loop and find its most consequential line: <code>result = await execute(call["name"], call["args"], run.context)</code>. Everything the model proposes ends up there. A model can name a tool that does not exist, ask for one this run was never given, send malformed arguments, slip in an argument that changes whose data it reads, receive a result so large it fills the context, or propose an action with real consequences.</p>
+      <p>Today that line becomes a <b>tool boundary</b>: one executor that every call passes through, whichever way the tool is reached. Then we put the read tools behind the <b>Model Context Protocol (MCP)</b> and show that the boundary does not move.</p>
+    </div>
+    <figure>
+      <div class="diagram">
+        <svg viewBox="0 0 860 380" role="img" aria-labelledby="whereTitle">
+          <title id="whereTitle">The runtime calls the tool executor, which checks every call and then reaches either in-process readers or an MCP server over stdio</title>
+          <rect class="box" x="20" y="110" width="220" height="130" rx="10"/>
+          <text class="lbl" x="40" y="142">Agent runtime</text>
+          <text class="small" x="40" y="166">Session 01 · the loop</text>
+          <text class="small" x="40" y="186">proposes tool calls</text>
+          <rect class="today" x="300" y="70" width="260" height="210" rx="10"/>
+          <text class="lbl" x="322" y="102">ToolExecutor</text>
+          <text class="small" x="322" y="128">1 known tool?</text>
+          <text class="small" x="322" y="148">2 allowed for this run?</text>
+          <text class="small" x="322" y="168">3 valid arguments?</text>
+          <text class="small" x="322" y="196">write: exact approval + ledger</text>
+          <text class="small" x="322" y="216">read: timeout · retry · size</text>
+          <text x="322" y="262" class="sig" style="font-weight:600;font-size:14px">TODAY</text>
+          <rect class="box" x="620" y="30" width="220" height="90" rx="8"/>
+          <text class="lbl" x="638" y="60">In-process readers</text>
+          <text class="small" x="638" y="82">fixtures.simple_tools</text>
+          <text class="small" x="638" y="100">Session 01's handlers</text>
+          <rect class="today" x="620" y="160" width="220" height="80" rx="8"/>
+          <text class="lbl" x="638" y="190">MCPReadAdapter</text>
+          <text class="small" x="638" y="212">SDK client · TODAY</text>
+          <rect class="today" x="620" y="290" width="220" height="74" rx="8"/>
+          <text class="lbl" x="638" y="318">MCP server process</text>
+          <text class="small" x="638" y="340">tenant fixed by launcher</text>
+          <path class="ink" d="M240 175 H294"/><path class="arrowhead" d="M298 175 l-8 -5 v10z"/>
+          <text class="small" x="244" y="164">execute</text>
+          <path class="ink" d="M560 120 L612 84"/><path class="arrowhead" d="M616 81 l-9 2 l5 7z"/>
+          <path class="ink" d="M560 200 H612"/><path class="arrowhead" d="M616 200 l-8 -5 v10z"/>
+          <text class="small" x="566" y="226">or</text>
+          <path class="ink" d="M730 240 V284"/><path class="arrowhead" d="M730 288 l-5 -8 h10z"/>
+          <text class="small" x="740" y="270">stdio</text>
+        </svg>
+      </div>
+      <figcaption>The highlighted parts are today's work. The executor's checks run before either path, so moving a tool behind MCP changes how it is reached, not who may use it.</figcaption>
+    </figure>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Minutes</th><th>What happens</th><th>Format</th></tr></thead>
+        <tbody>
+          <tr><td>00–10</td><td>Reconnect to INC-001 and your Session 01 checkpoint</td><td>Discussion</td></tr>
+          <tr><td>10–30</td><td>The tool boundary, approval and MCP, with architecture questions</td><td>Discussion</td></tr>
+          <tr class="now"><td>30–50</td><td>Build steps 1 and 2: the executor, approval and the effect ledger</td><td>Guided build</td></tr>
+          <tr class="now"><td>50–75</td><td>Build steps 3 and 4: the MCP server and the read adapter</td><td>Guided build</td></tr>
+          <tr><td>75–100</td><td>Exercise: break the boundary on purpose</td><td>Practice</td></tr>
+          <tr><td>100–115</td><td>Verify, push, interpret the evidence</td><td>Verification</td></tr>
+          <tr><td>115–120</td><td>Questions and handoff to Session 03</td><td>Discussion</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="ch" id="threats">
+  <p class="eyebrow"><span>What can go wrong at the tool line</span></p>
+  <h2>Every proposal is untrusted input. Each failure gets a named check.</h2>
+  <div class="stack">
+    <p class="lede" style="margin-top:0">Read this table as the specification for today's executor. Each row is something a model really does, and each has exactly one check that stops it, with a result the runtime can explain.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>The model proposes</th><th>Check that stops it</th><th>Result</th><th>Retry?</th></tr></thead>
+        <tbody>
+          <tr><td>A tool that does not exist, such as <code>delete_logs</code></td><td>1 · known tool</td><td><code>unknown_tool</code></td><td>no</td></tr>
+          <tr><td><code>mock_remediate</code> from a read-only investigator</td><td>2 · the run's allowed tools</td><td><code>permission_denied</code></td><td>no</td></tr>
+          <tr><td><code>log_lookup</code> with an extra <code>"tenant": "locomotive"</code></td><td>3 · schema: no extra properties</td><td><code>invalid_arguments</code></td><td>no</td></tr>
+          <tr><td><code>log_lookup</code> with <code>{"incident": 1}</code></td><td>3 · schema: required fields and types</td><td><code>invalid_arguments</code></td><td>no</td></tr>
+          <tr><td>A read whose result is huge</td><td>output size limit</td><td><code>output_too_large</code></td><td>no</td></tr>
+          <tr><td>A read that hangs or loses its connection</td><td>2 s timeout, one retry</td><td><code>tool_unavailable</code></td><td><b>yes</b>, later</td></tr>
+          <tr><td>A write whose exact action nobody approved</td><td>approval key</td><td><code>ApprovalRequired</code>: proposed, not performed</td><td>after approval</td></tr>
+          <tr><td>The same approved write again, even after a restart</td><td>effect ledger</td><td>stored result, <code>"replayed": true</code></td><td>safe</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="guards">
+      <div class="guard"><span class="code">unknown_tool</span><span class="lim">terminal</span><p>The name is not in the platform's catalogue.</p></div>
+      <div class="guard"><span class="code">permission_denied</span><span class="lim">terminal</span><p>The tool exists, but this run was not granted it.</p></div>
+      <div class="guard"><span class="code">invalid_arguments</span><span class="lim">terminal</span><p>The arguments break the tool's contract.</p></div>
+      <div class="guard"><span class="code">output_too_large</span><span class="lim">terminal</span><p>The result would swamp the conversation.</p></div>
+      <div class="guard ok"><span class="code">tool_unavailable</span><span class="lim">retryable</span><p>A read failed twice for transient reasons.</p></div>
+    </div>
+    <div class="prose">
+      <p><b>Terminal or retryable.</b> Every error says whether trying again could help. A permission decision will not change if the agent asks again, so retrying it only burns steps and tokens; at scale, many agents retrying terminal errors become a retry storm. A timeout or a dropped connection may clear, so the executor retries a read once itself and then reports <code>"retryable": true</code> for the caller to decide.</p>
+      <p><b>The model sees the error.</b> A denied call still returns an observation, so the model can change course, for example by answering with the evidence it has. Seeing the error never changes the decision.</p>
+    </div>
+    <div class="ask"><span class="label">Ask the room</span><p class="q">Can a correct JSON Schema make a tool safe by itself?</p>
+      <details><summary>Show the answer</summary><p>No. A perfectly well-formed request can still be unauthorized or harmful. The schema checks shape; the run's allowed tools check authority; approval and the effect ledger control consequences. They are separate checks, and the order matters.</p></details></div>
+  </div>
+</section>
+
+<section class="ch" id="boundary">
+  <p class="eyebrow"><span>The tool boundary</span></p>
+  <h2>Three checks before anything runs, then two different paths</h2>
+  <div class="stack">
+    <figure>
+      <div class="diagram">
+        <svg viewBox="0 0 860 320" role="img" aria-labelledby="chainTitle">
+          <title id="chainTitle">The executor checks known tool, allowed tool and valid arguments, then sends reads through a bounded handler and writes through exact approval and an effect ledger</title>
+          <rect class="box" x="10" y="45" width="150" height="56" rx="28"/>
+          <text class="lbl" x="28" y="78">proposed call</text>
+          <rect class="box" x="175" y="40" width="150" height="66" rx="8"/>
+          <text class="lbl" x="192" y="68">1 known tool?</text>
+          <text class="small" x="192" y="90">in the catalogue</text>
+          <rect class="box" x="360" y="40" width="190" height="66" rx="8"/>
+          <text class="lbl" x="377" y="68">2 allowed?</text>
+          <text class="small" x="377" y="90">in context.allowed</text>
+          <rect class="box" x="585" y="40" width="190" height="66" rx="8"/>
+          <text class="lbl" x="602" y="68">3 valid arguments?</text>
+          <text class="small" x="602" y="90">JSON Schema</text>
+          <path class="ink" d="M160 73 H169"/><path class="arrowhead" d="M173 73 l-8 -5 v10z"/>
+          <path class="ink" d="M325 73 H354"/><path class="arrowhead" d="M358 73 l-8 -5 v10z"/>
+          <path class="ink" d="M550 73 H579"/><path class="arrowhead" d="M583 73 l-8 -5 v10z"/>
+          <text class="sig" x="192" y="128" style="font-size:13px">✕ unknown_tool</text>
+          <text class="sig" x="377" y="128" style="font-size:13px">✕ permission_denied</text>
+          <text class="sig" x="602" y="128" style="font-size:13px">✕ invalid_arguments</text>
+          <path class="ink" d="M760 106 V150 H130 V190"/><path class="arrowhead" d="M130 194 l-5 -8 h10z"/>
+          <path class="ink" d="M600 150 V190"/><path class="arrowhead" d="M600 194 l-5 -8 h10z"/>
+          <text class="small" x="140" y="176">read tools</text>
+          <text class="small" x="610" y="176">mock_remediate</text>
+          <rect class="box" x="20" y="198" width="220" height="66" rx="8"/>
+          <text class="lbl" x="36" y="226">handler</text>
+          <text class="small" x="36" y="248">2 s timeout · one retry</text>
+          <rect class="box" x="270" y="198" width="190" height="66" rx="8"/>
+          <text class="lbl" x="286" y="226">result size</text>
+          <text class="small" x="286" y="248">≤ output_limit</text>
+          <path class="ink" d="M240 231 H264"/><path class="arrowhead" d="M268 231 l-8 -5 v10z"/>
+          <rect class="today" x="500" y="198" width="160" height="66" rx="8"/>
+          <text class="lbl" x="514" y="226">exact action</text>
+          <text class="small" x="514" y="248">key in approved?</text>
+          <rect class="today" x="690" y="198" width="150" height="66" rx="8"/>
+          <text class="lbl" x="704" y="226">effect + ledger</text>
+          <text class="small" x="704" y="248">one transaction</text>
+          <path class="ink" d="M660 231 H684"/><path class="arrowhead" d="M688 231 l-8 -5 v10z"/>
+          <text class="sig" x="36" y="290" style="font-size:13px">↻ tool_unavailable</text>
+          <text class="sig" x="286" y="290" style="font-size:13px">✕ output_too_large</text>
+          <text class="sig" x="514" y="290" style="font-size:13px">⏸ ApprovalRequired</text>
+          <text class="small" x="704" y="290">replayed flag</text>
+        </svg>
+      </div>
+      <figcaption>The order is deliberate. Permission comes before validation, so naming a tool never reveals or exercises anything the run was not given; the write path adds approval and a ledger that the read path does not need.</figcaption>
+    </figure>
+    <div class="prose">
+      <p><b>Context supplies authority; the schema supplies shape.</b> The executor reads the run's <code>Context</code>, which the platform built in Session 01, and never anything the model wrote. The model cannot widen its own permissions by naming a tool, and it cannot pick another tenant through a legitimate tool, because the log schema forbids extra properties and the tenant comes from <code>Context</code>.</p>
+      <p><b>The output limit protects the conversation.</b> Every observation is appended to the messages and sent back on every later turn. One unexpectedly large result could consume the whole token budget, so the executor refuses results above <code>output_limit</code> characters (6,000 by default).</p>
+    </div>
+    <div class="ask"><span class="label">Ask</span><p class="q">Point to the exact check that stops an injected request for <code>mock_remediate</code> from a read-only investigator.</p>
+      <details><summary>Show the answer</summary><p>Check 2: <code>mock_remediate</code> is in the catalogue, but not in the investigator's <code>context.allowed</code>, so the result is <code>permission_denied</code> before the arguments are even validated. Whatever text persuaded the model to propose it, the decision is made by code from the run's Context.</p></details></div>
+  </div>
+</section>
+
+<section class="ch" id="approval">
+  <p class="eyebrow"><span>Effects</span></p>
+  <h2>An approval covers one exact action, and a repeated write happens once</h2>
+  <div class="stack">
+    <div class="prose" style="margin-top:0">
+      <p>Today the platform gains its first write tool, <code>mock_remediate</code>. It only records a simulated rollback, but we treat it exactly like a real effect: an operator-owned run may use it, and only after a person approves that precise action.</p>
+    </div>
+    <div class="two">
+      <div class="excerpt">
+        <div class="src">the action key · what an approval refers to</div>
+<pre>sha256([tenant, run_id, tool name, arguments])
+  astro · &lt;run_id&gt; · mock_remediate ·
+  {"action": "rollback",
+   "incident_id": "INC-001"}
+<span class="hl">→ one key, e.g. 4ff0177d…4881</span>
+
+change any part, e.g. INC-001 → INC-002
+→ a new key → ApprovalRequired again</pre>
+      </div>
+      <dl class="fields">
+        <dt>tenant</dt><dd>An approval in Astro never covers Locomotive.</dd>
+        <dt>run_id</dt><dd>It covers this run, not every future run.</dd>
+        <dt>tool name</dt><dd>Approving a rollback approves nothing else.</dd>
+        <dt>arguments</dt><dd>Canonical JSON, keys sorted, so the same action always gives the same key.</dd>
+        <dd class="note">Approving the rollback of INC-001 does not approve INC-002.</dd>
+      </dl>
+    </div>
+    <div class="transcript" role="list">
+      <div class="turn" role="listitem"><span class="who m">Proposal</span><div><pre>mock_remediate {"incident_id": "INC-001", "action": "rollback"}</pre></div></div>
+      <div class="turn" role="listitem"><span class="who rt">Executor</span><div><p>Known, allowed for this operator run, valid. The key is not in <code>context.approved</code>, so it raises <code>ApprovalRequired</code> with the key, name and arguments. Nothing has happened yet.</p></div></div>
+      <div class="turn" role="listitem"><span class="who u">Operator</span><div><p>Reviews that exact action and approves its key. The platform adds the key to the run's <code>approved</code> tuple.</p></div></div>
+      <div class="turn" role="listitem"><span class="who t">Effect</span><div><pre>{"ok": true, "simulated": true, "action": "rollback", "incident_id": "INC-001", "replayed": false}</pre><p class="note">The effect and its deduplication record are written in one SQLite transaction.</p></div></div>
+      <div class="turn" role="listitem"><span class="who rt">Restart</span><div><p>The process restarts and the same approved call arrives again, as it would when a run resumes after a crash.</p><pre>{"ok": true, "simulated": true, "action": "rollback", "incident_id": "INC-001", "replayed": true}</pre><p class="note">The ledger already has the key, so the stored result comes back. One effect in the table, not two.</p></div></div>
+    </div>
+    <div class="prose">
+      <p><b>Why one transaction.</b> If the effect and the "done" record were written separately, a crash between them would leave an effect with no record, and the retry would do it again. Writing both in one transaction means either both exist or neither does.</p>
+      <p class="muted"><b>Where the guarantee ends.</b> This is a local SQLite demonstration. For a real external API, a flag in your own database cannot make a remote operation happen exactly once: your process can crash after the remote call succeeds and before you record it. The receiver must support an idempotency key, or you need a reconciliation step that checks what actually happened. Session 05 makes the approval pause itself durable, with a run status of <code>waiting_approval</code> and an operator decision.</p>
+    </div>
+    <div class="ask"><span class="label">Ask</span><p class="q">Why is checking a dictionary of "already done" actions before a remote write not enough?</p>
+      <details><summary>Show the answer</summary><p>The process can crash between the remote write and recording success, and an in-memory dictionary does not survive a restart at all. You need a durable record committed with the effect, or a receiver-side idempotency key, or reconciliation.</p></details></div>
+  </div>
+</section>
+
+<section class="ch" id="mcp">
+  <p class="eyebrow"><span>The protocol</span></p>
+  <h2>MCP standardizes how tools are found and reached. It does not decide who may use them.</h2>
+  <div class="stack">
+    <div class="prose" style="margin-top:0">
+      <p>The <b>Model Context Protocol</b> is an open protocol for connecting AI applications to tools and data. A server describes what it offers; a client discovers it and calls it over a transport. Any MCP-capable application can then use the same server, which is why tool providers increasingly ship one.</p>
+    </div>
+    <figure>
+      <div class="diagram">
+        <svg viewBox="0 0 860 300" role="img" aria-labelledby="mcpTitle">
+          <title id="mcpTitle">The host process contains the runtime, executor and MCP client; it launches the MCP server process and talks to it over stdin and stdout</title>
+          <rect class="box" x="20" y="20" width="420" height="230" rx="12"/>
+          <text class="lbl" x="40" y="50">Host · your platform process</text>
+          <rect class="box" x="40" y="70" width="180" height="70" rx="8"/>
+          <text class="lbl" x="56" y="98">Runtime</text>
+          <text class="small" x="56" y="120">+ ToolExecutor</text>
+          <rect class="today" x="240" y="70" width="180" height="70" rx="8"/>
+          <text class="lbl" x="256" y="98">MCP client</text>
+          <text class="small" x="256" y="120">SDK Client · adapter</text>
+          <path class="ink" d="M220 105 H234"/><path class="arrowhead" d="M238 105 l-8 -5 v10z"/>
+          <text class="small" x="40" y="180">launches the server with a fixed command:</text>
+          <text class="small" x="40" y="200">python -m incident.mcp_bridge</text>
+          <text class="small" x="40" y="220">INCIDENT_TENANT=astro</text>
+          <rect class="today" x="520" y="20" width="320" height="230" rx="12"/>
+          <text class="lbl" x="540" y="50">MCP server · separate process</text>
+          <text class="small" x="540" y="80">tools</text>
+          <text x="540" y="102" style="font-size:14px">log_lookup(incident_id)</text>
+          <text x="540" y="124" style="font-size:14px">runbook_search(query)</text>
+          <text class="small" x="540" y="156">resource</text>
+          <text x="540" y="178" style="font-size:14px">incident://runbooks</text>
+          <text class="small" x="540" y="212">tenant from its launcher, never</text>
+          <text class="small" x="540" y="230">from a tool argument</text>
+          <path class="ink" d="M420 92 H514"/><path class="arrowhead" d="M518 92 l-8 -5 v10z"/>
+          <text class="small" x="444" y="84">stdin</text>
+          <path class="ink" d="M520 124 H426"/><path class="arrowhead" d="M422 124 l8 -5 v10z"/>
+          <text class="small" x="444" y="144">stdout</text>
+          <text class="small" x="300" y="284">stdout carries only protocol messages · diagnostics go to stderr</text>
+        </svg>
+      </div>
+      <figcaption>Host, client, server. Today the transport is stdio: the host starts the server as a child process and they exchange JSON-RPC messages over its standard input and output.</figcaption>
+    </figure>
+    <div class="cards">
+      <div><span class="q">Host</span><p>The application the user works with: here, your platform process. It decides which servers to start, and with which command.</p></div>
+      <div><span class="q">Client</span><p>One connection to one server, inside the host. It negotiates the protocol version, lists what the server offers and calls it.</p></div>
+      <div><span class="q">Server</span><p>A program that offers capabilities. Ours wraps Session 01's two readers, so the evidence is identical.</p></div>
+      <div><span class="q">Tool vs resource</span><p>A <b>tool</b> is an operation with parameters that the model may ask to run. A <b>resource</b> is addressable content, such as <code>incident://runbooks</code>, that the application reads when it chooses.</p></div>
+    </div>
+    <h3>What discovery actually returns</h3>
+    <figure>
+<pre class="result">protocol  2026-07-28
+tool      log_lookup      "Read diagnostic incident evidence in the launcher's tenant."
+          {"type": "object", "properties": {"incident_id": {"type": "string"}},
+           "required": ["incident_id"]}
+tool      runbook_search  "Find relevant runbook evidence in the launcher's tenant."
+          {"type": "object", "properties": {"query": {"type": "string"}},
+           "required": ["query"]}
+resource  incident://runbooks</pre>
+      <figcaption>Recorded from the lesson-02 checkpoint with the pinned SDK (mcp 2.2.0); titles trimmed. Note what the advertised schemas do not say: nothing forbids extra properties.</figcaption>
+    </figure>
+    <div class="prose">
+      <p><b>The server is not your policy.</b> Call the server directly with <code>log_lookup {"incident_id": "INC-001", "tenant": "locomotive"}</code> and it does not complain: the extra argument is ignored and Astro's record comes back, because the tenant was fixed when the server started. Through your executor the same request fails with <code>invalid_arguments</code>. The executor validates against the platform's own contract, so a server that is lax, changes its schema or advertises something new cannot widen what a run may do.</p>
+      <p><b>Trust boundary of this demo.</b> With stdio, identity is the process boundary: the trusted launcher sets <code>INCIDENT_TENANT</code>, and model output can never choose the command. A remotely deployed HTTP MCP server would need real authentication, token validation and authorization. This course does not exercise remote MCP OAuth, and we do not claim it.</p>
+      <p class="muted">Launching one MCP server per client is deliberately simple. Session 09 replaces it with a central tool gateway that shares upstream sessions, applies one policy, audits every call and pins tool definitions, so that a changed definition is caught instead of silently trusted.</p>
+    </div>
+    <div class="ask"><span class="label">Ask</span><p class="q">If the MCP server starts advertising a new write tool, does the agent gain that capability?</p>
+      <details><summary>Show the answer</summary><p>No. Discovery is information. The run's allowed tools and the executor's contract decide what may be called; a new name in a listing is <code>unknown_tool</code> until the platform adds it on purpose.</p></details></div>
+  </div>
+</section>
+
+<section class="ch" id="trace">
+  <p class="eyebrow"><span>One call through MCP</span></p>
+  <h2>The same investigation, with the log read travelling over the protocol</h2>
+  <p class="lede">This is the Session 02 lab's run of INC-001 with the deterministic mock as the model. Only the read handler changed; everything before it is the boundary you build in steps 1 and 2.</p>
+  <div class="stack">
+    <div class="transcript" role="list">
+      <div class="turn" role="listitem"><span class="who m">Model · 1</span><div><pre>tool_call <b>call-0</b>  log_lookup {"incident_id": "INC-001"}</pre></div></div>
+      <div class="turn" role="listitem"><span class="who rt">Executor</span><div><p>Known tool, in <code>context.allowed</code>, arguments valid. A read, so it goes to the read handler: today <code>MCPReadAdapter</code>, with a 2-second timeout.</p></div></div>
+      <div class="turn" role="listitem"><span class="who rt">Client</span><div><pre>call_tool("log_lookup", {"incident_id": "INC-001"})   <span class="muted">→ JSON-RPC on the server's stdin</span></pre></div></div>
+      <div class="turn" role="listitem"><span class="who t">Server</span><div><p>Runs the same Session 01 reader with the tenant its launcher gave it, and replies on stdout.</p><pre>CallToolResult  is_error=False  structured_content=None
+                content=[text: '{"ok": true, "data": {"source_id": "log-astro-001", …}}']</pre><p class="note">The pinned SDK uses snake_case fields. This server returns its dictionary as JSON text, so <code>structured_content</code> is empty.</p></div></div>
+      <div class="turn" role="listitem"><span class="who rt">Adapter</span><div><p><code>is_error</code> is false; no structured content, so it parses the text item. The executor checks the size and returns the observation.</p><pre>{"ok": true, "data": {"source_id": "log-astro-001", "service": "payments",
+  "cause": "connection_pool_exhaustion", "signal": "DB pool wait 900ms after deploy d42"}}</pre></div></div>
+      <div class="turn" role="listitem"><span class="who rt">Runtime</span><div><p>Appends it tagged <b>call-0</b>, exactly as in Session 01. The runbook search follows the same path, and the model answers.</p></div></div>
+      <div class="turn" role="listitem"><span class="who r">Answer</span><div><pre>{"status": "complete", "cause": "connection_pool_exhaustion",
+ "summary": "INC-001: connection_pool_exhaustion", "evidence": ["log-astro-001", "rb-pool-v1"]}</pre><p class="note">The same cited answer as Session 01: the protocol changed the route, not the evidence.</p></div></div>
+    </div>
+    <div class="ask"><span class="label">Ask</span><p class="q">The adapter raises an attribute error on <code>result.isError</code>. Is the agent reasoning badly?</p>
+      <details><summary>Show the answer</summary><p>No, it is an integration problem: code written for a different SDK version. The pinned SDK uses <code>is_error</code> and <code>structured_content</code>. Restore the locked environment rather than mixing tutorial code from another version.</p></details></div>
+  </div>
+</section>
+
+<section class="ch" id="build">
+  <p class="eyebrow"><span>Guided build</span></p>
+  <h2>How you build it: four bounded prompts</h2>
+  <div class="prose">
+    <p>The instructor shows each prompt and the change it produces; you run the same prompt in your own project, in the same order, and judge the result before moving on. Your coding agent writes the code and runs the checks.</p>
+    <p class="muted">Rule for the whole build: a coding agent saying "done" is not evidence. Look at the diff and at the check output.</p>
+  </div>
+  <div class="stack">
+    <nav class="route" id="route" aria-label="Build route">
+      <a href="#prepare">Prepare</a><span class="arr" aria-hidden="true">→</span><a href="#orient">Add the check pack</a><span class="arr" aria-hidden="true">→</span><a href="#step1">Build 1</a><span class="arr" aria-hidden="true">→</span><a href="#step2">Build 2</a><span class="arr" aria-hidden="true">→</span><a href="#step3">Build 3</a><span class="arr" aria-hidden="true">→</span><a href="#step4">Build 4</a><span class="arr" aria-hidden="true">→</span><a href="#exercise">Break it</a><span class="arr" aria-hidden="true">→</span><a href="#verify">Verify and push</a><span class="arr" aria-hidden="true">→</span><a href="#review">Review</a>
+    </nav>
+    <div class="links">
+      <a href="https://github.com/maxvpavlov/ciklum-innovate-l3-2026/tree/main/learner-kit/lessons/02"><span class="q">Session 02 kit</span><span class="mono">learner-kit/lessons/02</span><span class="muted">check pack and interfaces</span></a>
+      <a href="https://github.com/maxvpavlov/ciklum-innovate-l3-2026/blob/main/L3%202026%20Agentic%20Platform%20Instructor%20Materials/incident-platform/LEARNER_PROMPTS.md#02-reliable-tools-and-mcp-integration"><span class="q">Every session's prompts</span><span class="mono">LEARNER_PROMPTS.md</span><span class="muted">the same prompts as this page</span></a>
+      <a href="https://maxvpavlov.github.io/ciklum-innovate-l3-2026/lesson-01/"><span class="q">Session 01 page</span><span class="mono">maxvpavlov.github.io/…/lesson-01</span><span class="muted">the loop this session extends</span></a>
+      <a href="https://maxvpavlov.github.io/ciklum-innovate-l3-2026/lesson-02/"><span class="q">This page</span><span class="mono">maxvpavlov.github.io/…/lesson-02</span><span class="muted">bookmark it for after class</span></a>
+    </div>
+  </div>
+
+  <div class="terminal" id="prepare">
+    <div class="bar"><span class="switch">Switch to terminal · Prepare the workspace</span><span class="file">confirms lesson-01 · updates the course copy</span></div>
+    <div class="body">
+      <p class="goal">Start your coding agent in <code>~/agentic-course</code>, as in Session 01. The agent confirms your Session 01 work still passes and refreshes your read-only copy of the course repository, which now holds the Session 02 kit.</p>
+      <div class="prompt" id="pP"><span class="pfx">PROMPT ▸ </span>Prepare my learner project for Lesson 02. Open my project repository in my course GitLab group on gitlab.ciklum.net, cloning it into ~/agentic-course/my-platform if it is not there, and confirm it holds my completed lesson-01 work with all its checks passing. Update my read-only copy of the course repository in ~/agentic-course/course, cloning it from https://github.com/maxvpavlov/ciklum-innovate-l3-2026 if it is missing; its learner-kit folder is the course kit. Use the pinned Python 3.12 environment and the offline mock provider. Do not add this lesson's work yet. Report the project location, its current checkpoint, the test results and any missing prerequisites. Do not ask me to run terminal commands.</div>
+      <div><button class="copy" type="button" data-copy="pP">Copy prompt</button></div>
+      <p class="check">Expect: your project at checkpoint <code>LESSON = 1</code> with <b>7 passed</b>, and <code>course/learner-kit/lessons/02</code> present.</p>
+    </div>
+  </div>
+
+  <div class="stack">
+    <h3>What you build today</h3>
+    <div class="stack" style="margin-top:0">
+      <div class="excerpt">
+        <div class="src">~/agentic-course/my-platform · after Session 02 (new and changed files highlighted)</div>
+<pre>incident/
+  __init__.py             <span class="muted">LESSON = 1, raised to 2 when verified</span>
+<span class="hl">  core.py                 you add · ApprovalRequired</span>
+  providers.py            <span class="muted">Session 01</span>
+  fixtures.py             <span class="muted">given in Session 01 · the two readers and their schemas</span>
+<span class="hl">  tools.py                you build · ToolExecutor, approval, effect ledger</span>
+<span class="hl">  mcp_bridge.py           you build · MCP server, stdio client, read adapter</span>
+  labs/
+    l01.py
+<span class="hl">    l02.py                check pack · the Session 02 demo</span>
+tests/
+  test_setup.py, test_lesson01.py
+<span class="hl">  test_lesson02.py        check pack · three new checks</span></pre>
+      </div>
+      <div class="prose" style="margin-top:0">
+        <p><b><code>tools.py</code> is the tool boundary.</b> Every tool call from every agent will pass through it, or, from Session 09, through the gateway that wraps it. <b><code>mcp_bridge.py</code></b> holds both ends of the protocol so you can watch them talk: the server your platform launches, and the client adapter that plugs into the executor.</p>
+        <p>There are no new given files this session: the readers, schemas and mock model from Session 01 are all you need, and the MCP SDK is already pinned in your project's lock file (<code>mcp==2.2.0</code>).</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="terminal" id="orient">
+    <div class="bar"><span class="switch">Switch to terminal · Add the check pack</span><span class="file">copies the checks · no implementation yet</span></div>
+    <div class="body">
+      <p class="goal">The agent copies the Session 02 check pack into your project, shows which checks fail and why, and lists the interfaces it needs, before writing any code.</p>
+      <div class="prompt" id="pO"><span class="pfx">PROMPT ▸ </span>Read learner-kit/lessons/02 in the course repository: its README, the given files and the check pack. Copy the whole given files and the check pack into my project exactly as the README says, without changing them, and commit that; a given definition that must be pasted into a module is added in the build step that creates or changes that module. Then run the tests and report what fails and why: at first this lesson's test file may fail to import, because the modules it needs do not exist yet. List the interfaces my code must provide, with the exact names, signatures, fields and error codes the tests use, and the capability they verify. Explain the implementation sequence before we begin. Do not write the implementation yet, and do not look for or use a finished solution.</div>
+      <div><button class="copy" type="button" data-copy="pO">Copy prompt</button></div>
+      <p class="check">Expect: <b>7 passed</b> from Session 01, and <code>test_lesson02.py</code> failing to import until <code>incident.tools</code> exists.</p>
+    </div>
+  </div>
+
+  <div class="terminal" id="step1">
+    <div class="bar"><span class="switch">Switch to terminal · Build step 1 of 4</span><span class="file">new file · incident/tools.py · the executor</span></div>
+    <div class="body">
+      <p class="goal">Validate before dispatch: known tool, then the run's permission, then the arguments; bounded reads; structured, classified errors.</p>
+      <div class="prompt" id="p1"><span class="pfx">PROMPT ▸ </span>For Lesson 02, continue in my learner project. Implement ToolExecutor in incident/tools.py. Check tool existence, application-owned capabilities and JSON arguments before dispatch. Reject unexpected tenant arguments and oversized results. Return structured errors that distinguish terminal failures from retryable read failures. Preserve the existing agent loop. Demonstrate malformed arguments and an unauthorized write proposal being rejected before a handler performs an effect. The check pack needs ToolExecutor(db=":memory:", read_handler=simple_tools, output_limit=6000), whose output_limit attribute a test changes; available(context), which returns only the schemas the context allows; and async execute(name, args, context), which returns the handler's result or {"ok": false, "error": code, "retryable": true or false}. Use the codes unknown_tool, permission_denied, invalid_arguments and output_too_large (all terminal), and tool_unavailable (retryable) when a read still times out or loses its connection after one retry. Check the permission before validating the arguments. Build to the interfaces the Lesson 02 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div>
+      <div><button class="copy" type="button" data-copy="p1">Copy prompt</button></div>
+    </div>
+  </div>
+  <div class="stack">
+    <div class="excerpt">
+      <div class="src">the three checks · incident/tools.py · lines 34–43 at lesson-02</div>
+<pre>async def execute(self, name, args, context):
+    schemas = {s["function"]["name"]: s["function"]["parameters"] for s in self.schemas}
+    if name not in schemas:
+        return {"ok": False, "error": "unknown_tool", "retryable": False}
+<span class="hl">    if name not in context.allowed:</span>
+<span class="hl">        return {"ok": False, "error": "permission_denied", "retryable": False}</span>
+    try:
+        validate(args, schemas[name])
+    except ValidationError:
+        return {"ok": False, "error": "invalid_arguments", "retryable": False}</pre>
+    </div>
+    <div class="excerpt">
+      <div class="src">the read path, after the write branch · incident/tools.py · lines 64–74 at lesson-02</div>
+<pre>for attempt in range(2):
+    try:
+<span class="hl">        async with asyncio.timeout(2):</span>
+<span class="hl">            result = await self.read_handler(name, args, context)</span>
+<span class="hl">        if len(json.dumps(result)) &gt; self.output_limit:</span>
+<span class="hl">            return {"ok": False, "error": "output_too_large", "retryable": False}</span>
+        return result
+    except (TimeoutError, ConnectionError):
+        if attempt:
+            return {"ok": False, "error": "tool_unavailable", "retryable": True}
+        await asyncio.sleep(.01)</pre>
+    </div>
+    <ul class="key">
+      <li><b>Order.</b> Existence, then permission, then shape. A read-only run asking for <code>mock_remediate</code> gets <code>permission_denied</code> without its arguments ever being examined.</li>
+      <li><b>One timeout, one retry.</b> A read that times out or loses its connection is tried once more after 10 ms; a second failure becomes <code>tool_unavailable</code> with <code>"retryable": true</code>. Nothing else is retried.</li>
+      <li><b>Size.</b> The serialized result must fit <code>output_limit</code>; otherwise the observation is the error, not the data.</li>
+    </ul>
+    <div class="ask"><span class="label">Ask</span><p class="q">Why is a permission rejection marked <code>"retryable": false</code>?</p>
+      <details><summary>Show the answer</summary><p>Because asking again cannot change it: the decision comes from the run's Context, not from timing or luck. Marking it terminal stops the agent, and any caller, from wasting steps or creating a retry storm.</p></details></div>
+  </div>
+
+  <div class="terminal" id="step2">
+    <div class="bar"><span class="switch">Switch to terminal · Build step 2 of 4</span><span class="file">incident/tools.py · incident/core.py · approval and ledger</span></div>
+    <div class="body">
+      <p class="goal">Bind approval to the exact action and make the mock effect idempotent, durably, in one transaction.</p>
+      <div class="prompt" id="p2"><span class="pfx">PROMPT ▸ </span>For Lesson 02, continue in my learner project. Add exact-action approval and idempotent mock remediation to ToolExecutor. Add a mock_remediate tool schema with incident_id (INC- followed by three digits) and action (only rollback), and define ApprovalRequired in incident/core.py: an exception whose action attribute holds the proposed key, name and args. action_key(name, args, context) returns the key; execute raises ApprovalRequired when that key is not in context.approved, and an approved write returns its result with replayed false the first time and the stored result with replayed true after that. Bind the action key to tenant, run, tool name and canonical arguments. Commit the local mock effect and its deduplication record atomically in SQLite. Test the same approved write after reopening the executor and test changed arguments against the original approval. Show that only one local effect exists, and explain the limit of this guarantee for external APIs. Build to the interfaces the Lesson 02 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div>
+      <div><button class="copy" type="button" data-copy="p2">Copy prompt</button></div>
+      <p class="check">Expect: the first approved write returns <b>replayed: false</b>; after reopening the executor the same write returns <b>replayed: true</b>; the effects table holds one row; INC-002 raises ApprovalRequired.</p>
+    </div>
+  </div>
+  <div class="stack">
+    <div class="excerpt">
+      <div class="src">the action key · incident/tools.py · lines 19–21 at lesson-02</div>
+<pre>def action_key(name, args, context):
+    payload = [context.tenant, context.run_id, name, args]
+    return hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()</pre>
+    </div>
+    <div class="excerpt">
+      <div class="src">the write branch of execute() · incident/tools.py · lines 44–63 at lesson-02</div>
+<pre>if name == "mock_remediate":
+    key = action_key(name, args, context)
+    if key not in context.approved:
+        raise ApprovalRequired({"key": key, "name": name, "args": args})
+<span class="hl">    # Effect and deduplication record commit in the SAME local transaction.</span>
+<span class="hl">    self.db.execute("BEGIN IMMEDIATE")</span>
+<span class="hl">    try:</span>
+<span class="hl">        row = self.db.execute("SELECT result FROM effects WHERE key=?", (key,)).fetchone()</span>
+<span class="hl">        if row:</span>
+<span class="hl">            result = {**json.loads(row[0]), "replayed": True}</span>
+<span class="hl">        else:</span>
+<span class="hl">            result = {"ok": True, "simulated": True, "action": args["action"],</span>
+<span class="hl">                      "incident_id": args["incident_id"], "replayed": False}</span>
+<span class="hl">            self.db.execute("INSERT INTO effects VALUES (?,?,?)",</span>
+<span class="hl">                            (key, context.tenant, json.dumps(result)))</span>
+        self.db.execute("COMMIT")
+        return result
+    except BaseException:
+        self.db.execute("ROLLBACK")
+        raise</pre>
+    </div>
+    <ul class="key">
+      <li><b>No approval, no effect.</b> Without the key in <code>context.approved</code> the executor raises <code>ApprovalRequired</code> carrying the key, name and arguments, which is everything a reviewer needs to see.</li>
+      <li><b><code>BEGIN IMMEDIATE</code></b> takes the write lock before reading, so two workers cannot both decide the effect is new.</li>
+      <li><b>Replay returns the stored result</b> with <code>"replayed": true</code>, so the caller learns that nothing new happened.</li>
+    </ul>
+  </div>
+
+  <div class="terminal" id="step3">
+    <div class="bar"><span class="switch">Switch to terminal · Build step 3 of 4</span><span class="file">new file · incident/mcp_bridge.py · the server</span></div>
+    <div class="body">
+      <p class="goal">Expose the two readers and the runbook resource through a real MCP server, with the tenant bound at launch and stdout kept for the protocol.</p>
+      <div class="prompt" id="p3"><span class="pfx">PROMPT ▸ </span>For Lesson 02, continue in my learner project. Implement the MCP server in incident/mcp_bridge.py with the pinned SDK. Expose the existing tenant-scoped log and runbook readers plus the runbook resource. Bind tenant identity in trusted launcher configuration, keep protocol stdout clean, and limit the server to the capabilities required by this lesson. Explain the host, client, server and resource roles before demonstrating discovery. Build to the interfaces the Lesson 02 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div>
+      <div><button class="copy" type="button" data-copy="p3">Copy prompt</button></div>
+    </div>
+  </div>
+  <div class="stack">
+    <div class="excerpt">
+      <div class="src">the server · incident/mcp_bridge.py · lines 11–29 at lesson-02</div>
+<pre>def make_server(tenant="astro"):
+    server = MCPServer("incident-tools")
+<span class="hl">    context = Context(tenant=tenant)</span>
+<span class="hl"></span>
+<span class="hl">    @server.tool()</span>
+<span class="hl">    async def log_lookup(incident_id: str) -&gt; dict:</span>
+<span class="hl">        """Read diagnostic incident evidence in the launcher's tenant."""</span>
+<span class="hl">        return await simple_tools("log_lookup", {"incident_id": incident_id}, context)</span>
+
+    @server.tool()
+    async def runbook_search(query: str) -&gt; dict:
+        """Find relevant runbook evidence in the launcher's tenant."""
+        return await simple_tools("runbook_search", {"query": query}, context)
+
+    @server.resource("incident://runbooks")
+    def runbooks() -&gt; str:
+        return json.dumps([r for r in RUNBOOKS if r["tenant"] == tenant])
+
+    return server</pre>
+    </div>
+    <div class="excerpt">
+      <div class="src">the entry point the launcher runs · incident/mcp_bridge.py · lines 53–54 at lesson-02</div>
+<pre>if __name__ == "__main__":
+    make_server(os.getenv("INCIDENT_TENANT", "astro")).run(transport="stdio")</pre>
+    </div>
+    <ul class="key">
+      <li><b>The tenant is a launch parameter.</b> The server builds its Context once, from <code>INCIDENT_TENANT</code>. The tools take an incident ID or a query, never a tenant.</li>
+      <li><b>Same evidence.</b> The decorated functions call the Session 01 readers, so the cited sources cannot change.</li>
+      <li><b>Only what this lesson needs:</b> two read tools and one resource. No write tool is exposed over MCP.</li>
+    </ul>
+    <div class="ask"><span class="label">Ask</span><p class="q">Who prevents this client from launching an arbitrary process?</p>
+      <details><summary>Show the answer</summary><p>The host application, and its operator. The launcher uses a fixed module and the current interpreter; nothing in model output can choose the command or its environment.</p></details></div>
+  </div>
+
+  <div class="terminal" id="step4">
+    <div class="bar"><span class="switch">Switch to terminal · Build step 4 of 4</span><span class="file">incident/mcp_bridge.py · client and adapter · check pack passes</span></div>
+    <div class="body">
+      <p class="goal">Connect the real stdio client behind the executor and run the original investigation through it.</p>
+      <div class="prompt" id="p4"><span class="pfx">PROMPT ▸ </span>For Lesson 02, continue in my learner project. Implement the MCP read adapter and connect it behind ToolExecutor. The check pack needs stdio_client(tenant="astro"), which returns the pinned SDK's Client for a server started as python -m incident.mcp_bridge with INCIDENT_TENANT set by the launcher, and MCPReadAdapter(client), a read handler that returns the result's structured content when present and otherwise parses its JSON text content. Use the real local stdio transport and the pinned SDK's result shapes. Make the Session 02 check pack pass, show the negotiated protocol and discovered tools, and run the same investigation through the adapter. Confirm that transport discovery does not grant new permissions and show the unchanged cited outcome. Build to the interfaces the Lesson 02 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div>
+      <div><button class="copy" type="button" data-copy="p4">Copy prompt</button></div>
+      <p class="check">Expect: protocol <b>2026-07-28</b>, tools <b>log_lookup</b> and <b>runbook_search</b>, the same cited answer as Session 01, and <b>10 passed</b>.</p>
+    </div>
+  </div>
+  <div class="stack">
+    <div class="excerpt">
+      <div class="src">the launcher and the adapter · incident/mcp_bridge.py · lines 32–50 at lesson-02</div>
+<pre>def stdio_client(tenant="astro"):
+    return Client(StdioServerParameters(command=sys.executable,
+        args=["-m", "incident.mcp_bridge"], env={"INCIDENT_TENANT": tenant,
+        **({"PYTHONPATH": os.environ["PYTHONPATH"]} if "PYTHONPATH" in os.environ else {})}),
+        read_timeout_seconds=5)
+
+
+class MCPReadAdapter:
+    def __init__(self, client):
+        self.client = client
+
+    async def __call__(self, name, args, context):
+        # Use behind ToolExecutor, which validates and authorizes every dispatch.
+        result = await self.client.call_tool(name, args)
+<span class="hl">        if result.is_error:</span>
+<span class="hl">            return {"ok": False, "error": "mcp_tool_error"}</span>
+<span class="hl">        if result.structured_content is not None:</span>
+<span class="hl">            return result.structured_content</span>
+<span class="hl">        return json.loads(next(c.text for c in result.content if c.type == "text"))</span></pre>
+    </div>
+    <ul class="key">
+      <li><b>The launcher</b> starts the server with the current Python and a fixed module, passing only the tenant (and the import path when one is set).</li>
+      <li><b>The adapter</b> maps the SDK's result to the executor's shape: <code>is_error</code> becomes <code>mcp_tool_error</code>; otherwise structured content if present, else the JSON text.</li>
+      <li><b>Nothing here grants anything.</b> The adapter sits behind the executor, which has already checked the call.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="ch" id="exercise">
+  <p class="eyebrow"><span>Learner exercise</span></p>
+  <h2>Break the boundary on purpose: predict first, then run</h2>
+  <div class="stack">
+    <p class="lede">Each case attacks one check. Write down the result you expect, then run it in a throwaway script and compare.</p>
+    <div class="predict">
+      <div><span class="set">log_lookup + "tenant": "locomotive"</span><span class="out">invalid_arguments</span><span class="muted">The schema forbids extra properties; the tenant comes from Context.</span></div>
+      <div><span class="set">mock_remediate, read-only Context</span><span class="out">permission_denied</span><span class="muted">Not in the run's allowed tools, so checked before the arguments.</span></div>
+      <div><span class="set">output_limit = 10</span><span class="out">output_too_large</span><span class="muted">The log record is longer than ten characters.</span></div>
+      <div><span class="set">approved write, reopen, repeat</span><span class="out">replayed: true</span><span class="muted">One row in the effects table.</span></div>
+    </div>
+    <div class="terminal" style="margin-top:0">
+      <div class="bar"><span class="switch">Switch to terminal · Exercise</span><span class="file">a throwaway script · restore afterwards</span></div>
+      <div class="body">
+        <div class="prompt" id="p5"><span class="pfx">PROMPT ▸ </span>Help me carry out the Lesson 02 learner exercise in my existing project: Add an unexpected tenant argument to a log request, call mock_remediate with a read-only Context, lower output_limit, and repeat an approved mock write after reopening the SQLite executor. Record the error category or replay behaviour for each case. First state the expected outcomes, then run the experiment in a throwaway script outside tests/, or from a clean Git state you can restore. Show the observed results and explain any discrepancy. Keep the original acceptance criteria and restore temporary experiments when finished.</div>
+      <div><button class="copy" type="button" data-copy="p5">Copy prompt</button></div>
+      </div>
+    </div>
+    <div class="cards pairs">
+      <div><span class="q">More practice: retryable versus terminal</span><p>Make a read handler that raises <code>ConnectionError</code> once and then succeeds: the executor retries and returns the data. Make it fail every time: you get <code>tool_unavailable</code> with <code>"retryable": true</code>. Then confirm that <code>permission_denied</code> is never retried.</p></div>
+      <div><span class="q">More practice: going remote</span><p>Sketch what a remote HTTP MCP server would add: authenticating the client, validating tokens, mapping the caller to a tenant, authorizing each tool. Mark which parts the tool gateway (Session 09) and delegated credentials (Session 10) will provide.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="ch" id="verify">
+  <p class="eyebrow"><span>Verification</span></p>
+  <h2>Evidence, not claims</h2>
+  <div class="stack">
+    <div class="two">
+      <div class="prose" style="margin-top:0">
+        <p class="big">10 passed</p>
+        <p>Seven from Session 01, still passing, plus three new checks: authorization, schema and output size; exact approval and the durable duplicate write; and the real MCP stdio transport, which starts the server as a subprocess and runs the investigation through it.</p>
+        <p class="muted">Unrun or skipped checks are not passes. Look at the actual output, not the agent's summary.</p>
+      </div>
+      <figure>
+<pre class="result">{
+  "tools": ["log_lookup", "runbook_search"],
+  "protocol": "2026-07-28",
+  "answer": {
+    "status": "complete",
+    "cause": "connection_pool_exhaustion",
+    "summary": "INC-001: connection_pool_exhaustion",
+    "evidence": ["log-astro-001", "rb-pool-v1"]
+  },
+  "write_without_capability": {
+    "ok": false,
+    "error": "permission_denied",
+    "retryable": false
+  }
+}</pre>
+        <figcaption>The Session 02 lab output. Timings vary; the tools, protocol, cited answer and denied write must not.</figcaption>
+      </figure>
+    </div>
+    <div class="terminal" style="margin-top:0">
+      <div class="bar"><span class="switch">Switch to terminal · Verify and push</span><span class="file">check pack · full suite · push to GitLab</span></div>
+      <div class="body">
+        <div class="prompt" id="p6"><span class="pfx">PROMPT ▸ </span>Verify my Lesson 02 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 2 only when the required capability is present. Run the full test suite, which includes the Lesson 02 check pack and every earlier lesson's tests, and then the Session 02 demonstration with python -m incident.lab 2, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 02 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my repository on gitlab.ciklum.net; if glab is also signed in to other GitLab hosts, make sure the push goes to gitlab.ciklum.net. Do not equate an unrun or skipped check with a pass.</div>
+      <div><button class="copy" type="button" data-copy="p6">Copy prompt</button></div>
+        <p class="check">Expect: <b>10 passed</b>, <code>LESSON = 2</code>, and your work pushed to your repository on gitlab.ciklum.net.</p>
+        <div id="review"><div class="prompt" id="p7"><span class="pfx">PROMPT ▸ </span>Review my completed Lesson 02 work against the Lesson 02 check pack and completion criteria. Show the files I changed and the interfaces I provide, and explain how each completion criterion is met with code or test evidence. Point out the design choices I made that the check pack does not force, and what each one costs or gains. Preserve deliberate improvements and earlier capabilities.</div>
+      <div><button class="copy" type="button" data-copy="p7">Copy prompt</button></div></div>
+      </div>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Completion criterion</th><th>Shown by</th></tr></thead>
+        <tbody>
+          <tr><td>The real stdio client discovers <code>log_lookup</code> and <code>runbook_search</code>.</td><td>the transport check and the lab's <code>tools</code></td></tr>
+          <tr><td>The investigation still cites the observed log and runbook.</td><td>the lab's <code>answer</code></td></tr>
+          <tr><td>Malformed and denied requests fail before dispatch.</td><td>the authorization check; the lab's <code>write_without_capability</code></td></tr>
+          <tr><td>Changing an approved action's arguments requires a new approval.</td><td>INC-002 raises <code>ApprovalRequired</code></td></tr>
+          <tr><td>A duplicate approved mock write produces one stored effect.</td><td><code>replayed: true</code> after reopening the executor</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted"><b>Not tested in this session:</b> remote HTTP MCP and its OAuth flow, third-party MCP servers, and idempotency against any real external API. The stdio trust boundary and the local ledger are what the checks prove.</p>
+  </div>
+</section>
+
+<section class="ch" id="recover">
+  <p class="eyebrow"><span>When something breaks</span></p>
+  <h2>Recovery prompts for the usual failures</h2>
+  <div class="stack">
+    <p class="lede" style="margin-top:0">Most Session 02 failures are integration problems, not reasoning problems. Paste the matching prompt; it asks your agent to reproduce, fix the smallest thing and rerun the checks.</p>
+    <div class="terminal" style="margin-top:0">
+      <div class="bar"><span class="switch">Switch to terminal · Recover</span><span class="file">only when you hit the symptom</span></div>
+      <div class="body">
+        <p class="rlabel"><b>MCP startup or parsing fails.</b> Usually something printed to stdout, which belongs to the protocol, or a server started from the wrong directory.</p>
+        <div class="prompt" id="r1"><span class="pfx">PROMPT ▸ </span>I am working on Lesson 02. The symptom is: MCP startup or parsing fails. Diagnostic focus: Look for debug output written to stdout or a process started from the wrong repository directory. Recovery guidance: Keep protocol stdout clean, use stderr logging and rerun the isolated stdio test. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.</div>
+      <div><button class="copy" type="button" data-copy="r1">Copy prompt</button></div>
+        <p class="rlabel"><b>Attribute error on a result field.</b> Code written for another SDK version, such as <code>isError</code> instead of <code>is_error</code>.</p>
+        <div class="prompt" id="r2"><span class="pfx">PROMPT ▸ </span>I am working on Lesson 02. The symptom is: Result-field attribute error. Diagnostic focus: Compare the installed MCP version with the lock file and the result field names in the adapter. Recovery guidance: Restore the pinned Python 3.12 environment from the project lock file. Avoid mixing 1.x tutorial code with the 2.2.0 adapter. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.</div>
+      <div><button class="copy" type="button" data-copy="r2">Copy prompt</button></div>
+        <p class="rlabel"><b>The tool exists but returns permission_denied.</b> Look at <code>Context.allowed</code>, not at the server's tool list.</p>
+        <div class="prompt" id="r3"><span class="pfx">PROMPT ▸ </span>I am working on Lesson 02. The symptom is: Tool exists but returns permission_denied. Diagnostic focus: Inspect Context.allowed rather than the server's discovery list. Recovery guidance: Use the intended read-only investigator or construct an operator-owned context explicitly for the mock-approval exercise. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.</div>
+      <div><button class="copy" type="button" data-copy="r3">Copy prompt</button></div>
+        <p class="rlabel"><b>A changed schema breaks an integration.</b> The client-side contract and the discovered server contract differ.</p>
+        <div class="prompt" id="r4"><span class="pfx">PROMPT ▸ </span>I am working on Lesson 02. The symptom is: A changed schema breaks an integration. Diagnostic focus: The client-side tool contract and the discovered server contract differ. Recovery guidance: Pin the compatible server/client versions, update the adapter deliberately and rerun contract tests before using the changed tool. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.</div>
+      <div><button class="copy" type="button" data-copy="r4">Copy prompt</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="ch" id="close">
+  <p class="eyebrow"><span>Close</span></p>
+  <h2>One boundary, whatever the transport</h2>
+  <div class="stack">
+    <div class="criteria">
+      <div><b>Check, then dispatch</b>known tool, allowed for this run, valid arguments, before any handler runs.</div>
+      <div><b>Errors carry a decision</b>terminal or retryable, so nobody retries a permission.</div>
+      <div><b>Approval is exact</b>tenant, run, tool and arguments; change one and it is a new action.</div>
+      <div><b>Discovery is not permission</b>MCP finds and reaches tools; the platform decides who may use them.</div>
+    </div>
+    <div class="ask"><span class="label">After class</span><p class="q">Finish in your own project, in this order (<a href="#route">the route</a>)</p>
+      <ol class="steps"><li><a href="#prepare">Prepare the workspace</a> and <a href="#orient">add the check pack</a></li><li><a href="#step1">Build steps 1 to 4</a>, one at a time, reading each change</li><li><a href="#exercise">Break the boundary on purpose</a></li><li><a href="#verify">Verify and push, then review</a></li></ol></div>
+    <p class="say">Keep this boundary intact as the platform grows. Session 09 centralizes it in a tool gateway, and Session 10 backs today's permissions with delegated, short-lived credentials.</p>
+    <div class="ask"><span class="label">Next session</span><p class="q">Context, retrieval and memory</p><p>Which evidence enters the model's context, how retrieval ranks it, and how stored artifacts and memory stay separate from authority. Bring your Session 02 checkpoint.</p></div>
+  </div>
+</section>
+
+<footer>
+  <p>Course repository: <a href="https://github.com/maxvpavlov/ciklum-innovate-l3-2026">github.com/maxvpavlov/ciklum-innovate-l3-2026</a> · kit: <code>learner-kit/lessons/02</code> · all incident data are synthetic.</p>
+  <p>Further reading: <a href="https://www.anthropic.com/engineering/writing-tools-for-agents">Writing effective tools for agents</a> · <a href="https://modelcontextprotocol.io/docs/learn/architecture">MCP architecture</a></p>
+</footer>
+</main>
+
+
+<script>
+(() => {
+  // Copy buttons: copy the prompt text without the "PROMPT ▸" prefix.
+  document.querySelectorAll(".copy").forEach((button) => {
+    button.addEventListener("click", () => {
+      const block = document.getElementById(button.dataset.copy);
+      const text = [...block.childNodes].filter((n) => !(n.classList && n.classList.contains("pfx")))
+        .map((n) => n.textContent).join("").trim();
+      const done = () => { button.textContent = "Copied"; setTimeout(() => { button.textContent = "Copy prompt"; }, 1600); };
+      const select = () => {
+        const range = document.createRange(); range.selectNodeContents(block);
+        const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+        button.textContent = "Selected · press Ctrl+C";
+      };
+      try { navigator.clipboard.writeText(text).then(done, select); } catch (e) { select(); }
+    });
+  });
+
+  // N / P jump between sections; V switches between Read and Present.
+  const stops = [...document.querySelectorAll("#start, section.ch, .terminal[id]")];
+  const current = () => {
+    const y = window.scrollY + window.innerHeight * 0.25;
+    let index = 0;
+    stops.forEach((el, i) => { if (el.getBoundingClientRect().top + window.scrollY <= y) index = i; });
+    return index;
+  };
+  document.addEventListener("keydown", (event) => {
+    if (event.target.closest("input, textarea, [contenteditable]") || event.metaKey || event.ctrlKey || event.altKey) return;
+    const key = event.key.toLowerCase();
+    if (key === "v") { setView(document.body.classList.contains("present") ? "read" : "present"); event.preventDefault(); return; }
+    if (key !== "n" && key !== "p") return;
+    const next = Math.max(0, Math.min(stops.length - 1, current() + (key === "n" ? 1 : -1)));
+    stops[next].scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+    event.preventDefault();
+  });
+
+  // Read / Present toggle; keeps the reader's place and remembers the choice in this browser.
+  const buttons = [...document.querySelectorAll(".view button")];
+  const setView = (view) => {
+    const anchor = stops[current()];
+    document.body.classList.toggle("present", view === "present");
+    buttons.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.view === view)));
+    anchor.scrollIntoView({ block: "start" });
+    try { localStorage.setItem("lesson-view", view); } catch (e) { /* storage unavailable */ }
+  };
+  buttons.forEach((b) => b.addEventListener("click", () => setView(b.dataset.view)));
+  try { if (localStorage.getItem("lesson-view") === "present") setView("present"); } catch (e) { /* default view */ }
+})();
+</script>
+
