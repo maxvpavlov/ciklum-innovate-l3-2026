@@ -140,6 +140,11 @@ svg .today { fill: var(--signal-soft); stroke: var(--signal); stroke-width: 2.5;
 svg .ink { stroke: var(--ink); fill: none; stroke-width: 1.8; }
 svg .arrowhead { fill: var(--ink); }
 svg .sig { fill: var(--signal); }
+svg .stop { fill: var(--signal-soft); stroke: var(--signal); stroke-width: 1.5; }
+svg .done { fill: var(--sheet); stroke: var(--tool); stroke-width: 2; }
+svg .frame { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 6 5; }
+svg .stoptxt { fill: var(--signal); font-size: 13.5px; font-weight: 600; }
+svg .donetxt { fill: var(--tool); font-size: 15px; font-weight: 600; }
 
 /* Comparison */
 .compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
@@ -737,6 +742,97 @@ class Context:
     </div>
   </div>
   <div class="stack">
+    <h3 id="loop-picture">The loop as a picture</h3>
+    <p class="read">Follow one run from the top before reading any code. The numbers are the same ones the code below uses. A run leaves the loop in only two ways: a checked answer, or a stop with a name.</p>
+    <figure>
+      <div class="diagram">
+        <svg viewBox="0 0 880 656" role="img" aria-labelledby="rlTitle rlDesc">
+          <title id="rlTitle">The run_agent loop as a flowchart</title>
+          <desc id="rlDesc">Inside one deadline: check a turn is left, run any pending tool calls and record their results, check the token budget, ask the model for one turn, then either record its tool calls as pending and go round again, or check its answer. Each failed check stops the run with a named error.</desc>
+          <defs><marker id="rlArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="arrowhead" d="M0 0 L10 5 L0 10z"/></marker></defs>
+          <rect class="frame" x="12" y="70" width="856" height="516" rx="14"/>
+          <text class="sig" x="30" y="574" style="font-size:13px;font-weight:600">① one deadline → TimeoutError</text>
+
+          <rect class="box" x="330" y="14" width="200" height="40" rx="20"/>
+          <text class="lbl" x="350" y="39">task + instructions</text>
+          <path class="ink" d="M430 54 V84" marker-end="url(#rlArrow)"/>
+
+          <rect class="box" x="330" y="86" width="200" height="56" rx="8"/>
+          <text class="lbl" x="346" y="111">② a turn left?</text>
+          <text class="small" x="346" y="131">steps under the limit</text>
+          <path class="ink" d="M330 114 H268" marker-end="url(#rlArrow)"/>
+          <text class="small" x="284" y="106">no</text>
+          <rect class="stop" x="40" y="92" width="226" height="44" rx="22"/>
+          <text class="stoptxt" x="60" y="119">⑧ step_budget</text>
+          <path class="ink" d="M430 142 V166" marker-end="url(#rlArrow)"/>
+          <text class="small" x="438" y="159">yes</text>
+
+          <rect class="box" x="330" y="168" width="200" height="56" rx="8"/>
+          <text class="lbl" x="346" y="193">③ calls pending?</text>
+          <text class="small" x="346" y="213">asked for by the model</text>
+          <path class="ink" d="M530 186 H570" marker-end="url(#rlArrow)"/>
+          <text class="small" x="538" y="178">yes</text>
+          <rect class="today" x="572" y="162" width="120" height="60" rx="8"/>
+          <text class="lbl" x="586" y="186">ACT</text>
+          <text class="small" x="586" y="206">run the tool</text>
+          <path class="ink" d="M692 192 H710" marker-end="url(#rlArrow)"/>
+          <rect class="today" x="712" y="162" width="120" height="60" rx="8"/>
+          <text class="lbl" x="726" y="186">OBSERVE</text>
+          <text class="small" x="726" y="206">append, save</text>
+          <path class="ink" d="M632 222 V246" marker-end="url(#rlArrow)"/>
+          <text class="small" x="640" y="240">repeat</text>
+          <rect class="stop" x="566" y="248" width="180" height="40" rx="20"/>
+          <text class="stoptxt" x="584" y="273">repeated_action</text>
+          <path class="ink" d="M772 222 V312 H554 V210 H532" marker-end="url(#rlArrow)"/>
+          <text class="small" x="600" y="330">next pending call</text>
+          <path class="ink" d="M430 224 V248" marker-end="url(#rlArrow)"/>
+          <text class="small" x="438" y="241">no</text>
+
+          <rect class="box" x="330" y="250" width="200" height="56" rx="8"/>
+          <text class="lbl" x="346" y="275">④ token room?</text>
+          <text class="small" x="346" y="295">estimate + reply fits</text>
+          <path class="ink" d="M330 278 H268" marker-end="url(#rlArrow)"/>
+          <text class="small" x="284" y="270">no</text>
+          <rect class="stop" x="40" y="256" width="226" height="44" rx="22"/>
+          <text class="stoptxt" x="60" y="283">token_budget</text>
+          <path class="ink" d="M430 306 V330" marker-end="url(#rlArrow)"/>
+          <text class="small" x="438" y="323">yes</text>
+
+          <rect class="today" x="330" y="332" width="200" height="56" rx="8"/>
+          <text class="lbl" x="346" y="357">⑤ THINK</text>
+          <text class="small" x="346" y="377">one model turn</text>
+          <path class="ink" d="M430 388 V412" marker-end="url(#rlArrow)"/>
+
+          <rect class="box" x="330" y="414" width="200" height="56" rx="8"/>
+          <text class="lbl" x="346" y="439">⑥ tool calls?</text>
+          <text class="small" x="346" y="459">in the model's turn</text>
+          <path class="ink" d="M530 442 H578" marker-end="url(#rlArrow)"/>
+          <text class="small" x="540" y="434">yes</text>
+          <rect class="box" x="580" y="414" width="200" height="56" rx="8"/>
+          <text class="lbl" x="596" y="439">record as pending</text>
+          <text class="small" x="596" y="459">save before running</text>
+          <path class="ink" d="M780 442 H848 V114 H532" marker-end="url(#rlArrow)"/>
+          <text class="small" x="590" y="106">round again</text>
+          <path class="ink" d="M430 470 V494" marker-end="url(#rlArrow)"/>
+          <text class="small" x="438" y="487">no</text>
+
+          <rect class="box" x="330" y="496" width="200" height="56" rx="8"/>
+          <text class="lbl" x="346" y="521">⑦ a cited answer?</text>
+          <text class="small" x="346" y="541">shape and citations</text>
+          <path class="ink" d="M330 524 H284" marker-end="url(#rlArrow)"/>
+          <text class="small" x="296" y="516">no</text>
+          <rect class="stop" x="40" y="496" width="242" height="56" rx="14"/>
+          <text class="stoptxt" x="58" y="519">invalid_final_answer</text>
+          <text class="stoptxt" x="58" y="539">unobserved_citation</text>
+          <path class="ink" d="M430 552 V596" marker-end="url(#rlArrow)"/>
+          <text class="small" x="438" y="571">yes</text>
+
+          <rect class="done" x="330" y="598" width="200" height="44" rx="22"/>
+          <text class="donetxt" x="390" y="625">completed</text>
+        </svg>
+      </div>
+      <figcaption>One run of <code>run_agent</code>. Orange boxes are the agent's reason–act–observe cycle; everything else is the runtime checking. Each red stop fails the run with that name, and the dashed frame is the one deadline around all of it.</figcaption>
+    </figure>
     <div class="excerpt">
       <div class="src">the whole loop on one screen · incident/core.py · run_agent(), abridged</div>
 <pre class="loop"><span class="n">①</span>async with asyncio.timeout(limits.seconds):               <span class="muted"># the whole run has one deadline</span>
@@ -768,7 +864,7 @@ class Context:
       <li><b>⑥ and ⑦ classify that turn</b>, the first two rows of "What the model can send back": tool calls become pending work and go back to ③; anything else must be the final answer.</li>
       <li><b>③ is the action and observation.</b> ③ and ⑦ are shown in full below.</li>
     </ul>
-    <p class="muted">Abridged: the real function also records a run event for every model call and tool call, pauses for approval when a tool requires it, and saves the run if it is cancelled. ③ and ⑦ are zoomed in below, followed by <a href="#full-loop">the complete loop</a> with comments.</p>
+    <p class="muted">Abridged: the real function also records a run event for every model call and tool call, pauses for approval when a tool requires it, and saves the run if it is cancelled. ③ and ⑦ are zoomed in below, followed by <a href="#full-loop">the complete loop</a> with comments; <a href="#loop-picture">the picture above</a> shows the same path.</p>
     <div class="excerpt">
       <div class="src">zoom in on ③ · the act step</div>
 <pre>while run.pending:
