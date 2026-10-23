@@ -133,11 +133,16 @@ svg .today { fill: var(--signal-soft); stroke: var(--signal); stroke-width: 2.5;
 svg .ink { stroke: var(--ink); fill: none; stroke-width: 1.8; }
 svg .arrowhead { fill: var(--ink); }
 svg .sig { fill: var(--signal); }
-svg .stop { fill: var(--signal-soft); stroke: var(--signal); stroke-width: 1.5; }
+svg .fail { fill: var(--signal-soft); stroke: var(--signal); stroke-width: 2; }
+svg .failhead { fill: var(--signal); font-size: 11px; font-weight: 700; letter-spacing: .08em; }
+svg .failcode { fill: var(--signal); font-size: 14px; font-weight: 600; }
+svg .err { stroke: var(--signal); fill: none; stroke-width: 2; }
+svg .errlbl { fill: var(--signal); font-size: 12px; font-weight: 600; }
+svg .think { fill: var(--sheet); stroke: var(--model); stroke-width: 2.5; }
+svg .act { fill: var(--sheet); stroke: var(--tool); stroke-width: 2.5; }
 svg .done { fill: var(--sheet); stroke: var(--tool); stroke-width: 2; }
-svg .frame { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 6 5; }
-svg .stoptxt { fill: var(--signal); font-size: 13.5px; font-weight: 600; }
 svg .donetxt { fill: var(--tool); font-size: 15px; font-weight: 600; }
+svg .frame { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 6 5; }
 
 /* Comparison */
 .compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
@@ -739,12 +744,14 @@ class Context:
     <p class="read">Follow one run from the top before reading any code. The numbers are the same ones the code below uses. A run leaves the loop in only two ways: a checked answer, or a stop with a name.</p>
     <figure>
       <div class="diagram">
-        <svg viewBox="0 0 880 656" role="img" aria-labelledby="rlTitle rlDesc">
+        <svg viewBox="0 0 880 772" role="img" aria-labelledby="rlTitle rlDesc">
           <title id="rlTitle">The run_agent loop as a flowchart</title>
-          <desc id="rlDesc">Inside one deadline: check a turn is left, run any pending tool calls and record their results, check the token budget, ask the model for one turn, then either record its tool calls as pending and go round again, or check its answer. Each failed check stops the run with a named error.</desc>
-          <defs><marker id="rlArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="arrowhead" d="M0 0 L10 5 L0 10z"/></marker></defs>
-          <rect class="frame" x="12" y="70" width="856" height="516" rx="14"/>
-          <text class="sig" x="30" y="574" style="font-size:13px;font-weight:600">① one deadline → TimeoutError</text>
+          <desc id="rlDesc">Inside one deadline: check a turn is left, run any pending tool calls and record their results, check the token budget, ask the model for one turn, then either record its tool calls as pending and go round again, or check its answer. Each failed check ends the run as failed with a named error code: step_budget, repeated_action, token_budget, invalid_final_answer or unobserved_citation, and TimeoutError when the deadline passes at any point.</desc>
+          <defs>
+            <marker id="rlArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="arrowhead" d="M0 0 L10 5 L0 10z"/></marker>
+            <marker id="rlArrowErr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="sig" d="M0 0 L10 5 L0 10z"/></marker>
+          </defs>
+          <rect class="frame" x="12" y="70" width="856" height="590" rx="14"/>
 
           <rect class="box" x="330" y="14" width="200" height="40" rx="20"/>
           <text class="lbl" x="350" y="39">task + instructions</text>
@@ -753,10 +760,11 @@ class Context:
           <rect class="box" x="330" y="86" width="200" height="56" rx="8"/>
           <text class="lbl" x="346" y="111">② a turn left?</text>
           <text class="small" x="346" y="131">steps under the limit</text>
-          <path class="ink" d="M330 114 H268" marker-end="url(#rlArrow)"/>
-          <text class="small" x="284" y="106">no</text>
-          <rect class="stop" x="40" y="92" width="226" height="44" rx="22"/>
-          <text class="stoptxt" x="60" y="119">⑧ step_budget</text>
+          <path class="err" d="M330 114 H270" marker-end="url(#rlArrowErr)"/>
+          <text class="errlbl" x="286" y="106">no</text>
+          <rect class="fail" x="40" y="89" width="228" height="50" rx="10"/>
+          <text class="failhead" x="56" y="109">✕ RUN FAILS</text>
+          <text class="failcode" x="56" y="129">⑧ step_budget</text>
           <path class="ink" d="M430 142 V166" marker-end="url(#rlArrow)"/>
           <text class="small" x="438" y="159">yes</text>
 
@@ -765,33 +773,35 @@ class Context:
           <text class="small" x="346" y="213">asked for by the model</text>
           <path class="ink" d="M530 186 H570" marker-end="url(#rlArrow)"/>
           <text class="small" x="538" y="178">yes</text>
-          <rect class="today" x="572" y="162" width="120" height="60" rx="8"/>
+          <rect class="act" x="572" y="162" width="120" height="60" rx="8"/>
           <text class="lbl" x="586" y="186">ACT</text>
           <text class="small" x="586" y="206">run the tool</text>
           <path class="ink" d="M692 192 H710" marker-end="url(#rlArrow)"/>
-          <rect class="today" x="712" y="162" width="120" height="60" rx="8"/>
+          <rect class="act" x="712" y="162" width="120" height="60" rx="8"/>
           <text class="lbl" x="726" y="186">OBSERVE</text>
           <text class="small" x="726" y="206">append, save</text>
-          <path class="ink" d="M632 222 V246" marker-end="url(#rlArrow)"/>
-          <text class="small" x="640" y="240">repeat</text>
-          <rect class="stop" x="566" y="248" width="180" height="40" rx="20"/>
-          <text class="stoptxt" x="584" y="273">repeated_action</text>
-          <path class="ink" d="M772 222 V312 H554 V210 H532" marker-end="url(#rlArrow)"/>
-          <text class="small" x="600" y="330">next pending call</text>
+          <path class="err" d="M632 222 V246" marker-end="url(#rlArrowErr)"/>
+          <text class="errlbl" x="644" y="239">same call again</text>
+          <rect class="fail" x="566" y="248" width="190" height="50" rx="10"/>
+          <text class="failhead" x="582" y="268">✕ RUN FAILS</text>
+          <text class="failcode" x="582" y="288">repeated_action</text>
+          <path class="ink" d="M772 222 V318 H554 V210 H532" marker-end="url(#rlArrow)"/>
+          <text class="small" x="600" y="336">next pending call</text>
           <path class="ink" d="M430 224 V248" marker-end="url(#rlArrow)"/>
           <text class="small" x="438" y="241">no</text>
 
           <rect class="box" x="330" y="250" width="200" height="56" rx="8"/>
           <text class="lbl" x="346" y="275">④ token room?</text>
           <text class="small" x="346" y="295">estimate + reply fits</text>
-          <path class="ink" d="M330 278 H268" marker-end="url(#rlArrow)"/>
-          <text class="small" x="284" y="270">no</text>
-          <rect class="stop" x="40" y="256" width="226" height="44" rx="22"/>
-          <text class="stoptxt" x="60" y="283">token_budget</text>
+          <path class="err" d="M330 278 H270" marker-end="url(#rlArrowErr)"/>
+          <text class="errlbl" x="286" y="270">no</text>
+          <rect class="fail" x="40" y="253" width="228" height="50" rx="10"/>
+          <text class="failhead" x="56" y="273">✕ RUN FAILS</text>
+          <text class="failcode" x="56" y="293">token_budget</text>
           <path class="ink" d="M430 306 V330" marker-end="url(#rlArrow)"/>
           <text class="small" x="438" y="323">yes</text>
 
-          <rect class="today" x="330" y="332" width="200" height="56" rx="8"/>
+          <rect class="think" x="330" y="332" width="200" height="56" rx="8"/>
           <text class="lbl" x="346" y="357">⑤ THINK</text>
           <text class="small" x="346" y="377">one model turn</text>
           <path class="ink" d="M430 388 V412" marker-end="url(#rlArrow)"/>
@@ -812,19 +822,35 @@ class Context:
           <rect class="box" x="330" y="496" width="200" height="56" rx="8"/>
           <text class="lbl" x="346" y="521">⑦ a cited answer?</text>
           <text class="small" x="346" y="541">shape and citations</text>
-          <path class="ink" d="M330 524 H284" marker-end="url(#rlArrow)"/>
-          <text class="small" x="296" y="516">no</text>
-          <rect class="stop" x="40" y="496" width="242" height="56" rx="14"/>
-          <text class="stoptxt" x="58" y="519">invalid_final_answer</text>
-          <text class="stoptxt" x="58" y="539">unobserved_citation</text>
-          <path class="ink" d="M430 552 V596" marker-end="url(#rlArrow)"/>
-          <text class="small" x="438" y="571">yes</text>
+          <path class="err" d="M330 524 H286" marker-end="url(#rlArrowErr)"/>
+          <text class="errlbl" x="298" y="516">no</text>
+          <rect class="fail" x="40" y="490" width="244" height="70" rx="10"/>
+          <text class="failhead" x="56" y="510">✕ RUN FAILS</text>
+          <text class="failcode" x="56" y="530">invalid_final_answer</text>
+          <text class="failcode" x="56" y="550">unobserved_citation</text>
 
-          <rect class="done" x="330" y="598" width="200" height="44" rx="22"/>
-          <text class="donetxt" x="390" y="625">completed</text>
+          <rect class="fail" x="40" y="590" width="290" height="50" rx="10"/>
+          <text class="failhead" x="56" y="610">✕ RUN FAILS · AT ANY POINT</text>
+          <text class="failcode" x="56" y="630">① TimeoutError</text>
+          <text class="small" x="560" y="612">the dashed frame is one deadline</text>
+          <text class="small" x="560" y="630">around everything inside it</text>
+
+          <path class="ink" d="M430 552 V674" marker-end="url(#rlArrow)"/>
+          <text class="small" x="438" y="572">yes</text>
+          <rect class="done" x="330" y="676" width="200" height="44" rx="22"/>
+          <text class="donetxt" x="364" y="703">✓ completed</text>
+
+          <rect class="think" x="40" y="742" width="22" height="16" rx="3"/>
+          <text class="small" x="70" y="755">model turn</text>
+          <rect class="act" x="170" y="742" width="22" height="16" rx="3"/>
+          <text class="small" x="200" y="755">tool step</text>
+          <rect class="fail" x="290" y="742" width="22" height="16" rx="3"/>
+          <text class="small" x="320" y="755">run fails with this error code</text>
+          <rect class="done" x="590" y="742" width="22" height="16" rx="8"/>
+          <text class="small" x="620" y="755">the only success</text>
         </svg>
       </div>
-      <figcaption>One run of <code>run_agent</code>. Orange boxes are the agent's reason–act–observe cycle; everything else is the runtime checking. Each red stop fails the run with that name, and the dashed frame is the one deadline around all of it.</figcaption>
+      <figcaption>One run of <code>run_agent</code>. Blue is the model's turn and green the tool steps: the reason–act–observe cycle. Grey boxes are the runtime's checks. Every red ✕ box ends the run as <code>failed</code> with that error code; the run is <code>completed</code> only through the answer check.</figcaption>
     </figure>
     <div class="excerpt">
       <div class="src">the whole loop on one screen · incident/core.py · run_agent(), abridged</div>
