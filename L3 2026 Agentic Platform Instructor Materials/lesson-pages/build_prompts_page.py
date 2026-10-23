@@ -11,6 +11,8 @@ import re
 import sys
 from pathlib import Path
 
+from publish import wrap
+
 HERE = Path(__file__).resolve().parent
 MATERIALS = HERE.parent
 REPO = MATERIALS.parent
@@ -190,9 +192,7 @@ def build(n):
     (HERE / f"{nn}-just-prompts.html").write_text(page, encoding="utf-8")
     out = REPO / "docs" / f"lesson-{nn}-just-prompts" / "index.html"
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text('<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
-                   '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
-                   '</head>\n<body>\n' + page + '\n</body>\n</html>\n', encoding="utf-8")
+    out.write_text(wrap(page), encoding="utf-8")
     print(f"wrote {nn}-just-prompts.html and {out.relative_to(REPO)}")
 
 

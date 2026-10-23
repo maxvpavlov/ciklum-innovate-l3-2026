@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
 </head>
 <body>
 <title>Session 01 Prompts</title>
@@ -140,6 +143,16 @@ svg .today { fill: var(--signal-soft); stroke: var(--signal); stroke-width: 2.5;
 svg .ink { stroke: var(--ink); fill: none; stroke-width: 1.8; }
 svg .arrowhead { fill: var(--ink); }
 svg .sig { fill: var(--signal); }
+svg .fail { fill: var(--signal-soft); stroke: var(--signal); stroke-width: 2; }
+svg .failhead { fill: var(--signal); font-size: 11px; font-weight: 700; letter-spacing: .08em; }
+svg .failcode { fill: var(--signal); font-size: 14px; font-weight: 600; }
+svg .err { stroke: var(--signal); fill: none; stroke-width: 2; }
+svg .errlbl { fill: var(--signal); font-size: 12px; font-weight: 600; }
+svg .think { fill: var(--sheet); stroke: var(--model); stroke-width: 2.5; }
+svg .act { fill: var(--sheet); stroke: var(--tool); stroke-width: 2.5; }
+svg .done { fill: var(--sheet); stroke: var(--tool); stroke-width: 2; }
+svg .donetxt { fill: var(--tool); font-size: 15px; font-weight: 600; }
+svg .frame { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 6 5; }
 
 /* Comparison */
 .compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
@@ -444,6 +457,5 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
   try { if (localStorage.getItem("lesson-view") === "present") setView("present"); } catch (e) { /* default view */ }
 })();
 </script>
-
 </body>
 </html>
