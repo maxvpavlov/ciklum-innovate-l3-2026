@@ -1,16 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="4 4 56 56">
   <title>Building Agentic Platforms</title>
-  <!-- the platform -->
-  <rect width="64" height="64" rx="14" fill="#15202e"/>
+  <style>
+    .ink { fill: #15202e; }
+    @media (prefers-color-scheme: dark) { .ink { fill: #fbfcfd; } }
+  </style>
+  <defs>
+    <!-- gaps in the loop around each node, so it reads on any background -->
+    <mask id="gaps">
+      <rect x="0" y="0" width="64" height="64" fill="#fff"/>
+      <circle cx="48.5" cy="22.5" r="7.5" fill="#000"/>
+      <circle cx="32" cy="51" r="7.5" fill="#000"/>
+      <circle cx="15.5" cy="41.5" r="7.5" fill="#000"/>
+    </mask>
+  </defs>
   <!-- the agent loop: reason, act, observe, round again -->
-  <path d="M36.0 13.4 A19 19 0 1 1 16.2 21.4" fill="none" stroke="#ff7a4d" stroke-width="6" stroke-linecap="round"/>
-  <path d="M21.9 15.9 L8.8 20.2 L21.3 26.6 Z" fill="#ff7a4d" stroke="#ff7a4d" stroke-width="2" stroke-linejoin="round"/>
-  <!-- the parts that take turns: model, runtime, tool -->
-  <g fill="#fbfcfd" stroke="#15202e" stroke-width="2.5">
-    <circle cx="48.5" cy="22.5" r="5"/>
-    <circle cx="32" cy="51" r="5"/>
-    <circle cx="15.5" cy="41.5" r="5"/>
+  <g mask="url(#gaps)">
+    <path d="M36.0 13.4 A19 19 0 1 1 16.2 21.4" fill="none" stroke="#ff7a4d" stroke-width="6" stroke-linecap="round"/>
+    <path d="M21.9 15.9 L8.8 20.2 L21.3 26.6 Z" fill="#ff7a4d" stroke="#ff7a4d" stroke-width="2" stroke-linejoin="round"/>
   </g>
-  <!-- the hub that runs them -->
-  <circle cx="32" cy="32" r="4.5" fill="#fbfcfd"/>
+  <!-- the parts that take turns: model, runtime, tool; and the hub that runs them -->
+  <circle class="ink" cx="48.5" cy="22.5" r="5"/>
+  <circle class="ink" cx="32" cy="51" r="5"/>
+  <circle class="ink" cx="15.5" cy="41.5" r="5"/>
+  <circle class="ink" cx="32" cy="32" r="4.5"/>
 </svg>
