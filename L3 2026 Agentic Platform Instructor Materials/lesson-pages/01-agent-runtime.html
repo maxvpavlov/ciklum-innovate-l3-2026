@@ -761,7 +761,7 @@ class Context:
       <li><b>⑥ and ⑦ classify that turn</b>, the first two rows of "What the model can send back": tool calls become pending work and go back to ③; anything else must be the final answer.</li>
       <li><b>③ is the action and observation.</b> ③ and ⑦ are shown in full below.</li>
     </ul>
-    <p class="muted">Abridged: the real function also records a run event for every model call and tool call, pauses for approval when a tool requires it, and saves the run if it is cancelled.</p>
+    <p class="muted">Abridged: the real function also records a run event for every model call and tool call, pauses for approval when a tool requires it, and saves the run if it is cancelled. ③ and ⑦ are zoomed in below, followed by <a href="#full-loop">the complete loop</a> with comments.</p>
     <div class="excerpt">
       <div class="src">zoom in on ③ · the act step</div>
 <pre>while run.pending:
@@ -800,6 +800,125 @@ return run</pre>
     <p class="muted">Later this check moves into <code>security.validate_answer</code> and gets stricter: <code>status</code> must be <code>complete</code> or <code>insufficient_evidence</code>, <code>cause</code> and <code>summary</code> must be text, <code>evidence</code> a short list of strings, and each citation must equal a source ID a tool actually returned, not just appear somewhere in the text.</p>
     <div class="ask"><span class="label">Ask</span><p class="q">The model answers with evidence ["log-astro-001", "rb-rollback-v9"]. What happens?</p>
       <details><summary>Show the answer</summary><p>The run fails with <code>unobserved_citation</code>: no tool ever returned <code>rb-rollback-v9</code>. The runtime refuses an answer that cites a source it cannot show, however plausible the rest of it reads.</p></details></div>
+    <h3 id="full-loop">The complete loop</h3>
+    <p class="read">Here is the whole function from the reference, unabridged. The code is exactly the <code>lesson-01</code> source; only the grey comment lines are added for this page, and the circled numbers match the overview above. Your agent's version may be organized differently and still pass the same checks.</p>
+    <div class="excerpt">
+      <div class="src">the complete loop · incident/core.py · run_agent(), lines 71–151 at lesson-01 · comments added</div>
+<pre class="loop"><span class="n"></span>async def run_agent(provider, execute: Callable, schemas: list, task: str,
+<span class="n"></span>                    context=None, limits=None, initial=None,
+<span class="n"></span>                    checkpoint: Callable | None = None) -&gt; Run:
+<span class="n"></span>    """Tool calls are persisted before dispatch so a paused call can resume."""
+<span class="n"></span><span class="muted">    # the platform's limits, or the defaults</span>
+<span class="n"></span>    limits = limits or Limits()
+<span class="n"></span><span class="muted">    # a new run with the instructions and the task, or a saved run being resumed</span>
+<span class="n"></span>    run = initial or Run(context or Context(), [
+<span class="n"></span>        {"role": "system", "content": SYSTEM},
+<span class="n"></span>        {"role": "user", "content": task},
+<span class="n"></span>    ])
+<span class="n"></span>    run.status = "running"
+<span class="n"></span>    run.error = None
+<span class="n"></span><span class="muted">    # (tool, arguments) pairs this run has already executed</span>
+<span class="n"></span>    seen = set()
+<span class="n"></span>
+<span class="n"></span><span class="muted">    # hand the run's state to the caller after every change; Session 05 stores it</span>
+<span class="n"></span>    def save():
+<span class="n"></span>        if checkpoint:
+<span class="n"></span>            checkpoint(run)
+<span class="n"></span>
+<span class="n"></span><span class="muted">    # every guard and check below raises; the two handlers at the end turn that into a named outcome</span>
+<span class="n"></span>    try:
+<span class="n"></span><span class="muted">        # one deadline for the whole run: cancels a model or tool call in progress</span>
+<span class="n">①</span>        async with asyncio.timeout(limits.seconds):
+<span class="n"></span><span class="muted">            # at most N model turns</span>
+<span class="n">②</span>            while run.steps &lt; limits.steps:
+<span class="n"></span><span class="muted">                # ACT: run the tools the model asked for, oldest first</span>
+<span class="n">③</span>                while run.pending:
+<span class="n"></span>                    call = run.pending[0]
+<span class="n"></span><span class="muted">                    # refuse the same tool with the same arguments before it runs again</span>
+<span class="n"></span>                    key = json.dumps([call["name"], call["args"]], sort_keys=True)
+<span class="n"></span>                    if key in seen:
+<span class="n"></span>                        raise ValueError("repeated_action")
+<span class="n"></span>                    seen.add(key)
+<span class="n"></span>                    started = time.monotonic()
+<span class="n"></span><span class="muted">                    # the executor runs the tool with the platform's Context, never the model's</span>
+<span class="n"></span>                    try:
+<span class="n"></span>                        result = await execute(call["name"], call["args"], run.context)
+<span class="n"></span><span class="muted">                    # a write nobody has approved yet pauses the run instead of failing it (Session 05)</span>
+<span class="n"></span>                    except ApprovalRequired:
+<span class="n"></span>                        run.status = "waiting_approval"
+<span class="n"></span>                        save()
+<span class="n"></span>                        return run
+<span class="n"></span><span class="muted">                    # record what happened: later the console's run timeline</span>
+<span class="n"></span>                    run.event("tool", name=call["name"], ok=result.get("ok", True),
+<span class="n"></span>                              elapsed_ms=(time.monotonic()-started)*1000)
+<span class="n"></span><span class="muted">                    # OBSERVE: the result joins the conversation, tagged with the call's own ID</span>
+<span class="n"></span>                    run.messages.append({"role": "tool", "tool_call_id": call["id"],
+<span class="n"></span>                                         "content": json.dumps(result)})
+<span class="n"></span><span class="muted">                    # this call is done; save, so a crash cannot repeat it</span>
+<span class="n"></span>                    run.pending.pop(0)
+<span class="n"></span>                    save()
+<span class="n">④</span>                # Reserve the requested maximum completion before dispatch.
+<span class="n"></span>                estimated_input = len(json.dumps(run.messages)) // 3
+<span class="n"></span>                if run.tokens + estimated_input + limits.max_output_tokens &gt; limits.tokens:
+<span class="n"></span>                    raise ValueError("token_budget")
+<span class="n"></span><span class="muted">                # THINK: send the whole conversation, get back one turn</span>
+<span class="n">⑤</span>                reply = await provider.complete(run.messages, schemas,
+<span class="n"></span>                                                limits.max_output_tokens)
+<span class="n"></span><span class="muted">                # every model call is a step; usage as reported; cost only from configured prices</span>
+<span class="n"></span>                run.steps += 1
+<span class="n"></span>                run.tokens += reply.tokens
+<span class="n"></span>                run.cost_usd += reply.cost_usd
+<span class="n"></span>                run.event("model", step=run.steps, tokens=reply.tokens,
+<span class="n"></span>                          cost_usd=reply.cost_usd)
+<span class="n"></span><span class="muted">                # the model's turn joins the conversation</span>
+<span class="n"></span>                run.messages.append(reply.message)
+<span class="n"></span><span class="muted">                # recheck with the usage the provider actually reported</span>
+<span class="n"></span>                if run.tokens &gt; limits.tokens:
+<span class="n"></span>                    raise ValueError("token_budget")
+<span class="n"></span><span class="muted">                # did the turn ask for tools?</span>
+<span class="n">⑥</span>                calls = reply.message.get("tool_calls", [])
+<span class="n"></span>                if calls:
+<span class="n"></span><span class="muted">                    # yes: record each one as pending and save BEFORE running any, then go back to ③</span>
+<span class="n"></span>                    run.pending = [{"id": c["id"], "name": c["function"]["name"],
+<span class="n"></span>                                    "args": json.loads(c["function"]["arguments"])}
+<span class="n"></span>                                   for c in calls]
+<span class="n"></span>                    save()
+<span class="n"></span>                    continue
+<span class="n"></span><span class="muted">                # no tool calls, so this turn must be the final JSON answer</span>
+<span class="n">⑦</span>                answer = json.loads(reply.message.get("content") or "{}")
+<span class="n"></span><span class="muted">                # all four fields present?</span>
+<span class="n"></span>                if not {"status", "cause", "summary", "evidence"} &lt;= answer.keys():
+<span class="n"></span>                    raise ValueError("invalid_final_answer")
+<span class="n"></span><span class="muted">                # every cited source must appear in something a tool returned</span>
+<span class="n"></span>                observed = " ".join(m["content"] for m in run.messages if m["role"] == "tool")
+<span class="n"></span>                if any(source not in observed for source in answer["evidence"]):
+<span class="n"></span>                    raise ValueError("unobserved_citation")
+<span class="n"></span><span class="muted">                # accept the answer</span>
+<span class="n"></span>                run.answer = answer
+<span class="n"></span>                run.status = "completed"
+<span class="n"></span>                save()
+<span class="n"></span>                return run
+<span class="n"></span><span class="muted">            # out of turns without an answer</span>
+<span class="n">⑧</span>            raise ValueError("step_budget")
+<span class="n"></span><span class="muted">    # the caller cancelled the run: save it as cancelled, then pass the cancellation on</span>
+<span class="n"></span>    except asyncio.CancelledError:
+<span class="n"></span>        run.status = "cancelled"
+<span class="n"></span>        save()
+<span class="n"></span>        raise
+<span class="n"></span><span class="muted">    # a guard or check stopped the run: failed, with TimeoutError or the guard's code</span>
+<span class="n"></span>    except (TimeoutError, ValueError, RuntimeError) as exc:
+<span class="n"></span>        run.status = "failed"
+<span class="n"></span>        run.error = type(exc).__name__ if isinstance(exc, TimeoutError) else str(exc)
+<span class="n"></span>        run.event("failure", code=run.error)
+<span class="n"></span>        save()
+<span class="n"></span><span class="muted">        # the caller always gets the run back</span>
+<span class="n"></span>        return run</pre>
+    </div>
+    <ul class="key">
+      <li><b>What the overview left out.</b> A run event for every model call, tool call and failure (lines 104, 119 and 149), which later becomes the console's run timeline; the pause when a write needs approval (lines 100–103); a second token check with the usage the provider actually reported (line 122); and saving a cancelled run before passing the cancellation on (lines 142–145).</li>
+      <li><b>One exit for every failure.</b> Each guard and check raises, and the handler at the end turns it into <code>status = "failed"</code> with a named <code>error</code>. That is why every stop has a name and the caller always gets the run back.</li>
+      <li><b><code>initial</code> lets a saved run continue.</b> Because pending calls are saved before they run, a run loaded from storage resumes at ③ with exactly the calls that had not finished. Session 05 uses this.</li>
+    </ul>
   </div>
 
   <div class="terminal" id="step4">
