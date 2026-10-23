@@ -133,6 +133,16 @@ svg .today { fill: var(--signal-soft); stroke: var(--signal); stroke-width: 2.5;
 svg .ink { stroke: var(--ink); fill: none; stroke-width: 1.8; }
 svg .arrowhead { fill: var(--ink); }
 svg .sig { fill: var(--signal); }
+svg .fail { fill: var(--signal-soft); stroke: var(--signal); stroke-width: 2; }
+svg .failhead { fill: var(--signal); font-size: 11px; font-weight: 700; letter-spacing: .08em; }
+svg .failcode { fill: var(--signal); font-size: 14px; font-weight: 600; }
+svg .err { stroke: var(--signal); fill: none; stroke-width: 2; }
+svg .errlbl { fill: var(--signal); font-size: 12px; font-weight: 600; }
+svg .think { fill: var(--sheet); stroke: var(--model); stroke-width: 2.5; }
+svg .act { fill: var(--sheet); stroke: var(--tool); stroke-width: 2.5; }
+svg .done { fill: var(--sheet); stroke: var(--tool); stroke-width: 2; }
+svg .donetxt { fill: var(--tool); font-size: 15px; font-weight: 600; }
+svg .frame { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 6 5; }
 
 /* Comparison */
 .compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
@@ -452,8 +462,16 @@ change any part, e.g. INC-001 → INC-002
   <p class="eyebrow"><span>The protocol</span></p>
   <h2>MCP standardizes how tools are found and reached. It does not decide who may use them.</h2>
   <div class="stack">
+    <h3>MCP in brief</h3>
     <div class="prose" style="margin-top:0">
-      <p>The <b>Model Context Protocol</b> is an open protocol for connecting AI applications to tools and data. A server describes what it offers; a client discovers it and calls it over a transport. Any MCP-capable application can then use the same server, which is why tool providers increasingly ship one.</p>
+      <p>The <b>Model Context Protocol (MCP)</b> is an open standard, introduced by Anthropic in November 2024, for connecting AI applications to tools and data. Before it, every application wrote its own adapter for every tool. With MCP, a tool provider writes one <b>server</b>, and any MCP-capable application, such as a coding agent, a chat app or our platform, can discover and call it the same way. The specification compares it to a USB-C port for AI applications.</p>
+      <p>MCP standardizes the connection only. It says how to list a server's tools and call them; it says nothing about which tools a given agent should be allowed to use. That decision stays with the platform, and it is what today's executor makes.</p>
+    </div>
+    <div class="cards">
+      <div><span class="q">What a server offers</span><p><b>Tools</b> the model may ask to run, <b>resources</b> the application can read, and reusable <b>prompts</b>. We use two tools and one resource.</p></div>
+      <div><span class="q">How they talk</span><p>JSON-RPC 2.0 messages, such as <code>tools/list</code> and <code>tools/call</code>, each with a schema the specification defines.</p></div>
+      <div><span class="q">Over which transport</span><p><b>stdio</b>, where the application starts the server as a child process, or <b>Streamable HTTP</b> for a remote server. We use stdio.</p></div>
+      <div><span class="q">In what order</span><p><code>initialize</code> negotiates the protocol version and capabilities; then the client lists what the server offers and calls it.</p></div>
     </div>
     <figure>
       <div class="diagram">
@@ -506,6 +524,78 @@ tool      runbook_search  "Find relevant runbook evidence in the launcher's tena
            "required": ["query"]}
 resource  incident://runbooks</pre>
       <figcaption>Recorded from the lesson-02 checkpoint with the pinned SDK (mcp 2.2.0); titles trimmed. Note what the advertised schemas do not say: nothing forbids extra properties.</figcaption>
+    </figure>
+    <h3>How the platform hands tools to an agent</h3>
+    <p class="read">Follow the tools from left to right. Each stage narrows what the next one sees, and the model only ever receives the last list.</p>
+    <figure>
+      <div class="diagram">
+        <svg viewBox="0 0 960 430" role="img" aria-labelledby="handTitle handDesc">
+          <title id="handTitle">From the platform's server list to the tools one agent run receives</title>
+          <desc id="handDesc">The platform decides which MCP servers to start. The server lists its tools. The platform keeps only tools in its own catalogue, with its own contracts. Each run's Context then selects the tools that run may use, and only those are sent to the model.</desc>
+          <defs><marker id="hArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="arrowhead" d="M0 0 L10 5 L0 10z"/></marker></defs>
+
+          <text class="sig" x="16" y="30" style="font-size:13px;font-weight:600">1 · SERVER LIST</text>
+          <text class="small" x="16" y="48">the platform decides what runs</text>
+          <rect class="today" x="16" y="70" width="200" height="92" rx="8"/>
+          <text class="lbl" x="30" y="96">incident-tools</text>
+          <text class="small" x="30" y="118">stdio · fixed command</text>
+          <text class="small" x="30" y="136">INCIDENT_TENANT=astro</text>
+          <text class="small" x="30" y="154">started by the launcher</text>
+          <rect class="frame" x="16" y="186" width="200" height="58" rx="8"/>
+          <text class="lbl" x="30" y="210" style="fill:var(--muted)">any other server</text>
+          <text class="small" x="30" y="230">never started</text>
+
+          <path class="ink" d="M216 116 H252" marker-end="url(#hArrow)"/>
+
+          <text class="sig" x="256" y="30" style="font-size:13px;font-weight:600">2 · DISCOVERY</text>
+          <text class="small" x="256" y="48">what the server says it offers</text>
+          <rect class="box" x="256" y="70" width="200" height="290" rx="8"/>
+          <text class="lbl" x="270" y="96">MCP server</text>
+          <text class="small" x="270" y="132">tools/list returns</text>
+          <text x="270" y="158" style="font-size:14px">log_lookup</text>
+          <text x="270" y="182" style="font-size:14px">runbook_search</text>
+          <text class="small" x="270" y="210" style="font-style:italic">+ anything it adds later</text>
+          <text class="small" x="270" y="250">resources/list returns</text>
+          <text x="270" y="276" style="font-size:14px">incident://runbooks</text>
+          <text class="small" x="270" y="330">information only</text>
+
+          <path class="ink" d="M456 170 H492" marker-end="url(#hArrow)"/>
+
+          <text class="sig" x="496" y="30" style="font-size:13px;font-weight:600">3 · CATALOGUE</text>
+          <text class="small" x="496" y="48">known tools, own contracts</text>
+          <rect class="today" x="496" y="70" width="210" height="290" rx="8"/>
+          <text class="lbl" x="510" y="96">Platform catalogue</text>
+          <text class="small" x="510" y="116">ToolExecutor.schemas</text>
+          <text class="donetxt" x="510" y="150" style="font-size:14px">✓ log_lookup</text>
+          <text class="donetxt" x="510" y="174" style="font-size:14px">✓ runbook_search</text>
+          <text class="donetxt" x="510" y="198" style="font-size:14px">✓ mock_remediate</text>
+          <text class="small" x="530" y="216">local write, approved</text>
+          <text class="failcode" x="510" y="256">✕ anything else</text>
+          <text class="small" x="530" y="274">never offered</text>
+          <text class="small" x="530" y="290">→ unknown_tool</text>
+          <text class="small" x="510" y="330">no extra arguments allowed</text>
+
+          <path class="ink" d="M706 128 H742" marker-end="url(#hArrow)"/>
+          <path class="ink" d="M706 292 H742" marker-end="url(#hArrow)"/>
+
+          <text class="sig" x="746" y="30" style="font-size:13px;font-weight:600">4 · PER RUN</text>
+          <text class="small" x="746" y="48">Context.allowed selects</text>
+          <rect class="act" x="746" y="70" width="200" height="130" rx="8"/>
+          <text class="lbl" x="760" y="96">Investigator run</text>
+          <text x="760" y="124" style="font-size:14px">log_lookup</text>
+          <text x="760" y="146" style="font-size:14px">runbook_search</text>
+          <text class="small" x="760" y="180">2 tools sent to the model</text>
+          <rect class="act" x="746" y="230" width="200" height="130" rx="8"/>
+          <text class="lbl" x="760" y="256">Operator run</text>
+          <text x="760" y="284" style="font-size:14px">mock_remediate</text>
+          <text class="small" x="760" y="306">each action approved</text>
+          <text class="small" x="760" y="340">1 tool sent to the model</text>
+
+          <text class="small" x="16" y="398">The model sees only the list from step 4: run_agent(…, schemas=tools.available(context)). Every call it makes</text>
+          <text class="small" x="16" y="418">is checked again by the executor, against the same catalogue and the same Context.</text>
+        </svg>
+      </div>
+      <figcaption>Today the server list is one entry fixed in the launcher, and the catalogue is the executor's own schemas. Session 09 turns both into platform features: a registry of tool servers with manifests, tool definitions pinned on first connection, and a gateway that applies one policy to every call.</figcaption>
     </figure>
     <div class="prose">
       <p><b>The server is not your policy.</b> Call the server directly with <code>log_lookup {"incident_id": "INC-001", "tenant": "locomotive"}</code> and it does not complain: the extra argument is ignored and Astro's record comes back, because the tenant was fixed when the server started. Through your executor the same request fails with <code>invalid_arguments</code>. The executor validates against the platform's own contract, so a server that is lax, changes its schema or advertises something new cannot widen what a run may do.</p>
@@ -958,4 +1048,3 @@ class MCPReadAdapter:
   try { if (localStorage.getItem("lesson-view") === "present") setView("present"); } catch (e) { /* default view */ }
 })();
 </script>
-
