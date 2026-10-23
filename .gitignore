@@ -1,3 +1,4 @@
 .DS_Store
 # Office lock files
 ~$*
+__pycache__/
