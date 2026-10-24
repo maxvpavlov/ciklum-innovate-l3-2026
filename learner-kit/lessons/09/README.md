@@ -9,7 +9,7 @@ fail to import, because the modules it needs do not exist yet. Never edit the te
 make them pass.
 
 When everything is built, set `LESSON = 9` in `incident/__init__.py`. The full
-suite should then report **37 passed**, and `python -m incident.lab 9`
+suite should then report **39 passed**, and `python -m incident.lab 9`
 prints the lesson's demo result.
 
 ## Interfaces your code must provide

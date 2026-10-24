@@ -110,8 +110,8 @@
     "A degraded or mismatched evaluation blocks release, every decision appears in the release log and the Operations view, and activation can return to the previous version."
   ],
   "recorded_test_result": {
-    "passed": 48,
-    "seconds": "18.72"
+    "passed": 50,
+    "seconds": "26.68"
   },
   "troubleshooting": [
     {

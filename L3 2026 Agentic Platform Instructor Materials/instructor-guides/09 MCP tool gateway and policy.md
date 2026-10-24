@@ -4,7 +4,7 @@
 
 **Outcome** Every agent tool call passes one gateway that applies policy, audits the decision, shares one upstream MCP session per server and tenant, and quarantines a server whose pinned tool definitions change.
 
-Duration: 90 minutes. Starting checkpoint: lesson-08. Ending checkpoint: lesson-09 (ffd4ea9).
+Duration: 90 minutes. Starting checkpoint: lesson-08. Ending checkpoint: lesson-09 (13af6c2).
 
 Word version: [09 MCP tool gateway and policy.docx](09%20MCP%20tool%20gateway%20and%20policy.docx)
 
@@ -15,13 +15,13 @@ This session builds the MCP tool gateway, which sits between every agent the pla
 | Session | Platform component | Status |
 |---|---|---|
 | 01 | Agent runtime: bounded ReAct loop, typed run state, event log | Built earlier |
-| 02 | Tool contracts, approval boundary and MCP transport | Built earlier |
+| 02 | Tool contracts, approval boundary, MCP transport and the first console | Built earlier |
 | 03 | Context selection, retrieval, memory and versioned artifacts | Built earlier |
 | 04 | Evaluation harness and single-agent baseline | Built earlier |
 | 05 | Durable runs, crash recovery and exact-action approval | Built earlier |
 | 06 | Supervisor, scoped subagents and parallel coordination | Built earlier |
 | 07 | Remote agents over A2A | Built earlier |
-| 08 | Platform core: agent registry, run API and platform console | Built earlier |
+| 08 | Platform core: agent registry, durable run API, registry and approval views | Built earlier |
 | 09 | MCP tool gateway: policy, audit and shared upstream sessions | **This session** |
 | 10 | Agent identity, delegated credentials and credential store | Later session |
 | 11 | Operations: traces, admission control and evaluated releases | Later session |
@@ -272,7 +272,7 @@ def pin_tools(self, name, pins):
 - Every decision is audited with an argument hash, and the Gateway view is tenant-scoped.
 - Workers reach tools only through the gateway, and the platform closes upstream sessions on shutdown.
 
-The independently unpacked lesson-09 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 09 check pack from the course kit. Recorded test result: 37 passed in 9.91s. Learners commit and push their checkpoint to their GitLab repository; lesson-09 (ffd4ea9) remains the instructor's answer key.
+The independently unpacked lesson-09 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 09 check pack from the course kit. Recorded test result: 39 passed in 16.65s. Learners commit and push their checkpoint to their GitLab repository; lesson-09 (13af6c2) remains the instructor's answer key.
 
 ### Files changed in this checkpoint
 
@@ -319,7 +319,7 @@ In the reference, this checkpoint changed the files below. Learners write the im
 
 ## Verification scope
 
-All course tags were independently unpacked and tested. The completed repository has 51 passing tests. Real local MCP stdio, the tool gateway's shared sessions and pinned definitions, A2A HTTP discovery, streaming, delegated-token authentication and cancellation were exercised. The platform console was driven in a headless Chromium browser against every checkpoint from lesson-08 onward.
+All course tags were independently unpacked and tested. The completed repository has 53 passing tests. Real local MCP stdio, the tool gateway's shared sessions and pinned definitions, A2A HTTP discovery, streaming, delegated-token authentication and cancellation were exercised. The platform console was driven in a headless Chromium browser against every checkpoint from lesson-08 onward.
 
 Live model credentials, paid provider calls, live model judging, third-party MCP or A2A services, remote MCP OAuth, an enterprise identity provider, a managed secret vault, production cloud rollout and an external observability collector were not tested. The offline provider is a deterministic fixture, so its usage and quality results are teaching measurements. Read TESTING.md for the full scope and environment details.
 

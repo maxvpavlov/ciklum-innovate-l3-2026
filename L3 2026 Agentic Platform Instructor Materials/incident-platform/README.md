@@ -20,8 +20,10 @@ learners build each of them:
 - **agent identity and credentials**: signed short-lived tokens, delegation chains from
   user to agent to worker or remote agent, and a credential store (Session 10);
 - a **platform console** at `/console` that visualizes what has been built: the
-  platform map, registry, runs and traces, approvals, gateway audit, identity and
-  operations (from Session 08, extended in every later session).
+  platform map, runs and traces, tool checks, registry, approvals, gateway audit,
+  identity and operations. From Session 02 the kit gives a first console with its run
+  API (runs and a Tools view); learners extend it from Session 08, and every later
+  session adds a view.
 
 ## How learners work
 
@@ -59,13 +61,13 @@ A completion message alone does not establish that a learner's code works.
 | End tag | Capability | Minutes |
 |---|---|---:|
 | lesson-01 | Bounded ReAct runtime and configurable provider adapters | 120 |
-| lesson-02 | Tool contracts, approval boundary, idempotent mock effects and real MCP stdio | 120 |
+| lesson-02 | Tool contracts, approval boundary, idempotent mock effects, real MCP stdio and the platform shell | 120 |
 | lesson-03 | Context selection, retrieval, expiring memory and versioned artifacts | 90 |
 | lesson-04 | Repeated evaluation, held-out cases and optional judge calibration | 90 |
 | lesson-05 | Durable checkpoints, crash recovery and exact-action approval | 90 |
 | lesson-06 | Supervisor, scoped subagents, shared budgets, parallel scheduling and bounded review | 120 |
 | lesson-07 | Independent A2A specialist, streaming, authentication and cancellation | 90 |
-| lesson-08 | Platform core: agent registry, run API and the platform console | 90 |
+| lesson-08 | Platform core: agent registry, durable run API, registry and approval views | 90 |
 | lesson-09 | MCP tool gateway: policy, audit, shared sessions and pinned tool definitions | 90 |
 | lesson-10 | Agent identity, delegated credentials, credential store and containment | 90 |
 | lesson-11 | Operations: correlated traces, admission control and evaluated releases | 120 |
@@ -100,7 +102,7 @@ the existing entry points to choose how to execute them.
 
 > Start my platform locally on loopback with the offline provider and open its
 > console. Sign in first as the demo analyst and then as the demo operator, and
-> show me what each identity can see and do in the Overview, Registry, Runs,
+> show me what each identity can see and do in the Overview, Registry, Runs, Tools,
 > Approvals, Gateway, Identity and Operations views. Submit one single-agent and
 > one team investigation from the console, then explain the run timeline, the
 > correlated trace, the gateway audit and the delegation chains. Never paste a
@@ -184,7 +186,7 @@ infrastructure controls require deliberate configuration and validation.
 ## Verification and limits
 
 See [TESTING.md](TESTING.md) for the reference verification record. Every code
-checkpoint was independently unpacked and tested, with 51 tests passing at the
+checkpoint was independently unpacked and tested, with 53 tests passing at the
 final checkpoint. Actual local MCP stdio, the gateway's shared sessions and
 pinned tool definitions, A2A HTTP transport, streaming, delegated-token
 authentication and cancellation were exercised, and the console was driven in a

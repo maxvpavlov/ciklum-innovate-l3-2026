@@ -3,7 +3,7 @@
   "title": "Supervisor, subagents and parallel coordination",
   "duration": 120,
   "outcome": "A supervisor delegates bounded work to isolated log and runbook agents under typed contracts and a shared budget, runs independent work concurrently with a deadline, and coordinates correlated replies, versioned artifacts and bounded review.",
-  "platform_role": "This session turns the single runtime into a small multi-agent system: a supervisor whose only tool is delegate, child runs that are ordinary run_agent calls with a narrowed Context, and one shared budget. There is no console yet. In Session 08 the Runs view lists each child with a link to its parent, and in Session 11 those identifiers become the correlated trace. Session 09 routes child tool calls through the gateway, and Session 10 gives each child a delegated credential narrower than its parent's.",
+  "platform_role": "This session turns the single runtime into a small multi-agent system: a supervisor whose only tool is delegate, child runs that are ordinary run_agent calls with a narrowed Context, and one shared budget. The console's Runs view shows runs started from the platform API, not these child runs yet. In Session 08 the Runs view lists each child with a link to its parent, and in Session 11 those identifiers become the correlated trace. Session 09 routes child tool calls through the gateway, and Session 10 gives each child a delegated credential narrower than its parent's.",
   "preparation": [
     "Bring your Session 05 checkpoint and the Session 04 single-agent evaluation baseline. Review multi-agent design, context isolation and Python asyncio tasks, timeouts and cancellation. Prepare two bounded tasks for the demo, log analysis and runbook investigation, and decide before class which component owns the reviewed report artifact."
   ],
@@ -117,8 +117,8 @@
     "Mismatched or stale replies fail validation, and non-converging review escalates."
   ],
   "recorded_test_result": {
-    "passed": 25,
-    "seconds": "1.81"
+    "passed": 27,
+    "seconds": "4.41"
   },
   "troubleshooting": [
     {

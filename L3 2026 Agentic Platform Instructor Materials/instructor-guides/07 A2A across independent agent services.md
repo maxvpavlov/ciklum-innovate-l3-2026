@@ -4,7 +4,7 @@
 
 **Outcome** An independently hosted runbook specialist is discovered and invoked through the official A2A SDK, with streamed artifacts, authentication and remote cancellation.
 
-Duration: 90 minutes. Starting checkpoint: lesson-06. Ending checkpoint: lesson-07 (974fd16).
+Duration: 90 minutes. Starting checkpoint: lesson-06. Ending checkpoint: lesson-07 (e79c003).
 
 Word version: [07 A2A across independent agent services.docx](07%20A2A%20across%20independent%20agent%20services.docx)
 
@@ -15,13 +15,13 @@ This session adds the first agent the platform does not run itself: a runbook sp
 | Session | Platform component | Status |
 |---|---|---|
 | 01 | Agent runtime: bounded ReAct loop, typed run state, event log | Built earlier |
-| 02 | Tool contracts, approval boundary and MCP transport | Built earlier |
+| 02 | Tool contracts, approval boundary, MCP transport and the first console | Built earlier |
 | 03 | Context selection, retrieval, memory and versioned artifacts | Built earlier |
 | 04 | Evaluation harness and single-agent baseline | Built earlier |
 | 05 | Durable runs, crash recovery and exact-action approval | Built earlier |
 | 06 | Supervisor, scoped subagents and parallel coordination | Built earlier |
 | 07 | Remote agents over A2A | **This session** |
-| 08 | Platform core: agent registry, run API and platform console | Later session |
+| 08 | Platform core: agent registry, durable run API, registry and approval views | Later session |
 | 09 | MCP tool gateway: policy, audit and shared upstream sessions | Later session |
 | 10 | Agent identity, delegated credentials and credential store | Later session |
 | 11 | Operations: traces, admission control and evaluated releases | Later session |
@@ -259,7 +259,7 @@ async def cancel_slow_task(url):
 - The client rejects an incompatible tenant before making a request.
 - The slow remote task reaches TASK_STATE_CANCELED.
 
-The independently unpacked lesson-07 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 07 check pack from the course kit. Recorded test result: 27 passed in 2.88s. Learners commit and push their checkpoint to their GitLab repository; lesson-07 (974fd16) remains the instructor's answer key.
+The independently unpacked lesson-07 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 07 check pack from the course kit. Recorded test result: 29 passed in 6.09s. Learners commit and push their checkpoint to their GitLab repository; lesson-07 (e79c003) remains the instructor's answer key.
 
 ### Files changed in this checkpoint
 
@@ -302,7 +302,7 @@ In the reference, this checkpoint changed the files below. Learners write the im
 
 ## Verification scope
 
-All course tags were independently unpacked and tested. The completed repository has 51 passing tests. Real local MCP stdio, the tool gateway's shared sessions and pinned definitions, A2A HTTP discovery, streaming, delegated-token authentication and cancellation were exercised. The platform console was driven in a headless Chromium browser against every checkpoint from lesson-08 onward.
+All course tags were independently unpacked and tested. The completed repository has 53 passing tests. Real local MCP stdio, the tool gateway's shared sessions and pinned definitions, A2A HTTP discovery, streaming, delegated-token authentication and cancellation were exercised. The platform console was driven in a headless Chromium browser against every checkpoint from lesson-08 onward.
 
 Live model credentials, paid provider calls, live model judging, third-party MCP or A2A services, remote MCP OAuth, an enterprise identity provider, a managed secret vault, production cloud rollout and an external observability collector were not tested. The offline provider is a deterministic fixture, so its usage and quality results are teaching measurements. Read TESTING.md for the full scope and environment details.
 
@@ -310,7 +310,7 @@ The SQLite mock-effect ledger proves its local transaction boundary. It does not
 
 ## Session close
 
-**SAY** Your platform can now exchange tasks and evidence with an independent agent service. Retain remote identifiers and explicit lifecycle checks. Next session we build the platform core: an agent registry that pins this specialist's card, a run API and the first views of the platform console.
+**SAY** Your platform can now exchange tasks and evidence with an independent agent service. Retain remote identifiers and explicit lifecycle checks. Next session we build the platform core: an agent registry that pins this specialist's card, a durable run API, and the registry and approval views of the console.
 
 ## References and further study
 

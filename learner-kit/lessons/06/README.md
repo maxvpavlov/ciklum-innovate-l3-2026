@@ -2,8 +2,9 @@
 
 ## Given files
 
-Copy these into your project unchanged. They are data and test doubles that
-everyone shares, so results are comparable; they are not what this lesson teaches.
+Copy these into your project unchanged. They are data, test doubles and the platform
+shell (run API and console) that everyone shares, so results are comparable; they are
+not what this lesson teaches.
 
 - `given/SupervisorProvider.py`: add `SupervisorProvider` to `incident/supervisor.py` in the build step that creates that file.
 
@@ -16,7 +17,7 @@ fail to import, because the modules it needs do not exist yet. Never edit the te
 make them pass.
 
 When everything is built, set `LESSON = 6` in `incident/__init__.py`. The full
-suite should then report **25 passed**, and `python -m incident.lab 6`
+suite should then report **27 passed**, and `python -m incident.lab 6`
 prints the lesson's demo result.
 
 ## Interfaces your code must provide

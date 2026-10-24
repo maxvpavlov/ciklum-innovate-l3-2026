@@ -592,7 +592,7 @@ tools   log_lookup(incident_id) · runbook_search(query)</pre></div></div>
           <tr><td><code>allowed</code> tools</td><td class="own-app">platform</td><td>Permissions are granted by code, never claimed in model output.</td></tr>
           <tr><td><code>Limits</code>: steps, tokens, seconds, output size</td><td class="own-app">platform</td><td>Each limit catches a different failure; the runtime enforces them, and together they bound every run.</td></tr>
           <tr><td><code>messages</code>, proposed tool calls, the answer</td><td class="own-model">model</td><td>Untrusted input. The runtime validates it before acting on it.</td></tr>
-          <tr><td><code>events</code></td><td class="own-app">runtime</td><td>What happened, step by step. Later, the platform console shows it as a run timeline.</td></tr>
+          <tr><td><code>events</code></td><td class="own-app">runtime</td><td>What happened, step by step. From Session 02 the platform console shows it as a run timeline.</td></tr>
         </tbody>
       </table>
     </div>
@@ -970,7 +970,7 @@ return run</pre>
 <span class="n"></span>                        run.status = "waiting_approval"
 <span class="n"></span>                        save()
 <span class="n"></span>                        return run
-<span class="n"></span><span class="muted">                    # record what happened: later the console's run timeline</span>
+<span class="n"></span><span class="muted">                    # record what happened: the console's run timeline from Session 02</span>
 <span class="n"></span>                    run.event("tool", name=call["name"], ok=result.get("ok", True),
 <span class="n"></span>                              elapsed_ms=(time.monotonic()-started)*1000)
 <span class="n"></span><span class="muted">                    # OBSERVE: the result joins the conversation, tagged with the call's own ID</span>
@@ -1037,7 +1037,7 @@ return run</pre>
 <span class="n"></span>        return run</pre>
     </div>
     <ul class="key">
-      <li><b>What the overview left out.</b> A run event for every model call, tool call and failure (lines 104, 119 and 149), which later becomes the console's run timeline; the pause when a write needs approval (lines 100–103); a second token check with the usage the provider actually reported (line 122); and saving a cancelled run before passing the cancellation on (lines 142–145).</li>
+      <li><b>What the overview left out.</b> A run event for every model call, tool call and failure (lines 104, 119 and 149), which the console shows as the run timeline from Session 02; the pause when a write needs approval (lines 100–103); a second token check with the usage the provider actually reported (line 122); and saving a cancelled run before passing the cancellation on (lines 142–145).</li>
       <li><b>One exit for every failure.</b> Each guard and check raises, and the handler at the end turns it into <code>status = "failed"</code> with a named <code>error</code>. That is why every stop has a name and the caller always gets the run back.</li>
       <li><b><code>initial</code> lets a saved run continue.</b> Because pending calls are saved before they run, a run loaded from storage resumes at ③ with exactly the calls that had not finished. Session 05 uses this.</li>
     </ul>
@@ -1131,8 +1131,8 @@ return run</pre>
     </div>
     <div class="ask"><span class="label">After class</span><p class="q">Run today's prompts in your own project, in this order (<a href="#route">the route</a>)</p>
       <ol class="steps"><li><a href="#setup">The lesson-00 prompt</a>: your project, the course repository and your GitLab repository</li><li><a href="#orient">Add the check pack</a></li><li><a href="#step1">Build steps 1 to 4</a>, one at a time, reading each change</li><li><a href="#exercise">Break it on purpose</a></li><li><a href="#verify">Verify and push, then review</a></li></ol></div>
-    <p class="say">Keep your blueprint. Later, the platform console will show these same run events as a timeline.</p>
-    <div class="ask"><span class="label">Next session</span><p class="q">Reliable tools and MCP integration</p><p>Validated tool contracts, application-owned permissions, an approval gate for a mock remediation, and real MCP transport. Bring your Session 01 checkpoint.</p></div>
+    <p class="say">Keep your blueprint. From Session 02 your platform has a console that shows these same run events as a timeline.</p>
+    <div class="ask"><span class="label">Next session</span><p class="q">Reliable tools and MCP integration</p><p>Validated tool contracts, application-owned permissions, an approval gate for a mock remediation, real MCP transport, and your platform's first console. Bring your Session 01 checkpoint.</p></div>
   </div>
 </section>
 

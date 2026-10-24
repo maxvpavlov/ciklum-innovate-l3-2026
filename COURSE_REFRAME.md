@@ -48,7 +48,7 @@ taught and built explicitly, and the platform has a web console that shows what 
   after preserving the previous checkpoints as `v1/lesson-06`…`v1/lesson-12` and `v1/course-complete`.
   **Run that script once** (the authoring session could push the branch but not tags). Until then
   the tags on GitHub still point at the old checkpoints and the guides' quoted hashes won't match.
-  Test counts per tag: 1, 7, 10, 13, 15, 17, 25, 27, 33, 37, 43, 48, 51.
+  Test counts per tag: 1, 7, 10, 13, 15, 17, 25, 27, 33, 37, 43, 48, 51 (since the platform shell was added on 24 October 2026: 1, 7, 12, 15, 17, 19, 27, 29, 35, 39, 45, 50, 53).
 - Instructor guides are now generated from `L3 2026 Agentic Platform Instructor Materials/guide-builder/specs/`
   by `build.py`, and `check.py` enforces the guide–code coupling (13 prompts and 4 exact code
   excerpts per guide, files-changed lists, tag hashes, prompts present in `LEARNER_PROMPTS.md`).

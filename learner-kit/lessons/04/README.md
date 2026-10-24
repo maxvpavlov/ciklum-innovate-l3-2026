@@ -2,8 +2,9 @@
 
 ## Given files
 
-Copy these into your project unchanged. They are data and test doubles that
-everyone shares, so results are comparable; they are not what this lesson teaches.
+Copy these into your project unchanged. They are data, test doubles and the platform
+shell (run API and console) that everyone shares, so results are comparable; they are
+not what this lesson teaches.
 
 - `given/MockProvider.py`: replace `MockProvider` in `incident/providers.py` with this version.
 - `given/CASES.py`: add `CASES` to `incident/evaluate.py` in the build step that creates that file.
@@ -17,7 +18,7 @@ fail to import, because the modules it needs do not exist yet. Never edit the te
 make them pass.
 
 When everything is built, set `LESSON = 4` in `incident/__init__.py`. The full
-suite should then report **15 passed**, and `python -m incident.lab 4`
+suite should then report **17 passed**, and `python -m incident.lab 4`
 prints the lesson's demo result.
 
 ## Interfaces your code must provide

@@ -87,8 +87,8 @@
     "Judge calibration identifies the mismatching labels."
   ],
   "recorded_test_result": {
-    "passed": 15,
-    "seconds": "1.08"
+    "passed": 17,
+    "seconds": "3.63"
   },
   "troubleshooting": [
     {

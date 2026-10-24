@@ -455,13 +455,13 @@ s = slide(CONTENT, "Platform, runtime, model",
           "The platform sets who a run is for, what it may use and how far it may go. Until Session 08 the code that starts "
           "the run plays the platform: today the lab or a test; from Session 08, Platform.submit. The runtime, core.py, enforces "
           "the limits and validates model output, which is untrusted input, before acting on it. Events record what happened step by step; "
-          "later the console shows them as a run timeline.")
+          "from Session 02 the console shows them as a run timeline.")
 table(s, 0.4, 1.0, 9.0, [["Field", "Set by", "Why it matters"],
                          ["`tenant, run_id, role", "platform", "A retrieved document must never be able to switch tenant or identity"],
                          ["`allowed tools", "platform", "Permissions are granted by code, never claimed in model output"],
                          ["`Limits: steps, tokens, seconds", "platform", "Each limit catches a different failure; the runtime enforces them"],
                          ["`messages, tool calls, answer", "model", "Untrusted input: the runtime validates it before acting on it"],
-                         ["`events", "runtime", "What happened, step by step; later the console's run timeline"]],
+                         ["`events", "runtime", "What happened, step by step; the console's run timeline from Session 02"]],
       [2.7, 1.3, 5.0], size=10.5, row_h=0.5)
 text(s, 0.4, 4.25, 9.0, 0.4, [[("The platform sets. The runtime enforces. The model owns nothing.", {"font": MED, "size": 14, "color": BLUE})]])
 
@@ -669,8 +669,8 @@ code(s, 4.3, 1.05, 5.2, 3.5, "{\n  \"capability\": \"bounded ReAct loop\",\n  \"
 # ------------------------------------------------------------------ 34 takeaways
 s = slide(CONTENT, "You own the loop",
           "Four takeaways. An agent is a ReAct loop. Authority is code. Every run is bounded and every stop has a name. "
-          "Completed is not solved: look for cited evidence or an honest insufficient evidence. Keep your blueprint; later "
-          "the console shows these same run events as a timeline.")
+          "Completed is not solved: look for cited evidence or an honest insufficient evidence. Keep your blueprint; from "
+          "Session 02 your platform's console shows these same run events as a timeline.")
 tk = [("An agent is a loop", "the model proposes, the runtime decides and executes, the tool observes."),
       ("Authority is code", "tenant, role and permitted tools are set by the platform, never by model output."),
       ("Every run is bounded", "and every stop has a name and a reason."),
@@ -699,7 +699,7 @@ box(s, 5.9, 1.05, 3.6, 3.0, fill=NAVY, line=None)
 text(s, 6.1, 1.2, 3.25, 2.8, [[("Next session", {"font": MONO, "size": 9.5, "color": MINT})],
                               [("Reliable tools and MCP integration", {"font": MED, "size": 15, "color": "FFFFFF"})],
                               [("Validated tool contracts, application-owned permissions, an approval gate for a mock remediation, "
-                                "and real MCP transport. Starts from your Session 01 checkpoint.", {"color": "C9D3F5"})]], size=11, space=8)
+                                "real MCP transport, and your platform's first console. Starts from your Session 01 checkpoint.", {"color": "C9D3F5"})]], size=11, space=8)
 text(s, 0.4, 4.3, 9.0, 0.4, [[(PAGE, {"font": MONO, "size": 10, "color": BRIGHT})]])
 
 # ------------------------------------------------------------------ 36 thank you

@@ -90,7 +90,7 @@
     ]
   },
   "verification_scope": {
-    "tested": "All course tags were independently unpacked and tested. The completed repository has 51 passing tests. Real local MCP stdio, the tool gateway's shared sessions and pinned definitions, A2A HTTP discovery, streaming, delegated-token authentication and cancellation were exercised. The platform console was driven in a headless Chromium browser against every checkpoint from lesson-08 onward.",
+    "tested": "All course tags were independently unpacked and tested. The completed repository has 53 passing tests. Real local MCP stdio, the tool gateway's shared sessions and pinned definitions, A2A HTTP discovery, streaming, delegated-token authentication and cancellation were exercised. The platform console was driven in a headless Chromium browser against every checkpoint from lesson-08 onward.",
     "not_tested": "Live model credentials, paid provider calls, live model judging, third-party MCP or A2A services, remote MCP OAuth, an enterprise identity provider, a managed secret vault, production cloud rollout and an external observability collector were not tested. The offline provider is a deterministic fixture, so its usage and quality results are teaching measurements. Read TESTING.md for the full scope and environment details.",
     "local_effects": "The SQLite mock-effect ledger proves its local transaction boundary. It does not guarantee exactly-once effects for arbitrary external APIs. The A2A specialist task store is in memory. The restricted Compose sandbox uses temporary writable state; persistent deployment storage requires separate configuration and validation.",
     "platform_identity": "Tokens are HMAC-signed with one shared development key so the course runs offline; a production issuer signs asymmetrically and publishes verification keys. The credential store keeps values in process memory and is not a vault. The gateway runs in the platform process; production gateways are usually separate network services."
@@ -116,13 +116,13 @@
   "platform_map_header": ["Session", "Platform component", "Status"],
   "platform_components": [
     [1, "Agent runtime: bounded ReAct loop, typed run state, event log"],
-    [2, "Tool contracts, approval boundary and MCP transport"],
+    [2, "Tool contracts, approval boundary, MCP transport and the first console"],
     [3, "Context selection, retrieval, memory and versioned artifacts"],
     [4, "Evaluation harness and single-agent baseline"],
     [5, "Durable runs, crash recovery and exact-action approval"],
     [6, "Supervisor, scoped subagents and parallel coordination"],
     [7, "Remote agents over A2A"],
-    [8, "Platform core: agent registry, run API and platform console"],
+    [8, "Platform core: agent registry, durable run API, registry and approval views"],
     [9, "MCP tool gateway: policy, audit and shared upstream sessions"],
     [10, "Agent identity, delegated credentials and credential store"],
     [11, "Operations: traces, admission control and evaluated releases"],

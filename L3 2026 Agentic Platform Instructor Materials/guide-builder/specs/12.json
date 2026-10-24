@@ -122,8 +122,8 @@
     "The presenter can explain code ownership, protocol boundaries, measurements and limitations."
   ],
   "recorded_test_result": {
-    "passed": 51,
-    "seconds": "20.67"
+    "passed": 53,
+    "seconds": "28.71"
   },
   "troubleshooting": [
     {

@@ -103,8 +103,8 @@
     "Workers reach tools only through the gateway, and the platform closes upstream sessions on shutdown."
   ],
   "recorded_test_result": {
-    "passed": 37,
-    "seconds": "9.91"
+    "passed": 39,
+    "seconds": "16.65"
   },
   "troubleshooting": [
     {

@@ -27,19 +27,25 @@ from guidelib import HERE as REPO, MATERIALS, tag_name
 KIT = MATERIALS.parent / "learner-kit"
 KIT_URL = "https://github.com/maxvpavlov/ciklum-innovate-l3-2026/tree/main/learner-kit"
 
-# What is given rather than built: synthetic data, deterministic model doubles and the
-# local service launcher. (path, definition) with definition None for a whole file.
+# What is given rather than built: synthetic data, deterministic model doubles, the local service
+# launcher, and the platform shell (run API and console) that learners extend from Session 08.
+# (path, definition, last lesson it is given in) with definition None for a whole file.
+SHELL = ["incident/api.py", "incident/console/app.js", "incident/console/console.css",
+         "incident/console/index.html", "incident/console/views/index.js",
+         "incident/console/views/overview.js", "incident/console/views/runs.js"]
 GIVEN = [
-    ("incident/fixtures.py", None),
-    ("incident/providers.py", "MockProvider"),
-    ("incident/evaluate.py", "CASES"),
-    ("incident/supervisor.py", "SupervisorProvider"),
-    ("incident/local_service.py", None),
-    ("incident/tuning.py", "EfficientMockProvider"),
-]
+    ("incident/fixtures.py", None, 12),
+    ("incident/providers.py", "MockProvider", 12),
+    ("incident/evaluate.py", "CASES", 12),
+    ("incident/supervisor.py", "SupervisorProvider", 12),
+    ("incident/local_service.py", None, 12),
+    ("incident/tuning.py", "EfficientMockProvider", 12),
+    ("incident/blueprint.py", None, 12),
+    ("incident/console/views/tools.js", None, 12),
+] + [(path, None, 7) for path in SHELL]
 STARTER_FILES = [".gitignore", "pyproject.toml", "uv.lock", "incident/__init__.py",
                  "incident/lab.py", "incident/labs/__init__.py", "tests/test_setup.py"]
-TEST_COUNTS = [1, 7, 10, 13, 15, 17, 25, 27, 33, 37, 43, 48, 51]
+TEST_COUNTS = [1, 7, 12, 15, 17, 19, 27, 29, 35, 39, 45, 50, 53]
 
 
 def git(*args):
@@ -80,7 +86,9 @@ def given_text(n, path, name):
 def given_for(n):
     """Given items that first appear, or change, at lesson n."""
     items = []
-    for path, name in GIVEN:
+    for path, name, until in GIVEN:
+        if n > until:
+            continue
         now, before = given_text(n, path, name), given_text(n - 1, path, name) if n > 1 else None
         if now is not None and now != before:
             items.append((path, name, now, before is not None))
@@ -138,18 +146,22 @@ def build_lesson(n, known_given):
                       f"{', replacing the earlier version' if changed else ''}.\n"
                       "# Keep or add the imports it needs in that file.\n\n")
             write(out / "given" / f"{name}.py", header + text)
-        known_given.add((path[:-3].replace("/", "."), name or "*"))
+        if path.endswith(".py"):
+            until = next(u for p, d, u in GIVEN if p == path and d == name)
+            known_given.add((path[:-3].replace("/", "."), name or "*", until))
     for path in ls(n, "tests") + ls(n, "incident/labs"):
         write(out / "checks" / path, show(n, path))
 
-    given_names = {(m, d) for m, d in known_given}
-    whole = {m for m, d in known_given if d == "*"}
+    current = {(m, d) for m, d, until in known_given if n <= until}
+    given_names = current
+    whole = {m for m, d in current if d == "*"}
     contract = {m: names for m, names in interfaces(n, given_names).items() if m not in whole}
     lines = [f"# Lesson {nn} check pack", ""]
     if items:
         lines += ["## Given files", "",
-                  "Copy these into your project unchanged. They are data and test doubles that",
-                  "everyone shares, so results are comparable; they are not what this lesson teaches.",
+                  "Copy these into your project unchanged. They are data, test doubles and the platform",
+                  "shell (run API and console) that everyone shares, so results are comparable; they are",
+                  "not what this lesson teaches.",
                   ""]
         for path, name, _, changed in items:
             if name is None:
@@ -187,7 +199,7 @@ def build_readme():
         "| Folder | What it is |",
         "|---|---|",
         "| `starter/` | The starting project (checkpoint lesson-00). Your coding agent copies it into a new private repository in your course GitLab group on gitlab.ciklum.net. |",
-        "| `lessons/NN/given/` | Synthetic data and deterministic test doubles, such as the mock model, that everyone uses unchanged. |",
+        "| `lessons/NN/given/` | Synthetic data, deterministic test doubles such as the mock model, and the platform shell (run API and console, from Session 02) that everyone uses unchanged. |",
         "| `lessons/NN/checks/` | The lesson's demo and tests, cumulative. Copy them unchanged; they fail until you build the capability. |",
         "| `lessons/NN/README.md` | What to copy where, and the interfaces your code must provide. |",
         "",

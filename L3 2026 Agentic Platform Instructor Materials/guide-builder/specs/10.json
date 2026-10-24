@@ -108,8 +108,8 @@
     "Injected writes, path escapes, metadata egress, fabricated citations and credential strings in events are contained or redacted."
   ],
   "recorded_test_result": {
-    "passed": 43,
-    "seconds": "13.15"
+    "passed": 45,
+    "seconds": "21.06"
   },
   "troubleshooting": [
     {

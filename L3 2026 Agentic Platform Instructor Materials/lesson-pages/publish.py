@@ -28,6 +28,9 @@ def publish(source, folder):
     out = DOCS / folder / "index.html"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(wrap((HERE / source).read_text(encoding="utf-8")), encoding="utf-8")
+    # Images a page uses live in assets/<folder>/ and are published next to it.
+    for asset in sorted((HERE / "assets" / folder).glob("*")):
+        (out.parent / asset.name).write_bytes(asset.read_bytes())
     return out
 
 

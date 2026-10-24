@@ -84,8 +84,8 @@
     "The slow remote task reaches TASK_STATE_CANCELED."
   ],
   "recorded_test_result": {
-    "passed": 27,
-    "seconds": "2.88"
+    "passed": 29,
+    "seconds": "6.09"
   },
   "troubleshooting": [
     {
@@ -115,7 +115,7 @@
     "Design a persistent task store and a per-caller service credential for the specialist without changing the platform-facing adapter contract."
   ],
   "verification_scope": ["@tested", "@not_tested", "@local_effects"],
-  "close_say": "Your platform can now exchange tasks and evidence with an independent agent service. Retain remote identifiers and explicit lifecycle checks. Next session we build the platform core: an agent registry that pins this specialist's card, a run API and the first views of the platform console.",
+  "close_say": "Your platform can now exchange tasks and evidence with an independent agent service. Retain remote identifiers and explicit lifecycle checks. Next session we build the platform core: an agent registry that pins this specialist's card, a durable run API, and the registry and approval views of the console.",
   "references": [
     {
       "title": "A2A protocol specification",

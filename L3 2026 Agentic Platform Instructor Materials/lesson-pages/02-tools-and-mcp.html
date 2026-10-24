@@ -240,6 +240,7 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
 .guard.ok { border-top-color: var(--tool); }
 .guard.ok .code { color: var(--tool); }
 #review { display: grid; gap: 14px; }
+.shot { display: block; width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 10px; background: var(--sheet); }
 .terminal .rlabel { font-size: 16px; color: #c4cfdb; max-width: 70ch; }
 </style>
 
@@ -254,7 +255,7 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
   <p class="course">Innovate · L3 · 2026 · Session 02 of 12</p>
   <h1>Reliable tools and MCP<span class="sub">Turn the loop's most consequential line into a boundary the model cannot talk its way through</span></h1>
   <p class="lede">In Session 01 the model proposed and the runtime executed. Today we decide what "execute" is allowed to mean: which tools exist, which ones this run may use, what arguments are acceptable, what happens before any effect, and how the same rules hold when the tools live behind a real protocol.</p>
-  <div class="facts"><span><b>120 min</b> · 30 discussion + 90 guided build</span><span>from <b>lesson-01</b> to <b>lesson-02</b></span><span>check pack: <b>10 passed</b></span><span>offline · real MCP over stdio</span></div>
+  <div class="facts"><span><b>120 min</b> · 30 discussion + 90 guided build</span><span>from <b>lesson-01</b> to <b>lesson-02</b></span><span>check pack: <b>12 passed</b></span><span>offline · real MCP over stdio</span></div>
 </header>
 
 <section class="ch" id="today">
@@ -316,6 +317,29 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
         </tbody>
       </table>
     </div>
+  </div>
+</section>
+
+<section class="ch" id="console">
+  <p class="eyebrow"><span>Your platform, visible</span></p>
+  <h2>From today your platform has a console</h2>
+  <div class="stack">
+    <p class="lede" style="margin-top:0">A platform is a backend and the interface people use to run and watch it. From this session the kit gives your project a small one: a run API and a console, served by your own platform at <code>/console</code>. You do not build it; you use it to see what you build.</p>
+    <div class="cards">
+      <div><span class="q">Given today</span><p><code>incident/api.py</code>, a run API that keeps runs in memory, and <code>incident/console/</code> with three views: Overview (the platform map), Runs and Tools.</p></div>
+      <div><span class="q">What it shows</span><p>Submit an investigation and read its answer and event timeline. In Tools, try calls as your role and see each decision the executor you build today makes.</p></div>
+      <div><span class="q">Who you are</span><p>Sign in with a demo identity: <code>demo-astro</code> (analyst), <code>demo-operator</code> or <code>demo-locomotive</code>. Runs and decisions are scoped to your tenant.</p></div>
+      <div><span class="q">How it grows</span><p>Session 08 replaces the in-memory shell with the platform core and you extend the console with Registry and Approvals; Sessions 09 to 11 add Gateway, Identity and Operations.</p></div>
+    </div>
+    <figure>
+      <img class="shot" src="console-tools.png" width="1280" height="1122" alt="The console's Tools view: the catalogue with which tools the analyst may use, a denied rollback, and a log of allowed and denied calls with their error codes">
+      <figcaption>The Tools view as <code>demo-astro</code>: the analyst may read but not remediate, and every checked call is logged with its decision: an allowed read, <code>invalid_arguments</code> for a tenant argument, <code>permission_denied</code> for the rollback and <code>unknown_tool</code>.</figcaption>
+    </figure>
+    <figure>
+      <img class="shot" src="console-run.png" width="1280" height="520" alt="A completed INC-001 run in the console: the cited answer and the event timeline of three model turns and two tool calls">
+      <figcaption>A run submitted from the console: the cited answer beside the event timeline your Session 01 loop records, three model turns and two tool calls.</figcaption>
+    </figure>
+    <p class="say">The platform is the mounting point for everything in this course. Each session from here adds something you can see in it.</p>
   </div>
 </section>
 
@@ -673,13 +697,16 @@ resource  incident://runbooks</pre>
   labs/
     l01.py
 <span class="hl">    l02.py                check pack · the Session 02 demo</span>
+<span class="hl">  api.py                  given · the platform shell: run API</span>
+<span class="hl">  blueprint.py            given · the platform map</span>
+<span class="hl">  console/                given · Overview, Runs and Tools views</span>
 tests/
   test_setup.py, test_lesson01.py
-<span class="hl">  test_lesson02.py        check pack · three new checks</span></pre>
+<span class="hl">  test_lesson02.py        check pack · five new checks</span></pre>
       </div>
       <div class="prose" style="margin-top:0">
         <p><b><code>tools.py</code> is the tool boundary.</b> Every tool call from every agent will pass through it, or, from Session 09, through the gateway that wraps it. <b><code>mcp_bridge.py</code></b> holds both ends of the protocol so you can watch them talk: the server your platform launches, and the client adapter that plugs into the executor.</p>
-        <p>There are no new given files this session: the readers, schemas and mock model from Session 01 are all you need, and the MCP SDK is already pinned in your project's lock file (<code>mcp==2.2.0</code>).</p>
+        <p>The given files this session are the platform shell: the run API, the platform map and the console. They are not what this session teaches, so copy them unchanged; they call your <code>ToolExecutor</code> and your <code>run_agent</code>, which is why the console shows exactly what you build. The MCP SDK is already pinned in your project's lock file (<code>mcp==2.2.0</code>).</p>
       </div>
     </div>
   </div>
@@ -836,7 +863,7 @@ tests/
       <p class="goal">Connect the real stdio client behind the executor and run the original investigation through it.</p>
       <div class="prompt" id="p4"><span class="pfx">PROMPT ▸ </span>For Lesson 02, continue in my learner project. Implement the MCP read adapter and connect it behind ToolExecutor. The check pack needs stdio_client(tenant="astro"), which returns the pinned SDK's Client for a server started as python -m incident.mcp_bridge with INCIDENT_TENANT set by the launcher, and MCPReadAdapter(client), a read handler that returns the result's structured content when present and otherwise parses its JSON text content. Use the real local stdio transport and the pinned SDK's result shapes. Make the Session 02 check pack pass, show the negotiated protocol and discovered tools, and run the same investigation through the adapter. Confirm that transport discovery does not grant new permissions and show the unchanged cited outcome. Build to the interfaces the Lesson 02 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div>
       <div><button class="copy" type="button" data-copy="p4">Copy prompt</button></div>
-      <p class="check">Expect: protocol <b>2026-07-28</b>, tools <b>log_lookup</b> and <b>runbook_search</b>, the same cited answer as Session 01, and <b>10 passed</b>.</p>
+      <p class="check">Expect: protocol <b>2026-07-28</b>, tools <b>log_lookup</b> and <b>runbook_search</b>, the same cited answer as Session 01, and <b>12 passed</b>.</p>
     </div>
   </div>
   <div class="stack">
@@ -874,7 +901,7 @@ class MCPReadAdapter:
   <p class="eyebrow"><span>Learner exercise</span></p>
   <h2>Break the boundary on purpose: predict first, then run</h2>
   <div class="stack">
-    <p class="lede">Each case attacks one check. Write down the result you expect, then run it in a throwaway script and compare.</p>
+    <p class="lede">Each case attacks one check. Write down the result you expect, then run it in a throwaway script and compare. Then repeat the denied and approval cases in the console's Tools view, signed in first as <code>demo-astro</code> and then as <code>demo-operator</code>.</p>
     <div class="predict">
       <div><span class="set">log_lookup + "tenant": "locomotive"</span><span class="out">invalid_arguments</span><span class="muted">The schema forbids extra properties; the tenant comes from Context.</span></div>
       <div><span class="set">mock_remediate, read-only Context</span><span class="out">permission_denied</span><span class="muted">Not in the run's allowed tools, so checked before the arguments.</span></div>
@@ -884,7 +911,7 @@ class MCPReadAdapter:
     <div class="terminal" style="margin-top:0">
       <div class="bar"><span class="switch">Switch to terminal · Exercise</span><span class="file">a throwaway script · restore afterwards</span></div>
       <div class="body">
-        <div class="prompt" id="p5"><span class="pfx">PROMPT ▸ </span>Help me carry out the Lesson 02 learner exercise in my existing project: Add an unexpected tenant argument to a log request, call mock_remediate with a read-only Context, lower output_limit, and repeat an approved mock write after reopening the SQLite executor. Record the error category or replay behaviour for each case. First state the expected outcomes, then run the experiment in a throwaway script outside tests/, or from a clean Git state you can restore. Show the observed results and explain any discrepancy. Keep the original acceptance criteria and restore temporary experiments when finished.</div>
+        <div class="prompt" id="p5"><span class="pfx">PROMPT ▸ </span>Help me carry out the Lesson 02 learner exercise in my existing project: Add an unexpected tenant argument to a log request, call mock_remediate with a read-only Context, lower output_limit, and repeat an approved mock write after reopening the SQLite executor. Record the error category or replay behaviour for each case. Then start the platform API on loopback with the offline provider and give me the console address: I will sign in as demo-astro and then demo-operator, submit INC-001 in Runs, and repeat the denied and approval cases in the Tools view. First state the expected outcomes, then run the experiment in a throwaway script outside tests/, or from a clean Git state you can restore. Show the observed results and explain any discrepancy. Keep the original acceptance criteria and restore temporary experiments when finished.</div>
       <div><button class="copy" type="button" data-copy="p5">Copy prompt</button></div>
       </div>
     </div>
@@ -901,8 +928,8 @@ class MCPReadAdapter:
   <div class="stack">
     <div class="two">
       <div class="prose" style="margin-top:0">
-        <p class="big">10 passed</p>
-        <p>Seven from Session 01, still passing, plus three new checks: authorization, schema and output size; exact approval and the durable duplicate write; and the real MCP stdio transport, which starts the server as a subprocess and runs the investigation through it.</p>
+        <p class="big">12 passed</p>
+        <p>Seven from Session 01, still passing, plus five new checks: authorization, schema and output size; exact approval and the durable duplicate write; the real MCP stdio transport, which starts the server as a subprocess and runs the investigation through it; and two for the platform shell: a run submitted through the API, and the Tools view's decisions for each role.</p>
         <p class="muted">Unrun or skipped checks are not passes. Look at the actual output, not the agent's summary.</p>
       </div>
       <figure>
@@ -929,7 +956,7 @@ class MCPReadAdapter:
       <div class="body">
         <div class="prompt" id="p6"><span class="pfx">PROMPT ▸ </span>Verify my Lesson 02 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 2 only when the required capability is present. Run the full test suite, which includes the Lesson 02 check pack and every earlier lesson's tests, and then the Session 02 demonstration with python -m incident.lab 2, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 02 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my repository on gitlab.ciklum.net; if glab is also signed in to other GitLab hosts, make sure the push goes to gitlab.ciklum.net. Do not equate an unrun or skipped check with a pass.</div>
       <div><button class="copy" type="button" data-copy="p6">Copy prompt</button></div>
-        <p class="check">Expect: <b>10 passed</b>, <code>LESSON = 2</code>, and your work pushed to your repository on gitlab.ciklum.net.</p>
+        <p class="check">Expect: <b>12 passed</b>, <code>LESSON = 2</code>, and your work pushed to your repository on gitlab.ciklum.net.</p>
         <div id="review"><div class="prompt" id="p7"><span class="pfx">PROMPT ▸ </span>Review my completed Lesson 02 work against the Lesson 02 check pack and completion criteria. Show the files I changed and the interfaces I provide, and explain how each completion criterion is met with code or test evidence. Point out the design choices I made that the check pack does not force, and what each one costs or gains. Preserve deliberate improvements and earlier capabilities.</div>
       <div><button class="copy" type="button" data-copy="p7">Copy prompt</button></div></div>
       </div>
@@ -943,6 +970,7 @@ class MCPReadAdapter:
           <tr><td>Malformed and denied requests fail before dispatch.</td><td>the authorization check; the lab's <code>write_without_capability</code></td></tr>
           <tr><td>Changing an approved action's arguments requires a new approval.</td><td>INC-002 raises <code>ApprovalRequired</code></td></tr>
           <tr><td>A duplicate approved mock write produces one stored effect.</td><td><code>replayed: true</code> after reopening the executor</td></tr>
+          <tr><td>The given console shows a completed run's timeline and each Tools check's decision for the signed-in role.</td><td>the two platform shell checks, and the console itself</td></tr>
         </tbody>
       </table>
     </div>

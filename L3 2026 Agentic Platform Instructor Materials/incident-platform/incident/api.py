@@ -3,24 +3,30 @@
 Demo credentials are explicit and intended for loopback use; they can only be
 exchanged for short-lived signed tokens, which every later request presents."""
 from contextlib import asynccontextmanager
-from dataclasses import asdict
+from collections import deque
+from dataclasses import asdict, replace
 import json
 import os
 from pathlib import Path
+import time
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
 from starlette.responses import HTMLResponse, RedirectResponse
 from incident.blueprint import platform_map
 from incident.operations import CapacityError, build_trace, trace_html
+from incident.core import ApprovalRequired, Context
 from incident.platform import Platform
-from incident.tools import action_key
+from incident.tools import ToolExecutor, action_key
 
 DEMO_IDENTITIES = {
     "demo-astro": {"tenant": "astro", "role": "analyst"},
     "demo-operator": {"tenant": "astro", "role": "operator"},
     "demo-locomotive": {"tenant": "locomotive", "role": "analyst"},
 }
+# The platform maps a signed-in role to the tools a console check may use; the model never chooses them.
+ROLE_TOOLS = {"analyst": ("log_lookup", "runbook_search"),
+              "operator": ("log_lookup", "runbook_search", "mock_remediate")}
 CONSOLE = Path(__file__).parent/"console"
 # The console renders model output and tool evidence, so it treats both as untrusted text.
 CONSOLE_CSP = ("default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; "
@@ -43,6 +49,23 @@ class Decision(BaseModel):
 class VersionChoice(BaseModel):
     model_config = ConfigDict(extra="forbid")
     version: int
+
+
+class ToolCheck(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    name: str = Field(pattern=r"^[a-z_]{1,40}$")
+    args: dict = Field(default_factory=dict)
+
+
+def context_for(who, run_id=None):
+    context = Context(tenant=who["tenant"], role=who["role"], allowed=ROLE_TOOLS.get(who["role"], ()))
+    return replace(context, run_id=run_id) if run_id else context
+
+
+def tool_outcome(result):
+    if result.get("ok", True):
+        return "allow"
+    return "retry" if result.get("retryable") else "deny"
 
 
 def create_app(platform=None, identities=None):
@@ -242,6 +265,30 @@ def create_app(platform=None, identities=None):
                 "workers": platform.workers, "active_runs": len(platform.tasks),
                 "shared_team_budget": platform.total_token_budget, "run_status_counts": statuses,
                 "releases": platform.releases.list()}
+
+    tools, decisions = ToolExecutor(), {}
+
+    @app.get("/tools")
+    async def tool_catalogue(who=Depends(identity)):
+        allowed = context_for(who).allowed
+        return {"tools": [{"name": s["function"]["name"], "description": s["function"]["description"],
+                           "kind": "write" if s["function"]["name"] == "mock_remediate" else "read",
+                           "allowed": s["function"]["name"] in allowed} for s in tools.schemas],
+                "decisions": list(decisions.get(who["tenant"], ()))}
+
+    @app.post("/tools/check")
+    async def tool_check(body: ToolCheck, who=Depends(identity)):
+        """The console's Session 02 check: one call through the tool boundary as the signed-in role. Agents' calls also pass the tool gateway."""
+        context = context_for(who, "console-check")
+        entry = {"at": time.time(), "role": who["role"], "name": body.name, "args": body.args, "error": None}
+        result = None
+        try:
+            result = await tools.execute(body.name, body.args, context)
+            entry |= {"decision": tool_outcome(result), "error": result.get("error")}
+        except ApprovalRequired as exc:
+            entry |= {"decision": "approval_required", "key": exc.action["key"]}
+        decisions.setdefault(who["tenant"], deque(maxlen=50)).appendleft(entry)
+        return {**entry, "result": result}
 
     app.mount("/console", StaticFiles(directory=CONSOLE, html=True), name="console")
     return app

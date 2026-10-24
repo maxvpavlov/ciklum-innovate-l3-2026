@@ -1,7 +1,7 @@
 name: Retag reframed checkpoints
 
-# Moves lesson-01..lesson-12 and course-complete to the reframed reference and keeps the
-# previous checkpoints as v1/* tags. The script is idempotent, so re-running is harmless.
+# Moves lesson-02..lesson-12 and course-complete to the current reference and keeps the
+# previous checkpoints as v2/* tags. The script is idempotent, so re-running is harmless.
 on:
   push:
     branches: [main]

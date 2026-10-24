@@ -83,8 +83,8 @@
     "A stale artifact update fails rather than overwriting the current version."
   ],
   "recorded_test_result": {
-    "passed": 13,
-    "seconds": "1.03"
+    "passed": 15,
+    "seconds": "3.60"
   },
   "troubleshooting": [
     {

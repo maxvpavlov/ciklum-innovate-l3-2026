@@ -86,8 +86,8 @@
     "Denied and cancelled runs cannot be resumed as approved work."
   ],
   "recorded_test_result": {
-    "passed": 17,
-    "seconds": "1.24"
+    "passed": 19,
+    "seconds": "3.55"
   },
   "troubleshooting": [
     {

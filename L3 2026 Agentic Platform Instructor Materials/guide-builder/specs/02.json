@@ -2,8 +2,8 @@
   "number": 2,
   "title": "Reliable tools and MCP integration",
   "duration": 120,
-  "outcome": "Validated local and MCP tools share an application-owned permission boundary, exact-action approval and idempotent mock writes.",
-  "platform_role": "This session builds the platform's tool boundary: validated contracts, application-owned authorization, exact-action approval, an idempotent effect ledger and a real MCP transport. Each client launches its own MCP stdio server, which is deliberately simple; Session 09 replaces that with a central MCP tool gateway with shared upstream sessions, policy, audit and pinned tool definitions. The console's Gateway view (Session 09) will show the allow and deny decisions that ToolExecutor makes privately today, and Session 10 backs them with delegated credentials.",
+  "outcome": "Validated local and MCP tools share an application-owned permission boundary, exact-action approval and idempotent mock writes, and the platform gets its first console, where runs and tool decisions are visible.",
+  "platform_role": "This session builds the platform's tool boundary: validated contracts, application-owned authorization, exact-action approval, an idempotent effect ledger and a real MCP transport. Each client launches its own MCP stdio server, which is deliberately simple; Session 09 replaces that with a central MCP tool gateway with shared upstream sessions, policy, audit and pinned tool definitions. From this session the platform also has a face: the kit gives a small run API and console, given rather than built, where each run's event timeline and the Tools view show the allow and deny decisions ToolExecutor makes. Session 08 replaces the in-memory shell with the platform core and learners extend the console from there; Session 09 adds a Gateway view, and Session 10 backs these decisions with delegated credentials.",
   "preparation": [
     "Bring your Session 01 checkpoint. Review JSON Schema, tool contracts and MCP architecture. Pin compatible SDK/protocol versions. Mentor supplies client/server scaffolding; install and smoke-test it before class."
   ],
@@ -63,7 +63,7 @@
       "answer": "No. Discovery is information. The application's allowed capability set and validation policy must explicitly permit use."
     }
   ],
-  "exercise": "Add an unexpected tenant argument to a log request, call mock_remediate with a read-only Context, lower output_limit, and repeat an approved mock write after reopening the SQLite executor. Record the error category or replay behaviour for each case.",
+  "exercise": "Add an unexpected tenant argument to a log request, call mock_remediate with a read-only Context, lower output_limit, and repeat an approved mock write after reopening the SQLite executor. Record the error category or replay behaviour for each case. Then start the platform API on loopback with the offline provider and give me the console address: I will sign in as demo-astro and then demo-operator, submit INC-001 in Runs, and repeat the denied and approval cases in the Tools view.",
   "expected_json": {
     "tools": ["log_lookup", "runbook_search"],
     "protocol": "2026-07-28",
@@ -84,11 +84,12 @@
     "The investigation still cites the observed log and runbook.",
     "Malformed and denied requests fail before dispatch.",
     "Changing an approved action's arguments requires a new approval.",
-    "A duplicate approved mock write produces one stored effect."
+    "A duplicate approved mock write produces one stored effect.",
+    "The given console shows a completed run's timeline and each Tools check's decision for the signed-in role."
   ],
   "recorded_test_result": {
-    "passed": 10,
-    "seconds": "1.96"
+    "passed": 12,
+    "seconds": "3.27"
   },
   "troubleshooting": [
     {

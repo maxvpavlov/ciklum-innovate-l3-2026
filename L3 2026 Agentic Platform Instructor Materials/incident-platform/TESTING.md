@@ -7,17 +7,17 @@ guide extracts its code excerpts from the exact ending Git tag.
 |---|---:|
 | lesson-00 | 1 |
 | lesson-01 | 7 |
-| lesson-02 | 10 |
-| lesson-03 | 13 |
-| lesson-04 | 15 |
-| lesson-05 | 17 |
-| lesson-06 | 25 |
-| lesson-07 | 27 |
-| lesson-08 | 33 |
-| lesson-09 | 37 |
-| lesson-10 | 43 |
-| lesson-11 | 48 |
-| lesson-12 | 51 |
+| lesson-02 | 12 |
+| lesson-03 | 15 |
+| lesson-04 | 17 |
+| lesson-05 | 19 |
+| lesson-06 | 27 |
+| lesson-07 | 29 |
+| lesson-08 | 35 |
+| lesson-09 | 39 |
+| lesson-10 | 45 |
+| lesson-11 | 50 |
+| lesson-12 | 53 |
 
 Every checkpoint was unpacked independently using git archive. Its full test
 suite and its lesson demonstration passed. The final suite includes repeated
@@ -34,13 +34,20 @@ platform components added in the reframed course are covered too:
 - **Identity:** tampered, expired and wrong-audience tokens, delegation chains that only
   narrow, tenant mismatch, the A2A specialist accepting only delegated tokens, and no
   token or model key in stored run state.
+- **Platform shell (from lesson-02):** a run submitted through the API completes with a
+  cited answer and a tool event, runs are tenant-scoped, and the Tools view's checks
+  return the executor's decisions (permission_denied, invalid_arguments, an allowed read,
+  and approval_required with an exact-action key for an operator). These two checks run
+  unchanged in every later checkpoint, against the platform API that replaces the shell.
 - **Console:** CSP headers, tenant-scoped views, operator-only actions, a static check
   that no console script renders HTML from data, and a check that API handlers run
   on the event loop (they share one SQLite connection with the workers).
 
 The console itself was driven in headless Chromium against the lesson-08 to
 lesson-12 checkpoints: sign-in, each view, run submission, approval and
-resumption, with no failed requests or script errors.
+resumption, with no failed requests or script errors. After the platform shell
+was added, the lesson-02 console (sign-in, a run and the Tools view) and the
+lesson-12 Tools view were driven the same way.
 
 The container recipe was verified for the previous version of the reference: a
 Linux ARM64 image built from the Dockerfile, and lessons 11 and 12 passed as the

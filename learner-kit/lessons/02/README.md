@@ -1,5 +1,21 @@
 # Lesson 02 check pack
 
+## Given files
+
+Copy these into your project unchanged. They are data, test doubles and the platform
+shell (run API and console) that everyone shares, so results are comparable; they are
+not what this lesson teaches.
+
+- `given/incident/blueprint.py`: copy to `incident/blueprint.py`.
+- `given/incident/console/views/tools.js`: copy to `incident/console/views/tools.js`.
+- `given/incident/api.py`: copy to `incident/api.py`.
+- `given/incident/console/app.js`: copy to `incident/console/app.js`.
+- `given/incident/console/console.css`: copy to `incident/console/console.css`.
+- `given/incident/console/index.html`: copy to `incident/console/index.html`.
+- `given/incident/console/views/index.js`: copy to `incident/console/views/index.js`.
+- `given/incident/console/views/overview.js`: copy to `incident/console/views/overview.js`.
+- `given/incident/console/views/runs.js`: copy to `incident/console/views/runs.js`.
+
 ## Checks
 
 Copy `checks/` into your project root unchanged: it holds this lesson's demo in
@@ -9,7 +25,7 @@ fail to import, because the modules it needs do not exist yet. Never edit the te
 make them pass.
 
 When everything is built, set `LESSON = 2` in `incident/__init__.py`. The full
-suite should then report **10 passed**, and `python -m incident.lab 2`
+suite should then report **12 passed**, and `python -m incident.lab 2`
 prints the lesson's demo result.
 
 ## Interfaces your code must provide

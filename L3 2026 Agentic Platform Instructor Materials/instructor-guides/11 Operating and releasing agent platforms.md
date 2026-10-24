@@ -4,7 +4,7 @@
 
 **Outcome** A runnable end-to-end platform combines the registry, the tool gateway, delegated credentials and a pinned A2A specialist with admission controls, correlated traces and evaluated, recorded rollout and rollback that operators can inspect in the console.
 
-Duration: 120 minutes. Starting checkpoint: lesson-10. Ending checkpoint: lesson-11 (b0c78fa).
+Duration: 120 minutes. Starting checkpoint: lesson-10. Ending checkpoint: lesson-11 (2616483).
 
 Word version: [11 Operating and releasing agent platforms.docx](11%20Operating%20and%20releasing%20agent%20platforms.docx)
 
@@ -15,13 +15,13 @@ This session adds the operations layer on top of the platform core, gateway and 
 | Session | Platform component | Status |
 |---|---|---|
 | 01 | Agent runtime: bounded ReAct loop, typed run state, event log | Built earlier |
-| 02 | Tool contracts, approval boundary and MCP transport | Built earlier |
+| 02 | Tool contracts, approval boundary, MCP transport and the first console | Built earlier |
 | 03 | Context selection, retrieval, memory and versioned artifacts | Built earlier |
 | 04 | Evaluation harness and single-agent baseline | Built earlier |
 | 05 | Durable runs, crash recovery and exact-action approval | Built earlier |
 | 06 | Supervisor, scoped subagents and parallel coordination | Built earlier |
 | 07 | Remote agents over A2A | Built earlier |
-| 08 | Platform core: agent registry, run API and platform console | Built earlier |
+| 08 | Platform core: agent registry, durable run API, registry and approval views | Built earlier |
 | 09 | MCP tool gateway: policy, audit and shared upstream sessions | Built earlier |
 | 10 | Agent identity, delegated credentials and credential store | Built earlier |
 | 11 | Operations: traces, admission control and evaluated releases | **This session** |
@@ -279,7 +279,7 @@ platform.registry.activate("single", 1)
 - A tiny shared parent-and-child budget prevents execution.
 - A degraded or mismatched evaluation blocks release, every decision appears in the release log and the Operations view, and activation can return to the previous version.
 
-The independently unpacked lesson-11 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 11 check pack from the course kit. Recorded test result: 48 passed in 18.72s. Learners commit and push their checkpoint to their GitLab repository; lesson-11 (b0c78fa) remains the instructor's answer key.
+The independently unpacked lesson-11 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 11 check pack from the course kit. Recorded test result: 50 passed in 26.68s. Learners commit and push their checkpoint to their GitLab repository; lesson-11 (2616483) remains the instructor's answer key.
 
 ### Files changed in this checkpoint
 
@@ -330,7 +330,7 @@ In the reference, this checkpoint changed the files below. Learners write the im
 
 ## Verification scope
 
-All course tags were independently unpacked and tested. The completed repository has 51 passing tests. Real local MCP stdio, the tool gateway's shared sessions and pinned definitions, A2A HTTP discovery, streaming, delegated-token authentication and cancellation were exercised. The platform console was driven in a headless Chromium browser against every checkpoint from lesson-08 onward.
+All course tags were independently unpacked and tested. The completed repository has 53 passing tests. Real local MCP stdio, the tool gateway's shared sessions and pinned definitions, A2A HTTP discovery, streaming, delegated-token authentication and cancellation were exercised. The platform console was driven in a headless Chromium browser against every checkpoint from lesson-08 onward.
 
 Live model credentials, paid provider calls, live model judging, third-party MCP or A2A services, remote MCP OAuth, an enterprise identity provider, a managed secret vault, production cloud rollout and an external observability collector were not tested. The offline provider is a deterministic fixture, so its usage and quality results are teaching measurements. Read TESTING.md for the full scope and environment details.
 

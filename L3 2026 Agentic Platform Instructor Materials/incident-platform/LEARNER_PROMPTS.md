@@ -90,7 +90,7 @@ Course kit: learner-kit/lessons/02. Instructor answer key: lesson-01 to lesson-0
 
 ### Learner exercise
 
-> Help me carry out the Lesson 02 learner exercise in my existing project: Add an unexpected tenant argument to a log request, call mock_remediate with a read-only Context, lower output_limit, and repeat an approved mock write after reopening the SQLite executor. Record the error category or replay behaviour for each case. First state the expected outcomes, then run the experiment in a throwaway script outside tests/, or from a clean Git state you can restore. Show the observed results and explain any discrepancy. Keep the original acceptance criteria and restore temporary experiments when finished.
+> Help me carry out the Lesson 02 learner exercise in my existing project: Add an unexpected tenant argument to a log request, call mock_remediate with a read-only Context, lower output_limit, and repeat an approved mock write after reopening the SQLite executor. Record the error category or replay behaviour for each case. Then start the platform API on loopback with the offline provider and give me the console address: I will sign in as demo-astro and then demo-operator, submit INC-001 in Runs, and repeat the denied and approval cases in the Tools view. First state the expected outcomes, then run the experiment in a throwaway script outside tests/, or from a clean Git state you can restore. Show the observed results and explain any discrepancy. Keep the original acceptance criteria and restore temporary experiments when finished.
 
 ### Verify the checkpoint
 
@@ -422,7 +422,7 @@ Course kit: learner-kit/lessons/08. Instructor answer key: lesson-07 to lesson-0
 
 ### Build step 4
 
-> For Lesson 08, continue in my learner project. Serve a platform console at /console as a static HTML shell with vanilla ES modules, under a strict same-origin Content-Security-Policy with no inline or external scripts. Render every API value as text through a small element helper, never as HTML. Add Overview with the platform map from a blueprint module, Registry, Runs with run detail, and Approvals. Scope views to the signed-in identity and show operator controls only to operators while the API still enforces them. Show me the response headers and the check for HTML injection sinks. Build to the interfaces the Lesson 08 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> For Lesson 08, continue in my learner project. Extend the platform console at /console that the kit has given since Session 02. Keep its static HTML shell, vanilla ES modules and strict same-origin Content-Security-Policy with no inline or external scripts, and keep rendering every API value as text through the element helper, never as HTML. Add Registry and Approvals views, extend Runs with the agent choice, cancellation and child runs, and keep Overview and the Tools view working against the new platform API. Scope views to the signed-in identity and show operator controls only to operators while the API still enforces them. Show me the response headers and the check for HTML injection sinks. Build to the interfaces the Lesson 08 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 ### Learner exercise
 

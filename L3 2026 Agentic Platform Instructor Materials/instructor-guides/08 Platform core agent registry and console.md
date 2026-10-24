@@ -4,24 +4,24 @@
 
 **Outcome** Agents become validated, immutable registry definitions that run through one platform API, remote A2A agents are pinned by Agent Card hash, and analysts and operators inspect the platform in a tenant-scoped console.
 
-Duration: 90 minutes. Starting checkpoint: lesson-07. Ending checkpoint: lesson-08 (21a8a6e).
+Duration: 90 minutes. Starting checkpoint: lesson-07. Ending checkpoint: lesson-08 (675ee7e).
 
 Word version: [08 Platform core agent registry and console.docx](08%20Platform%20core%20agent%20registry%20and%20console.docx)
 
 ## Where this session sits in the platform
 
-This session turns the separate capabilities from Sessions 01 to 07 into a platform: an agent registry, a run API and the platform console. From here every agent is a registered, versioned definition, and every run records the exact version and content hash it used. The console appears for the first time with Overview, Registry, Runs and Approvals views; Sessions 09, 10 and 11 add Gateway, Identity and Operations views to the same console.
+This session turns the separate capabilities from Sessions 01 to 07 into a platform: an agent registry and a durable run API behind the console learners have had since Session 02. From here every agent is a registered, versioned definition, and every run records the exact version and content hash it used. The in-memory shell from Session 02 gives way to the platform core, and the console gains Registry and Approvals views and a fuller Runs view; Sessions 09, 10 and 11 add Gateway, Identity and Operations views to the same console.
 
 | Session | Platform component | Status |
 |---|---|---|
 | 01 | Agent runtime: bounded ReAct loop, typed run state, event log | Built earlier |
-| 02 | Tool contracts, approval boundary and MCP transport | Built earlier |
+| 02 | Tool contracts, approval boundary, MCP transport and the first console | Built earlier |
 | 03 | Context selection, retrieval, memory and versioned artifacts | Built earlier |
 | 04 | Evaluation harness and single-agent baseline | Built earlier |
 | 05 | Durable runs, crash recovery and exact-action approval | Built earlier |
 | 06 | Supervisor, scoped subagents and parallel coordination | Built earlier |
 | 07 | Remote agents over A2A | Built earlier |
-| 08 | Platform core: agent registry, run API and platform console | **This session** |
+| 08 | Platform core: agent registry, durable run API, registry and approval views | **This session** |
 | 09 | MCP tool gateway: policy, audit and shared upstream sessions | Later session |
 | 10 | Agent identity, delegated credentials and credential store | Later session |
 | 11 | Operations: traces, admission control and evaluated releases | Later session |
@@ -67,7 +67,7 @@ Use SAY for instructor narration, SHOW and REVIEW for the code and evidence part
 
 ### Opening and orientation
 
-**SAY** Until now each capability has had its own lab entry point. Today the incident assistant stops being the application and becomes one registered agent on a platform. An agent registry holds validated, immutable, versioned definitions. A run API resolves a definition, records exactly which version ran and controls the run lifecycle. A console, served by the platform itself, lets analysts and operators see what exists and what happened. Single-agent and team investigations run through the same API, and the Session 07 specialist becomes a registered remote agent with a pinned card. Open with one question: when an incident answer looks wrong next week, what must you know about the agent that produced it?
+**SAY** Until now each capability has had its own lab entry point. Today the incident assistant stops being the application and becomes one registered agent on a platform. An agent registry holds validated, immutable, versioned definitions. A run API resolves a definition, records exactly which version ran and controls the run lifecycle. The console you have had since Session 02, served by the platform itself, now lets analysts and operators see which agents exist and decide approvals as well as what happened. Single-agent and team investigations run through the same API, and the Session 07 specialist becomes a registered remote agent with a pinned card. Open with one question: when an incident answer looks wrong next week, what must you know about the agent that produced it?
 
 **SHOW** The coding agent’s baseline report, current learner project, synthetic incident records and lesson outcome. Ask participants to explain what already works before authorizing the next bounded change.
 
@@ -199,13 +199,13 @@ def launch(self, tenant, run_id):
 
 **CONSOLE** Run detail for a completed team run. Point at the recorded definition team@1 with its hash, the two child runs and the event timeline; token counts are fixture teaching metrics.
 
-### 4 Serve the platform console
+### 4 Extend the platform console
 
-**SAY** The console is static files served by the platform at /console: an HTML shell, one stylesheet and ES modules, with no build step and no external scripts. A middleware adds a strict Content-Security-Policy: scripts, styles and connections from the same origin only, no inline script and no framing. Now look at h(). Every API value, including model answers, tool evidence and event details, becomes a text node or an attribute value; nothing is assigned to innerHTML, and a test searches every console script for HTML injection sinks, eval and external URLs. Views call the same API with the signed-in credential, so runs are tenant-scoped, and Activate, Approve and Deny appear only for an operator while the server enforces the same rule.
+**SAY** Since Session 02 the console has been static files served by the platform at /console: an HTML shell, one stylesheet and ES modules, with no build step and no external scripts. A middleware adds a strict Content-Security-Policy: scripts, styles and connections from the same origin only, no inline script and no framing. Now look at h(). Every API value, including model answers, tool evidence and event details, becomes a text node or an attribute value; nothing is assigned to innerHTML, and a test searches every console script for HTML injection sinks, eval and external URLs. Views call the same API with the signed-in credential, so runs are tenant-scoped, and Activate, Approve and Deny appear only for an operator while the server enforces the same rule.
 
 **SHOW** The current learner implementation and `incident/console/app.js`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 08, continue in my learner project. Serve a platform console at /console as a static HTML shell with vanilla ES modules, under a strict same-origin Content-Security-Policy with no inline or external scripts. Render every API value as text through a small element helper, never as HTML. Add Overview with the platform map from a blueprint module, Registry, Runs with run detail, and Approvals. Scope views to the signed-in identity and show operator controls only to operators while the API still enforces them. Show me the response headers and the check for HTML injection sinks. Build to the interfaces the Lesson 08 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 08, continue in my learner project. Extend the platform console at /console that the kit has given since Session 02. Keep its static HTML shell, vanilla ES modules and strict same-origin Content-Security-Policy with no inline or external scripts, and keep rendering every API value as text through the element helper, never as HTML. Add Registry and Approvals views, extend Runs with the agent choice, cancellation and child runs, and keep Overview and the Tools view working against the new platform API. Scope views to the signed-in identity and show operator controls only to operators while the API still enforces them. Show me the response headers and the check for HTML injection sinks. Build to the interfaces the Lesson 08 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 8 to 21 at lesson-08; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -306,7 +306,7 @@ export function h(tag, attrs = {}, ...children) {
 - A second lease claim is rejected, another tenant's run returns 404, and a decision requires an operator and the current action key.
 - The console is served at /console under a strict Content-Security-Policy, renders API data as text only and shows each identity only its tenant's runs; every API handler is asynchronous.
 
-The independently unpacked lesson-08 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 08 check pack from the course kit. Recorded test result: 33 passed in 4.35s. Learners commit and push their checkpoint to their GitLab repository; lesson-08 (21a8a6e) remains the instructor's answer key.
+The independently unpacked lesson-08 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 08 check pack from the course kit. Recorded test result: 35 passed in 7.53s. Learners commit and push their checkpoint to their GitLab repository; lesson-08 (675ee7e) remains the instructor's answer key.
 
 ### Files changed in this checkpoint
 
@@ -315,13 +315,8 @@ In the reference, this checkpoint changed the files below. Learners write the im
 - `incident/__init__.py`
 - `incident/a2a_client.py`
 - `incident/api.py`
-- `incident/blueprint.py`
-- `incident/console/app.js`
-- `incident/console/console.css`
-- `incident/console/index.html`
 - `incident/console/views/approvals.js`
 - `incident/console/views/index.js`
-- `incident/console/views/overview.js`
 - `incident/console/views/registry.js`
 - `incident/console/views/runs.js`
 - `incident/core.py`
@@ -361,7 +356,7 @@ In the reference, this checkpoint changed the files below. Learners write the im
 
 ## Verification scope
 
-All course tags were independently unpacked and tested. The completed repository has 51 passing tests. Real local MCP stdio, the tool gateway's shared sessions and pinned definitions, A2A HTTP discovery, streaming, delegated-token authentication and cancellation were exercised. The platform console was driven in a headless Chromium browser against every checkpoint from lesson-08 onward.
+All course tags were independently unpacked and tested. The completed repository has 53 passing tests. Real local MCP stdio, the tool gateway's shared sessions and pinned definitions, A2A HTTP discovery, streaming, delegated-token authentication and cancellation were exercised. The platform console was driven in a headless Chromium browser against every checkpoint from lesson-08 onward.
 
 Live model credentials, paid provider calls, live model judging, third-party MCP or A2A services, remote MCP OAuth, an enterprise identity provider, a managed secret vault, production cloud rollout and an external observability collector were not tested. The offline provider is a deterministic fixture, so its usage and quality results are teaching measurements. Read TESTING.md for the full scope and environment details.
 

@@ -2,26 +2,26 @@
 
 *Instructor guide for the L3 agentic platform programme*
 
-**Outcome** Validated local and MCP tools share an application-owned permission boundary, exact-action approval and idempotent mock writes.
+**Outcome** Validated local and MCP tools share an application-owned permission boundary, exact-action approval and idempotent mock writes, and the platform gets its first console, where runs and tool decisions are visible.
 
-Duration: 120 minutes. Starting checkpoint: lesson-01. Ending checkpoint: lesson-02 (384c2fb).
+Duration: 120 minutes. Starting checkpoint: lesson-01. Ending checkpoint: lesson-02 (2d0a675).
 
 Word version: [02 Reliable tools and MCP integration.docx](02%20Reliable%20tools%20and%20MCP%20integration.docx)
 
 ## Where this session sits in the platform
 
-This session builds the platform's tool boundary: validated contracts, application-owned authorization, exact-action approval, an idempotent effect ledger and a real MCP transport. Each client launches its own MCP stdio server, which is deliberately simple; Session 09 replaces that with a central MCP tool gateway with shared upstream sessions, policy, audit and pinned tool definitions. The console's Gateway view (Session 09) will show the allow and deny decisions that ToolExecutor makes privately today, and Session 10 backs them with delegated credentials.
+This session builds the platform's tool boundary: validated contracts, application-owned authorization, exact-action approval, an idempotent effect ledger and a real MCP transport. Each client launches its own MCP stdio server, which is deliberately simple; Session 09 replaces that with a central MCP tool gateway with shared upstream sessions, policy, audit and pinned tool definitions. From this session the platform also has a face: the kit gives a small run API and console, given rather than built, where each run's event timeline and the Tools view show the allow and deny decisions ToolExecutor makes. Session 08 replaces the in-memory shell with the platform core and learners extend the console from there; Session 09 adds a Gateway view, and Session 10 backs these decisions with delegated credentials.
 
 | Session | Platform component | Status |
 |---|---|---|
 | 01 | Agent runtime: bounded ReAct loop, typed run state, event log | Built earlier |
-| 02 | Tool contracts, approval boundary and MCP transport | **This session** |
+| 02 | Tool contracts, approval boundary, MCP transport and the first console | **This session** |
 | 03 | Context selection, retrieval, memory and versioned artifacts | Later session |
 | 04 | Evaluation harness and single-agent baseline | Later session |
 | 05 | Durable runs, crash recovery and exact-action approval | Later session |
 | 06 | Supervisor, scoped subagents and parallel coordination | Later session |
 | 07 | Remote agents over A2A | Later session |
-| 08 | Platform core: agent registry, run API and platform console | Later session |
+| 08 | Platform core: agent registry, durable run API, registry and approval views | Later session |
 | 09 | MCP tool gateway: policy, audit and shared upstream sessions | Later session |
 | 10 | Agent identity, delegated credentials and credential store | Later session |
 | 11 | Operations: traces, admission control and evaluated releases | Later session |
@@ -213,7 +213,7 @@ class MCPReadAdapter:
 
 ## Learner practice and checkpoints
 
-> **PROMPT** Help me carry out the Lesson 02 learner exercise in my existing project: Add an unexpected tenant argument to a log request, call mock_remediate with a read-only Context, lower output_limit, and repeat an approved mock write after reopening the SQLite executor. Record the error category or replay behaviour for each case. First state the expected outcomes, then run the experiment in a throwaway script outside tests/, or from a clean Git state you can restore. Show the observed results and explain any discrepancy. Keep the original acceptance criteria and restore temporary experiments when finished.
+> **PROMPT** Help me carry out the Lesson 02 learner exercise in my existing project: Add an unexpected tenant argument to a log request, call mock_remediate with a read-only Context, lower output_limit, and repeat an approved mock write after reopening the SQLite executor. Record the error category or replay behaviour for each case. Then start the platform API on loopback with the offline provider and give me the console address: I will sign in as demo-astro and then demo-operator, submit INC-001 in Runs, and repeat the denied and approval cases in the Tools view. First state the expected outcomes, then run the experiment in a throwaway script outside tests/, or from a clean Git state you can restore. Show the observed results and explain any discrepancy. Keep the original acceptance criteria and restore temporary experiments when finished.
 
 **VERIFY** Give the coding agent the verification prompt below, then inspect its evidence and explain the result in your own words.
 
@@ -254,14 +254,24 @@ class MCPReadAdapter:
 - Malformed and denied requests fail before dispatch.
 - Changing an approved action's arguments requires a new approval.
 - A duplicate approved mock write produces one stored effect.
+- The given console shows a completed run's timeline and each Tools check's decision for the signed-in role.
 
-The independently unpacked lesson-02 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 02 check pack from the course kit. Recorded test result: 10 passed in 1.96s. Learners commit and push their checkpoint to their GitLab repository; lesson-02 (384c2fb) remains the instructor's answer key.
+The independently unpacked lesson-02 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 02 check pack from the course kit. Recorded test result: 12 passed in 3.27s. Learners commit and push their checkpoint to their GitLab repository; lesson-02 (2d0a675) remains the instructor's answer key.
 
 ### Files changed in this checkpoint
 
 In the reference, this checkpoint changed the files below. Learners write the implementation files themselves; the lab, the tests and any given files arrive in the Lesson 02 check pack. Ask the agent to explain any additional file changes it needs.
 
 - `incident/__init__.py`
+- `incident/api.py`
+- `incident/blueprint.py`
+- `incident/console/app.js`
+- `incident/console/console.css`
+- `incident/console/index.html`
+- `incident/console/views/index.js`
+- `incident/console/views/overview.js`
+- `incident/console/views/runs.js`
+- `incident/console/views/tools.js`
 - `incident/labs/l02.py`
 - `incident/mcp_bridge.py`
 - `incident/tools.py`
@@ -296,7 +306,7 @@ In the reference, this checkpoint changed the files below. Learners write the im
 
 ## Verification scope
 
-All course tags were independently unpacked and tested. The completed repository has 51 passing tests. Real local MCP stdio, the tool gateway's shared sessions and pinned definitions, A2A HTTP discovery, streaming, delegated-token authentication and cancellation were exercised. The platform console was driven in a headless Chromium browser against every checkpoint from lesson-08 onward.
+All course tags were independently unpacked and tested. The completed repository has 53 passing tests. Real local MCP stdio, the tool gateway's shared sessions and pinned definitions, A2A HTTP discovery, streaming, delegated-token authentication and cancellation were exercised. The platform console was driven in a headless Chromium browser against every checkpoint from lesson-08 onward.
 
 Live model credentials, paid provider calls, live model judging, third-party MCP or A2A services, remote MCP OAuth, an enterprise identity provider, a managed secret vault, production cloud rollout and an external observability collector were not tested. The offline provider is a deterministic fixture, so its usage and quality results are teaching measurements. Read TESTING.md for the full scope and environment details.
 
