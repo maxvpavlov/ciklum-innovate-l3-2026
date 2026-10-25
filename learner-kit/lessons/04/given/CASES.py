@@ -1,4 +1,4 @@
-# Given for Lesson 04. Paste this definition unchanged into incident/evaluate.py.
+# Given for Lesson 04. Paste this definition unchanged into agent_runtime/evaluate.py.
 # Keep or add the imports it needs in that file.
 
 CASES = [

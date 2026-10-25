@@ -4,7 +4,7 @@
 
 **Outcome** Every run acts for a named user through short-lived, audience-bound tokens that narrow at each child or remote agent. The gateway and the A2A specialist verify them, secrets are released only by reference, and hostile inputs are contained.
 
-Duration: 90 minutes. Starting checkpoint: lesson-09. Ending checkpoint: lesson-10 (77a5859).
+Duration: 90 minutes. Starting checkpoint: lesson-09. Ending checkpoint: lesson-10 (24ce4df).
 
 Word version: [10 Agent identity delegated credentials and containment.docx](10%20Agent%20identity%20delegated%20credentials%20and%20containment.docx)
 
@@ -79,7 +79,7 @@ Use SAY for instructor narration, SHOW and REVIEW for the code and evidence part
 
 **SAY** Open TokenIssuer. A token has the JWT shape: header, claims and signature, each base64url encoded. issue adds issuer, issue time, expiry and a unique jti. verify checks the signature with a constant-time comparison, then issuer, expiry and the audience the caller expects, and each failure has a distinct reason that later appears in audits and API errors. In the API, /auth/token exchanges a loopback demo credential for a one-hour platform-api token, and the console keeps only that signed token. Name the simplification: one shared HMAC key both signs and verifies, so any verifier could also mint tokens. A production issuer signs asymmetrically and publishes verification keys, for example as JWKS.
 
-**SHOW** The current learner implementation and `incident/identity.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
+**SHOW** The current learner implementation and `agentic_platform/identity.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
 > **PROMPT** For Lesson 10, continue in my learner project. Add a token issuer that signs short-lived JWT-shaped tokens with a configured development key and verifies signature, issuer, expiry and audience with distinct reasons and a constant-time comparison. Let the API exchange a demo credential for a signed platform token and record the signed-in subject on each run. Show tampered, expired and wrong-audience tokens being rejected, and explain why a shared key is a teaching simplification. Build to the interfaces the Lesson 10 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
@@ -123,7 +123,7 @@ def verify(self, token, audience):
 
 **SAY** A run never uses the user's API token. When the platform executes a run, Delegation.for_run mints a five-minute tool-gateway token with the user as subject and the agent definition, such as agent:team@v1, as actor. When the supervisor delegates, for_child verifies the parent's token and refuses a wider scope or another tenant with delegation_exceeds_parent. The child keeps the user as subject and nests the parent's actor under a new one; the remote specialist's grant uses its own audience. Tokens live only in memory, while the grants table records jti, chain, audience and scope. In the finally block of Platform._execute, revoke removes the run's tokens and every token delegated beneath it.
 
-**SHOW** The current learner implementation and `incident/identity.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
+**SHOW** The current learner implementation and `agentic_platform/identity.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
 > **PROMPT** For Lesson 10, continue in my learner project. Add delegated credentials. Mint a short-lived tool-gateway token for each executing run, with the user as subject, the agent definition as actor and the run's allowed tools as scope. Give each local or remote child a token that only narrows the parent's scope and extends the actor chain. Record grants for inspection, keep token values out of run state, and revoke a run's tokens and its children's when the run ends. Show the three actor chains of a team run. Build to the interfaces the Lesson 10 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
@@ -171,7 +171,7 @@ def revoke(self, run_id):
 
 **SAY** A token nobody checks is decoration. After the Session 09 policy rules, the gateway looks up the calling run's delegated token and verifies it for the tool-gateway audience. No token gives no_delegated_credential; signature, expiry and audience failures pass their reason into the audit; another tenant's token gives tenant_mismatch; a tool outside the token's scope gives scope_denied. Then open a2a_service.py. Its middleware verifies the bearer token for the specialist's own audience and takes tenant and subject from the claims, never from the message. The static demo-specialist-token from Session 07 is gone. In this checkpoint the gateway finds the token in process; a separate gateway service would receive it as a bearer header.
 
-**SHOW** The current learner implementation and `incident/gateway.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
+**SHOW** The current learner implementation and `agentic_platform/gateway.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
 > **PROMPT** For Lesson 10, continue in my learner project. Enforce delegated credentials at the tool gateway and the A2A specialist. At the gateway, deny calls without a delegated token, verify it for the gateway audience, and deny a tenant mismatch or a tool outside its scope, auditing each reason. At the specialist, replace the static shared token with a delegated token for its own audience and derive tenant and subject from the verified claims. Show a missing credential, a cross-tenant call and a wrong-audience request being refused. Build to the interfaces the Lesson 10 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
@@ -205,7 +205,7 @@ if self.credentials is not None:
 
 **SAY** Open CredentialStore. put accepts only a secret:// reference and named consumers, and wraps the value in Secret, which prints as [REDACTED] and refuses JSON serialization. lease releases a value only to a listed consumer and audits every decision. The platform stores its signing key for identity and the model key for model-adapter, and definitions may name credentials only by reference. Then run the containment fixture: a hostile provider proposes mock_remediate and records zero effects; sandbox_path rejects traversal, absolute paths and symlinks; validate_endpoint refuses the metadata address; validate_answer rejects a source ID mentioned only in prose; Run.event redacts bearer strings. This in-memory store is not a vault or KMS with rotation.
 
-**SHOW** The current learner implementation and `incident/identity.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
+**SHOW** The current learner implementation and `agentic_platform/identity.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
 > **PROMPT** For Lesson 10, continue in my learner project. Add a credential store that keeps secrets under secret:// references, releases a value only to a named consumer, audits every release and denial, and wraps values so they cannot be printed or serialized. Lease the model key to the provider adapter and let definitions name credentials only by reference. Keep the hostile-provider, path, endpoint, citation and redaction checks working. Show a denied lease and zero injected effects, and do not describe the store as a vault. Build to the interfaces the Lesson 10 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
@@ -252,7 +252,7 @@ class CredentialStore:
 
 **VERIFY** Give the coding agent the verification prompt below, then inspect its evidence and explain the result in your own words.
 
-> **PROMPT** Verify my Lesson 10 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 10 only when the required capability is present. Run the full test suite, which includes the Lesson 10 check pack and every earlier lesson's tests, and then the Session 10 demonstration with python -m incident.lab 10, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 10 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my repository on gitlab.ciklum.net; if glab is also signed in to other GitLab hosts, make sure the push goes to gitlab.ciklum.net. Do not equate an unrun or skipped check with a pass.
+> **PROMPT** Verify my Lesson 10 implementation against its completion criteria. Update the checkpoint indicator in course/__init__.py to 10 only when the required capability is present. Run the full test suite, which includes the Lesson 10 check pack and every earlier lesson's tests, and then the Session 10 demonstration with python -m course.lab 10, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 10 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my repository on gitlab.ciklum.net; if glab is also signed in to other GitLab hosts, make sure the push goes to gitlab.ciklum.net. Do not equate an unrun or skipped check with a pass.
 
 **Expected behaviour** The coding agent returns actual check results and the demonstration’s structured output. Run identifiers and elapsed times vary. Compare the status and capability outcomes with the recorded reference below, and investigate differences.
 
@@ -298,28 +298,28 @@ class CredentialStore:
 - Secrets are released by reference only to named consumers, with every release audited.
 - Injected writes, path escapes, metadata egress, fabricated citations and credential strings in events are contained or redacted.
 
-The independently unpacked lesson-10 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 10 check pack from the course kit. Recorded test result: 45 passed in 21.06s. Learners commit and push their checkpoint to their GitLab repository; lesson-10 (77a5859) remains the instructor's answer key.
+The independently unpacked lesson-10 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 10 check pack from the course kit. Recorded test result: 45 passed in 21.06s. Learners commit and push their checkpoint to their GitLab repository; lesson-10 (24ce4df) remains the instructor's answer key.
 
 ### Files changed in this checkpoint
 
 In the reference, this checkpoint changed the files below. Learners write the implementation files themselves; the lab, the tests and any given files arrive in the Lesson 10 check pack. Ask the agent to explain any additional file changes it needs.
 
-- `incident/__init__.py`
-- `incident/a2a_client.py`
-- `incident/a2a_service.py`
-- `incident/api.py`
-- `incident/console/app.js`
-- `incident/console/views/identity.js`
-- `incident/console/views/index.js`
-- `incident/core.py`
-- `incident/gateway.py`
-- `incident/identity.py`
-- `incident/labs/l10.py`
-- `incident/platform.py`
-- `incident/providers.py`
-- `incident/registry.py`
-- `incident/security.py`
-- `incident/supervisor.py`
+- `agent_runtime/a2a_client.py`
+- `agent_runtime/a2a_service.py`
+- `agent_runtime/core.py`
+- `agent_runtime/providers.py`
+- `agent_runtime/security.py`
+- `agent_runtime/supervisor.py`
+- `agentic_platform/api.py`
+- `agentic_platform/console/app.js`
+- `agentic_platform/console/views/identity.js`
+- `agentic_platform/console/views/index.js`
+- `agentic_platform/gateway.py`
+- `agentic_platform/identity.py`
+- `agentic_platform/platform.py`
+- `agentic_platform/registry.py`
+- `course/__init__.py`
+- `course/labs/l10.py`
 - `tests/test_lesson10.py`
 
 > **PROMPT** Review my completed Lesson 10 work against the Lesson 10 check pack and completion criteria. Show the files I changed and the interfaces I provide, and explain how each completion criterion is met with code or test evidence. Point out the design choices I made that the check pack does not force, and what each one costs or gains. Preserve deliberate improvements and earlier capabilities.

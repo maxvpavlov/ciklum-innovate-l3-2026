@@ -1,32 +1,35 @@
 #!/usr/bin/env bash
-# Move the course checkpoint tags to the reference with the platform shell (24 October 2026):
-# lesson-02..lesson-12 and course-complete gain a given run API and console from Session 02.
-# lesson-00 and lesson-01 are unchanged. The previous checkpoints are kept as v2/* tags first
-# (the September 2026 originals are already v1/*), so this is reversible and idempotent.
+# Move the course checkpoint tags to the restructured reference (25 October 2026): every checkpoint,
+# lesson-00..lesson-12 and course-complete, now keeps the agent runtime in agent_runtime/, the platform
+# in agentic_platform/ and the course scaffolding in course/ instead of one incident/ package. Same
+# tests, same numbers. The previous checkpoints are kept as v3/* tags first (v1/* and v2/* hold the
+# earlier rebuilds), so this is reversible and idempotent.
 # Run from a clone that has fetched claude/clever-tesla-bnbyzh (or main after merging it).
 set -euo pipefail
 git fetch origin claude/clever-tesla-bnbyzh
 git fetch --force origin "+refs/tags/*:refs/tags/*"
 declare -A NEW=(
-  [lesson-02]=2d0a675a349a9e8f5650b634e7b901178bf248e0
-  [lesson-03]=60fbebf300176b6e57204a385cb2acb95aa5466b
-  [lesson-04]=94b139360df490f825530faddc0bb32bc8cc8715
-  [lesson-05]=cb80e96b0e378df5346ce212582c7c6ea3e9a3ea
-  [lesson-06]=e4c54a70f106a48bc907892e29e4c18ce036e100
-  [lesson-07]=e79c003be56cc64b85bd3b7d1922123c3883617e
-  [lesson-08]=675ee7e9cdfbc3084cb0b1161c710b344e1554ac
-  [lesson-09]=13af6c24898c4f88f57f893ab7d4eaecf8c69fb6
-  [lesson-10]=77a5859ccf7573ec01326616c283c1d7d3200ea0
-  [lesson-11]=2616483c4a94099c54428a110411b3a8d8432364
-  [lesson-12]=8e8242846e80e2a5e2c0c1fc4df3c075a4619665
-  [course-complete]=60230786d1559337f696180bed74c4af4288f509
+  [lesson-00]=2e852ab76821e8eccc416affbcfb31805fb0d76e
+  [lesson-01]=9847de9ec7ed5e32f5671a1b485be1672cc0b029
+  [lesson-02]=4d533bc82ccfefc9c233009dc8c760fd0fa4e76e
+  [lesson-03]=094df54c92e050453f93af9403f81089dc5e8227
+  [lesson-04]=157768ea57f6ec198efc4ddc472feb7b7846400a
+  [lesson-05]=f3cc0ccf77af913271ddf8f9ebd0ee4f69b4d31b
+  [lesson-06]=60c24e5927f060494be9e29ca8312ef4038dec1c
+  [lesson-07]=1c95964bac56f5d8a580687bab0431f1bacc2efa
+  [lesson-08]=c899d657a8aca7718ce5e39272babb77ca41fceb
+  [lesson-09]=1fa582c3e3ea864cba9197f65f6be101346820c0
+  [lesson-10]=24ce4dfd55b55eff9fcbc04b12eb9e2287ffab61
+  [lesson-11]=e0f01f84907adafa965f83c713c485aacfa679db
+  [lesson-12]=b867df96f0e393b5890ee6578cf2ed8661f6194b
+  [course-complete]=e2c28f1b000214604e945cbb7e1b66676b4cedff
 )
 for tag in "${!NEW[@]}"; do
-  if ! git rev-parse -q --verify "refs/tags/v2/$tag" >/dev/null; then
-    [ "$(git rev-parse "$tag^{commit}")" = "${NEW[$tag]}" ] || git tag "v2/$tag" "$tag"
+  if ! git rev-parse -q --verify "refs/tags/v3/$tag" >/dev/null; then
+    [ "$(git rev-parse "$tag^{commit}")" = "${NEW[$tag]}" ] || git tag "v3/$tag" "$tag"
   fi
   git tag -f "$tag" "${NEW[$tag]}"
 done
-backups=$(for tag in "${!NEW[@]}"; do git rev-parse -q --verify "refs/tags/v2/$tag" >/dev/null && printf 'refs/tags/v2/%s ' "$tag"; done)
+backups=$(for tag in "${!NEW[@]}"; do git rev-parse -q --verify "refs/tags/v3/$tag" >/dev/null && printf 'refs/tags/v3/%s ' "$tag"; done)
 [ -z "$backups" ] || git push origin $backups
 git push --force origin $(printf 'refs/tags/%s ' "${!NEW[@]}")

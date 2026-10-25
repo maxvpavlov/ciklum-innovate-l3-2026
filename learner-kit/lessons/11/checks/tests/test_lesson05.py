@@ -1,8 +1,8 @@
 import pytest
-from incident.core import Context, run_agent
-from incident.durable import RunStore, resume_run
-from incident.labs.l05 import RemediationProvider, demo
-from incident.tools import ToolExecutor
+from agent_runtime.core import Context, run_agent
+from agent_runtime.durable import RunStore, resume_run
+from course.labs.l05 import RemediationProvider, demo
+from agent_runtime.tools import ToolExecutor
 
 
 async def test_crash_after_effect_does_not_duplicate():

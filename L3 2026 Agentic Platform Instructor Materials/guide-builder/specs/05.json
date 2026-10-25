@@ -13,8 +13,8 @@
     {
       "title": "Persist reconstructible state",
       "say": "Save the full Run snapshot under tenant and run ID, then reconstruct Context explicitly when loading. We are preserving messages, pending calls, counters, status and answer. The store does not infer authority from text. Show a lookup from the wrong tenant and confirm that it fails as run_not_found. Ask learners which fields must survive a crash before the model receives its tool result. The pending call and its identifier must survive, because they connect the stored assistant request to the eventual observation. The local file is our durable boundary for the exercise; process memory is not sufficient.",
-      "file": "incident/durable.py",
-      "prompt": "Implement RunStore in incident/durable.py so it persists and reconstructs the current runtime state under tenant and run ID. Preserve messages, pending calls, usage counters and control state. Use a persistent local database for restart checks. Show which data must survive a crash before a tool observation is recorded, and demonstrate that another tenant cannot load the run.",
+      "file": "agent_runtime/durable.py",
+      "prompt": "Implement RunStore in agent_runtime/durable.py so it persists and reconstructs the current runtime state under tenant and run ID. Preserve messages, pending calls, usage counters and control state. Use a persistent local database for restart checks. Show which data must survive a crash before a tool observation is recorded, and demonstrate that another tenant cannot load the run.",
       "excerpt": {
         "start": 16,
         "end": 18
@@ -26,7 +26,7 @@
     {
       "title": "Store the exact approval decision",
       "say": "Start the remediation fixture and observe waiting_approval. No effect has happened. The trusted operator now approves the proposed tool name and arguments, whose canonical action key is stored with an expiry. Read the denial branch and the approved_keys query. Approval is a separate durable record and must still be valid when execution resumes. This is also where we distinguish operator action from model preference. RemediationProvider is a deterministic fixture used to reach the approval branch; it is not a real operational recommendation. All effects remain in the local mock ledger.",
-      "file": "incident/durable.py",
+      "file": "agent_runtime/durable.py",
       "prompt": "Implement durable approval decisions with exact action keys, expiry and denial. Reach the waiting state using the clearly labelled remediation fixture, with no real external action. Show the exact proposed tool and arguments. Keep the human decision separate from execution: do not approve on my behalf while preparing the demonstration. Explain how the stored decision is checked again at resume time.",
       "excerpt": {
         "start": 27,
@@ -39,7 +39,7 @@
     {
       "title": "Resume from the pending boundary",
       "say": "Load the snapshot, reject terminal denial or cancellation, and refresh approved keys from the current approval records. Then call the same run_agent function with initial state and the save callback. The runtime processes the stored pending call before requesting another model decision. Walk through the before-write crash first, then the after-write crash. In the second case, the ledger recognizes the action key and returns the committed result. The resumed conversation can append the missing tool observation and finish. Ask participants to explain why we do not ask the model to reconstruct whether the earlier write succeeded.",
-      "file": "incident/durable.py",
+      "file": "agent_runtime/durable.py",
       "prompt": "Implement resume_run using the stored pending call and the same run_agent loop. Refresh currently valid approvals, reject denied or cancelled work and use the local effect ledger to reconcile a replay. Demonstrate why recovery consults durable application evidence rather than asking a model whether an earlier write succeeded. Preserve the original tenant and action boundaries.",
       "excerpt": {
         "start": 47,
@@ -52,7 +52,7 @@
     {
       "title": "Inject a crash after the effect",
       "say": "Read the injected failure before running it. The wrapper deliberately executes the approved effect and then raises WorkerCrash before the runtime saves the observation. We reopen the database and create a new executor, then resume. Inspect the final status and count the effects table. The result must be completed with exactly one effect. Next, expire an approval and repeat. This time the run must remain waiting. Finally, deny the proposal and show that resume is rejected. Pause until a learner can place each failure on the state diagram and name the durable record used to resolve it.",
-      "file": "incident/labs/l05.py",
+      "file": "course/labs/l05.py",
       "prompt": "Make the Session 05 check pack pass, including its crash-injection demonstration. Simulate worker loss after a committed mock effect but before the result checkpoint, reopen the database and resume. Prove that there is one effect. Also demonstrate expired and denied approvals. Separate this automated fixture test from my manually controlled demonstration, and explain why the local transaction does not guarantee exactly-once behaviour for arbitrary remote APIs.",
       "excerpt": {
         "start": 37,

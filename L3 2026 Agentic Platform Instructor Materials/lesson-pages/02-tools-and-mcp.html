@@ -326,7 +326,7 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
   <div class="stack">
     <p class="lede" style="margin-top:0">A platform is a backend and the interface people use to run and watch it. From this session the kit gives your project a small one: a run API and a console, served by your own platform at <code>/console</code>. You do not build it; you use it to see what you build.</p>
     <div class="cards">
-      <div><span class="q">Given today</span><p><code>incident/api.py</code>, a run API that keeps runs in memory, and <code>incident/console/</code> with three views: Overview (the platform map), Runs and Tools.</p></div>
+      <div><span class="q">Given today</span><p><code>agentic_platform/api.py</code>, a run API that keeps runs in memory, and <code>agentic_platform/console/</code> with three views: Overview (the platform map), Runs and Tools. The agent copies them into the top-level <code>agentic_platform/</code> folder of your project; the runtime you build stays in <code>agent_runtime/</code>.</p></div>
       <div><span class="q">What it shows</span><p>Submit an investigation and read its answer and event timeline. In Tools, try calls as your role and see each decision the executor you build today makes.</p></div>
       <div><span class="q">Who you are</span><p>Sign in with a demo identity: <code>demo-astro</code> (analyst), <code>demo-operator</code> or <code>demo-locomotive</code>. Runs and decisions are scoped to your tenant.</p></div>
       <div><span class="q">How it grows</span><p>Session 08 replaces the in-memory shell with the platform core and you extend the console with Registry and Approvals; Sessions 09 to 11 add Gateway, Identity and Operations.</p></div>
@@ -511,7 +511,7 @@ change any part, e.g. INC-001 → INC-002
           <text class="small" x="256" y="120">SDK Client · adapter</text>
           <path class="ink" d="M220 105 H234"/><path class="arrowhead" d="M238 105 l-8 -5 v10z"/>
           <text class="small" x="40" y="180">launches the server with a fixed command:</text>
-          <text class="small" x="40" y="200">python -m incident.mcp_bridge</text>
+          <text class="small" x="40" y="200">python -m agent_runtime.mcp_bridge</text>
           <text class="small" x="40" y="220">INCIDENT_TENANT=astro</text>
           <rect class="today" x="520" y="20" width="320" height="230" rx="12"/>
           <text class="lbl" x="540" y="50">MCP server · separate process</text>
@@ -712,26 +712,26 @@ tests/
   </div>
 
   <div class="terminal" id="orient">
-    <div class="bar"><span class="switch">Switch to terminal · Add the check pack</span><span class="file">copies the checks · no implementation yet</span></div>
+    <div class="bar"><span class="switch">Switch to terminal · Add the check pack</span><span class="file">copies the platform shell into agentic_platform/ · copies the checks · no implementation yet</span></div>
     <div class="body">
-      <p class="goal">The agent copies the Session 02 check pack into your project, shows which checks fail and why, and lists the interfaces it needs, before writing any code.</p>
-      <div class="prompt" id="pO"><span class="pfx">PROMPT ▸ </span>Read learner-kit/lessons/02 in the course repository: its README, the given files and the check pack. Copy the whole given files and the check pack into my project exactly as the README says, without changing them, and commit that; a given definition that must be pasted into a module is added in the build step that creates or changes that module. Then run the tests and report what fails and why: at first this lesson's test file may fail to import, because the modules it needs do not exist yet. List the interfaces my code must provide, with the exact names, signatures, fields and error codes the tests use, and the capability they verify. Explain the implementation sequence before we begin. Do not write the implementation yet, and do not look for or use a finished solution.</div>
+      <p class="goal">The agent first copies the given platform shell into a top-level <code>agentic_platform/</code> folder and commits it on its own, so your repository keeps the platform apart from the agent runtime you build in <code>agent_runtime/</code>. Then it copies the Session 02 check pack, shows which checks fail and why, and lists the interfaces it needs, before writing any code.</p>
+      <div class="prompt" id="pO"><span class="pfx">PROMPT ▸ </span>Read learner-kit/lessons/02 in the course repository: its README, the given files and the check pack. First copy the platform shell, everything under given/agentic_platform, into a top-level agentic_platform/ folder in my project, unchanged, and commit it on its own as the given platform shell: agentic_platform/ is the platform, and the agent runtime I build stays in agent_runtime/. Then copy the remaining given files and the check pack into my project exactly as the README says, without changing them, and commit that; a given definition that must be pasted into a module is added in the build step that creates or changes that module. Then run the tests and report what fails and why: at first this lesson's test file may fail to import, because the modules it needs do not exist yet. List the interfaces my code must provide, with the exact names, signatures, fields and error codes the tests use, and the capability they verify. Explain the implementation sequence before we begin. Do not write the implementation yet, and do not look for or use a finished solution.</div>
       <div><button class="copy" type="button" data-copy="pO">Copy prompt</button></div>
-      <p class="check">Expect: <b>7 passed</b> from Session 01, and <code>test_lesson02.py</code> failing to import until <code>incident.tools</code> exists.</p>
+      <p class="check">Expect: <b>7 passed</b> from Session 01, and <code>test_lesson02.py</code> failing to import until <code>agent_runtime.tools</code> exists.</p>
     </div>
   </div>
 
   <div class="terminal" id="step1">
-    <div class="bar"><span class="switch">Switch to terminal · Build step 1 of 4</span><span class="file">new file · incident/tools.py · the executor</span></div>
+    <div class="bar"><span class="switch">Switch to terminal · Build step 1 of 4</span><span class="file">new file · agent_runtime/tools.py · the executor</span></div>
     <div class="body">
       <p class="goal">Validate before dispatch: known tool, then the run's permission, then the arguments; bounded reads; structured, classified errors.</p>
-      <div class="prompt" id="p1"><span class="pfx">PROMPT ▸ </span>For Lesson 02, continue in my learner project. Implement ToolExecutor in incident/tools.py. Check tool existence, application-owned capabilities and JSON arguments before dispatch. Reject unexpected tenant arguments and oversized results. Return structured errors that distinguish terminal failures from retryable read failures. Preserve the existing agent loop. Demonstrate malformed arguments and an unauthorized write proposal being rejected before a handler performs an effect. The check pack needs ToolExecutor(db=":memory:", read_handler=simple_tools, output_limit=6000), whose output_limit attribute a test changes; available(context), which returns only the schemas the context allows; and async execute(name, args, context), which returns the handler's result or {"ok": false, "error": code, "retryable": true or false}. Use the codes unknown_tool, permission_denied, invalid_arguments and output_too_large (all terminal), and tool_unavailable (retryable) when a read still times out or loses its connection after one retry. Check the permission before validating the arguments. Build to the interfaces the Lesson 02 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div>
+      <div class="prompt" id="p1"><span class="pfx">PROMPT ▸ </span>For Lesson 02, continue in my learner project. Implement ToolExecutor in agent_runtime/tools.py. Check tool existence, application-owned capabilities and JSON arguments before dispatch. Reject unexpected tenant arguments and oversized results. Return structured errors that distinguish terminal failures from retryable read failures. Preserve the existing agent loop. Demonstrate malformed arguments and an unauthorized write proposal being rejected before a handler performs an effect. The check pack needs ToolExecutor(db=":memory:", read_handler=simple_tools, output_limit=6000), whose output_limit attribute a test changes; available(context), which returns only the schemas the context allows; and async execute(name, args, context), which returns the handler's result or {"ok": false, "error": code, "retryable": true or false}. Use the codes unknown_tool, permission_denied, invalid_arguments and output_too_large (all terminal), and tool_unavailable (retryable) when a read still times out or loses its connection after one retry. Check the permission before validating the arguments. Build to the interfaces the Lesson 02 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div>
       <div><button class="copy" type="button" data-copy="p1">Copy prompt</button></div>
     </div>
   </div>
   <div class="stack">
     <div class="excerpt">
-      <div class="src">the three checks · incident/tools.py · lines 34–43 at lesson-02</div>
+      <div class="src">the three checks · agent_runtime/tools.py · lines 34–43 at lesson-02</div>
 <pre>async def execute(self, name, args, context):
     schemas = {s["function"]["name"]: s["function"]["parameters"] for s in self.schemas}
     if name not in schemas:
@@ -744,7 +744,7 @@ tests/
         return {"ok": False, "error": "invalid_arguments", "retryable": False}</pre>
     </div>
     <div class="excerpt">
-      <div class="src">the read path, after the write branch · incident/tools.py · lines 64–74 at lesson-02</div>
+      <div class="src">the read path, after the write branch · agent_runtime/tools.py · lines 64–74 at lesson-02</div>
 <pre>for attempt in range(2):
     try:
 <span class="hl">        async with asyncio.timeout(2):</span>
@@ -767,23 +767,23 @@ tests/
   </div>
 
   <div class="terminal" id="step2">
-    <div class="bar"><span class="switch">Switch to terminal · Build step 2 of 4</span><span class="file">incident/tools.py · incident/core.py · approval and ledger</span></div>
+    <div class="bar"><span class="switch">Switch to terminal · Build step 2 of 4</span><span class="file">agent_runtime/tools.py · agent_runtime/core.py · approval and ledger</span></div>
     <div class="body">
       <p class="goal">Bind approval to the exact action and make the mock effect idempotent, durably, in one transaction.</p>
-      <div class="prompt" id="p2"><span class="pfx">PROMPT ▸ </span>For Lesson 02, continue in my learner project. Add exact-action approval and idempotent mock remediation to ToolExecutor. Add a mock_remediate tool schema with incident_id (INC- followed by three digits) and action (only rollback), and define ApprovalRequired in incident/core.py: an exception whose action attribute holds the proposed key, name and args. action_key(name, args, context) returns the key; execute raises ApprovalRequired when that key is not in context.approved, and an approved write returns its result with replayed false the first time and the stored result with replayed true after that. Bind the action key to tenant, run, tool name and canonical arguments. Commit the local mock effect and its deduplication record atomically in SQLite. Test the same approved write after reopening the executor and test changed arguments against the original approval. Show that only one local effect exists, and explain the limit of this guarantee for external APIs. Build to the interfaces the Lesson 02 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div>
+      <div class="prompt" id="p2"><span class="pfx">PROMPT ▸ </span>For Lesson 02, continue in my learner project. Add exact-action approval and idempotent mock remediation to ToolExecutor. Add a mock_remediate tool schema with incident_id (INC- followed by three digits) and action (only rollback), and define ApprovalRequired in agent_runtime/core.py: an exception whose action attribute holds the proposed key, name and args. action_key(name, args, context) returns the key; execute raises ApprovalRequired when that key is not in context.approved, and an approved write returns its result with replayed false the first time and the stored result with replayed true after that. Bind the action key to tenant, run, tool name and canonical arguments. Commit the local mock effect and its deduplication record atomically in SQLite. Test the same approved write after reopening the executor and test changed arguments against the original approval. Show that only one local effect exists, and explain the limit of this guarantee for external APIs. Build to the interfaces the Lesson 02 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div>
       <div><button class="copy" type="button" data-copy="p2">Copy prompt</button></div>
       <p class="check">Expect: the first approved write returns <b>replayed: false</b>; after reopening the executor the same write returns <b>replayed: true</b>; the effects table holds one row; INC-002 raises ApprovalRequired.</p>
     </div>
   </div>
   <div class="stack">
     <div class="excerpt">
-      <div class="src">the action key · incident/tools.py · lines 19–21 at lesson-02</div>
+      <div class="src">the action key · agent_runtime/tools.py · lines 19–21 at lesson-02</div>
 <pre>def action_key(name, args, context):
     payload = [context.tenant, context.run_id, name, args]
     return hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()</pre>
     </div>
     <div class="excerpt">
-      <div class="src">the write branch of execute() · incident/tools.py · lines 44–63 at lesson-02</div>
+      <div class="src">the write branch of execute() · agent_runtime/tools.py · lines 44–63 at lesson-02</div>
 <pre>if name == "mock_remediate":
     key = action_key(name, args, context)
     if key not in context.approved:
@@ -813,16 +813,16 @@ tests/
   </div>
 
   <div class="terminal" id="step3">
-    <div class="bar"><span class="switch">Switch to terminal · Build step 3 of 4</span><span class="file">new file · incident/mcp_bridge.py · the server</span></div>
+    <div class="bar"><span class="switch">Switch to terminal · Build step 3 of 4</span><span class="file">new file · agent_runtime/mcp_bridge.py · the server</span></div>
     <div class="body">
       <p class="goal">Expose the two readers and the runbook resource through a real MCP server, with the tenant bound at launch and stdout kept for the protocol.</p>
-      <div class="prompt" id="p3"><span class="pfx">PROMPT ▸ </span>For Lesson 02, continue in my learner project. Implement the MCP server in incident/mcp_bridge.py with the pinned SDK. Expose the existing tenant-scoped log and runbook readers plus the runbook resource. Bind tenant identity in trusted launcher configuration, keep protocol stdout clean, and limit the server to the capabilities required by this lesson. Explain the host, client, server and resource roles before demonstrating discovery. Build to the interfaces the Lesson 02 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div>
+      <div class="prompt" id="p3"><span class="pfx">PROMPT ▸ </span>For Lesson 02, continue in my learner project. Implement the MCP server in agent_runtime/mcp_bridge.py with the pinned SDK. Expose the existing tenant-scoped log and runbook readers plus the runbook resource. Bind tenant identity in trusted launcher configuration, keep protocol stdout clean, and limit the server to the capabilities required by this lesson. Explain the host, client, server and resource roles before demonstrating discovery. Build to the interfaces the Lesson 02 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div>
       <div><button class="copy" type="button" data-copy="p3">Copy prompt</button></div>
     </div>
   </div>
   <div class="stack">
     <div class="excerpt">
-      <div class="src">the server · incident/mcp_bridge.py · lines 11–29 at lesson-02</div>
+      <div class="src">the server · agent_runtime/mcp_bridge.py · lines 11–29 at lesson-02</div>
 <pre>def make_server(tenant="astro"):
     server = MCPServer("incident-tools")
 <span class="hl">    context = Context(tenant=tenant)</span>
@@ -844,7 +844,7 @@ tests/
     return server</pre>
     </div>
     <div class="excerpt">
-      <div class="src">the entry point the launcher runs · incident/mcp_bridge.py · lines 53–54 at lesson-02</div>
+      <div class="src">the entry point the launcher runs · agent_runtime/mcp_bridge.py · lines 53–54 at lesson-02</div>
 <pre>if __name__ == "__main__":
     make_server(os.getenv("INCIDENT_TENANT", "astro")).run(transport="stdio")</pre>
     </div>
@@ -858,20 +858,20 @@ tests/
   </div>
 
   <div class="terminal" id="step4">
-    <div class="bar"><span class="switch">Switch to terminal · Build step 4 of 4</span><span class="file">incident/mcp_bridge.py · client and adapter · check pack passes</span></div>
+    <div class="bar"><span class="switch">Switch to terminal · Build step 4 of 4</span><span class="file">agent_runtime/mcp_bridge.py · client and adapter · check pack passes</span></div>
     <div class="body">
       <p class="goal">Connect the real stdio client behind the executor and run the original investigation through it.</p>
-      <div class="prompt" id="p4"><span class="pfx">PROMPT ▸ </span>For Lesson 02, continue in my learner project. Implement the MCP read adapter and connect it behind ToolExecutor. The check pack needs stdio_client(tenant="astro"), which returns the pinned SDK's Client for a server started as python -m incident.mcp_bridge with INCIDENT_TENANT set by the launcher, and MCPReadAdapter(client), a read handler that returns the result's structured content when present and otherwise parses its JSON text content. Use the real local stdio transport and the pinned SDK's result shapes. Make the Session 02 check pack pass, show the negotiated protocol and discovered tools, and run the same investigation through the adapter. Confirm that transport discovery does not grant new permissions and show the unchanged cited outcome. Build to the interfaces the Lesson 02 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div>
+      <div class="prompt" id="p4"><span class="pfx">PROMPT ▸ </span>For Lesson 02, continue in my learner project. Implement the MCP read adapter and connect it behind ToolExecutor. The check pack needs stdio_client(tenant="astro"), which returns the pinned SDK's Client for a server started as python -m agent_runtime.mcp_bridge with INCIDENT_TENANT set by the launcher, and MCPReadAdapter(client), a read handler that returns the result's structured content when present and otherwise parses its JSON text content. Use the real local stdio transport and the pinned SDK's result shapes. Make the Session 02 check pack pass, show the negotiated protocol and discovered tools, and run the same investigation through the adapter. Confirm that transport discovery does not grant new permissions and show the unchanged cited outcome. Build to the interfaces the Lesson 02 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div>
       <div><button class="copy" type="button" data-copy="p4">Copy prompt</button></div>
       <p class="check">Expect: protocol <b>2026-07-28</b>, tools <b>log_lookup</b> and <b>runbook_search</b>, the same cited answer as Session 01, and <b>12 passed</b>.</p>
     </div>
   </div>
   <div class="stack">
     <div class="excerpt">
-      <div class="src">the launcher and the adapter · incident/mcp_bridge.py · lines 32–50 at lesson-02</div>
+      <div class="src">the launcher and the adapter · agent_runtime/mcp_bridge.py · lines 32–50 at lesson-02</div>
 <pre>def stdio_client(tenant="astro"):
     return Client(StdioServerParameters(command=sys.executable,
-        args=["-m", "incident.mcp_bridge"], env={"INCIDENT_TENANT": tenant,
+        args=["-m", "agent_runtime.mcp_bridge"], env={"INCIDENT_TENANT": tenant,
         **({"PYTHONPATH": os.environ["PYTHONPATH"]} if "PYTHONPATH" in os.environ else {})}),
         read_timeout_seconds=5)
 
@@ -954,7 +954,7 @@ class MCPReadAdapter:
     <div class="terminal" style="margin-top:0">
       <div class="bar"><span class="switch">Switch to terminal · Verify and push</span><span class="file">check pack · full suite · push to GitLab</span></div>
       <div class="body">
-        <div class="prompt" id="p6"><span class="pfx">PROMPT ▸ </span>Verify my Lesson 02 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 2 only when the required capability is present. Run the full test suite, which includes the Lesson 02 check pack and every earlier lesson's tests, and then the Session 02 demonstration with python -m incident.lab 2, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 02 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my repository on gitlab.ciklum.net; if glab is also signed in to other GitLab hosts, make sure the push goes to gitlab.ciklum.net. Do not equate an unrun or skipped check with a pass.</div>
+        <div class="prompt" id="p6"><span class="pfx">PROMPT ▸ </span>Verify my Lesson 02 implementation against its completion criteria. Update the checkpoint indicator in course/__init__.py to 2 only when the required capability is present. Run the full test suite, which includes the Lesson 02 check pack and every earlier lesson's tests, and then the Session 02 demonstration with python -m course.lab 2, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 02 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my repository on gitlab.ciklum.net; if glab is also signed in to other GitLab hosts, make sure the push goes to gitlab.ciklum.net. Do not equate an unrun or skipped check with a pass.</div>
       <div><button class="copy" type="button" data-copy="p6">Copy prompt</button></div>
         <p class="check">Expect: <b>12 passed</b>, <code>LESSON = 2</code>, and your work pushed to your repository on gitlab.ciklum.net.</p>
         <div id="review"><div class="prompt" id="p7"><span class="pfx">PROMPT ▸ </span>Review my completed Lesson 02 work against the Lesson 02 check pack and completion criteria. Show the files I changed and the interfaces I provide, and explain how each completion criterion is met with code or test evidence. Point out the design choices I made that the check pack does not force, and what each one costs or gains. Preserve deliberate improvements and earlier capabilities.</div>

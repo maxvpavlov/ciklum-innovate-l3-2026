@@ -1,9 +1,9 @@
 import json
 import httpx
 import pytest
-from incident.core import Limits, run_agent
-from incident.fixtures import SCHEMAS, simple_tools
-from incident.providers import HTTPProvider, MockProvider
+from agent_runtime.core import Limits, run_agent
+from course.fixtures import SCHEMAS, simple_tools
+from agent_runtime.providers import HTTPProvider, MockProvider
 
 
 async def test_loop_uses_evidence_and_stops():

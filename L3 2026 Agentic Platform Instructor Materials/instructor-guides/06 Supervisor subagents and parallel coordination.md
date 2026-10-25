@@ -4,7 +4,7 @@
 
 **Outcome** A supervisor delegates bounded work to isolated log and runbook agents under typed contracts and a shared budget, runs independent work concurrently with a deadline, and coordinates correlated replies, versioned artifacts and bounded review.
 
-Duration: 120 minutes. Starting checkpoint: lesson-05. Ending checkpoint: lesson-06 (e4c54a7).
+Duration: 120 minutes. Starting checkpoint: lesson-05. Ending checkpoint: lesson-06 (60c24e5).
 
 Word version: [06 Supervisor subagents and parallel coordination.docx](06%20Supervisor%20subagents%20and%20parallel%20coordination.docx)
 
@@ -79,9 +79,9 @@ Use SAY for instructor narration, SHOW and REVIEW for the code and evidence part
 
 **SAY** The model may propose a task ID, a role and a bounded objective. It cannot invent a role or attach permissions. Read DELEGATE_SCHEMA and name the two allowed roles, then follow delegate. The contract is serialised with sorted keys: an identical contract reuses its result, while a changed objective under the same task ID is rejected as task_id_conflict. The application maps the role to a fixed tool set and refuses a child that would hold a tool its parent lacks. The child Context gets a new run ID, the parent's run ID as parent_id, the role's tools and no approvals. The parent's conversation is not copied. Ask why the objective is capped at 500 characters.
 
-**SHOW** The current learner implementation and `incident/supervisor.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
+**SHOW** The current learner implementation and `agent_runtime/supervisor.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 06, continue in my learner project. Implement the bounded delegate schema, the given offline planning fixture, SupervisorProvider, and the delegate method in incident/supervisor.py. Accept only known roles, stable task IDs and bounded objectives. Map each role to a fixed tool set, refuse capabilities the parent lacks, reuse identical contracts and reject a changed objective under the same task ID. Give each child a new run ID, the parent's ID, only its role's tools and no approvals. Label offline planning separately from live model planning. Build to the interfaces the Lesson 06 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 06, continue in my learner project. Implement the bounded delegate schema, the given offline planning fixture, SupervisorProvider, and the delegate method in agent_runtime/supervisor.py. Accept only known roles, stable task IDs and bounded objectives. Map each role to a fixed tool set, refuse capabilities the parent lacks, reuse identical contracts and reject a changed objective under the same task ID. Give each child a new run ID, the parent's ID, only its role's tools and no approvals. Label offline planning separately from live model planning. Build to the interfaces the Lesson 06 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 79 to 95 at lesson-06; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -117,7 +117,7 @@ child = replace(parent, run_id=uuid.uuid4().hex, parent_id=parent.run_id,
 
 **SAY** Inspect SharedBudget. The lock makes reservation atomic, which matters once children run concurrently. A child must fit the depth, agent-count and token limits before it starts. delegate reserves 1,800 fixture tokens, runs the child with its own limits of that allowance and four steps, and settles in a finally block from reported usage; a child that produced no run is charged the full reservation. Lower max_agents to one: the second delegation fails with delegation_budget, and the parent reports insufficient_evidence while keeping the log evidence. Name one honest gap: the parent's own calls sit outside this pool. Session 11 reserves them from the same budget.
 
-**SHOW** The current learner implementation and `incident/supervisor.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
+**SHOW** The current learner implementation and `agent_runtime/supervisor.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
 > **PROMPT** For Lesson 06, continue in my learner project. Implement shared budget reservation and settlement with depth, agent-count and token limits. Reserve before starting a child, give it bounded limits, settle from reported usage and charge the full reservation when usage is missing. Demonstrate a plan that exceeds the agent-count allowance, preserving completed evidence and reporting the incomplete result honestly. Note that the parent's own usage is outside this pool. Build to the interfaces the Lesson 06 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
@@ -158,9 +158,9 @@ class SharedBudget:
 
 **SAY** Open coordination.py. schedule rejects duplicate IDs, unknown dependencies and cycles before any work starts. The loop launches ready tasks up to the concurrency limit, marks dependants of a failed task as blocked, and waits for the first completion or the deadline. Unfinished tasks are recorded as cancelled with reason deadline, then cancelled and awaited so their cleanup runs. The overall status is partial unless everything completed. Next show the execute_batch hook in core.run_agent and Supervisor.batch: pending delegate calls become WorkItems, each still passes through delegate, and results return by tool-call ID. Compare sequential and parallel runs with the same injected latency; judge the direction, not exact milliseconds.
 
-**SHOW** The current learner implementation and `incident/coordination.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
+**SHOW** The current learner implementation and `agent_runtime/coordination.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 06, continue in my learner project. Implement WorkItem and schedule in incident/coordination.py. Reject duplicate IDs, unknown dependencies and cycles before launching work, respect the concurrency limit, block dependants of failed work, and at the deadline keep completed results, cancel and await the rest and report partial status. Add an optional batch hook to the runtime and a supervisor adapter that sends pending delegate calls through the scheduler without bypassing delegate's checks. Compare sequential and parallel runs with the same injected latency. Build to the interfaces the Lesson 06 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 06, continue in my learner project. Implement WorkItem and schedule in agent_runtime/coordination.py. Reject duplicate IDs, unknown dependencies and cycles before launching work, respect the concurrency limit, block dependants of failed work, and at the deadline keep completed results, cancel and await the rest and report partial status. Add an optional batch hook to the runtime and a supervisor adapter that sends pending delegate calls through the scheduler without bypassing delegate's checks. Compare sequential and parallel runs with the same injected latency. Build to the interfaces the Lesson 06 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 48 to 72 at lesson-06; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -204,9 +204,9 @@ finally:
 
 **SAY** Read Envelope and accept_reply. Correlation, task and artifact IDs must match the request, and the reply must advance the version by exactly one, so a reply for another request or a stale version cannot overwrite newer evidence. Then read bounded_review: the reviewer decides, the producer revises, and after max_rounds without acceptance the status is escalated with the artifact and review history preserved. The lab's reviewer always reports contradictory evidence, the review escalates, and the single owning component saves the report as version 1. Ask how learners would tell a genuine evidence conflict from a reviewer whose criteria keep changing. Both need explicit acceptance rules; the corrective action differs.
 
-**SHOW** The current learner implementation and `incident/coordination.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
+**SHOW** The current learner implementation and `agent_runtime/coordination.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 06, continue in my learner project. Implement typed reply correlation and bounded producer-reviewer coordination in incident/coordination.py. Require matching correlation, task and artifact identity and the next version. Give one component ownership of saving the reviewed artifact and escalate review that does not converge within its round limit, keeping the history. Make the Session 06 check pack pass, including a deadline-cancelled worker, a stale reply and a reviewer that never accepts. Build to the interfaces the Lesson 06 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 06, continue in my learner project. Implement typed reply correlation and bounded producer-reviewer coordination in agent_runtime/coordination.py. Require matching correlation, task and artifact identity and the next version. Give one component ownership of saving the reviewed artifact and escalate review that does not converge within its round limit, keeping the history. Make the Session 06 check pack pass, including a deadline-cancelled worker, a stale reply and a reviewer that never accepts. Build to the interfaces the Lesson 06 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 86 to 104 at lesson-06; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -246,7 +246,7 @@ async def bounded_review(artifact, producer, reviewer, max_rounds=2):
 
 **VERIFY** Give the coding agent the verification prompt below, then inspect its evidence and explain the result in your own words.
 
-> **PROMPT** Verify my Lesson 06 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 6 only when the required capability is present. Run the full test suite, which includes the Lesson 06 check pack and every earlier lesson's tests, and then the Session 06 demonstration with python -m incident.lab 6, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 06 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my repository on gitlab.ciklum.net; if glab is also signed in to other GitLab hosts, make sure the push goes to gitlab.ciklum.net. Do not equate an unrun or skipped check with a pass.
+> **PROMPT** Verify my Lesson 06 implementation against its completion criteria. Update the checkpoint indicator in course/__init__.py to 6 only when the required capability is present. Run the full test suite, which includes the Lesson 06 check pack and every earlier lesson's tests, and then the Session 06 demonstration with python -m course.lab 6, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 06 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my repository on gitlab.ciklum.net; if glab is also signed in to other GitLab hosts, make sure the push goes to gitlab.ciklum.net. Do not equate an unrun or skipped check with a pass.
 
 **Expected behaviour** The coding agent returns actual check results and the demonstration’s structured output. Run identifiers and elapsed times vary. Compare the status and capability outcomes with the recorded reference below, and investigate differences.
 
@@ -315,17 +315,17 @@ async def bounded_review(artifact, producer, reviewer, max_rounds=2):
 - A deadline preserves completed results and cancels unfinished work; cycles are rejected.
 - Mismatched or stale replies fail validation, and non-converging review escalates.
 
-The independently unpacked lesson-06 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 06 check pack from the course kit. Recorded test result: 27 passed in 4.41s. Learners commit and push their checkpoint to their GitLab repository; lesson-06 (e4c54a7) remains the instructor's answer key.
+The independently unpacked lesson-06 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 06 check pack from the course kit. Recorded test result: 27 passed in 4.41s. Learners commit and push their checkpoint to their GitLab repository; lesson-06 (60c24e5) remains the instructor's answer key.
 
 ### Files changed in this checkpoint
 
 In the reference, this checkpoint changed the files below. Learners write the implementation files themselves; the lab, the tests and any given files arrive in the Lesson 06 check pack. Ask the agent to explain any additional file changes it needs.
 
-- `incident/__init__.py`
-- `incident/coordination.py`
-- `incident/core.py`
-- `incident/labs/l06.py`
-- `incident/supervisor.py`
+- `agent_runtime/coordination.py`
+- `agent_runtime/core.py`
+- `agent_runtime/supervisor.py`
+- `course/__init__.py`
+- `course/labs/l06.py`
 - `tests/test_lesson06.py`
 
 > **PROMPT** Review my completed Lesson 06 work against the Lesson 06 check pack and completion criteria. Show the files I changed and the interfaces I provide, and explain how each completion criterion is met with code or test evidence. Point out the design choices I made that the check pack does not force, and what each one costs or gains. Preserve deliberate improvements and earlier capabilities.

@@ -2,15 +2,15 @@ import json
 from pathlib import Path
 import httpx
 import pytest
-from incident.api import create_app
-from incident.identity import CredentialStore, TokenIssuer, actor_chain
-from incident.local_service import local_service
-from incident.platform import Platform
-from incident.security import redact, sandbox_path, validate_answer, validate_endpoint
+from agentic_platform.api import create_app
+from agentic_platform.identity import CredentialStore, TokenIssuer, actor_chain
+from course.local_service import local_service
+from agentic_platform.platform import Platform
+from agent_runtime.security import redact, sandbox_path, validate_answer, validate_endpoint
 
 
 async def test_injection_delegation_and_secret_containment():
-    from incident.labs.l10 import demo
+    from course.labs.l10 import demo
     report = await demo()
     assert report["injected_write_effects"] == 0 and report["tokens_in_run_state"] == 0
     assert "worker:logs -> agent:team@v1 -> user:dana" in report["delegation_chains"]
@@ -65,12 +65,12 @@ async def test_api_issues_short_lived_tokens_and_records_the_subject(tmp_path):
             assert "eyJ" not in view.text and not view.json()["grants"][0]["live"]
     finally:
         await platform.close()
-    views = (Path(__file__).parents[1]/"incident"/"console"/"views"/"index.js").read_text()
+    views = (Path(__file__).parents[1]/"agentic_platform"/"console"/"views"/"index.js").read_text()
     assert "identity" in views
 
 
 async def test_remote_agent_accepts_only_delegated_platform_tokens(tmp_path):
-    async with local_service("incident.a2a_service:app", "/.well-known/agent-card.json") as url:
+    async with local_service("agent_runtime.a2a_service:app", "/.well-known/agent-card.json") as url:
         platform = Platform(str(tmp_path/"platform.db"))
         try:
             await platform.register_remote_agent(url)

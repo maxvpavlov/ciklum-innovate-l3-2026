@@ -30,21 +30,23 @@ KIT_URL = "https://github.com/maxvpavlov/ciklum-innovate-l3-2026/tree/main/learn
 # What is given rather than built: synthetic data, deterministic model doubles, the local service
 # launcher, and the platform shell (run API and console) that learners extend from Session 08.
 # (path, definition, last lesson it is given in) with definition None for a whole file.
-SHELL = ["incident/api.py", "incident/console/app.js", "incident/console/console.css",
-         "incident/console/index.html", "incident/console/views/index.js",
-         "incident/console/views/overview.js", "incident/console/views/runs.js"]
+SHELL = ["agentic_platform/__init__.py", "agentic_platform/api.py", "agentic_platform/console/app.js",
+         "agentic_platform/console/console.css",
+         "agentic_platform/console/index.html", "agentic_platform/console/views/index.js",
+         "agentic_platform/console/views/overview.js", "agentic_platform/console/views/runs.js"]
 GIVEN = [
-    ("incident/fixtures.py", None, 12),
-    ("incident/providers.py", "MockProvider", 12),
-    ("incident/evaluate.py", "CASES", 12),
-    ("incident/supervisor.py", "SupervisorProvider", 12),
-    ("incident/local_service.py", None, 12),
-    ("incident/tuning.py", "EfficientMockProvider", 12),
-    ("incident/blueprint.py", None, 12),
-    ("incident/console/views/tools.js", None, 12),
+    ("course/fixtures.py", None, 12),
+    ("agent_runtime/providers.py", "MockProvider", 12),
+    ("agent_runtime/evaluate.py", "CASES", 12),
+    ("agent_runtime/supervisor.py", "SupervisorProvider", 12),
+    ("course/local_service.py", None, 12),
+    ("agent_runtime/tuning.py", "EfficientMockProvider", 12),
+    ("agentic_platform/blueprint.py", None, 12),
+    ("agentic_platform/console/views/tools.js", None, 12),
 ] + [(path, None, 7) for path in SHELL]
-STARTER_FILES = [".gitignore", "pyproject.toml", "uv.lock", "incident/__init__.py",
-                 "incident/lab.py", "incident/labs/__init__.py", "tests/test_setup.py"]
+STARTER_FILES = [".gitignore", "pyproject.toml", "uv.lock", "course/__init__.py",
+                 "course/lab.py", "course/labs/__init__.py", "agent_runtime/__init__.py", "tests/test_setup.py"]
+PACKAGES = {"agent_runtime", "agentic_platform", "course"}
 TEST_COUNTS = [1, 7, 12, 15, 17, 19, 27, 29, 35, 39, 45, 50, 53]
 
 
@@ -96,12 +98,12 @@ def given_for(n):
 
 
 def interfaces(n, given_names):
-    """{module: [names]} that lesson n's checks import from the learner's incident package."""
+    """{module: [names]} that lesson n's checks import from the learner's packages."""
     found = {}
-    for path in ls(n, "tests") + ls(n, "incident/labs"):
+    for path in ls(n, "tests") + ls(n, "course/labs"):
         for node in ast.walk(ast.parse(show(n, path))):
-            if isinstance(node, ast.ImportFrom) and node.module and node.module.startswith("incident"):
-                if node.module.startswith("incident.labs"):
+            if isinstance(node, ast.ImportFrom) and node.module and node.module.split(".")[0] in PACKAGES:
+                if node.module.startswith("course.labs"):
                     continue
                 for alias in node.names:
                     if (node.module, alias.name) not in given_names:
@@ -128,6 +130,15 @@ def build_starter():
         "The default model is an offline, deterministic mock, so the checks need no API keys and",
         "everyone sees the same results. Its usage figures are teaching measurements, not costs.",
         "",
+        "## Layout",
+        "",
+        "| Folder | What it holds |",
+        "|---|---|",
+        "| `agent_runtime/` | The agent runtime you build in Sessions 01-07: the loop, model providers, tools and the MCP bridge, context, durable runs, evaluation, supervisor and A2A. |",
+        "| `agentic_platform/` | The platform around the runtime. Its shell (run API and console) is copied from the kit in Session 02; you extend it from Session 08 with the registry, tool gateway, identity and operations. |",
+        "| `course/` | Course scaffolding: `LESSON` (the checkpoint marker), the lab runner and lesson demos, and given synthetic data. |",
+        "| `tests/` | The checks, one file per lesson. |",
+        "",
         "Each lesson's given files and checks are in the learner kit of the course repository:",
         KIT_URL,
         "",
@@ -149,7 +160,7 @@ def build_lesson(n, known_given):
         if path.endswith(".py"):
             until = next(u for p, d, u in GIVEN if p == path and d == name)
             known_given.add((path[:-3].replace("/", "."), name or "*", until))
-    for path in ls(n, "tests") + ls(n, "incident/labs"):
+    for path in ls(n, "tests") + ls(n, "course/labs"):
         write(out / "checks" / path, show(n, path))
 
     current = {(m, d) for m, d, until in known_given if n <= until}
@@ -163,6 +174,9 @@ def build_lesson(n, known_given):
                   "shell (run API and console) that everyone shares, so results are comparable; they are",
                   "not what this lesson teaches.",
                   ""]
+        if any(p.startswith("agentic_platform/") for p, *_ in items):
+            lines += ["The platform shell goes into the top-level `agentic_platform/` folder: that folder is",
+                      "the platform, and the agent runtime you build stays in `agent_runtime/`.", ""]
         for path, name, _, changed in items:
             if name is None:
                 lines.append(f"- `given/{path}`: copy to `{path}`.")
@@ -172,17 +186,22 @@ def build_lesson(n, known_given):
                 else:
                     lines.append(f"- `given/{name}.py`: add `{name}` to `{path}` in the build step that creates that file.")
         lines.append("")
+    if n == 8:
+        lines += ["## The platform is yours from here", "",
+                  "The platform shell in `agentic_platform/` is no longer given: from this lesson you extend",
+                  "it with the registry and durable runs behind the same routes. Keep the shell's routes",
+                  "and responses; the two shell tests in `tests/test_lesson02.py` still check them.", ""]
     lines += ["## Checks", "",
               "Copy `checks/` into your project root unchanged: it holds this lesson's demo in",
-              "`incident/labs/` and the tests for this lesson and every earlier one in `tests/`.",
+              "`course/labs/` and the tests for this lesson and every earlier one in `tests/`.",
               "This lesson's tests fail until you have built the capability; at first its test file may",
               "fail to import, because the modules it needs do not exist yet. Never edit the tests to",
               "make them pass.", "",
-              f"When everything is built, set `LESSON = {n}` in `incident/__init__.py`. The full",
-              f"suite should then report **{TEST_COUNTS[n]} passed**, and `python -m incident.lab {n}`",
+              f"When everything is built, set `LESSON = {n}` in `course/__init__.py`. The full",
+              f"suite should then report **{TEST_COUNTS[n]} passed**, and `python -m course.lab {n}`",
               "prints the lesson's demo result.", "",
               "## Interfaces your code must provide", "",
-              "The checks import these names from your `incident` package. Read the tests to see",
+              "The checks import these names from your packages. Read the tests to see",
               "how each one is called and what it must return.", ""]
     lines += [f"- `{m}`: " + ", ".join(f"`{x}`" for x in names) for m, names in contract.items()]
     write(out / "README.md", "\n".join(lines) + "\n")
@@ -199,9 +218,12 @@ def build_readme():
         "| Folder | What it is |",
         "|---|---|",
         "| `starter/` | The starting project (checkpoint lesson-00). Your coding agent copies it into a new private repository in your course GitLab group on gitlab.ciklum.net. |",
-        "| `lessons/NN/given/` | Synthetic data, deterministic test doubles such as the mock model, and the platform shell (run API and console, from Session 02) that everyone uses unchanged. |",
+        "| `lessons/NN/given/` | Synthetic data, deterministic test doubles such as the mock model, and the platform shell (run API and console, from Session 02, copied into `agentic_platform/`) that everyone uses unchanged until Session 08. |",
         "| `lessons/NN/checks/` | The lesson's demo and tests, cumulative. Copy them unchanged; they fail until you build the capability. |",
         "| `lessons/NN/README.md` | What to copy where, and the interfaces your code must provide. |",
+        "",
+        "Your project keeps the agent runtime in `agent_runtime/`, the platform in `agentic_platform/`",
+        "and the course scaffolding in `course/`; the starter README describes the layout.",
         "",
         "The prompts for each session are on the session page your instructor shares, and in the",
         "course's learner prompts. All data is synthetic, and nothing here touches a real system.",

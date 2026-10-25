@@ -1,4 +1,4 @@
-# Given for Lesson 06. Paste this definition unchanged into incident/supervisor.py.
+# Given for Lesson 06. Paste this definition unchanged into agent_runtime/supervisor.py.
 # Keep or add the imports it needs in that file.
 
 class SupervisorProvider:

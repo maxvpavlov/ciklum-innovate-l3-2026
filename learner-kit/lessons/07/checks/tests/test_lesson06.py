@@ -1,13 +1,13 @@
 import asyncio
 from dataclasses import replace
 import pytest
-from incident.coordination import Envelope, WorkItem, accept_reply, bounded_review, schedule
-from incident.core import Context
-from incident.supervisor import SharedBudget, Supervisor
+from agent_runtime.coordination import Envelope, WorkItem, accept_reply, bounded_review, schedule
+from agent_runtime.core import Context
+from agent_runtime.supervisor import SharedBudget, Supervisor
 
 
 async def test_delegated_parallel_investigation_demo():
-    from incident.labs.l06 import demo
+    from course.labs.l06 import demo
     report = await demo()
     assert len(report["children"]) == 2 and report["review"] == "escalated"
 

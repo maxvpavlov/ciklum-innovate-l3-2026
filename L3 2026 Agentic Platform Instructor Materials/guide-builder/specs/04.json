@@ -13,8 +13,8 @@
     {
       "title": "Define cases before scoring runs",
       "say": "Read each case as a requirement. The missing incident should not inherit the most common runbook's cause. The ambiguous case should finish with insufficient evidence. The other-tenant case should use a different source population. Mark the held-out cases before tuning, and do not repeatedly edit them to accommodate a favoured implementation. Show the dataset hash in the result. It is a practical way to detect whether two reports evaluated the same case definitions. Ask learners to propose one additional failure case and state its expected outcome before running the agent.",
-      "file": "incident/evaluate.py",
-      "prompt": "Add the given versioned evaluation cases to incident/evaluate.py unchanged. They cover supported diagnoses, missing evidence, ambiguity and another tenant, with explicit expected outcomes and development versus held-out partitions. Record dataset identity. Explain each case before running the agent. Do not change expected answers simply to make the current implementation pass.",
+      "file": "agent_runtime/evaluate.py",
+      "prompt": "Add the given versioned evaluation cases to agent_runtime/evaluate.py unchanged. They cover supported diagnoses, missing evidence, ambiguity and another tenant, with explicit expected outcomes and development versus held-out partitions. Record dataset identity. Explain each case before running the agent. Do not change expected answers simply to make the current implementation pass.",
       "excerpt": {
         "start": 14,
         "end": 20
@@ -26,7 +26,7 @@
     {
       "title": "Grade outcomes and policy separately",
       "say": "Inspect the three checks returned by grade. The outcome check includes both cause and evidence-sufficiency status. The evidence check requires support for a known cause. The policy check rejects remediation during an investigation. Run the intentionally wrong answer test: it sounds plausible but names the wrong cause, so it fails. Explain the correction made to the offline provider in this checkpoint. A generic runbook is not proof of an incident's cause. The missing-evidence case exposed that mistaken inference, and the fixture now preserves unknown when diagnostic log evidence is absent.",
-      "file": "incident/evaluate.py",
+      "file": "agent_runtime/evaluate.py",
       "prompt": "Implement separate outcome, evidence and tool-policy checks in grade. Demonstrate rejection of a plausible but wrong diagnosis. Check the offline provider's missing-evidence behaviour, then replace MockProvider with the given Lesson 04 version and explain how it stops a generic runbook from becoming proof of an incident cause. Preserve the original test expectations and show the regression evidence.",
       "excerpt": {
         "start": 23,
@@ -39,7 +39,7 @@
     {
       "title": "Record repeated measurements",
       "say": "Follow the loop over cases and trials. Each run gets a fresh executor and context. We record checks, usage, steps and elapsed time, and retain the individual rows so a mean does not hide a bad case. Run development and held-out partitions separately, then run the full fixture set. The reference mock reports usage units chosen by the fixture; they are not tokenizer measurements or paid API charges. In live mode, usage comes from the provider, and cost is only available when pricing rates are configured. Ask participants to identify which numbers should be stable offline and which may vary with machine scheduling.",
-      "file": "incident/evaluate.py",
+      "file": "agent_runtime/evaluate.py",
       "prompt": "Implement repeated evaluation with fresh execution context per trial, per-case result rows, dataset identity, selected partition, quality, usage and latency measurements. Keep live cost unavailable when pricing is missing, and clearly label offline fixture usage. Run two trials on the held-out partition and show the four underlying rows, including failures rather than only a favourable aggregate.",
       "excerpt": {
         "start": 40,
@@ -52,7 +52,7 @@
     {
       "title": "Calibrate an optional model judge",
       "say": "Use a small labelled set to demonstrate agreement calculation and inspect the disagreement index. Then open model_judge. The expected outcome and agent answer are sent as data with a bounded grading request. The agent answer remains untrusted even inside an evaluation prompt. A judge response must have the expected type. Explain that deterministic checks remain useful even when a judge is present, especially for permission violations and missing source IDs. For this session, the optional live judge is not required: use the supplied labelled example and show where real human labels and a verified live adapter would enter.",
-      "file": "incident/evaluate.py",
+      "file": "agent_runtime/evaluate.py",
       "prompt": "Implement paired human-versus-judge agreement checks and the optional model_judge interface. Validate judge output, treat the agent answer as untrusted grading input and expose disagreements for human review. Make the Session 04 check pack pass using its offline calibration examples. Explain what is verified locally and what would still require a calibrated live judge and authorized provider access.",
       "excerpt": {
         "start": 33,

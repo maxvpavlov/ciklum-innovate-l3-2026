@@ -4,7 +4,7 @@
 
 **Outcome** Agents become validated, immutable registry definitions that run through one platform API, remote A2A agents are pinned by Agent Card hash, and analysts and operators inspect the platform in a tenant-scoped console.
 
-Duration: 90 minutes. Starting checkpoint: lesson-07. Ending checkpoint: lesson-08 (675ee7e).
+Duration: 90 minutes. Starting checkpoint: lesson-07. Ending checkpoint: lesson-08 (c899d65).
 
 Word version: [08 Platform core agent registry and console.docx](08%20Platform%20core%20agent%20registry%20and%20console.docx)
 
@@ -81,9 +81,9 @@ Use SAY for instructor narration, SHOW and REVIEW for the code and evidence part
 
 **SAY** Open the registry. A definition is validated against AGENT_SCHEMA before anything is stored: kind, description, owner, allowed tools, skills, prompt and context budget, with no additional properties. So a definition that smuggles in an api_key field fails as invalid_definition, and an allowed tool the platform does not know, such as shell_exec, fails as unknown_tool. The content hash is the SHA-256 of the canonical JSON. Registering identical content again is harmless; different content under an existing version fails as immutable_definition. Lifecycle is kept apart from content: one version per name is active, any non-retired version can be activated, and the active version cannot be retired. Ask learners what a retired version still means for runs that already used it.
 
-**SHOW** The current learner implementation and `incident/registry.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
+**SHOW** The current learner implementation and `agentic_platform/registry.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 08, continue in my learner project. Add an agent registry in incident/registry.py on the platform's SQLite file. Validate each definition against a strict schema, require known tools, store a SHA-256 content hash and reject different content under an existing version. Track one active version per agent, allow activating any non-retired version and refuse to retire the active one. Seed single, team and remediator at version 1. Show the rejection codes for an unknown field, an unknown tool and an in-place rewrite. Build to the interfaces the Lesson 08 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 08, continue in my learner project. Add an agent registry in agentic_platform/registry.py on the platform's SQLite file. Validate each definition against a strict schema, require known tools, store a SHA-256 content hash and reject different content under an existing version. Track one active version per agent, allow activating any non-retired version and refuse to retire the active one. Seed single, team and remediator at version 1. Show the rejection codes for an unknown field, an unknown tool and an in-place rewrite. Build to the interfaces the Lesson 08 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 38 to 54 at lesson-08; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -123,7 +123,7 @@ def register(self, name, version, spec):
 
 **SAY** In Session 07 the team discovered the runbook specialist at request time and trusted whatever card came back. Now the platform registers the remote agent once: fetch_card reads the public card, and register_remote stores the URL, the card and its SHA-256. A later registration with a different card fails as agent_card_changed unless someone explicitly accepts the change after review. At run time discover_client fetches the card again and compares its digest with the pin before creating a client, so a card swapped after registration stops the run instead of silently redirecting work. Discovery by skill returns active local agents and pinned remote agents together. Be honest about the limit: the first registration is trust on first use, with no human review.
 
-**SHOW** The current learner implementation and `incident/a2a_client.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
+**SHOW** The current learner implementation and `agent_runtime/a2a_client.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
 > **PROMPT** For Lesson 08, continue in my learner project. Register remote A2A agents by pinning the SHA-256 of their Agent Card, and refuse a changed card unless an explicit reviewed acceptance is given. Add discovery by skill across active local agents and pinned remote agents. Make the A2A client check the fetched card against the pin before creating a client, and register the specialist at startup when a remote URL is configured. Demonstrate discovery for the runbooks skill and the refusal of a modified card. Build to the interfaces the Lesson 08 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
@@ -139,7 +139,7 @@ async def fetch_card(url):
 async def discover_client(http, url, streaming=True, polling=False, pinned=None):
     card = await A2ACardResolver(http, base_url=url).get_agent_card()
     if pinned:
-        from incident.registry import digest
+        from agentic_platform.registry import digest
         if digest(card_dict(card)) != pinned:
             raise ValueError("agent_card_changed")
     if not any(skill.id == "runbooks" for skill in card.skills):
@@ -159,9 +159,9 @@ async def discover_client(http, url, streaming=True, polling=False, pinned=None)
 
 **SAY** Follow one submission. The API maps the bearer credential to a tenant and a role; the body carries only the incident ID, the agent name and an optional version. submit resolves the definition from the registry, refuses a retired version and requires an operator for the remediator kind. Application code builds Context from the definition's allowed tools, so the model never chooses its own permissions. The resolved definition, with version and hash, is saved on the queued run before work starts. launch then claims a durable lease, and a second claim fails as run_already_owned. The lifecycle endpoints keep the same boundaries: inspect loads only within the caller's tenant, decisions need an operator and the current action key, and resume goes back through the lease.
 
-**SHOW** The current learner implementation and `incident/platform.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
+**SHOW** The current learner implementation and `agentic_platform/platform.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 08, continue in my learner project. Build the platform core in incident/platform.py and the run API in incident/api.py. Submission resolves the requested or active definition, refuses retired versions, requires an operator for the remediator, builds the context in application code and saves the queued run with the resolved definition before launch. Claim a durable lease per run. Expose submit, list, inspect, cancel, decision and resume bound to the authenticated tenant, with 404 for another tenant's run and a conflict for a stale action key. Keep every handler asynchronous, because workers and handlers share one SQLite connection. Show both configurations completing with their recorded version and hash. Build to the interfaces the Lesson 08 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 08, continue in my learner project. Build the platform core in agentic_platform/platform.py and the run API in agentic_platform/api.py. Submission resolves the requested or active definition, refuses retired versions, requires an operator for the remediator, builds the context in application code and saves the queued run with the resolved definition before launch. Claim a durable lease per run. Expose submit, list, inspect, cancel, decision and resume bound to the authenticated tenant, with 404 for another tenant's run and a conflict for a stale action key. Keep every handler asynchronous, because workers and handlers share one SQLite connection. Show both configurations completing with their recorded version and hash. Build to the interfaces the Lesson 08 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 81 to 99 at lesson-08; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -203,7 +203,7 @@ def launch(self, tenant, run_id):
 
 **SAY** Since Session 02 the console has been static files served by the platform at /console: an HTML shell, one stylesheet and ES modules, with no build step and no external scripts. A middleware adds a strict Content-Security-Policy: scripts, styles and connections from the same origin only, no inline script and no framing. Now look at h(). Every API value, including model answers, tool evidence and event details, becomes a text node or an attribute value; nothing is assigned to innerHTML, and a test searches every console script for HTML injection sinks, eval and external URLs. Views call the same API with the signed-in credential, so runs are tenant-scoped, and Activate, Approve and Deny appear only for an operator while the server enforces the same rule.
 
-**SHOW** The current learner implementation and `incident/console/app.js`. Use the following prompt to make the bounded change, then inspect the agent’s result.
+**SHOW** The current learner implementation and `agentic_platform/console/app.js`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
 > **PROMPT** For Lesson 08, continue in my learner project. Extend the platform console at /console that the kit has given since Session 02. Keep its static HTML shell, vanilla ES modules and strict same-origin Content-Security-Policy with no inline or external scripts, and keep rendering every API value as text through the element helper, never as HTML. Add Registry and Approvals views, extend Runs with the agent choice, cancellation and child runs, and keep Overview and the Tools view working against the new platform API. Scope views to the signed-in identity and show operator controls only to operators while the API still enforces them. Show me the response headers and the check for HTML injection sinks. Build to the interfaces the Lesson 08 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
@@ -244,7 +244,7 @@ export function h(tag, attrs = {}, ...children) {
 
 **VERIFY** Give the coding agent the verification prompt below, then inspect its evidence and explain the result in your own words.
 
-> **PROMPT** Verify my Lesson 08 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 8 only when the required capability is present. Run the full test suite, which includes the Lesson 08 check pack and every earlier lesson's tests, and then the Session 08 demonstration with python -m incident.lab 8, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 08 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my repository on gitlab.ciklum.net; if glab is also signed in to other GitLab hosts, make sure the push goes to gitlab.ciklum.net. Do not equate an unrun or skipped check with a pass.
+> **PROMPT** Verify my Lesson 08 implementation against its completion criteria. Update the checkpoint indicator in course/__init__.py to 8 only when the required capability is present. Run the full test suite, which includes the Lesson 08 check pack and every earlier lesson's tests, and then the Session 08 demonstration with python -m course.lab 8, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 08 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my repository on gitlab.ciklum.net; if glab is also signed in to other GitLab hosts, make sure the push goes to gitlab.ciklum.net. Do not equate an unrun or skipped check with a pass.
 
 **Expected behaviour** The coding agent returns actual check results and the demonstration’s structured output. Run identifiers and elapsed times vary. Compare the status and capability outcomes with the recorded reference below, and investigate differences.
 
@@ -306,25 +306,25 @@ export function h(tag, attrs = {}, ...children) {
 - A second lease claim is rejected, another tenant's run returns 404, and a decision requires an operator and the current action key.
 - The console is served at /console under a strict Content-Security-Policy, renders API data as text only and shows each identity only its tenant's runs; every API handler is asynchronous.
 
-The independently unpacked lesson-08 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 08 check pack from the course kit. Recorded test result: 35 passed in 7.53s. Learners commit and push their checkpoint to their GitLab repository; lesson-08 (675ee7e) remains the instructor's answer key.
+The independently unpacked lesson-08 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 08 check pack from the course kit. Recorded test result: 35 passed in 7.53s. Learners commit and push their checkpoint to their GitLab repository; lesson-08 (c899d65) remains the instructor's answer key.
 
 ### Files changed in this checkpoint
 
 In the reference, this checkpoint changed the files below. Learners write the implementation files themselves; the lab, the tests and any given files arrive in the Lesson 08 check pack. Ask the agent to explain any additional file changes it needs.
 
-- `incident/__init__.py`
-- `incident/a2a_client.py`
-- `incident/api.py`
-- `incident/console/views/approvals.js`
-- `incident/console/views/index.js`
-- `incident/console/views/registry.js`
-- `incident/console/views/runs.js`
-- `incident/core.py`
-- `incident/durable.py`
-- `incident/labs/l08.py`
-- `incident/platform.py`
-- `incident/registry.py`
-- `incident/supervisor.py`
+- `agent_runtime/a2a_client.py`
+- `agent_runtime/core.py`
+- `agent_runtime/durable.py`
+- `agent_runtime/supervisor.py`
+- `agentic_platform/api.py`
+- `agentic_platform/console/views/approvals.js`
+- `agentic_platform/console/views/index.js`
+- `agentic_platform/console/views/registry.js`
+- `agentic_platform/console/views/runs.js`
+- `agentic_platform/platform.py`
+- `agentic_platform/registry.py`
+- `course/__init__.py`
+- `course/labs/l08.py`
 - `tests/test_lesson08.py`
 
 > **PROMPT** Review my completed Lesson 08 work against the Lesson 08 check pack and completion criteria. Show the files I changed and the interfaces I provide, and explain how each completion criterion is met with code or test evidence. Point out the design choices I made that the check pack does not force, and what each one costs or gains. Preserve deliberate improvements and earlier capabilities.

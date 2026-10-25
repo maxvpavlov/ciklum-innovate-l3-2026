@@ -4,7 +4,7 @@
 
 **Outcome** An independently hosted runbook specialist is discovered and invoked through the official A2A SDK, with streamed artifacts, authentication and remote cancellation.
 
-Duration: 90 minutes. Starting checkpoint: lesson-06. Ending checkpoint: lesson-07 (e79c003).
+Duration: 90 minutes. Starting checkpoint: lesson-06. Ending checkpoint: lesson-07 (1c95964).
 
 Word version: [07 A2A across independent agent services.docx](07%20A2A%20across%20independent%20agent%20services.docx)
 
@@ -79,9 +79,9 @@ Use SAY for instructor narration, SHOW and REVIEW for the code and evidence part
 
 **SAY** Read the card as a contract rather than a marketing description. It identifies the supported interface, JSON-RPC binding, protocol version, streaming capability and runbooks skill. The advertised bearer scheme documents the authentication mechanism, while the middleware below it actually enforces it with a constant-time comparison. Show the well-known card endpoint and explain why clients should inspect capabilities before assuming that any remote agent can perform any task. The demo token is a plainly labelled local teaching credential shared by every caller, unsuitable for a public deployment; Session 10 replaces it with a short-lived token issued for this specialist's audience. Ask learners what should happen if the card changes between two calls.
 
-**SHOW** The current learner implementation and `incident/a2a_service.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
+**SHOW** The current learner implementation and `agent_runtime/a2a_service.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 07, continue in my learner project. Create the independent runbook specialist in incident/a2a_service.py with the pinned A2A SDK. Advertise the expected skill, interface, protocol and streaming capability through an Agent Card. Enforce the local teaching bearer credential at the endpoint and keep the service read-only and tenant-scoped. Explain what the card advertises, what application code actually enforces, and why this shared credential is temporary. Build to the interfaces the Lesson 07 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 07, continue in my learner project. Create the independent runbook specialist in agent_runtime/a2a_service.py with the pinned A2A SDK. Advertise the expected skill, interface, protocol and streaming capability through an Agent Card. Enforce the local teaching bearer credential at the endpoint and keep the service read-only and tenant-scoped. Explain what the card advertises, what application code actually enforces, and why this shared credential is temporary. Build to the interfaces the Lesson 07 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 45 to 59 at lesson-07; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -115,7 +115,7 @@ async def authenticate(request, call_next):
 
 **SAY** The executor first enqueues a Task, then sends a working status. That ordering is required by the SDK's event flow. It runs the same agent loop with runbook-only capabilities and publishes the result as an artifact before marking completion. Walk through the slow-task branch used by the cancellation test. Ask what the client should report if the stream ends before a completed status or before the evidence artifact arrives. It must not manufacture a successful result from a partial stream. Also point out that failure and completion are distinct terminal states. The tenant is hard-coded to Astro here; in Session 10 it comes from verified token claims, never from the message.
 
-**SHOW** The current learner implementation and `incident/a2a_service.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
+**SHOW** The current learner implementation and `agent_runtime/a2a_service.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
 > **PROMPT** For Lesson 07, continue in my learner project. Implement SpecialistExecutor's task lifecycle using the SDK's event flow. Enqueue the initial task before status updates, run the existing agent loop with runbook-only access, publish evidence as an artifact and report the correct terminal state. Add the deterministic slow-task fixture for cancellation. Demonstrate incomplete execution without manufacturing a successful answer. Build to the interfaces the Lesson 07 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
@@ -152,9 +152,9 @@ async def execute(self, context, event_queue):
 
 **SAY** The client verifies the tenant boundary before making a request, resolves the card and checks the runbooks skill. It then consumes StreamResponse events, collecting the evidence artifact and terminal status. Only a completed task with an artifact becomes a successful platform result. This adapter keeps transport-specific protobuf objects out of the rest of our incident code. Show the normalized answer, source IDs and remote run ID. From Session 08 the platform records this call as a child of the team run; A2A itself provides neither that scheduler nor that trace.
 
-**SHOW** The current learner implementation and `incident/a2a_client.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
+**SHOW** The current learner implementation and `agent_runtime/a2a_client.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 07, continue in my learner project. Implement the platform-facing RemoteSpecialist adapter in incident/a2a_client.py. Check the allowed tenant, discover the expected capability, consume streamed artifacts and status, and normalize a completed result into the platform contract. Reject an incomplete stream. Show the evidence and remote run identifier, and explain what must be retained for later reconciliation. Build to the interfaces the Lesson 07 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 07, continue in my learner project. Implement the platform-facing RemoteSpecialist adapter in agent_runtime/a2a_client.py. Check the allowed tenant, discover the expected capability, consume streamed artifacts and status, and normalize a completed result into the platform contract. Reject an incomplete stream. Show the evidence and remote run identifier, and explain what must be retained for later reconciliation. Build to the interfaces the Lesson 07 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 26 to 46 at lesson-07; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -194,7 +194,7 @@ async def investigate(self, task, context):
 
 **SAY** Run the complete demo and inspect four streamed events, the cited runbook result, HTTP 401 for the unauthorized request and TASK_STATE_CANCELED for the slow task. The helper starts an ephemeral loopback service and terminates it after the checks. For cancellation, the client first obtains a task ID using return-immediately polling and then sends CancelTask. Ask participants to describe what information must be retained if the client disconnects and later wants to inspect or cancel the task. A transport disconnect does not itself prove that remote execution stopped.
 
-**SHOW** The current learner implementation and `incident/a2a_client.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
+**SHOW** The current learner implementation and `agent_runtime/a2a_client.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
 > **PROMPT** For Lesson 07, continue in my learner project. Make the Session 07 check pack pass with the real local HTTP demonstration, using the given service launcher for cleanup. Show discovery, streamed progress and evidence, rejection of an unauthenticated request, and confirmed cancellation of a slow remote task. Keep third-party services and live model calls out of this local check. Explain why a disconnected client is not proof that remote work has stopped. Build to the interfaces the Lesson 07 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
@@ -228,7 +228,7 @@ async def cancel_slow_task(url):
 
 **VERIFY** Give the coding agent the verification prompt below, then inspect its evidence and explain the result in your own words.
 
-> **PROMPT** Verify my Lesson 07 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 7 only when the required capability is present. Run the full test suite, which includes the Lesson 07 check pack and every earlier lesson's tests, and then the Session 07 demonstration with python -m incident.lab 7, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 07 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my repository on gitlab.ciklum.net; if glab is also signed in to other GitLab hosts, make sure the push goes to gitlab.ciklum.net. Do not equate an unrun or skipped check with a pass.
+> **PROMPT** Verify my Lesson 07 implementation against its completion criteria. Update the checkpoint indicator in course/__init__.py to 7 only when the required capability is present. Run the full test suite, which includes the Lesson 07 check pack and every earlier lesson's tests, and then the Session 07 demonstration with python -m course.lab 7, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 07 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my repository on gitlab.ciklum.net; if glab is also signed in to other GitLab hosts, make sure the push goes to gitlab.ciklum.net. Do not equate an unrun or skipped check with a pass.
 
 **Expected behaviour** The coding agent returns actual check results and the demonstration’s structured output. Run identifiers and elapsed times vary. Compare the status and capability outcomes with the recorded reference below, and investigate differences.
 
@@ -259,17 +259,17 @@ async def cancel_slow_task(url):
 - The client rejects an incompatible tenant before making a request.
 - The slow remote task reaches TASK_STATE_CANCELED.
 
-The independently unpacked lesson-07 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 07 check pack from the course kit. Recorded test result: 29 passed in 6.09s. Learners commit and push their checkpoint to their GitLab repository; lesson-07 (e79c003) remains the instructor's answer key.
+The independently unpacked lesson-07 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 07 check pack from the course kit. Recorded test result: 29 passed in 6.09s. Learners commit and push their checkpoint to their GitLab repository; lesson-07 (1c95964) remains the instructor's answer key.
 
 ### Files changed in this checkpoint
 
 In the reference, this checkpoint changed the files below. Learners write the implementation files themselves; the lab, the tests and any given files arrive in the Lesson 07 check pack. Ask the agent to explain any additional file changes it needs.
 
-- `incident/__init__.py`
-- `incident/a2a_client.py`
-- `incident/a2a_service.py`
-- `incident/labs/l07.py`
-- `incident/local_service.py`
+- `agent_runtime/a2a_client.py`
+- `agent_runtime/a2a_service.py`
+- `course/__init__.py`
+- `course/labs/l07.py`
+- `course/local_service.py`
 - `tests/test_lesson07.py`
 
 > **PROMPT** Review my completed Lesson 07 work against the Lesson 07 check pack and completion criteria. Show the files I changed and the interfaces I provide, and explain how each completion criterion is met with code or test evidence. Point out the design choices I made that the check pack does not force, and what each one costs or gains. Preserve deliberate improvements and earlier capabilities.

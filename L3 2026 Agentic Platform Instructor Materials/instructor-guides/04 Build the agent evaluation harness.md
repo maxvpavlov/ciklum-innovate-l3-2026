@@ -4,7 +4,7 @@
 
 **Outcome** A reproducible evaluation harness records single-agent quality, usage and latency, with held-out cases and judge calibration.
 
-Duration: 90 minutes. Starting checkpoint: lesson-03. Ending checkpoint: lesson-04 (94b1393).
+Duration: 90 minutes. Starting checkpoint: lesson-03. Ending checkpoint: lesson-04 (157768e).
 
 Word version: [04 Build the agent evaluation harness.docx](04%20Build%20the%20agent%20evaluation%20harness.docx)
 
@@ -79,9 +79,9 @@ Use SAY for instructor narration, SHOW and REVIEW for the code and evidence part
 
 **SAY** Read each case as a requirement. The missing incident should not inherit the most common runbook's cause. The ambiguous case should finish with insufficient evidence. The other-tenant case should use a different source population. Mark the held-out cases before tuning, and do not repeatedly edit them to accommodate a favoured implementation. Show the dataset hash in the result. It is a practical way to detect whether two reports evaluated the same case definitions. Ask learners to propose one additional failure case and state its expected outcome before running the agent.
 
-**SHOW** The current learner implementation and `incident/evaluate.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
+**SHOW** The current learner implementation and `agent_runtime/evaluate.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 04, continue in my learner project. Add the given versioned evaluation cases to incident/evaluate.py unchanged. They cover supported diagnoses, missing evidence, ambiguity and another tenant, with explicit expected outcomes and development versus held-out partitions. Record dataset identity. Explain each case before running the agent. Do not change expected answers simply to make the current implementation pass. Build to the interfaces the Lesson 04 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 04, continue in my learner project. Add the given versioned evaluation cases to agent_runtime/evaluate.py unchanged. They cover supported diagnoses, missing evidence, ambiguity and another tenant, with explicit expected outcomes and development versus held-out partitions. Record dataset identity. Explain each case before running the agent. Do not change expected answers simply to make the current implementation pass. Build to the interfaces the Lesson 04 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 14 to 20 at lesson-04; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -107,7 +107,7 @@ CASES = [
 
 **SAY** Inspect the three checks returned by grade. The outcome check includes both cause and evidence-sufficiency status. The evidence check requires support for a known cause. The policy check rejects remediation during an investigation. Run the intentionally wrong answer test: it sounds plausible but names the wrong cause, so it fails. Explain the correction made to the offline provider in this checkpoint. A generic runbook is not proof of an incident's cause. The missing-evidence case exposed that mistaken inference, and the fixture now preserves unknown when diagnostic log evidence is absent.
 
-**SHOW** The current learner implementation and `incident/evaluate.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
+**SHOW** The current learner implementation and `agent_runtime/evaluate.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
 > **PROMPT** For Lesson 04, continue in my learner project. Implement separate outcome, evidence and tool-policy checks in grade. Demonstrate rejection of a plausible but wrong diagnosis. Check the offline provider's missing-evidence behaviour, then replace MockProvider with the given Lesson 04 version and explain how it stops a generic runbook from becoming proof of an incident cause. Preserve the original test expectations and show the regression evidence. Build to the interfaces the Lesson 04 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
@@ -136,7 +136,7 @@ def grade(run, case):
 
 **SAY** Follow the loop over cases and trials. Each run gets a fresh executor and context. We record checks, usage, steps and elapsed time, and retain the individual rows so a mean does not hide a bad case. Run development and held-out partitions separately, then run the full fixture set. The reference mock reports usage units chosen by the fixture; they are not tokenizer measurements or paid API charges. In live mode, usage comes from the provider, and cost is only available when pricing rates are configured. Ask participants to identify which numbers should be stable offline and which may vary with machine scheduling.
 
-**SHOW** The current learner implementation and `incident/evaluate.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
+**SHOW** The current learner implementation and `agent_runtime/evaluate.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
 > **PROMPT** For Lesson 04, continue in my learner project. Implement repeated evaluation with fresh execution context per trial, per-case result rows, dataset identity, selected partition, quality, usage and latency measurements. Keep live cost unavailable when pricing is missing, and clearly label offline fixture usage. Run two trials on the held-out partition and show the four underlying rows, including failures rather than only a favourable aggregate. Build to the interfaces the Lesson 04 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
@@ -180,7 +180,7 @@ async def evaluate(factory=MockProvider, trials=3, split="all", judge=None):
 
 **SAY** Use a small labelled set to demonstrate agreement calculation and inspect the disagreement index. Then open model_judge. The expected outcome and agent answer are sent as data with a bounded grading request. The agent answer remains untrusted even inside an evaluation prompt. A judge response must have the expected type. Explain that deterministic checks remain useful even when a judge is present, especially for permission violations and missing source IDs. For this session, the optional live judge is not required: use the supplied labelled example and show where real human labels and a verified live adapter would enter.
 
-**SHOW** The current learner implementation and `incident/evaluate.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
+**SHOW** The current learner implementation and `agent_runtime/evaluate.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
 > **PROMPT** For Lesson 04, continue in my learner project. Implement paired human-versus-judge agreement checks and the optional model_judge interface. Validate judge output, treat the agent answer as untrusted grading input and expose disagreements for human review. Make the Session 04 check pack pass using its offline calibration examples. Explain what is verified locally and what would still require a calibrated live judge and authorized provider access. Build to the interfaces the Lesson 04 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
@@ -208,7 +208,7 @@ def judge_agreement(human_labels, judge_labels):
 
 **VERIFY** Give the coding agent the verification prompt below, then inspect its evidence and explain the result in your own words.
 
-> **PROMPT** Verify my Lesson 04 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 4 only when the required capability is present. Run the full test suite, which includes the Lesson 04 check pack and every earlier lesson's tests, and then the Session 04 demonstration with python -m incident.lab 4, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 04 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my repository on gitlab.ciklum.net; if glab is also signed in to other GitLab hosts, make sure the push goes to gitlab.ciklum.net. Do not equate an unrun or skipped check with a pass.
+> **PROMPT** Verify my Lesson 04 implementation against its completion criteria. Update the checkpoint indicator in course/__init__.py to 4 only when the required capability is present. Run the full test suite, which includes the Lesson 04 check pack and every earlier lesson's tests, and then the Session 04 demonstration with python -m course.lab 4, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 04 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my repository on gitlab.ciklum.net; if glab is also signed in to other GitLab hosts, make sure the push goes to gitlab.ciklum.net. Do not equate an unrun or skipped check with a pass.
 
 **Expected behaviour** The coding agent returns actual check results and the demonstration’s structured output. Run identifiers and elapsed times vary. Compare the status and capability outcomes with the recorded reference below, and investigate differences.
 
@@ -242,16 +242,16 @@ def judge_agreement(human_labels, judge_labels):
 - Reports identify the dataset and retain per-trial results.
 - Judge calibration identifies the mismatching labels.
 
-The independently unpacked lesson-04 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 04 check pack from the course kit. Recorded test result: 17 passed in 3.63s. Learners commit and push their checkpoint to their GitLab repository; lesson-04 (94b1393) remains the instructor's answer key.
+The independently unpacked lesson-04 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 04 check pack from the course kit. Recorded test result: 17 passed in 3.63s. Learners commit and push their checkpoint to their GitLab repository; lesson-04 (157768e) remains the instructor's answer key.
 
 ### Files changed in this checkpoint
 
 In the reference, this checkpoint changed the files below. Learners write the implementation files themselves; the lab, the tests and any given files arrive in the Lesson 04 check pack. Ask the agent to explain any additional file changes it needs.
 
-- `incident/__init__.py`
-- `incident/evaluate.py`
-- `incident/labs/l04.py`
-- `incident/providers.py`
+- `agent_runtime/evaluate.py`
+- `agent_runtime/providers.py`
+- `course/__init__.py`
+- `course/labs/l04.py`
 - `tests/test_lesson04.py`
 
 > **PROMPT** Review my completed Lesson 04 work against the Lesson 04 check pack and completion criteria. Show the files I changed and the interfaces I provide, and explain how each completion criterion is met with code or test evidence. Point out the design choices I made that the check pack does not force, and what each one costs or gains. Preserve deliberate improvements and earlier capabilities.

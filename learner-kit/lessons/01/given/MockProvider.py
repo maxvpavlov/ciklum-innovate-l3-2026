@@ -1,4 +1,4 @@
-# Given for Lesson 01. Paste this definition unchanged into incident/providers.py.
+# Given for Lesson 01. Paste this definition unchanged into agent_runtime/providers.py.
 # Keep or add the imports it needs in that file.
 
 class MockProvider:

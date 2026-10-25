@@ -1,11 +1,11 @@
 import json
 import pytest
-from incident.core import Reply
-from incident.tuning import CachedProvider, RoutingProvider
+from agent_runtime.core import Reply
+from agent_runtime.tuning import CachedProvider, RoutingProvider
 
 
 async def test_tuning_keeps_quality_on_same_cases():
-    from incident.labs.l12 import demo
+    from course.labs.l12 import demo
     report = await demo()
     assert report["baseline_success"] == report["candidate_success"] == 1
     assert report["candidate_mean_tokens"] < report["baseline_mean_tokens"]

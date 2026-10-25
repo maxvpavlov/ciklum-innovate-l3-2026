@@ -1,14 +1,14 @@
 from pathlib import Path
 import httpx
 import pytest
-from incident.api import create_app
-from incident.core import Context
-from incident.gateway import GatewayPolicy, ToolGateway
-from incident.platform import Platform
+from agentic_platform.api import create_app
+from agent_runtime.core import Context
+from agentic_platform.gateway import GatewayPolicy, ToolGateway
+from agentic_platform.platform import Platform
 
 
 async def test_shared_sessions_policy_and_pinned_definitions():
-    from incident.labs.l09 import demo
+    from course.labs.l09 import demo
     report = await demo()
     assert report["mcp_sessions_launched"] == {"incident-tools/astro": 1}
     assert report["changed_definition"]["server_status"] == "quarantined"
@@ -58,5 +58,5 @@ async def test_gateway_view_is_tenant_scoped(tmp_path):
         assert all(t["pinned_sha256"] for t in server["tools"])
     finally:
         await platform.close()
-    views = (Path(__file__).parents[1]/"incident"/"console"/"views"/"index.js").read_text()
+    views = (Path(__file__).parents[1]/"agentic_platform"/"console"/"views"/"index.js").read_text()
     assert "gateway" in views

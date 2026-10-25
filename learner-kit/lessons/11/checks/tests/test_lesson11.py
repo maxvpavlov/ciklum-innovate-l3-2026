@@ -1,12 +1,12 @@
 import asyncio
 import pytest
-from incident.operations import Admission, CapacityError, release_gate, trace_html
-from incident.platform import Platform
-from incident.providers import MockProvider
+from agentic_platform.operations import Admission, CapacityError, release_gate, trace_html
+from agentic_platform.platform import Platform
+from agent_runtime.providers import MockProvider
 
 
 async def test_end_to_end_mcp_a2a_and_rollout():
-    from incident.labs.l11 import demo
+    from course.labs.l11 import demo
     report = await demo()
     assert report["trace_nodes"] == 3 and report["rollback_version"] == 1
 
@@ -41,8 +41,8 @@ def test_rate_limit_and_quality_gate():
 async def test_operations_view_trace_and_release_log(tmp_path):
     import httpx
     from pathlib import Path
-    from incident.api import create_app
-    from incident.operations import evaluate_platform
+    from agentic_platform.api import create_app
+    from agentic_platform.operations import evaluate_platform
     platform = Platform(str(tmp_path/"test.db"), admission=Admission(per_second=1000))
     try:
         baseline = await evaluate_platform(platform, "single", 1)
@@ -59,5 +59,5 @@ async def test_operations_view_trace_and_release_log(tmp_path):
         assert ops["releases"][0]["approved"] is False and ops["releases"][0]["checks"]["quality"] is False
     finally:
         await platform.close()
-    views = (Path(__file__).parents[1]/"incident"/"console"/"views"/"index.js").read_text()
+    views = (Path(__file__).parents[1]/"agentic_platform"/"console"/"views"/"index.js").read_text()
     assert "operations" in views

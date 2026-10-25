@@ -3,5 +3,5 @@ WORKDIR /app
 COPY . /app
 RUN pip install --no-cache-dir . && useradd --create-home course && mkdir -p /app/var && chown course /app/var
 USER course
-CMD ["python", "-m", "uvicorn", "incident.api:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python", "-m", "uvicorn", "agentic_platform.api:app", "--host", "0.0.0.0", "--port", "8000"]
 

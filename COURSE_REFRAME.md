@@ -23,19 +23,19 @@ taught and built explicitly, and the platform has a web console that shows what 
 
 ## The four platform components
 
-- **Agent registry** (`incident/registry.py`, session 08): schema-validated, immutable, versioned
+- **Agent registry** (`agentic_platform/registry.py`, session 08): schema-validated, immutable, versioned
   agent definitions with a content hash; activation and retirement; remote A2A agents pinned by
   Agent Card hash; tool servers with manifests; discovery by skill.
-- **MCP tool gateway** (`incident/gateway.py`, session 09): every agent tool call passes one policy
+- **MCP tool gateway** (`agentic_platform/gateway.py`, session 09): every agent tool call passes one policy
   and audit point; one shared upstream MCP session per server and tenant instead of one process per
   worker; tool definitions pinned on first connection, and a server whose definitions change is
   quarantined.
-- **Agent identity and credentials** (`incident/identity.py`, session 10): users and agents are
+- **Agent identity and credentials** (`agentic_platform/identity.py`, session 10): users and agents are
   principals; short-lived, audience-bound signed tokens; each child or remote agent gets a narrower
   token that extends the actor chain; tokens never enter stored run state; secrets are released by
   `secret://` reference to named consumers, with an audit trail. The A2A specialist now derives the
   tenant from the verified token instead of a hard-coded value.
-- **Platform console** (`incident/console/`, sessions 08–12): a web UI served at `/console`.
+- **Platform console** (`agentic_platform/console/`, sessions 08–12): a web UI served at `/console`.
   Its Overview shows a live platform map of built and planned components; further views cover the
   Registry, Runs (answer, event timeline, correlated trace), Approvals, Gateway, Identity and
   Operations. It renders every API value as text under a strict Content-Security-Policy.

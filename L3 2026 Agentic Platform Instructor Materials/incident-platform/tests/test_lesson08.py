@@ -1,12 +1,12 @@
 from pathlib import Path
 import httpx
 import pytest
-from incident.api import create_app
-from incident.platform import Platform
+from agentic_platform.api import create_app
+from agentic_platform.platform import Platform
 
 
 async def test_two_configs_registry_and_console():
-    from incident.labs.l08 import demo
+    from course.labs.l08 import demo
     report = await demo()
     assert len(report["configurations"]) == 2 and report["cross_tenant_status"] == 404
     assert report["active_single_version"] == 1 and report["versions_of_single"] == [1, 2]
@@ -76,7 +76,7 @@ async def test_console_is_tenant_scoped_and_renders_text_only(tmp_path):
         assert (await client.post("/registry/agents/single/activate", json={"version": 1}, headers=astro)).status_code == 403
         page = await client.get("/console/")
         assert "frame-ancestors 'none'" in page.headers["content-security-policy"]
-    console = Path(__file__).parents[1]/"incident"/"console"
+    console = Path(__file__).parents[1]/"agentic_platform"/"console"
     for script in console.rglob("*.js"):
         text = script.read_text()
         assert not any(unsafe in text for unsafe in ["innerHTML", "outerHTML", "insertAdjacentHTML", "eval(", "http://", "https://"]), script

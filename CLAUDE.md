@@ -26,6 +26,7 @@ Authoring workspace for the Ciklum internal course **Innovate: Building Agentic 
 - `incident-platform` used to be a standalone repo. Its history was subtree-merged in, and its tags (`lesson-00`…`lesson-12`, `course-complete`) now live in this repo.
 - The course was reframed in September 2026: `lesson-06`…`lesson-12` and `course-complete` were rebuilt as a standalone line branching from `lesson-05`. In October 2026 the fictional tenants were renamed to Astro and Locomotive, so `lesson-01`…`course-complete` were rebuilt once more with only that rename (same tests and numbers); `lesson-00` is unchanged. Each rebuilt line was merged into the workspace history the same way. `retag-reframed-checkpoints.sh` moved the tags on GitHub (October 2026) and created the `v1/*` backups; local and remote tags now match. The original GitHub checkpoints are kept as `v1/lesson-01`…`v1/lesson-12` and `v1/course-complete` (in `v1/lesson-06`…`12` the old numbering is: 06 supervisor, 07 coordination, 08 A2A, 09 platform core, 10 security).
 - On 24 October 2026 `lesson-02`…`course-complete` were rebuilt once more to add the platform shell (in-memory run API, console with Overview, Runs and Tools views, two tests in `test_lesson02.py`) and to keep `/tools` and the Tools view from lesson 08 on; nothing else changed. The previous tags are kept as `v2/*`, and `retag-reframed-checkpoints.sh` (run by its GitHub Actions workflow on push to `main`) moves the remote tags.
+- On 25 October 2026 every checkpoint, `lesson-00`…`course-complete`, was rebuilt once more to split the single `incident/` package into `agent_runtime/` (the runtime learners build in 01–07: `core`, `providers`, `security`, `tools`, `mcp_bridge`, `context`, `durable`, `evaluate`, `supervisor`, `coordination`, `a2a_client`, `a2a_service`, `tuning`), `agentic_platform/` (`api`, `console/`, `blueprint`, `client`, `registry`, `platform`, `gateway`, `identity`, `operations`) and `course/` (`LESSON` in `__init__.py`, `lab`, `labs/`, `fixtures`, `local_service`); imports, tests and file names changed, nothing else. A package cannot be named `platform` because it would shadow the standard-library module. The previous tags are kept as `v3/*`; `retag-reframed-checkpoints.sh` moves the remote tags. A learner whose project still has `incident/` is moved to the new layout by the Session 01 "Add the check pack" prompt.
 - The tags point at standalone commits, where the platform files sit at the tree root. So `git archive lesson-05` produces the platform checkpoint alone, not the whole course.
 - To compare a tag with the current platform subdirectory, compare trees: `git diff lesson-12 "HEAD:L3 2026 Agentic Platform Instructor Materials/incident-platform"`.
 
@@ -48,24 +49,24 @@ uv sync --python 3.12                                # create .venv (gitignored)
 uv run python -m pytest -q                           # full suite: 53 tests, ~30s, fully offline
 uv run python -m pytest -q tests/test_lesson05.py    # one lesson's tests
 uv run python -m pytest -q tests/test_lesson05.py -k approval   # one test
-uv run python -m incident.lab 8                      # run a lesson demo (1..LESSON), prints JSON
-uv run python -m incident.evaluate --trials 3 --split held_out  # writes var/evaluation.json
-uv run uvicorn incident.api:app --port 8000          # platform API; console at http://127.0.0.1:8000/console/
-A2A_BASE_URL=http://127.0.0.1:8010 uv run uvicorn incident.a2a_service:app --port 8010  # remote specialist
-A2A_URL=http://127.0.0.1:8010 uv run uvicorn incident.api:app   # API that registers/pins the specialist at startup
-uv run python -m incident.client submit INC-001 --agent team --wait   # CLI client (PLATFORM_TOKEN, default demo-astro)
+uv run python -m course.lab 8                      # run a lesson demo (1..LESSON), prints JSON
+uv run python -m agent_runtime.evaluate --trials 3 --split held_out  # writes var/evaluation.json
+uv run uvicorn agentic_platform.api:app --port 8000          # platform API; console at http://127.0.0.1:8000/console/
+A2A_BASE_URL=http://127.0.0.1:8010 uv run uvicorn agent_runtime.a2a_service:app --port 8010  # remote specialist
+A2A_URL=http://127.0.0.1:8010 uv run uvicorn agentic_platform.api:app   # API that registers/pins the specialist at startup
+uv run python -m agentic_platform.client submit INC-001 --agent team --wait   # CLI client (PLATFORM_TOKEN, default demo-astro)
 docker compose up --build                            # restricted container: read-only, no egress, tmpfs state
 ```
 
-- **Run `python -m pytest`, not bare `pytest`.** `pyproject.toml` has no `[build-system]`, so uv never installs the `incident` package. Bare `pytest` fails every file with `ModuleNotFoundError: No module named 'incident'`; `python -m` puts the cwd on `sys.path`.
+- **Run `python -m pytest`, not bare `pytest`.** `pyproject.toml` has no `[build-system]`, so uv never installs the project's packages. Bare `pytest` fails every file with `ModuleNotFoundError: No module named 'course'` (or `agent_runtime`); `python -m` puts the cwd on `sys.path`.
 - There is no linter or formatter config.
-- Labs 11 and 12 write `var/trace.html` and `var/capstone-comparison.json` relative to the cwd. Labs 7 and 11 (and a lesson-10 test) start a uvicorn subprocess on an ephemeral loopback port (`incident/local_service.py`) and clean it up themselves. From lesson 09 the gateway keeps MCP stdio subprocesses open; code that builds a `Platform` should `await platform.close()`.
-- The console (`incident/console/`) is vanilla ES modules with no build step and no external assets (it must work in the no-egress container). To look at it, start the API and drive it with the preinstalled Playwright/Chromium; sign in with `demo-astro`, `demo-operator` or `demo-locomotive`.
+- Labs 11 and 12 write `var/trace.html` and `var/capstone-comparison.json` relative to the cwd. Labs 7 and 11 (and a lesson-10 test) start a uvicorn subprocess on an ephemeral loopback port (`course/local_service.py`) and clean it up themselves. From lesson 09 the gateway keeps MCP stdio subprocesses open; code that builds a `Platform` should `await platform.close()`.
+- The console (`agentic_platform/console/`) is vanilla ES modules with no build step and no external assets (it must work in the no-egress container). To look at it, start the API and drive it with the preinstalled Playwright/Chromium; sign in with `demo-astro`, `demo-operator` or `demo-locomotive`.
 
 ## incident-platform: checkpoint model
 
 - Git tags `lesson-00` … `lesson-12` mark the end state of each session. `course-complete` sits on top; the commits after it change only `README.md` and `LEARNER_PROMPTS.md`. Each lesson adds one module/lab plus `tests/test_lessonNN.py`.
-- `incident/__init__.py` sets `LESSON = N`. `incident.lab` refuses any lesson above it, and learners raise it only when the capability is verified.
+- `course/__init__.py` sets `LESSON = N`. `course.lab` refuses any lesson above it, and learners raise it only when the capability is verified.
 - `TESTING.md` records the expected passing-test count per tag (1, 7, 12, 15, 17, 19, 27, 29, 35, 39, 45, 50, 53). To check a checkpoint in isolation, unpack it the way the reference was verified: `git archive lesson-05 | tar -x -C <tmpdir>`, then run the suite there.
 - **Treat the reference as frozen unless the user explicitly wants to change it.** A code change in lesson N has to reach the `lesson-N` tag and every later tag (they sit on the standalone line, so this means rebuilding that line and re-tagging), plus the guide excerpts (see "Guide–repo coupling" below). It also has to reach the numbers quoted in README, TESTING and the guides: the 53 tests, and a capstone mean usage drop from 75 to 63 (16%). Rebuild the guides with `guide-builder` and run its `check.py` after any re-tag.
 
@@ -90,7 +91,7 @@ The layers on top, in lesson order:
 - **Platform shell (lessons 02–07).** A given `api.py` keeps runs in memory and runs each one in-process (`Shell`), with the same routes, demo identities and response shapes the lesson-08 API keeps, plus `GET /tools` (catalogue for the caller's role, recent decisions) and `POST /tools/check` (one call through `ToolExecutor` as the signed-in role; a write is never approved there). The console starts with Overview, Runs and Tools; the two shell tests in `test_lesson02.py` run unchanged against every later API.
 - **API and console.** `api.py` is FastAPI. Demo credentials `demo-astro` (analyst), `demo-operator`, `demo-locomotive` (overridable via `PLATFORM_IDENTITIES`) are accepted directly and, from lesson 10, exchanged at `POST /auth/token` for one-hour signed tokens (the console keeps only the token). Only operators may decide approvals, and a decision must echo the current proposal key. Endpoints: runs lifecycle, `/registry`, `/platform` (the platform map from `blueprint.py`, with built/planned status from `LESSON`), `/gateway`, `/identity`, `/runs/{id}/trace`, `/operations`, and the console at `/console` (strict CSP; scripts must never render data as HTML — a test forbids `innerHTML` and friends). **All route handlers must be `async def`:** workers and handlers share one SQLite connection per store, and a sync handler would run in the threadpool and corrupt it (a test enforces this).
 - **Ops.** `operations.py` provides traces built from parent/child runs, `release_gate` (which requires the same `dataset_sha256` and split), `evaluate_platform` and the `ReleaseLog` shown in the console. `tuning.py` contains the capstone experiments: `EfficientMockProvider`, the tenant/config-partitioned `CachedProvider` and `RoutingProvider`.
-- **Labs.** `incident/labs/lNN.py` each expose `async demo()`. It asserts the lesson's guarantees and returns a JSON-able dict, and most `test_lessonNN.py` files simply call it.
+- **Labs.** `course/labs/lNN.py` each expose `async demo()`. It asserts the lesson's guarantees and returns a JSON-able dict, and most `test_lessonNN.py` files simply call it.
 
 Fixture facts that other material depends on:
 

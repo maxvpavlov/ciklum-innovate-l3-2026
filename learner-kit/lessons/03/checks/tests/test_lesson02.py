@@ -1,7 +1,7 @@
 from dataclasses import replace
 import pytest
-from incident.core import ApprovalRequired, Context
-from incident.tools import ToolExecutor, action_key
+from agent_runtime.core import ApprovalRequired, Context
+from agent_runtime.tools import ToolExecutor, action_key
 
 
 async def test_authorization_schema_and_bounded_output():
@@ -27,7 +27,7 @@ async def test_exact_approval_and_durable_duplicate_write(tmp_path):
 
 
 async def test_mcp_stdio_transport():
-    from incident.labs.l02 import demo
+    from course.labs.l02 import demo
     result = await demo()
     assert set(result["tools"]) == {"log_lookup", "runbook_search"}
 
@@ -46,7 +46,7 @@ async def _wait(client, run_id, headers):
 async def test_platform_shell_runs_are_tenant_scoped(tmp_path, monkeypatch):
     from pathlib import Path
     import httpx
-    from incident.api import create_app
+    from agentic_platform.api import create_app
     monkeypatch.setenv("PLATFORM_DB", str(tmp_path/"platform.db"))
     app = create_app()
     astro = {"Authorization": "Bearer demo-astro"}
@@ -67,7 +67,7 @@ async def test_platform_shell_runs_are_tenant_scoped(tmp_path, monkeypatch):
         close = getattr(app.state.platform, "close", None)
         if close:
             await close()
-    console = Path(__file__).parents[1]/"incident"/"console"
+    console = Path(__file__).parents[1]/"agentic_platform"/"console"
     for script in console.rglob("*.js"):
         text = script.read_text()
         assert not any(unsafe in text for unsafe in ["innerHTML", "outerHTML", "insertAdjacentHTML", "eval("]), script
@@ -75,7 +75,7 @@ async def test_platform_shell_runs_are_tenant_scoped(tmp_path, monkeypatch):
 
 async def test_console_tool_checks_use_the_boundary(tmp_path, monkeypatch):
     import httpx
-    from incident.api import create_app
+    from agentic_platform.api import create_app
     monkeypatch.setenv("PLATFORM_DB", str(tmp_path/"platform.db"))
     app = create_app()
     analyst, operator = {"Authorization": "Bearer demo-astro"}, {"Authorization": "Bearer demo-operator"}

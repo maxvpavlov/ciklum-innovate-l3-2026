@@ -4,7 +4,7 @@
 
 **Outcome** Runs persist across worker loss, pause for exact-action approval, resume safely and reject denied or expired approvals.
 
-Duration: 90 minutes. Starting checkpoint: lesson-04. Ending checkpoint: lesson-05 (cb80e96).
+Duration: 90 minutes. Starting checkpoint: lesson-04. Ending checkpoint: lesson-05 (f3cc0cc).
 
 Word version: [05 Checkpoints recovery and human approval.docx](05%20Checkpoints%20recovery%20and%20human%20approval.docx)
 
@@ -79,9 +79,9 @@ Use SAY for instructor narration, SHOW and REVIEW for the code and evidence part
 
 **SAY** Save the full Run snapshot under tenant and run ID, then reconstruct Context explicitly when loading. We are preserving messages, pending calls, counters, status and answer. The store does not infer authority from text. Show a lookup from the wrong tenant and confirm that it fails as run_not_found. Ask learners which fields must survive a crash before the model receives its tool result. The pending call and its identifier must survive, because they connect the stored assistant request to the eventual observation. The local file is our durable boundary for the exercise; process memory is not sufficient.
 
-**SHOW** The current learner implementation and `incident/durable.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
+**SHOW** The current learner implementation and `agent_runtime/durable.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 05, continue in my learner project. Implement RunStore in incident/durable.py so it persists and reconstructs the current runtime state under tenant and run ID. Preserve messages, pending calls, usage counters and control state. Use a persistent local database for restart checks. Show which data must survive a crash before a tool observation is recorded, and demonstrate that another tenant cannot load the run. Build to the interfaces the Lesson 05 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 05, continue in my learner project. Implement RunStore in agent_runtime/durable.py so it persists and reconstructs the current runtime state under tenant and run ID. Preserve messages, pending calls, usage counters and control state. Use a persistent local database for restart checks. Show which data must survive a crash before a tool observation is recorded, and demonstrate that another tenant cannot load the run. Build to the interfaces the Lesson 05 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 16 to 18 at lesson-05; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -103,7 +103,7 @@ def save(self, run):
 
 **SAY** Start the remediation fixture and observe waiting_approval. No effect has happened. The trusted operator now approves the proposed tool name and arguments, whose canonical action key is stored with an expiry. Read the denial branch and the approved_keys query. Approval is a separate durable record and must still be valid when execution resumes. This is also where we distinguish operator action from model preference. RemediationProvider is a deterministic fixture used to reach the approval branch; it is not a real operational recommendation. All effects remain in the local mock ledger.
 
-**SHOW** The current learner implementation and `incident/durable.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
+**SHOW** The current learner implementation and `agent_runtime/durable.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
 > **PROMPT** For Lesson 05, continue in my learner project. Implement durable approval decisions with exact action keys, expiry and denial. Reach the waiting state using the clearly labelled remediation fixture, with no real external action. Show the exact proposed tool and arguments. Keep the human decision separate from execution: do not approve on my behalf while preparing the demonstration. Explain how the stored decision is checked again at resume time. Build to the interfaces the Lesson 05 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
@@ -137,7 +137,7 @@ def decide(self, tenant, run_id, decision="approve", ttl=300):
 
 **SAY** Load the snapshot, reject terminal denial or cancellation, and refresh approved keys from the current approval records. Then call the same run_agent function with initial state and the save callback. The runtime processes the stored pending call before requesting another model decision. Walk through the before-write crash first, then the after-write crash. In the second case, the ledger recognizes the action key and returns the committed result. The resumed conversation can append the missing tool observation and finish. Ask participants to explain why we do not ask the model to reconstruct whether the earlier write succeeded.
 
-**SHOW** The current learner implementation and `incident/durable.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
+**SHOW** The current learner implementation and `agent_runtime/durable.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
 > **PROMPT** For Lesson 05, continue in my learner project. Implement resume_run using the stored pending call and the same run_agent loop. Refresh currently valid approvals, reject denied or cancelled work and use the local effect ledger to reconcile a replay. Demonstrate why recovery consults durable application evidence rather than asking a model whether an earlier write succeeded. Preserve the original tenant and action boundaries. Build to the interfaces the Lesson 05 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
@@ -168,7 +168,7 @@ async def resume_run(store, tenant, run_id, provider, tools):
 
 **SAY** Read the injected failure before running it. The wrapper deliberately executes the approved effect and then raises WorkerCrash before the runtime saves the observation. We reopen the database and create a new executor, then resume. Inspect the final status and count the effects table. The result must be completed with exactly one effect. Next, expire an approval and repeat. This time the run must remain waiting. Finally, deny the proposal and show that resume is rejected. Pause until a learner can place each failure on the state diagram and name the durable record used to resolve it.
 
-**SHOW** The current learner implementation and `incident/labs/l05.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
+**SHOW** The current learner implementation and `course/labs/l05.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
 > **PROMPT** For Lesson 05, continue in my learner project. Make the Session 05 check pack pass, including its crash-injection demonstration. Simulate worker loss after a committed mock effect but before the result checkpoint, reopen the database and resume. Prove that there is one effect. Also demonstrate expired and denied approvals. Separate this automated fixture test from my manually controlled demonstration, and explain why the local transaction does not guarantee exactly-once behaviour for arbitrary remote APIs. Build to the interfaces the Lesson 05 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
@@ -194,7 +194,7 @@ async def crash_after_write(name, args, context):
 
 **VERIFY** Give the coding agent the verification prompt below, then inspect its evidence and explain the result in your own words.
 
-> **PROMPT** Verify my Lesson 05 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 5 only when the required capability is present. Run the full test suite, which includes the Lesson 05 check pack and every earlier lesson's tests, and then the Session 05 demonstration with python -m incident.lab 5, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 05 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my repository on gitlab.ciklum.net; if glab is also signed in to other GitLab hosts, make sure the push goes to gitlab.ciklum.net. Do not equate an unrun or skipped check with a pass.
+> **PROMPT** Verify my Lesson 05 implementation against its completion criteria. Update the checkpoint indicator in course/__init__.py to 5 only when the required capability is present. Run the full test suite, which includes the Lesson 05 check pack and every earlier lesson's tests, and then the Session 05 demonstration with python -m course.lab 5, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 05 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my repository on gitlab.ciklum.net; if glab is also signed in to other GitLab hosts, make sure the push goes to gitlab.ciklum.net. Do not equate an unrun or skipped check with a pass.
 
 **Expected behaviour** The coding agent returns actual check results and the demonstration’s structured output. Run identifiers and elapsed times vary. Compare the status and capability outcomes with the recorded reference below, and investigate differences.
 
@@ -225,15 +225,15 @@ async def crash_after_write(name, args, context):
 - An expired approval does not execute the action.
 - Denied and cancelled runs cannot be resumed as approved work.
 
-The independently unpacked lesson-05 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 05 check pack from the course kit. Recorded test result: 19 passed in 3.55s. Learners commit and push their checkpoint to their GitLab repository; lesson-05 (cb80e96) remains the instructor's answer key.
+The independently unpacked lesson-05 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 05 check pack from the course kit. Recorded test result: 19 passed in 3.55s. Learners commit and push their checkpoint to their GitLab repository; lesson-05 (f3cc0cc) remains the instructor's answer key.
 
 ### Files changed in this checkpoint
 
 In the reference, this checkpoint changed the files below. Learners write the implementation files themselves; the lab, the tests and any given files arrive in the Lesson 05 check pack. Ask the agent to explain any additional file changes it needs.
 
-- `incident/__init__.py`
-- `incident/durable.py`
-- `incident/labs/l05.py`
+- `agent_runtime/durable.py`
+- `course/__init__.py`
+- `course/labs/l05.py`
 - `tests/test_lesson05.py`
 
 > **PROMPT** Review my completed Lesson 05 work against the Lesson 05 check pack and completion criteria. Show the files I changed and the interfaces I provide, and explain how each completion criterion is met with code or test evidence. Point out the design choices I made that the check pack does not force, and what each one costs or gains. Preserve deliberate improvements and earlier capabilities.

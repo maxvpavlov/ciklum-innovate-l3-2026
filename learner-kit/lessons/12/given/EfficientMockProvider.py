@@ -1,4 +1,4 @@
-# Given for Lesson 12. Paste this definition unchanged into incident/tuning.py.
+# Given for Lesson 12. Paste this definition unchanged into agent_runtime/tuning.py.
 # Keep or add the imports it needs in that file.
 
 class EfficientMockProvider(MockProvider):

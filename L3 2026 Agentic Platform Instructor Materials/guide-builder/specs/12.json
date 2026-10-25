@@ -24,7 +24,7 @@
     {
       "title": "State the hypothesis and inspect the change",
       "say": "Explain the hypothesis in one sentence: when the diagnostic log already provides sufficient structured evidence, the fixture can stop without a redundant runbook request. Read the early-finish condition and identify the cases where it must not apply. Missing and unknown evidence keep the original behaviour. The platform selects this provider only when a definition's provider_profile is efficient, so the change lives in a new registry version rather than in version one. Emphasise that this is an intentionally transparent fixture policy, not a general recommendation to skip retrieval. Ask each participant to state their own intervention just as narrowly. A collection of unrelated changes makes it difficult to attribute an improvement or diagnose a regression.",
-      "file": "incident/tuning.py",
+      "file": "agent_runtime/tuning.py",
       "prompt": "Review my working Session 11 platform and the Lesson 12 check pack. Help me state one bounded tuning hypothesis and identify the smallest change needed to test it, expressed as a new immutable registry version. Explain the given EfficientMockProvider, how the platform selects it from the definition's provider profile, and where early completion is safe or unsafe in these fixtures. Preserve the baseline and define the evidence that would justify adopting or rejecting my change before implementing it.",
       "excerpt": {
         "start": 10,
@@ -37,7 +37,7 @@
     {
       "title": "Run a comparable evaluation and record the release",
       "say": "Run three trials for each case under version one, then register the efficient version two and evaluate it with the same platform, dataset and trial count. Inspect the release gate and the individual rows before quoting the summary. The result should preserve fixture success and show the reduced simulated usage. Only then activate version two and record the release, so the Operations view shows the decision with its checks and summaries. Do not reuse these numbers as live-model economics. For a live experiment, report the actual provider, model, configuration, pricing, sampling conditions and test set. Ask participants to show one case that could have regressed and explain how the evaluation would reveal it.",
-      "file": "incident/labs/l12.py",
+      "file": "course/labs/l12.py",
       "prompt": "Apply the selected tuning change as a new registry version. Evaluate before and after on the same cases, partitions and trial conditions, retaining failures and per-case rows. Use the actual platform path. Activate the candidate only if the release gate approves it, and record the decision in the release log either way. Keep fixture usage separate from live-model economics and preserve the original expected outcomes. Show the comparison, the recorded decision and its limitations.",
       "excerpt": {
         "start": 15,
@@ -50,7 +50,7 @@
     {
       "title": "Explain caching and routing tradeoffs",
       "say": "Walk through the cache key before discussing hits. Tenant, configuration hash, messages, tool schemas and output allowance all affect whether a cached response is applicable. Expiry controls freshness, and the example bypasses the cache whenever the effectful mock tool is available. Show the cold and warm measurements separately. Then inspect RoutingProvider in the same file: incomplete or failed observations select the careful path. A real routing policy needs evaluation because a cheaper model can make an expensive mistake. Neither experiment is activated in the registry; both are separate capstone options. Ask learners to explain one situation where an apparently helpful cache would return stale or unauthorised information.",
-      "file": "incident/tuning.py",
+      "file": "agent_runtime/tuning.py",
       "prompt": "Help me evaluate caching or routing as a separate capstone experiment when relevant. Preserve tenant, configuration, input, schema and freshness boundaries in cache identity, and report cold and warm behaviour separately. Check uncertainty routing without assuming a cheaper provider is always adequate. Run the focused tests and explain the correctness risks and the evidence needed for a live deployment.",
       "excerpt": {
         "start": 23,
@@ -63,7 +63,7 @@
     {
       "title": "Present the platform through the console",
       "say": "Use the saved comparison report as supporting evidence, then present the platform itself through the console. Start at the Overview map with all twelve components built. Open the Registry and show single version two active beside version one, each with its hash. Submit a team run and walk its correlated trace, then show the Gateway audit for its tool calls and the Identity view with the delegation chain. Finish in Operations with the recorded release. Demonstrate one permission rejection, cancellation or recovery case, and close with a decision: adopt, keep experimental or reject. Ask the reviewer to challenge one architectural assumption; the participant should answer from code, traces and records rather than a fluent narrative.",
-      "file": "incident/labs/l12.py",
+      "file": "course/labs/l12.py",
       "prompt": "Prepare a console demonstration of my completed platform and a concise evidence pack: the platform map, the registry with the released version, one end-to-end run with its trace, gateway audit and delegation chain, one permission or recovery failure case, and the recorded before-and-after release. Use actual code and recorded results, clearly identifying anything not demonstrated live. Ask me to explain the tradeoffs in my own words. Do not invent improvements or adopt a change whose evidence is inadequate.",
       "excerpt": {
         "start": 29,

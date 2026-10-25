@@ -4,7 +4,7 @@
 
 **Outcome** Tenant-scoped retrieval, bounded conversation context, expiring memory and versioned evidence artifacts extend the same platform.
 
-Duration: 90 minutes. Starting checkpoint: lesson-02. Ending checkpoint: lesson-03 (60fbebf).
+Duration: 90 minutes. Starting checkpoint: lesson-02. Ending checkpoint: lesson-03 (094df54).
 
 Word version: [03 Context retrieval and memory.docx](03%20Context%20retrieval%20and%20memory.docx)
 
@@ -79,9 +79,9 @@ Use SAY for instructor narration, SHOW and REVIEW for the code and evidence part
 
 **SAY** Read the tenant filter before discussing ranking quality. We filter the source population by the authenticated tenant and only then rank the remaining runbooks. The score is the overlap between query words and source text, with a deterministic source-ID tie break. Show the same payments query for Astro and Locomotive. The results must differ because the permitted data differs. Keep source IDs and versions in the returned records. A downstream explanation can then cite the exact evidence it used. Ask a learner to replace the query and predict the leading source before running it.
 
-**SHOW** The current learner implementation and `incident/context.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
+**SHOW** The current learner implementation and `agent_runtime/context.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 03, continue in my learner project. Implement tenant-scoped runbook retrieval and context_tools in incident/context.py. Filter authorized sources before ranking and retain source IDs and versions. Use transparent lexical ranking for this lesson so I can inspect why a record was selected. Compare the same payments query for Astro and Locomotive. Keep the tool contract compatible with the existing executor and explain the returned evidence. Build to the interfaces the Lesson 03 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 03, continue in my learner project. Implement tenant-scoped runbook retrieval and context_tools in agent_runtime/context.py. Filter authorized sources before ranking and retain source IDs and versions. Use transparent lexical ranking for this lesson so I can inspect why a record was selected. Compare the same payments query for Astro and Locomotive. Keep the tool contract compatible with the existing executor and explain the returned evidence. Build to the interfaces the Lesson 03 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 9 to 13 at lesson-03; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -105,7 +105,7 @@ def retrieve(query, tenant, limit=2):
 
 **SAY** Start with the system instruction and original task, then group the remaining messages into complete rounds. The selector works backward from the newest round while staying within its character budget. This preserves request/result relationships. Show the test that constructs ten rounds and verifies that every retained tool result has a matching call identifier. We are selecting context for the next model request, not deleting the full run history. That full history remains available for persistence and diagnosis. Ask participants what happens if the original task alone exceeds the budget: the selector rejects it rather than silently truncating the instruction or producing malformed state.
 
-**SHOW** The current learner implementation and `incident/context.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
+**SHOW** The current learner implementation and `agent_runtime/context.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
 > **PROMPT** For Lesson 03, continue in my learner project. Add select_context and connect it to the runtime as selection for the next model request. Preserve the instruction and original task, retain complete assistant/tool rounds within the configured allowance, and keep the full run history separately. Reject a task that cannot fit. Demonstrate a reduced conversation with no orphaned tool-call IDs and explain the evidence that was omitted. Build to the interfaces the Lesson 03 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
@@ -145,7 +145,7 @@ def select_context(messages, max_chars=6000):
 
 **SAY** An investigation report is an artifact with an identity and version. Read the optimistic version check: a writer states which version it expects to replace, and the transaction rejects a stale expectation. Create version one, then attempt another write that still expects version zero. The failure is useful because silently overwriting newer evidence would hide a coordination problem. Later, the supervisor will give one component ownership of shared artifact writes. For now, make sure each learner can read the current version and explain how to retry a legitimate update after inspecting the newer artifact.
 
-**SHOW** The current learner implementation and `incident/context.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
+**SHOW** The current learner implementation and `agent_runtime/context.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
 > **PROMPT** For Lesson 03, continue in my learner project. Implement EvidenceStore's versioned artifact operations. Scope identities by tenant, require the writer's expected version and reject stale updates in a transaction. Demonstrate version one, a conflicting update and a cross-tenant lookup. Preserve newer evidence rather than automatically overwriting it after a conflict. Show how a caller should inspect and reconcile the current artifact before retrying. Build to the interfaces the Lesson 03 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
@@ -180,7 +180,7 @@ def save_artifact(self, tenant, artifact_id, body, expected_version=0):
 
 **SAY** Store a small memory record with an expiry, then read it from the correct and wrong tenants. An expired value returns no result. Explain why a memory store and an artifact store are different: an artifact is a versioned output that we may audit; a memory entry is selected context that can become stale. Run the completed investigation, save its answer as an artifact and inspect the cited source IDs. End by comparing the full-history and selected-context paths. Keep the outcome test alongside any reduction in context size so that optimization does not quietly remove necessary information.
 
-**SHOW** The current learner implementation and `incident/context.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
+**SHOW** The current learner implementation and `agent_runtime/context.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
 > **PROMPT** For Lesson 03, continue in my learner project. Add expiring tenant-scoped memory and make the Session 03 check pack pass. Compare memory with versioned artifacts and the current task history. Demonstrate expiration, provenance and access boundaries, then compare the investigation with full history and bounded context. Report the outcome as well as context size; do not call a smaller prompt an improvement if required evidence is lost. Build to the interfaces the Lesson 03 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
@@ -206,7 +206,7 @@ def remember(self, tenant, key, body, ttl=3600):
 
 **VERIFY** Give the coding agent the verification prompt below, then inspect its evidence and explain the result in your own words.
 
-> **PROMPT** Verify my Lesson 03 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 3 only when the required capability is present. Run the full test suite, which includes the Lesson 03 check pack and every earlier lesson's tests, and then the Session 03 demonstration with python -m incident.lab 3, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 03 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my repository on gitlab.ciklum.net; if glab is also signed in to other GitLab hosts, make sure the push goes to gitlab.ciklum.net. Do not equate an unrun or skipped check with a pass.
+> **PROMPT** Verify my Lesson 03 implementation against its completion criteria. Update the checkpoint indicator in course/__init__.py to 3 only when the required capability is present. Run the full test suite, which includes the Lesson 03 check pack and every earlier lesson's tests, and then the Session 03 demonstration with python -m course.lab 3, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 03 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my repository on gitlab.ciklum.net; if glab is also signed in to other GitLab hosts, make sure the push goes to gitlab.ciklum.net. Do not equate an unrun or skipped check with a pass.
 
 **Expected behaviour** The coding agent returns actual check results and the demonstration’s structured output. Run identifiers and elapsed times vary. Compare the status and capability outcomes with the recorded reference below, and investigate differences.
 
@@ -237,16 +237,16 @@ def remember(self, tenant, key, body, ttl=3600):
 - Cross-tenant artifact lookup returns no artifact.
 - A stale artifact update fails rather than overwriting the current version.
 
-The independently unpacked lesson-03 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 03 check pack from the course kit. Recorded test result: 15 passed in 3.60s. Learners commit and push their checkpoint to their GitLab repository; lesson-03 (60fbebf) remains the instructor's answer key.
+The independently unpacked lesson-03 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 03 check pack from the course kit. Recorded test result: 15 passed in 3.60s. Learners commit and push their checkpoint to their GitLab repository; lesson-03 (094df54) remains the instructor's answer key.
 
 ### Files changed in this checkpoint
 
 In the reference, this checkpoint changed the files below. Learners write the implementation files themselves; the lab, the tests and any given files arrive in the Lesson 03 check pack. Ask the agent to explain any additional file changes it needs.
 
-- `incident/__init__.py`
-- `incident/context.py`
-- `incident/core.py`
-- `incident/labs/l03.py`
+- `agent_runtime/context.py`
+- `agent_runtime/core.py`
+- `course/__init__.py`
+- `course/labs/l03.py`
 - `tests/test_lesson03.py`
 
 > **PROMPT** Review my completed Lesson 03 work against the Lesson 03 check pack and completion criteria. Show the files I changed and the interfaces I provide, and explain how each completion criterion is met with code or test evidence. Point out the design choices I made that the check pack does not force, and what each one costs or gains. Preserve deliberate improvements and earlier capabilities.

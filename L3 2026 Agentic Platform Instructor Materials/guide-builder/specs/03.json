@@ -13,8 +13,8 @@
     {
       "title": "Retrieve within the tenant boundary",
       "say": "Read the tenant filter before discussing ranking quality. We filter the source population by the authenticated tenant and only then rank the remaining runbooks. The score is the overlap between query words and source text, with a deterministic source-ID tie break. Show the same payments query for Astro and Locomotive. The results must differ because the permitted data differs. Keep source IDs and versions in the returned records. A downstream explanation can then cite the exact evidence it used. Ask a learner to replace the query and predict the leading source before running it.",
-      "file": "incident/context.py",
-      "prompt": "Implement tenant-scoped runbook retrieval and context_tools in incident/context.py. Filter authorized sources before ranking and retain source IDs and versions. Use transparent lexical ranking for this lesson so I can inspect why a record was selected. Compare the same payments query for Astro and Locomotive. Keep the tool contract compatible with the existing executor and explain the returned evidence.",
+      "file": "agent_runtime/context.py",
+      "prompt": "Implement tenant-scoped runbook retrieval and context_tools in agent_runtime/context.py. Filter authorized sources before ranking and retain source IDs and versions. Use transparent lexical ranking for this lesson so I can inspect why a record was selected. Compare the same payments query for Astro and Locomotive. Keep the tool contract compatible with the existing executor and explain the returned evidence.",
       "excerpt": {
         "start": 9,
         "end": 13
@@ -26,7 +26,7 @@
     {
       "title": "Select complete conversation rounds",
       "say": "Start with the system instruction and original task, then group the remaining messages into complete rounds. The selector works backward from the newest round while staying within its character budget. This preserves request/result relationships. Show the test that constructs ten rounds and verifies that every retained tool result has a matching call identifier. We are selecting context for the next model request, not deleting the full run history. That full history remains available for persistence and diagnosis. Ask participants what happens if the original task alone exceeds the budget: the selector rejects it rather than silently truncating the instruction or producing malformed state.",
-      "file": "incident/context.py",
+      "file": "agent_runtime/context.py",
       "prompt": "Add select_context and connect it to the runtime as selection for the next model request. Preserve the instruction and original task, retain complete assistant/tool rounds within the configured allowance, and keep the full run history separately. Reject a task that cannot fit. Demonstrate a reduced conversation with no orphaned tool-call IDs and explain the evidence that was omitted.",
       "excerpt": {
         "start": 22,
@@ -39,7 +39,7 @@
     {
       "title": "Version artifacts explicitly",
       "say": "An investigation report is an artifact with an identity and version. Read the optimistic version check: a writer states which version it expects to replace, and the transaction rejects a stale expectation. Create version one, then attempt another write that still expects version zero. The failure is useful because silently overwriting newer evidence would hide a coordination problem. Later, the supervisor will give one component ownership of shared artifact writes. For now, make sure each learner can read the current version and explain how to retry a legitimate update after inspecting the newer artifact.",
-      "file": "incident/context.py",
+      "file": "agent_runtime/context.py",
       "prompt": "Implement EvidenceStore's versioned artifact operations. Scope identities by tenant, require the writer's expected version and reject stale updates in a transaction. Demonstrate version one, a conflicting update and a cross-tenant lookup. Preserve newer evidence rather than automatically overwriting it after a conflict. Show how a caller should inspect and reconcile the current artifact before retrying.",
       "excerpt": {
         "start": 49,
@@ -52,7 +52,7 @@
     {
       "title": "Apply memory retention and verify provenance",
       "say": "Store a small memory record with an expiry, then read it from the correct and wrong tenants. An expired value returns no result. Explain why a memory store and an artifact store are different: an artifact is a versioned output that we may audit; a memory entry is selected context that can become stale. Run the completed investigation, save its answer as an artifact and inspect the cited source IDs. End by comparing the full-history and selected-context paths. Keep the outcome test alongside any reduction in context size so that optimization does not quietly remove necessary information.",
-      "file": "incident/context.py",
+      "file": "agent_runtime/context.py",
       "prompt": "Add expiring tenant-scoped memory and make the Session 03 check pack pass. Compare memory with versioned artifacts and the current task history. Demonstrate expiration, provenance and access boundaries, then compare the investigation with full history and bounded context. Report the outcome as well as context size; do not call a smaller prompt an improvement if required evidence is lost.",
       "excerpt": {
         "start": 69,

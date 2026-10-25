@@ -4,7 +4,7 @@
 
 **Outcome** A runnable end-to-end platform combines the registry, the tool gateway, delegated credentials and a pinned A2A specialist with admission controls, correlated traces and evaluated, recorded rollout and rollback that operators can inspect in the console.
 
-Duration: 120 minutes. Starting checkpoint: lesson-10. Ending checkpoint: lesson-11 (2616483).
+Duration: 120 minutes. Starting checkpoint: lesson-10. Ending checkpoint: lesson-11 (e0f01f8).
 
 Word version: [11 Operating and releasing agent platforms.docx](11%20Operating%20and%20releasing%20agent%20platforms.docx)
 
@@ -79,9 +79,9 @@ Use SAY for instructor narration, SHOW and REVIEW for the code and evidence part
 
 **SAY** Inspect the two rejection paths before sending load. queue_full means outstanding work has reached capacity; rate_limited means this tenant has submitted too often in the last second. Neither condition should let the server create unlimited waiting tasks. Platform.launch enters admission before claiming the run lease, and a rejected submission is saved with status rejected so operators can count it. The worker wrapper then acquires the semaphore and, in finally, leaves admission, releases the lease and forgets the task, including on cancellation. The API maps rate_limited to HTTP 429 and queue_full to 503. Run the cancellation test and verify that pending capacity returns to zero. Ask learners why a concurrency limit alone does not bound memory when any number of requests can wait behind it.
 
-**SHOW** The current learner implementation and `incident/operations.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
+**SHOW** The current learner implementation and `agentic_platform/operations.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 11, continue in my learner project. Implement bounded admission and active-worker controls in incident/operations.py and connect them to Platform. Distinguish queue capacity from per-tenant arrival limits and active concurrency, record rejected submissions and map them to distinct API responses. Release admission, leases and tasks on success, failure and cancellation. Make the supervisor reserve its own allowance from the shared team budget. Show excess-work rejection and prove that cancellation restores capacity. Build to the interfaces the Lesson 11 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 11, continue in my learner project. Implement bounded admission and active-worker controls in agentic_platform/operations.py and connect them to Platform. Distinguish queue capacity from per-tenant arrival limits and active concurrency, record rejected submissions and map them to distinct API responses. Release admission, leases and tasks on success, failure and cancellation. Make the supervisor reserve its own allowance from the shared team budget. Show excess-work rejection and prove that cancellation restores capacity. Build to the interfaces the Lesson 11 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 16 to 33 at lesson-11; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -118,7 +118,7 @@ class Admission:
 
 **SAY** Build the trace from the tenant-scoped parent and every run whose context names it as parent. The result lists run, parent, role, status, usage and events, redacted before it is returned. Run the hybrid team demo and verify three nodes: the analyst parent, the local logs worker that read through the gateway, and remote_runbooks, the child that represents the pinned A2A specialist. The run detail page in the console now shows the same correlated trace, and the HTML trace view escapes every value. Explain that this is an application trace view, not a configured OpenTelemetry collector. Ask learners what they can diagnose from an error code, a role and a lifecycle event when raw prompts and credentials are deliberately absent.
 
-**SHOW** The current learner implementation and `incident/operations.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
+**SHOW** The current learner implementation and `agentic_platform/operations.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
 > **PROMPT** For Lesson 11, continue in my learner project. Implement the tenant-scoped parent-and-child trace, its escaped HTML view and an API endpoint that returns it only to the owning tenant. Run the hybrid investigation through the registry-pinned remote specialist, the tool gateway and delegated credentials. Show the three correlated run nodes, their roles and events, and usage counted once per run. Explain that this is the application's trace view and identify any external observability integration that remains untested. Build to the interfaces the Lesson 11 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
@@ -156,7 +156,7 @@ def build_trace(store, tenant, run_id):
 
 **SAY** Read the gate as a set of reviewable conditions. The dataset hash and partition must match, quality must meet both the baseline and the minimum, and latency and usage must fit the chosen limits. Run a candidate single definition with a smaller context allowance through evaluate_platform, so the benchmark executes the immutable registry configuration that would be activated. Inspect individual rows when a check fails. Then record the decision in the release log with its checks and the baseline and candidate summaries; a rejected candidate is recorded too. Thresholds here are teaching values for the fixture workload, not universal service-level objectives. Ask participants to propose thresholds for their own task and name failures that would block a release regardless of the aggregate score.
 
-**SHOW** The current learner implementation and `incident/operations.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
+**SHOW** The current learner implementation and `agentic_platform/operations.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
 > **PROMPT** For Lesson 11, continue in my learner project. Implement release_gate and evaluate_platform using the actual immutable registry configurations, and add a release log that records every decision with its checks and summaries whether or not the candidate is activated. Compare the same dataset and partition, retain per-case rows and enforce explicit quality, latency and usage limits. Evaluate a candidate context policy and demonstrate that a degraded or mismatched report is rejected and recorded. Explain which thresholds are teaching values. Build to the interfaces the Lesson 11 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
@@ -186,7 +186,7 @@ def release_gate(baseline, candidate, min_success=1.0, max_latency_ms=1000, max_
 
 **SAY** Run the end-to-end demo, then send six requests with capacity for two outstanding runs. Four are rejected while accepted work completes. Next evaluate version one and the candidate version two, inspect the gate, activate version two, record the release and roll back to version one. Activation changes the default for new runs; existing runs keep their original immutable configuration and hash. Open the console Operations view and find the recorded decision. Then open the Docker and Compose files and identify the non-root user, read-only filesystem, dropped capabilities and internal network. The Compose sandbox keeps state in tmpfs, so replacing the container discards it; the local SQLite path demonstrates persistent recovery. Kubernetes rollouts are a discussion topic only.
 
-**SHOW** The current learner implementation and `incident/labs/l11.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
+**SHOW** The current learner implementation and `course/labs/l11.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
 > **PROMPT** For Lesson 11, continue in my learner project. Complete the Session 11 end-to-end, overload, rollout and rollback demonstration. Show the correlated trace, accepted and rejected load, a passing candidate that is recorded and activated, and the return to the previous version. Show the release in the console Operations view. Inspect the existing restricted container recipe and run it only if the environment supports it. Report its temporary-state limitation and any untested deployment behaviour. Build to the interfaces the Lesson 11 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
@@ -229,7 +229,7 @@ platform.registry.activate("single", 1)
 
 **VERIFY** Give the coding agent the verification prompt below, then inspect its evidence and explain the result in your own words.
 
-> **PROMPT** Verify my Lesson 11 implementation against its completion criteria. Update the checkpoint indicator in incident/__init__.py to 11 only when the required capability is present. Run the full test suite, which includes the Lesson 11 check pack and every earlier lesson's tests, and then the Session 11 demonstration with python -m incident.lab 11, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 11 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my repository on gitlab.ciklum.net; if glab is also signed in to other GitLab hosts, make sure the push goes to gitlab.ciklum.net. Do not equate an unrun or skipped check with a pass.
+> **PROMPT** Verify my Lesson 11 implementation against its completion criteria. Update the checkpoint indicator in course/__init__.py to 11 only when the required capability is present. Run the full test suite, which includes the Lesson 11 check pack and every earlier lesson's tests, and then the Session 11 demonstration with python -m course.lab 11, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 11 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my repository on gitlab.ciklum.net; if glab is also signed in to other GitLab hosts, make sure the push goes to gitlab.ciklum.net. Do not equate an unrun or skipped check with a pass.
 
 **Expected behaviour** The coding agent returns actual check results and the demonstration’s structured output. Run identifiers and elapsed times vary. Compare the status and capability outcomes with the recorded reference below, and investigate differences.
 
@@ -279,7 +279,7 @@ platform.registry.activate("single", 1)
 - A tiny shared parent-and-child budget prevents execution.
 - A degraded or mismatched evaluation blocks release, every decision appears in the release log and the Operations view, and activation can return to the previous version.
 
-The independently unpacked lesson-11 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 11 check pack from the course kit. Recorded test result: 50 passed in 26.68s. Learners commit and push their checkpoint to their GitLab repository; lesson-11 (2616483) remains the instructor's answer key.
+The independently unpacked lesson-11 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 11 check pack from the course kit. Recorded test result: 50 passed in 26.68s. Learners commit and push their checkpoint to their GitLab repository; lesson-11 (e0f01f8) remains the instructor's answer key.
 
 ### Files changed in this checkpoint
 
@@ -287,17 +287,18 @@ In the reference, this checkpoint changed the files below. Learners write the im
 
 - `.dockerignore`
 - `Dockerfile`
+- `agent_runtime/supervisor.py`
+- `agentic_platform/api.py`
+- `agentic_platform/client.py`
+- `agentic_platform/console/views/index.js`
+- `agentic_platform/console/views/operations.js`
+- `agentic_platform/console/views/runs.js`
+- `agentic_platform/operations.py`
+- `agentic_platform/platform.py`
 - `compose.yaml`
-- `incident/__init__.py`
-- `incident/api.py`
-- `incident/client.py`
-- `incident/console/views/index.js`
-- `incident/console/views/operations.js`
-- `incident/console/views/runs.js`
-- `incident/labs/l11.py`
-- `incident/operations.py`
-- `incident/platform.py`
-- `incident/supervisor.py`
+- `course/__init__.py`
+- `course/labs/l11.py`
+- `pyproject.toml`
 - `tests/test_lesson11.py`
 
 > **PROMPT** Review my completed Lesson 11 work against the Lesson 11 check pack and completion criteria. Show the files I changed and the interfaces I provide, and explain how each completion criterion is met with code or test evidence. Point out the design choices I made that the check pack does not force, and what each one costs or gains. Preserve deliberate improvements and earlier capabilities.

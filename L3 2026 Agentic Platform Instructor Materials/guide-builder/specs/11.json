@@ -13,8 +13,8 @@
     {
       "title": "Bound admitted and active work",
       "say": "Inspect the two rejection paths before sending load. queue_full means outstanding work has reached capacity; rate_limited means this tenant has submitted too often in the last second. Neither condition should let the server create unlimited waiting tasks. Platform.launch enters admission before claiming the run lease, and a rejected submission is saved with status rejected so operators can count it. The worker wrapper then acquires the semaphore and, in finally, leaves admission, releases the lease and forgets the task, including on cancellation. The API maps rate_limited to HTTP 429 and queue_full to 503. Run the cancellation test and verify that pending capacity returns to zero. Ask learners why a concurrency limit alone does not bound memory when any number of requests can wait behind it.",
-      "file": "incident/operations.py",
-      "prompt": "Implement bounded admission and active-worker controls in incident/operations.py and connect them to Platform. Distinguish queue capacity from per-tenant arrival limits and active concurrency, record rejected submissions and map them to distinct API responses. Release admission, leases and tasks on success, failure and cancellation. Make the supervisor reserve its own allowance from the shared team budget. Show excess-work rejection and prove that cancellation restores capacity.",
+      "file": "agentic_platform/operations.py",
+      "prompt": "Implement bounded admission and active-worker controls in agentic_platform/operations.py and connect them to Platform. Distinguish queue capacity from per-tenant arrival limits and active concurrency, record rejected submissions and map them to distinct API responses. Release admission, leases and tasks on success, failure and cancellation. Make the supervisor reserve its own allowance from the shared team budget. Show excess-work rejection and prove that cancellation restores capacity.",
       "excerpt": {
         "start": 16,
         "end": 33
@@ -26,7 +26,7 @@
     {
       "title": "Correlate parent and child evidence",
       "say": "Build the trace from the tenant-scoped parent and every run whose context names it as parent. The result lists run, parent, role, status, usage and events, redacted before it is returned. Run the hybrid team demo and verify three nodes: the analyst parent, the local logs worker that read through the gateway, and remote_runbooks, the child that represents the pinned A2A specialist. The run detail page in the console now shows the same correlated trace, and the HTML trace view escapes every value. Explain that this is an application trace view, not a configured OpenTelemetry collector. Ask learners what they can diagnose from an error code, a role and a lifecycle event when raw prompts and credentials are deliberately absent.",
-      "file": "incident/operations.py",
+      "file": "agentic_platform/operations.py",
       "prompt": "Implement the tenant-scoped parent-and-child trace, its escaped HTML view and an API endpoint that returns it only to the owning tenant. Run the hybrid investigation through the registry-pinned remote specialist, the tool gateway and delegated credentials. Show the three correlated run nodes, their roles and events, and usage counted once per run. Explain that this is the application's trace view and identify any external observability integration that remains untested.",
       "excerpt": {
         "start": 36,
@@ -39,7 +39,7 @@
     {
       "title": "Evaluate and record a candidate before activation",
       "say": "Read the gate as a set of reviewable conditions. The dataset hash and partition must match, quality must meet both the baseline and the minimum, and latency and usage must fit the chosen limits. Run a candidate single definition with a smaller context allowance through evaluate_platform, so the benchmark executes the immutable registry configuration that would be activated. Inspect individual rows when a check fails. Then record the decision in the release log with its checks and the baseline and candidate summaries; a rejected candidate is recorded too. Thresholds here are teaching values for the fixture workload, not universal service-level objectives. Ask participants to propose thresholds for their own task and name failures that would block a release regardless of the aggregate score.",
-      "file": "incident/operations.py",
+      "file": "agentic_platform/operations.py",
       "prompt": "Implement release_gate and evaluate_platform using the actual immutable registry configurations, and add a release log that records every decision with its checks and summaries whether or not the candidate is activated. Compare the same dataset and partition, retain per-case rows and enforce explicit quality, latency and usage limits. Evaluate a candidate context policy and demonstrate that a degraded or mismatched report is rejected and recorded. Explain which thresholds are teaching values.",
       "excerpt": {
         "start": 68,
@@ -52,7 +52,7 @@
     {
       "title": "Exercise overload, rollout and rollback",
       "say": "Run the end-to-end demo, then send six requests with capacity for two outstanding runs. Four are rejected while accepted work completes. Next evaluate version one and the candidate version two, inspect the gate, activate version two, record the release and roll back to version one. Activation changes the default for new runs; existing runs keep their original immutable configuration and hash. Open the console Operations view and find the recorded decision. Then open the Docker and Compose files and identify the non-root user, read-only filesystem, dropped capabilities and internal network. The Compose sandbox keeps state in tmpfs, so replacing the container discards it; the local SQLite path demonstrates persistent recovery. Kubernetes rollouts are a discussion topic only.",
-      "file": "incident/labs/l11.py",
+      "file": "course/labs/l11.py",
       "prompt": "Complete the Session 11 end-to-end, overload, rollout and rollback demonstration. Show the correlated trace, accepted and rejected load, a passing candidate that is recorded and activated, and the return to the previous version. Show the release in the console Operations view. Inspect the existing restricted container recipe and run it only if the environment supports it. Report its temporary-state limitation and any untested deployment behaviour.",
       "excerpt": {
         "start": 23,

@@ -14,8 +14,8 @@
     {
       "title": "Register validated, immutable agent versions",
       "say": "Open the registry. A definition is validated against AGENT_SCHEMA before anything is stored: kind, description, owner, allowed tools, skills, prompt and context budget, with no additional properties. So a definition that smuggles in an api_key field fails as invalid_definition, and an allowed tool the platform does not know, such as shell_exec, fails as unknown_tool. The content hash is the SHA-256 of the canonical JSON. Registering identical content again is harmless; different content under an existing version fails as immutable_definition. Lifecycle is kept apart from content: one version per name is active, any non-retired version can be activated, and the active version cannot be retired. Ask learners what a retired version still means for runs that already used it.",
-      "file": "incident/registry.py",
-      "prompt": "Add an agent registry in incident/registry.py on the platform's SQLite file. Validate each definition against a strict schema, require known tools, store a SHA-256 content hash and reject different content under an existing version. Track one active version per agent, allow activating any non-retired version and refuse to retire the active one. Seed single, team and remediator at version 1. Show the rejection codes for an unknown field, an unknown tool and an in-place rewrite.",
+      "file": "agentic_platform/registry.py",
+      "prompt": "Add an agent registry in agentic_platform/registry.py on the platform's SQLite file. Validate each definition against a strict schema, require known tools, store a SHA-256 content hash and reject different content under an existing version. Track one active version per agent, allow activating any non-retired version and refuse to retire the active one. Seed single, team and remediator at version 1. Show the rejection codes for an unknown field, an unknown tool and an in-place rewrite.",
       "excerpt": {
         "start": 38,
         "end": 54
@@ -27,7 +27,7 @@
     {
       "title": "Pin remote agents and discover by skill",
       "say": "In Session 07 the team discovered the runbook specialist at request time and trusted whatever card came back. Now the platform registers the remote agent once: fetch_card reads the public card, and register_remote stores the URL, the card and its SHA-256. A later registration with a different card fails as agent_card_changed unless someone explicitly accepts the change after review. At run time discover_client fetches the card again and compares its digest with the pin before creating a client, so a card swapped after registration stops the run instead of silently redirecting work. Discovery by skill returns active local agents and pinned remote agents together. Be honest about the limit: the first registration is trust on first use, with no human review.",
-      "file": "incident/a2a_client.py",
+      "file": "agent_runtime/a2a_client.py",
       "prompt": "Register remote A2A agents by pinning the SHA-256 of their Agent Card, and refuse a changed card unless an explicit reviewed acceptance is given. Add discovery by skill across active local agents and pinned remote agents. Make the A2A client check the fetched card against the pin before creating a client, and register the specialist at startup when a remote URL is configured. Demonstrate discovery for the runbooks skill and the refusal of a modified card.",
       "excerpt": {
         "start": 14,
@@ -40,8 +40,8 @@
     {
       "title": "Resolve definitions in the platform core and run API",
       "say": "Follow one submission. The API maps the bearer credential to a tenant and a role; the body carries only the incident ID, the agent name and an optional version. submit resolves the definition from the registry, refuses a retired version and requires an operator for the remediator kind. Application code builds Context from the definition's allowed tools, so the model never chooses its own permissions. The resolved definition, with version and hash, is saved on the queued run before work starts. launch then claims a durable lease, and a second claim fails as run_already_owned. The lifecycle endpoints keep the same boundaries: inspect loads only within the caller's tenant, decisions need an operator and the current action key, and resume goes back through the lease.",
-      "file": "incident/platform.py",
-      "prompt": "Build the platform core in incident/platform.py and the run API in incident/api.py. Submission resolves the requested or active definition, refuses retired versions, requires an operator for the remediator, builds the context in application code and saves the queued run with the resolved definition before launch. Claim a durable lease per run. Expose submit, list, inspect, cancel, decision and resume bound to the authenticated tenant, with 404 for another tenant's run and a conflict for a stale action key. Keep every handler asynchronous, because workers and handlers share one SQLite connection. Show both configurations completing with their recorded version and hash.",
+      "file": "agentic_platform/platform.py",
+      "prompt": "Build the platform core in agentic_platform/platform.py and the run API in agentic_platform/api.py. Submission resolves the requested or active definition, refuses retired versions, requires an operator for the remediator, builds the context in application code and saves the queued run with the resolved definition before launch. Claim a durable lease per run. Expose submit, list, inspect, cancel, decision and resume bound to the authenticated tenant, with 404 for another tenant's run and a conflict for a stale action key. Keep every handler asynchronous, because workers and handlers share one SQLite connection. Show both configurations completing with their recorded version and hash.",
       "excerpt": {
         "start": 81,
         "end": 99
@@ -53,7 +53,7 @@
     {
       "title": "Extend the platform console",
       "say": "Since Session 02 the console has been static files served by the platform at /console: an HTML shell, one stylesheet and ES modules, with no build step and no external scripts. A middleware adds a strict Content-Security-Policy: scripts, styles and connections from the same origin only, no inline script and no framing. Now look at h(). Every API value, including model answers, tool evidence and event details, becomes a text node or an attribute value; nothing is assigned to innerHTML, and a test searches every console script for HTML injection sinks, eval and external URLs. Views call the same API with the signed-in credential, so runs are tenant-scoped, and Activate, Approve and Deny appear only for an operator while the server enforces the same rule.",
-      "file": "incident/console/app.js",
+      "file": "agentic_platform/console/app.js",
       "prompt": "Extend the platform console at /console that the kit has given since Session 02. Keep its static HTML shell, vanilla ES modules and strict same-origin Content-Security-Policy with no inline or external scripts, and keep rendering every API value as text through the element helper, never as HTML. Add Registry and Approvals views, extend Runs with the agent choice, cancellation and child runs, and keep Overview and the Tools view working against the new platform API. Scope views to the signed-in identity and show operator controls only to operators while the API still enforces them. Show me the response headers and the check for HTML injection sinks.",
       "excerpt": {
         "start": 8,

@@ -456,7 +456,7 @@ Provide articles, videos, books, documentation, research, internal resources, to
 
 **Optional / deep dive:** the MCP specification (https://modelcontextprotocol.io/specification) and the JSON Schema reference (https://json-schema.org/understanding-json-schema).
 
-**Optional / deep dive:** one finished implementation, the course reference at tag lesson-02 (incident/tools.py, incident/mcp_bridge.py, incident/api.py) and TESTING.md; read it after building your own.
+**Optional / deep dive:** one finished implementation, the course reference at tag lesson-02 (agent_runtime/tools.py, agent_runtime/mcp_bridge.py, agentic_platform/api.py) and TESTING.md; read it after building your own.
 
 ### 7.8 What's Next
 
