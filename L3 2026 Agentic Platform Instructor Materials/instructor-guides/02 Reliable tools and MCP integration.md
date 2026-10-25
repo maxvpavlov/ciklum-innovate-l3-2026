@@ -37,6 +37,10 @@ Your coding agent handles preparation, implementation and execution. You set the
 
 > **PROMPT** Prepare my learner project for Lesson 02. Open my project repository in my course GitLab group on gitlab.ciklum.net, cloning it into ~/agentic-course/my-platform if it is not there, and confirm it holds my completed lesson-01 work with all its checks passing. Update my read-only copy of the course repository in ~/agentic-course/course, cloning it from https://github.com/maxvpavlov/ciklum-innovate-l3-2026 if it is missing; its learner-kit folder is the course kit. Use the pinned Python 3.12 environment and the offline mock provider. Do not add this lesson's work yet. Report the project location, its current checkpoint, the test results and any missing prerequisites. Do not ask me to run terminal commands.
 
+Lesson 01 projects keep everything in incident/. Before the check pack, one prompt moves the project to the layout it keeps from now on: the agent runtime in agent_runtime/ and the course scaffolding in course/; the next prompt adds the platform in agentic_platform/.
+
+> **PROMPT** Move my learner project to the course layout before Lesson 02, without changing its behaviour, as the first section of learner-kit/lessons/02/README.md in the course repository describes. Move incident/core.py and incident/providers.py into a new agent_runtime/ package, and incident/__init__.py with my LESSON value, incident/lab.py and incident/fixtures.py into a new course/ package. Replace my tests with test_setup.py and test_lesson01.py from learner-kit/lessons/02/checks/tests, and incident/labs/ with __init__.py and l01.py from learner-kit/lessons/02/checks/course/labs, unchanged. Update the imports in my own modules, remove the empty incident/ folder, run the full test suite, which must still report 7 passed, and commit the move on its own. Do not add this lesson's work yet.
+
 Next, have the coding agent read this lesson's check pack and add it to the project before any code is written.
 
 > **PROMPT** Read learner-kit/lessons/02 in the course repository: its README, the given files and the check pack. First copy the platform shell, everything under given/agentic_platform, into a top-level agentic_platform/ folder in my project, unchanged, and commit it on its own as the given platform shell: agentic_platform/ is the platform, and the agent runtime I build stays in agent_runtime/. Then copy the remaining given files and the check pack into my project exactly as the README says, without changing them, and commit that; a given definition that must be pasted into a module is added in the build step that creates or changes that module. Then run the tests and report what fails and why: at first this lesson's test file may fail to import, because the modules it needs do not exist yet. List the interfaces my code must provide, with the exact names, signatures, fields and error codes the tests use, and the capability they verify. Explain the implementation sequence before we begin. Do not write the implementation yet, and do not look for or use a finished solution.
@@ -262,7 +266,11 @@ The independently unpacked lesson-02 checkpoint passed its full test suite and t
 
 In the reference, this checkpoint changed the files below. Learners write the implementation files themselves; the lab, the tests and any given files arrive in the Lesson 02 check pack. Ask the agent to explain any additional file changes it needs.
 
+- `README.md`
+- `agent_runtime/__init__.py`
+- `agent_runtime/core.py`
 - `agent_runtime/mcp_bridge.py`
+- `agent_runtime/providers.py`
 - `agent_runtime/tools.py`
 - `agentic_platform/__init__.py`
 - `agentic_platform/api.py`
@@ -275,8 +283,15 @@ In the reference, this checkpoint changed the files below. Learners write the im
 - `agentic_platform/console/views/runs.js`
 - `agentic_platform/console/views/tools.js`
 - `course/__init__.py`
+- `course/fixtures.py`
+- `course/lab.py`
+- `course/labs/__init__.py`
+- `course/labs/l01.py`
 - `course/labs/l02.py`
+- `incident/__init__.py`
+- `tests/test_lesson01.py`
 - `tests/test_lesson02.py`
+- `tests/test_setup.py`
 
 > **PROMPT** Review my completed Lesson 02 work against the Lesson 02 check pack and completion criteria. Show the files I changed and the interfaces I provide, and explain how each completion criterion is met with code or test evidence. Point out the design choices I made that the check pack does not force, and what each one costs or gains. Preserve deliberate improvements and earlier capabilities.
 

@@ -48,22 +48,22 @@ SESSIONS = {
              "is pasted in at step 2), then lists the exact interfaces the checks expect. This defines done "
              "before anything is built.",
              "The new test file fails to import, because the runtime does not exist yet."),
-            ("Build step 1", "The run contract", "new · agent_runtime/core.py",
+            ("Build step 1", "The run contract", "new · incident/core.py",
              "Defines Context, Limits, Reply and Run: who the run is for and what it may use (set by the "
              "platform), how far it may go, the shape of a model's reply, and the state of a run. Nothing the "
              "model sends can change the first two.",
              "A short contract script shows the fields and defaults. No lesson test can run yet."),
-            ("Build step 2", "Model adapters", "new · agent_runtime/providers.py",
+            ("Build step 2", "Model adapters", "new · incident/providers.py",
              "Adds the given mock model and adapters for OpenAI-compatible and Anthropic APIs, all returning "
              "one Reply shape, so the loop never depends on which model answers. Keys come only from the "
              "environment.",
              "Both request shapes checked against mock HTTP; the check pack's adapter tests run after step 3."),
-            ("Build step 3", "The loop", "agent_runtime/core.py · run_agent",
+            ("Build step 3", "The loop", "incident/core.py · run_agent",
              "Builds the reason-act-observe loop: each proposed tool call is recorded before it runs, each "
              "result goes back tagged with its call ID, and the final answer must cite only sources a tool "
              "returned. Adds the first guard, the step limit.",
              "The happy path, the step limit and both adapter checks pass: <b>5 of 7</b>."),
-            ("Build step 4", "The guards", "agent_runtime/core.py · token, time, repeat",
+            ("Build step 4", "The guards", "incident/core.py · token, time, repeat",
              "Adds the token budget (checked before each model call), one deadline for the whole run, and the "
              "repeated-action guard, so every run ends in an answer or a named stop. Then triggers each one "
              "on purpose.",

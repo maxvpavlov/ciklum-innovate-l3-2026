@@ -11,8 +11,8 @@ platform yourself and prove it with the checks.
 | `lessons/NN/checks/` | The lesson's demo and tests, cumulative. Copy them unchanged; they fail until you build the capability. |
 | `lessons/NN/README.md` | What to copy where, and the interfaces your code must provide. |
 
-Your project keeps the agent runtime in `agent_runtime/`, the platform in `agentic_platform/`
-and the course scaffolding in `course/`; the starter README describes the layout.
+From Session 02 your project keeps the agent runtime in `agent_runtime/`, the platform in
+`agentic_platform/` and the course scaffolding in `course/`; the starter README describes the layout.
 
 The prompts for each session are on the session page your instructor shares, and in the
 course's learner prompts. All data is synthetic, and nothing here touches a real system.

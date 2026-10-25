@@ -1,5 +1,13 @@
 # Lesson 02 check pack
 
+## Move to the course layout first
+
+Before copying anything, move your Lesson 01 project out of `incident/`: the runtime
+(`core.py`, `providers.py`) into `agent_runtime/`, and `__init__.py` (with your `LESSON`),
+`lab.py`, `labs/` and `fixtures.py` into `course/`. Take `tests/test_setup.py`,
+`tests/test_lesson01.py` and `course/labs/l01.py` from `checks/` rather than editing them,
+and update the imports in your own modules. The suite must still report 7 passed.
+
 ## Given files
 
 Copy these into your project unchanged. They are data, test doubles and the platform

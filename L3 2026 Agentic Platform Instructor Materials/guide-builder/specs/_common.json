@@ -105,6 +105,7 @@
     "references": "Course kit: learner-kit/lessons/{nn}. Instructor answer key: {prev_tag} to {tag}.",
     "sections": {
       "prepare": "Prepare the workspace",
+      "layout": "Move to the course layout",
       "orient": "Add the check pack",
       "step": "Build step {k}",
       "exercise": "Learner exercise",

@@ -70,8 +70,10 @@ def check_guide(path, n, md_prompts, common, specs_dir):
     # Prompts.
     prompts = [text for b in blocks if b["kind"] == "p" and b["style"] == "Agent Prompt"
                for label, text in [labelled(b)] if label == labels["prompt"]]
-    if len(prompts) != 13:
-        errors.append(f"{len(prompts)} PROMPT paragraphs, expected 13")
+    spec = json.loads((Path(specs_dir) / f"{n:02d}.json").read_text(encoding="utf-8"))
+    expected = 13 + ("layout_prompt" in spec)
+    if len(prompts) != expected:
+        errors.append(f"{len(prompts)} PROMPT paragraphs, expected {expected}")
     if prompts != md_prompts:
         missing = [p for p in prompts if p not in md_prompts]
         extra = [p for p in md_prompts if p not in prompts]

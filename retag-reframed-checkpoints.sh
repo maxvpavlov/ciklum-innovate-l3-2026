@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
-# Move the course checkpoint tags to the restructured reference (25 October 2026): every checkpoint,
-# lesson-00..lesson-12 and course-complete, now keeps the agent runtime in agent_runtime/, the platform
-# in agentic_platform/ and the course scaffolding in course/ instead of one incident/ package. Same
-# tests, same numbers. The previous checkpoints are kept as v3/* tags first (v1/* and v2/* hold the
+# Move the course checkpoint tags to the restructured reference (25 October 2026): from lesson-02 on,
+# the checkpoints keep the agent runtime in agent_runtime/, the platform in agentic_platform/ and the
+# course scaffolding in course/ instead of one incident/ package. lesson-00 and lesson-01 stay on
+# incident/ (their v3/* commits), so Session 01 is unchanged. Same tests, same numbers. The previous checkpoints are kept as v3/* tags first (v1/* and v2/* hold the
 # earlier rebuilds), so this is reversible and idempotent.
 # Run from a clone that has fetched claude/clever-tesla-bnbyzh (or main after merging it).
 set -euo pipefail
 git fetch origin claude/clever-tesla-bnbyzh
 git fetch --force origin "+refs/tags/*:refs/tags/*"
 declare -A NEW=(
-  [lesson-00]=2e852ab76821e8eccc416affbcfb31805fb0d76e
-  [lesson-01]=9847de9ec7ed5e32f5671a1b485be1672cc0b029
+  [lesson-00]=827c1c8af99138d63156727645fd8044aa1db9c3
+  [lesson-01]=7133fdcc650f04f22cacf233ff87679131b0e1b5
   [lesson-02]=4d533bc82ccfefc9c233009dc8c760fd0fa4e76e
   [lesson-03]=094df54c92e050453f93af9403f81089dc5e8227
   [lesson-04]=157768ea57f6ec198efc4ddc472feb7b7846400a

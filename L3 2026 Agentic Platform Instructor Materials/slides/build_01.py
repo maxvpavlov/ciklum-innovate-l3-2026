@@ -528,16 +528,15 @@ code(s, 4.8, 1.1, 4.6, 2.6, "~/agentic-course/\n  course/          read-only cop
 
 # ------------------------------------------------------------------ 26 what you build
 s = slide(CONTENT, "What you build today",
-          "agent_runtime/core.py is the agent runtime: the core of every agent you will run. It holds the data the platform sets, the "
+          "core.py is the agent runtime: the core of every agent you will run. It holds the data the platform sets, the "
           "shape of a model's reply and of a run, and the ReAct loop. From Session 08 the platform hosts it; a supervisor "
           "built from the same loop coordinates other agents from Session 06. The given files are data and a scripted mock "
           "model everyone shares. In production agents run in separate processes or sandboxes, apart from the platform's "
           "control plane; in this course they run in the platform's own process, a compromise that keeps everything "
           "runnable on a laptop.")
-code(s, 0.4, 1.0, 5.2, 3.6, "my-platform/\n  agent_runtime/    the agent runtime\n    core.py       you build: the runtime\n"
-     "    providers.py  you build; mock is given\n  course/           course scaffolding\n    __init__.py   LESSON = 0, then 1\n"
-     "    lab.py        runs a session's demo\n    fixtures.py   given: synthetic data\n    labs/l01.py   check pack: the demo\n"
-     "  tests/\n    test_setup.py\n    test_lesson01.py  check pack\n  agentic_platform/ arrives in Session 02", size=10, hl=(2, 3))
+code(s, 0.4, 1.0, 5.2, 3.6, "my-platform/\n  incident/\n    __init__.py   LESSON = 0, then 1\n    lab.py        runs a session's demo\n"
+     "    core.py       you build: the runtime\n    providers.py  you build; mock is given\n    fixtures.py   given: synthetic data\n"
+     "    labs/l01.py   check pack: the demo\n  tests/\n    test_setup.py\n    test_lesson01.py  check pack", size=10, hl=(4, 5))
 text(s, 5.9, 1.0, 3.6, 3.6, [[("core.py is the agent runtime", {"font": MED, "size": 14, "color": NAVY})],
                              "The data the platform sets, the shape of a model's reply and of a run, and the ReAct loop. "
                              "Every later session builds on it.",

@@ -457,7 +457,7 @@ Provide articles, videos, books, documentation, research, internal resources, to
 
 **Optional / deep dive:** your model provider's tool-calling documentation (OpenAI function calling or Anthropic tool use).
 
-**Optional / deep dive:** one finished implementation, the course reference at tag lesson-01 (agent_runtime/core.py, agent_runtime/providers.py) and TESTING.md; read it after building your own.
+**Optional / deep dive:** one finished implementation, the course reference at tag lesson-01 (incident/core.py, incident/providers.py) and TESTING.md; read it after building your own.
 
 ### 7.8 What's Next
 

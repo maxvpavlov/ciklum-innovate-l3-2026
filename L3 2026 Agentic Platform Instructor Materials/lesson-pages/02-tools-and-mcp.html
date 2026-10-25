@@ -711,6 +711,16 @@ tests/
     </div>
   </div>
 
+  <div class="terminal" id="layout">
+    <div class="bar"><span class="switch">Switch to terminal · Move to the course layout</span><span class="file">incident/ → agent_runtime/ and course/ · no new behaviour</span></div>
+    <div class="body">
+      <p class="goal">Your Session 01 project keeps everything in <code>incident/</code>. Before the check pack, the agent moves the runtime into <code>agent_runtime/</code> and the course scaffolding into <code>course/</code>, so each component has its own folder in source control. Nothing new is built.</p>
+      <div class="prompt" id="pL"><span class="pfx">PROMPT ▸ </span>Move my learner project to the course layout before Lesson 02, without changing its behaviour, as the first section of learner-kit/lessons/02/README.md in the course repository describes. Move incident/core.py and incident/providers.py into a new agent_runtime/ package, and incident/__init__.py with my LESSON value, incident/lab.py and incident/fixtures.py into a new course/ package. Replace my tests with test_setup.py and test_lesson01.py from learner-kit/lessons/02/checks/tests, and incident/labs/ with __init__.py and l01.py from learner-kit/lessons/02/checks/course/labs, unchanged. Update the imports in my own modules, remove the empty incident/ folder, run the full test suite, which must still report 7 passed, and commit the move on its own. Do not add this lesson's work yet.</div>
+      <div><button class="copy" type="button" data-copy="pL">Copy prompt</button></div>
+      <p class="check">Expect: still <b>7 passed</b>, and one commit that only moves files and updates imports.</p>
+    </div>
+  </div>
+
   <div class="terminal" id="orient">
     <div class="bar"><span class="switch">Switch to terminal · Add the check pack</span><span class="file">copies the platform shell into agentic_platform/ · copies the checks · no implementation yet</span></div>
     <div class="body">

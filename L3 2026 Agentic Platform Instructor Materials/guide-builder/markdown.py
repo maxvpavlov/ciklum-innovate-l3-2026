@@ -65,6 +65,9 @@ def build_markdown(spec, common, T, troubleshooting_prompt):
     add(T("access_before") + f"[{T('access_link')}]({T('access_url')})" + T("access_after"))
     add(T("agent_role"))
     prompt(T("prepare_prompt"))
+    if "layout_prompt" in spec:
+        add(spec["layout_intro"])
+        prompt(spec["layout_prompt"])
     add(T("orient_intro"))
     prompt(T("orient_prompt"))
     labelled(L["readiness"], T("readiness"))

@@ -1,4 +1,4 @@
-from course import LESSON
+from incident import LESSON
 
 
 def test_checkpoint_is_identifiable():

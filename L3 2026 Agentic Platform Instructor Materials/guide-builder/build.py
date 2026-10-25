@@ -231,6 +231,9 @@ def build_guide(spec, common, template_path, out_path):
                  run(T("access_after"))])
     g.text(T("agent_role"))
     g.labelled(L["prompt"], T("prepare_prompt"), "Agent Prompt", keep_lines=True)
+    if "layout_prompt" in spec:
+        g.text(spec["layout_intro"])
+        g.labelled(L["prompt"], spec["layout_prompt"], "Agent Prompt", keep_lines=True)
     g.text(T("orient_intro"))
     g.labelled(L["prompt"], T("orient_prompt"), "Agent Prompt", keep_lines=True)
     g.labelled(L["readiness"], T("readiness"))
@@ -325,10 +328,13 @@ def troubleshooting_prompt(entry, T):
 
 
 def lesson_prompts(spec, common):
-    """The 13 prompts of a lesson, in order, as (markdown heading, prompt text)."""
+    """The 13 prompts of a lesson (14 with a layout move), in order, as (markdown heading, prompt text)."""
     T = renderer(spec, common)
     S = common["learner_prompts"]["sections"]
-    prompts = [(S["prepare"], T("prepare_prompt")), (S["orient"], T("orient_prompt"))]
+    prompts = [(S["prepare"], T("prepare_prompt"))]
+    if "layout_prompt" in spec:
+        prompts.append((S["layout"], spec["layout_prompt"]))
+    prompts.append((S["orient"], T("orient_prompt")))
     for k, step in enumerate(spec["steps"], 1):
         prompts.append((S["step"].format(k=k), T("step_prompt", body=step["prompt"])))
     prompts += [(S["exercise"], T("exercise_prompt", body=spec["exercise"])),

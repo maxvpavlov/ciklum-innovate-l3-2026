@@ -42,7 +42,7 @@ $PY build.py --make-template "../instructor-guides/09 Build the reusable platfor
 - `check.py` exits non-zero if any of these fails:
   - The header hash does not equal `git rev-parse --short=7 lesson-NN`, or the header does not
     name lesson-(N-1)/lesson-N.
-  - A guide does not have exactly 13 PROMPT paragraphs.
+  - A guide does not have exactly 13 PROMPT paragraphs (14 when its spec has a `layout_prompt`).
   - A lesson's prompts do not appear verbatim, in order, in its `LEARNER_PROMPTS.md` section, or
     that section holds prompts the guide lacks.
   - A guide does not have exactly 4 REVIEW excerpts, each citing `lesson-NN` and equal to the
