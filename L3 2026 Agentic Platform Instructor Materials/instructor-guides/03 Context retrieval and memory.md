@@ -4,7 +4,7 @@
 
 **Outcome** Tenant-scoped retrieval, bounded conversation context, expiring memory and versioned evidence artifacts extend the same platform.
 
-Duration: 90 minutes. Starting checkpoint: lesson-02. Ending checkpoint: lesson-03 (094df54).
+Duration: 90 minutes. Starting checkpoint: lesson-02. Ending checkpoint: lesson-03 (8095b50).
 
 Word version: [03 Context retrieval and memory.docx](03%20Context%20retrieval%20and%20memory.docx)
 
@@ -237,7 +237,7 @@ def remember(self, tenant, key, body, ttl=3600):
 - Cross-tenant artifact lookup returns no artifact.
 - A stale artifact update fails rather than overwriting the current version.
 
-The independently unpacked lesson-03 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 03 check pack from the course kit. Recorded test result: 15 passed in 3.60s. Learners commit and push their checkpoint to their GitLab repository; lesson-03 (094df54) remains the instructor's answer key.
+The independently unpacked lesson-03 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 03 check pack from the course kit. Recorded test result: 15 passed in 3.60s. Learners commit and push their checkpoint to their GitLab repository; lesson-03 (8095b50) remains the instructor's answer key.
 
 ### Files changed in this checkpoint
 

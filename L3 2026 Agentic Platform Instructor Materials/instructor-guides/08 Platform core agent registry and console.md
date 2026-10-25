@@ -4,7 +4,7 @@
 
 **Outcome** Agents become validated, immutable registry definitions that run through one platform API, remote A2A agents are pinned by Agent Card hash, and analysts and operators inspect the platform in a tenant-scoped console.
 
-Duration: 90 minutes. Starting checkpoint: lesson-07. Ending checkpoint: lesson-08 (c899d65).
+Duration: 90 minutes. Starting checkpoint: lesson-07. Ending checkpoint: lesson-08 (36ee7ea).
 
 Word version: [08 Platform core agent registry and console.docx](08%20Platform%20core%20agent%20registry%20and%20console.docx)
 
@@ -306,7 +306,7 @@ export function h(tag, attrs = {}, ...children) {
 - A second lease claim is rejected, another tenant's run returns 404, and a decision requires an operator and the current action key.
 - The console is served at /console under a strict Content-Security-Policy, renders API data as text only and shows each identity only its tenant's runs; every API handler is asynchronous.
 
-The independently unpacked lesson-08 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 08 check pack from the course kit. Recorded test result: 35 passed in 7.53s. Learners commit and push their checkpoint to their GitLab repository; lesson-08 (c899d65) remains the instructor's answer key.
+The independently unpacked lesson-08 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 08 check pack from the course kit. Recorded test result: 35 passed in 7.53s. Learners commit and push their checkpoint to their GitLab repository; lesson-08 (36ee7ea) remains the instructor's answer key.
 
 ### Files changed in this checkpoint
 

@@ -1,12 +1,18 @@
 # Lesson 02 check pack
 
-## Move to the course layout first
+## First: move to the course layout and start the platform
 
-Before copying anything, move your Lesson 01 project out of `incident/`: the runtime
+Before the check pack, move your Lesson 01 project out of `incident/`: the runtime
 (`core.py`, `providers.py`) into `agent_runtime/`, and `__init__.py` (with your `LESSON`),
-`lab.py`, `labs/` and `fixtures.py` into `course/`. Take `tests/test_setup.py`,
-`tests/test_lesson01.py` and `course/labs/l01.py` from `checks/` rather than editing them,
-and update the imports in your own modules. The suite must still report 7 passed.
+`lab.py` and `fixtures.py` into `course/`. Take `tests/test_setup.py`, `tests/test_lesson01.py`
+and `course/labs/` (`__init__.py`, `l01.py`) from `checks/` rather than editing them, and
+update the imports in your own modules. The suite must still report 7 passed.
+
+Then copy everything under `given/agentic_platform/` into a top-level `agentic_platform/`
+folder: that folder is the platform, and the agent runtime you build stays in
+`agent_runtime/`. Start it on loopback with the offline mock provider and sign in as
+`demo-astro`. The platform map shows checkpoint lesson-01, INC-001 completes with cited
+evidence, and the Tools view says the tool boundary is not built yet: this lesson builds it.
 
 ## Given files
 
@@ -14,8 +20,8 @@ Copy these into your project unchanged. They are data, test doubles and the plat
 shell (run API and console) that everyone shares, so results are comparable; they are
 not what this lesson teaches.
 
-The platform shell goes into the top-level `agentic_platform/` folder: that folder is
-the platform, and the agent runtime you build stays in `agent_runtime/`.
+The `agentic_platform/` files below are the platform shell you copied in the first step;
+leave them unchanged.
 
 - `given/agentic_platform/blueprint.py`: copy to `agentic_platform/blueprint.py`.
 - `given/agentic_platform/console/views/tools.js`: copy to `agentic_platform/console/views/tools.js`.

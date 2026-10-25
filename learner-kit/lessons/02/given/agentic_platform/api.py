@@ -1,8 +1,9 @@
 """Platform shell: the run API and console, given from Session 02. Demo bearer identities are for loopback use.
 
-Runs live in memory and execute in this process. Session 05 makes runs durable, and Session 08 replaces
-this module with the platform core (registry, run lifecycle, approvals), keeping these routes,
-identities and response shapes.
+Runs live in memory and execute in this process. The shell starts on a Lesson 01 runtime: until the
+Lesson 02 build steps add ToolExecutor, runs call the Lesson 01 readers directly and the Tools view says
+the boundary is not built. Session 05 makes runs durable, and Session 08 replaces this module with the
+platform core (registry, run lifecycle, approvals), keeping these routes, identities and response shapes.
 """
 import asyncio
 from collections import deque
@@ -17,9 +18,14 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
 from starlette.responses import RedirectResponse
 from agentic_platform.blueprint import platform_map
-from agent_runtime.core import SYSTEM, ApprovalRequired, Context, Run, run_agent
+from agent_runtime import core
+from agent_runtime.core import SYSTEM, Context, Run, run_agent
 from agent_runtime.providers import provider_from_env
-from agent_runtime.tools import ToolExecutor, action_key
+try:  # Lesson 02 build steps 1 and 2 add the tool boundary
+    from agent_runtime.tools import ToolExecutor, action_key
+except ImportError:
+    ToolExecutor = action_key = None
+ApprovalRequired = getattr(core, "ApprovalRequired", None) or type("ApprovalRequired", (Exception,), {})
 
 DEMO_IDENTITIES = {
     "demo-astro": {"tenant": "astro", "role": "analyst"},
@@ -45,6 +51,20 @@ class ToolCheck(BaseModel):
     model_config = ConfigDict(extra="forbid")
     name: str = Field(pattern=r"^[a-z_]{1,40}$")
     args: dict = Field(default_factory=dict)
+
+
+class Lesson01Readers:
+    """Until ToolExecutor exists: the Lesson 01 synthetic readers, with no tool boundary in front of them."""
+
+    def __init__(self):
+        from course.fixtures import SCHEMAS, simple_tools
+        self.schemas, self.read = SCHEMAS, simple_tools
+
+    def available(self, context):
+        return [s for s in self.schemas if s["function"]["name"] in context.allowed]
+
+    async def execute(self, name, args, context):
+        return await self.read(name, args, context)
 
 
 class Shell:
@@ -78,7 +98,7 @@ def tool_outcome(result):
 def create_app(platform=None, identities=None):
     shell = platform or Shell()
     identities = identities or json.loads(os.getenv("PLATFORM_IDENTITIES", json.dumps(DEMO_IDENTITIES)))
-    tools = ToolExecutor()
+    tools = ToolExecutor() if ToolExecutor else Lesson01Readers()
     app = FastAPI(title="Incident agentic platform")
     app.state.platform = shell
 
@@ -154,7 +174,7 @@ def create_app(platform=None, identities=None):
     async def inspect(run_id: str, who=Depends(identity)):
         run = load(who, run_id)
         proposal = None
-        if run.pending and run.status == "waiting_approval":
+        if run.pending and run.status == "waiting_approval" and action_key:
             call = run.pending[0]
             proposal = {"key": action_key(call["name"], call["args"], run.context),
                         "name": call["name"], "args": call["args"]}
@@ -169,11 +189,14 @@ def create_app(platform=None, identities=None):
         return {"tools": [{"name": s["function"]["name"], "description": s["function"]["description"],
                            "kind": "write" if s["function"]["name"] == "mock_remediate" else "read",
                            "allowed": s["function"]["name"] in allowed} for s in tools.schemas],
+                "boundary": ToolExecutor is not None,
                 "decisions": list(shell.decisions.get(who["tenant"], ()))}
 
     @app.post("/tools/check")
     async def check(body: ToolCheck, who=Depends(identity)):
         """Send one call through the tool boundary as the signed-in role. A write is never approved here."""
+        if ToolExecutor is None:
+            raise HTTPException(409, "tool_boundary_not_built")
         context = context_for(who, "console-check")
         entry = {"at": time.time(), "role": who["role"], "name": body.name, "args": body.args, "error": None}
         result = None

@@ -4,7 +4,7 @@
 
 **Outcome** Every agent tool call passes one gateway that applies policy, audits the decision, shares one upstream MCP session per server and tenant, and quarantines a server whose pinned tool definitions change.
 
-Duration: 90 minutes. Starting checkpoint: lesson-08. Ending checkpoint: lesson-09 (1fa582c).
+Duration: 90 minutes. Starting checkpoint: lesson-08. Ending checkpoint: lesson-09 (ac6669a).
 
 Word version: [09 MCP tool gateway and policy.docx](09%20MCP%20tool%20gateway%20and%20policy.docx)
 
@@ -272,7 +272,7 @@ def pin_tools(self, name, pins):
 - Every decision is audited with an argument hash, and the Gateway view is tenant-scoped.
 - Workers reach tools only through the gateway, and the platform closes upstream sessions on shutdown.
 
-The independently unpacked lesson-09 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 09 check pack from the course kit. Recorded test result: 39 passed in 16.65s. Learners commit and push their checkpoint to their GitLab repository; lesson-09 (1fa582c) remains the instructor's answer key.
+The independently unpacked lesson-09 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 09 check pack from the course kit. Recorded test result: 39 passed in 16.65s. Learners commit and push their checkpoint to their GitLab repository; lesson-09 (ac6669a) remains the instructor's answer key.
 
 ### Files changed in this checkpoint
 

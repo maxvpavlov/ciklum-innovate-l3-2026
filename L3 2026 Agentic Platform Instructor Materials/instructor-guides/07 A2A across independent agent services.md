@@ -4,7 +4,7 @@
 
 **Outcome** An independently hosted runbook specialist is discovered and invoked through the official A2A SDK, with streamed artifacts, authentication and remote cancellation.
 
-Duration: 90 minutes. Starting checkpoint: lesson-06. Ending checkpoint: lesson-07 (1c95964).
+Duration: 90 minutes. Starting checkpoint: lesson-06. Ending checkpoint: lesson-07 (00ebb9d).
 
 Word version: [07 A2A across independent agent services.docx](07%20A2A%20across%20independent%20agent%20services.docx)
 
@@ -259,7 +259,7 @@ async def cancel_slow_task(url):
 - The client rejects an incompatible tenant before making a request.
 - The slow remote task reaches TASK_STATE_CANCELED.
 
-The independently unpacked lesson-07 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 07 check pack from the course kit. Recorded test result: 29 passed in 6.09s. Learners commit and push their checkpoint to their GitLab repository; lesson-07 (1c95964) remains the instructor's answer key.
+The independently unpacked lesson-07 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 07 check pack from the course kit. Recorded test result: 29 passed in 6.09s. Learners commit and push their checkpoint to their GitLab repository; lesson-07 (00ebb9d) remains the instructor's answer key.
 
 ### Files changed in this checkpoint
 

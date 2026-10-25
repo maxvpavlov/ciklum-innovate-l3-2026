@@ -228,7 +228,7 @@ Finish the Session 02 build in your own project, then explore it through the con
 
 **Instructions:**
 
-• Finish any prompt you did not complete in class, in order: Prepare, Move to the course layout, Add the check pack, Build steps 1–4, the exercise, Verify and push, and Review.
+• Finish any prompt you did not complete in class, in order: Prepare, Move to the course layout and start the platform, Add the check pack, Build steps 1–4, the exercise, Verify and push, and Review.
 
 • Read each change before running the next prompt. The check pack must pass unchanged; never edit it to get a pass.
 
@@ -422,7 +422,7 @@ Create a task that can be completed without attending the live session. Include 
 
 **Task:** Using your own coding agent and the learner kit in the course repository, build the Session 02 checkpoint: the tool boundary, exact approval with an idempotent mock effect, real MCP transport, and the platform console.
 
-**Context:** Start from your Session 01 checkpoint. Run the prompts on the Session 02 page in order (Prepare, Move to the course layout, Add the check pack, Build steps 1–4, the exercise, Verify and push, Review); the same prompts are in LEARNER_PROMPTS.md (Lesson 02). No paid model account is needed.
+**Context:** Start from your Session 01 checkpoint. Run the prompts on the Session 02 page in order (Prepare, Move to the course layout and start the platform, Add the check pack, Build steps 1–4, the exercise, Verify and push, Review); the same prompts are in LEARNER_PROMPTS.md (Lesson 02). No paid model account is needed.
 
 **Expected output:** your repository in the course GitLab group with the Lesson 02 check pack passing unchanged (12 tests), the lab output (tools log_lookup and runbook_search, protocol 2026-07-28, the cited INC-001 answer, and a denied write), and a short note of the decisions you saw in the console's Tools view as an analyst and as an operator.
 

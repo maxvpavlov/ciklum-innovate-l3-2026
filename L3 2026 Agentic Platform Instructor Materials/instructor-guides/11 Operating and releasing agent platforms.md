@@ -4,7 +4,7 @@
 
 **Outcome** A runnable end-to-end platform combines the registry, the tool gateway, delegated credentials and a pinned A2A specialist with admission controls, correlated traces and evaluated, recorded rollout and rollback that operators can inspect in the console.
 
-Duration: 120 minutes. Starting checkpoint: lesson-10. Ending checkpoint: lesson-11 (e0f01f8).
+Duration: 120 minutes. Starting checkpoint: lesson-10. Ending checkpoint: lesson-11 (166bbfe).
 
 Word version: [11 Operating and releasing agent platforms.docx](11%20Operating%20and%20releasing%20agent%20platforms.docx)
 
@@ -279,7 +279,7 @@ platform.registry.activate("single", 1)
 - A tiny shared parent-and-child budget prevents execution.
 - A degraded or mismatched evaluation blocks release, every decision appears in the release log and the Operations view, and activation can return to the previous version.
 
-The independently unpacked lesson-11 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 11 check pack from the course kit. Recorded test result: 50 passed in 26.68s. Learners commit and push their checkpoint to their GitLab repository; lesson-11 (e0f01f8) remains the instructor's answer key.
+The independently unpacked lesson-11 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 11 check pack from the course kit. Recorded test result: 50 passed in 26.68s. Learners commit and push their checkpoint to their GitLab repository; lesson-11 (166bbfe) remains the instructor's answer key.
 
 ### Files changed in this checkpoint
 

@@ -176,21 +176,26 @@ def build_lesson(n, known_given):
     contract = {m: names for m, names in interfaces(n, given_names).items() if m not in whole}
     lines = [f"# Lesson {nn} check pack", ""]
     if n == OLD_LAYOUT_UNTIL + 1:
-        lines += ["## Move to the course layout first", "",
-                  "Before copying anything, move your Lesson 01 project out of `incident/`: the runtime",
+        lines += ["## First: move to the course layout and start the platform", "",
+                  "Before the check pack, move your Lesson 01 project out of `incident/`: the runtime",
                   "(`core.py`, `providers.py`) into `agent_runtime/`, and `__init__.py` (with your `LESSON`),",
-                  "`lab.py`, `labs/` and `fixtures.py` into `course/`. Take `tests/test_setup.py`,",
-                  "`tests/test_lesson01.py` and `course/labs/l01.py` from `checks/` rather than editing them,",
-                  "and update the imports in your own modules. The suite must still report 7 passed.", ""]
+                  "`lab.py` and `fixtures.py` into `course/`. Take `tests/test_setup.py`, `tests/test_lesson01.py`",
+                  "and `course/labs/` (`__init__.py`, `l01.py`) from `checks/` rather than editing them, and",
+                  "update the imports in your own modules. The suite must still report 7 passed.", "",
+                  "Then copy everything under `given/agentic_platform/` into a top-level `agentic_platform/`",
+                  "folder: that folder is the platform, and the agent runtime you build stays in",
+                  "`agent_runtime/`. Start it on loopback with the offline mock provider and sign in as",
+                  "`demo-astro`. The platform map shows checkpoint lesson-01, INC-001 completes with cited",
+                  "evidence, and the Tools view says the tool boundary is not built yet: this lesson builds it.", ""]
     if items:
         lines += ["## Given files", "",
                   "Copy these into your project unchanged. They are data, test doubles and the platform",
                   "shell (run API and console) that everyone shares, so results are comparable; they are",
                   "not what this lesson teaches.",
                   ""]
-        if any(p.startswith("agentic_platform/") for p, *_ in items):
-            lines += ["The platform shell goes into the top-level `agentic_platform/` folder: that folder is",
-                      "the platform, and the agent runtime you build stays in `agent_runtime/`.", ""]
+        if n == OLD_LAYOUT_UNTIL + 1:
+            lines += ["The `agentic_platform/` files below are the platform shell you copied in the first step;",
+                      "leave them unchanged.", ""]
         for path, name, _, changed in items:
             path = at(n, path)
             if name is None:

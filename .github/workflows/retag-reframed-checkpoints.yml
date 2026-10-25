@@ -1,7 +1,7 @@
 name: Retag reframed checkpoints
 
 # Moves lesson-00..lesson-12 and course-complete to the current reference and keeps the
-# previous checkpoints as v3/* tags. The script is idempotent, so re-running is harmless.
+# previous checkpoints as v4/* tags. The script is idempotent, so re-running is harmless.
 on:
   push:
     branches: [main]
@@ -26,4 +26,4 @@ jobs:
           sed -i 's|^git fetch origin claude/clever-tesla-bnbyzh$|git fetch origin main|' retag-reframed-checkpoints.sh
           bash retag-reframed-checkpoints.sh
       - name: Show the result
-        run: git ls-remote --tags origin | grep -E 'lesson-[0-9]+|course-complete|v3/'
+        run: git ls-remote --tags origin | grep -E 'lesson-[0-9]+|course-complete|v4/'

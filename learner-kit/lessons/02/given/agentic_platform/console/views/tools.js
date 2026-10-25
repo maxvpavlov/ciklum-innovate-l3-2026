@@ -52,10 +52,14 @@ export default {
       h("p", { class: "lede" }, "The tools this platform knows, which ones your role may use, and every call you check. "
         + "A check goes through the same tool boundary agents use; a write is never approved from here."),
       h("h2", {}, "Catalogue"), catalogue(data.tools),
-      h("h2", {}, "Try a call"), presets,
-      h("form", { class: "inline", onsubmit: send }, h("label", {}, "Tool", name), h("label", {}, "Arguments (JSON)", args),
-        h("button", { type: "submit" }, "Check the call")),
-      result,
-      h("h2", {}, "Decisions"), log);
+      // A Lesson 01 runtime has no tool boundary yet, so there is nothing to check calls against.
+      ...(data.boundary === false
+        ? [h("div", { class: "notice" }, "The tool boundary is not built yet: Lesson 02 build steps 1 and 2 add it. "
+            + "Until then runs call the Lesson 01 readers directly, and calls cannot be checked here.")]
+        : [h("h2", {}, "Try a call"), presets,
+          h("form", { class: "inline", onsubmit: send }, h("label", {}, "Tool", name), h("label", {}, "Arguments (JSON)", args),
+            h("button", { type: "submit" }, "Check the call")),
+          result,
+          h("h2", {}, "Decisions"), log]));
   },
 };
