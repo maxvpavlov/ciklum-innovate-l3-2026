@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+</head>
+<body>
+<title>Session 02 Prompts</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: one long scroll on drafting-paper ground; chapters that alternate prose and evidence,
+   full-width "switch to terminal" bands, and a Read/Present toggle that hides reading prose. */
+:root {
+  --paper: #f2f4f6;        /* cool drafting paper */
+  --sheet: #fbfcfd;        /* raised surfaces */
+  --ink: #15202e;          /* navy ink */
+  --muted: #586678;
+  --rule: #cfd6df;
+  --signal: #d9481f;       /* incident signal: today's box, guards, terminal cues */
+  --signal-soft: #fbe4dc;
+  --model: #3f5bd0;        /* the model's turn in transcripts */
+  --tool: #1d7a62;         /* tool observations */
+  --term-bg: #10161f;
+  --term-fg: #dfe6ee;
+  --display: "Archivo", "Arial Narrow", system-ui, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0f151d; --sheet: #161e29; --ink: #e5ebf2; --muted: #9aa8b8; --rule: #2a3542;
+    --signal: #ff7a4d; --signal-soft: #3a1d14; --model: #8ea2ff; --tool: #57c9a6;
+    --term-bg: #0a0e14; --term-fg: #dfe6ee; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0f151d; --sheet: #161e29; --ink: #e5ebf2; --muted: #9aa8b8; --rule: #2a3542;
+  --signal: #ff7a4d; --signal-soft: #3a1d14; --model: #8ea2ff; --tool: #57c9a6;
+  --term-bg: #0a0e14; --term-fg: #dfe6ee; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  background: var(--paper); color: var(--ink); font: 17px/1.6 var(--body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--signal); outline-offset: 3px; }
+
+main { max-width: 1040px; margin: 0 auto; }
+section.ch { padding-block: 72px 24px; border-top: 1px solid var(--rule); scroll-margin-top: 8px; }
+section.ch:first-of-type { border-top: 0; }
+.eyebrow { font: 600 12.5px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--signal);
+  display: flex; gap: 14px; flex-wrap: wrap; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; }
+h2 { font-size: clamp(30px, 4.4vw, 46px); font-variation-settings: "wdth" 82; font-weight: 750;
+  line-height: 1.05; letter-spacing: -.01em; margin-top: 14px; }
+h3 { font-size: 21px; font-weight: 650; font-variation-settings: "wdth" 92; }
+p { margin: 0; }
+.lede { font-size: 20px; line-height: 1.55; max-width: 62ch; color: var(--ink); margin-top: 18px; }
+.prose { max-width: 66ch; display: grid; gap: 14px; margin-top: 18px; }
+.muted { color: var(--muted); }
+code, .mono { font-family: var(--mono); font-size: .9em; }
+.stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; margin-top: 34px; }
+.stack > * { min-width: 0; }
+.two { display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.two > * { min-width: 0; }
+
+/* Read / Present toggle: always visible; Present hides reading prose and keeps headings, diagrams and key points */
+.view { position: fixed; z-index: 10; top: calc(14px + env(safe-area-inset-top, 0px)); right: max(14px, env(safe-area-inset-right, 0px));
+  display: flex; padding: 3px; gap: 2px; background: var(--sheet); border: 1px solid var(--rule); border-radius: 999px;
+  box-shadow: 0 2px 10px rgba(15, 21, 29, .12); }
+.view button { font: 600 12.5px var(--mono); letter-spacing: .04em; color: var(--muted); background: transparent; border: 0;
+  border-radius: 999px; padding: 6px 14px; cursor: pointer; }
+.view button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.present .lede, .present .prose, .present figcaption, .present .say, .present .cards > div > p,
+.present .turn .note, .present .terminal .goal, .present .read { display: none; }
+
+/* Say-this lines */
+.say { border-left: 3px solid var(--ink); padding: 4px 0 4px 18px; font-size: 19px; font-style: italic; max-width: 60ch; }
+.ask { display: grid; gap: 6px; padding: 18px 20px; background: var(--sheet); border: 1px solid var(--rule);
+  border-radius: 10px; max-width: 68ch; }
+.ask .q { font: 650 19px/1.35 var(--display); font-variation-settings: "wdth" 92; }
+.ask .label { font: 600 11.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.ask details summary { cursor: pointer; color: var(--muted); font-size: 15px; }
+.ask details p { margin-top: 6px; }
+.ask ol.steps { margin: 4px 0 0; padding-left: 22px; display: grid; gap: 4px; }
+.route { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 6px; font: 600 13.5px var(--mono); }
+.route a { text-decoration: none; color: var(--ink); background: var(--sheet); border: 1px solid var(--rule); border-radius: 999px; padding: 6px 12px; }
+.route a:hover { border-color: var(--signal); color: var(--signal); }
+.route .arr { color: var(--muted); }
+pre.layout { margin: 0; font: 13.5px/1.55 var(--mono); background: #18212d; border: 1px solid #263140; border-radius: 8px; padding: 12px 16px; overflow-x: auto; color: var(--term-fg); }
+pre.layout .dim { color: #8193a8; }
+pre.layout .mark { background: rgba(255, 155, 116, .16); display: inline-block; width: 100%; }
+.links { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.links a { display: grid; gap: 4px; padding: 14px 16px; background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; text-decoration: none; min-width: 0; }
+.links a:hover { border-color: var(--signal); }
+.links .q { font: 700 16px var(--display); font-variation-settings: "wdth" 90; color: var(--ink); }
+.links .mono { font-size: 13px; color: var(--signal); overflow-wrap: anywhere; }
+.links .muted { font-size: 13.5px; }
+
+/* Hero */
+.hero { padding-block: 64px 56px; display: grid; gap: 22px; }
+.hero .course { font: 600 13px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.hero h1 { font-size: clamp(44px, 8.2vw, 104px); line-height: .92; font-weight: 800;
+  font-variation-settings: "wdth" 68; letter-spacing: -.015em; }
+.hero h1 .sub { display: block; font-weight: 500; font-variation-settings: "wdth" 100; font-size: .34em;
+  letter-spacing: 0; line-height: 1.2; margin-top: 18px; color: var(--muted); }
+.facts { display: flex; flex-wrap: wrap; gap: 10px 26px; font: 500 14px var(--mono); color: var(--muted); }
+.facts b { color: var(--ink); font-weight: 600; }
+
+/* Incident ticket */
+.ticket { background: var(--sheet); border: 1px solid var(--rule); border-radius: 12px; overflow: hidden; max-width: 760px; }
+.ticket header { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 14px 20px;
+  border-bottom: 1px solid var(--rule); font: 600 14px var(--mono); }
+.sev { color: var(--signal); }
+.ticket dl { display: grid; grid-template-columns: max-content 1fr; gap: 8px 22px; margin: 0; padding: 18px 20px; }
+.ticket dt { font: 500 13px var(--mono); color: var(--muted); }
+.ticket dd { margin: 0; }
+.criteria { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); counter-reset: c; }
+.criteria div { padding-top: 14px; border-top: 2px solid var(--ink); }
+.criteria b { display: block; font: 650 18px var(--display); font-variation-settings: "wdth" 92; margin-bottom: 4px; }
+
+/* Diagrams */
+figure { margin: 0; }
+.diagram { background: var(--sheet); border: 1px solid var(--rule); border-radius: 12px; padding: 18px; overflow-x: auto; }
+.diagram svg { display: block; width: 100%; min-width: 620px; height: auto; }
+figcaption { font-size: 14.5px; color: var(--muted); margin: 10px auto 0; max-width: 70ch; text-align: center; }
+svg text { font-family: var(--mono); fill: var(--ink); }
+svg .lbl { font-family: var(--body); font-size: 15px; font-weight: 600; }
+svg .small { font-size: 12px; fill: var(--muted); }
+svg .box { fill: var(--paper); stroke: var(--rule); stroke-width: 1.5; }
+svg .today { fill: var(--signal-soft); stroke: var(--signal); stroke-width: 2.5; }
+svg .ink { stroke: var(--ink); fill: none; stroke-width: 1.8; }
+svg .arrowhead { fill: var(--ink); }
+svg .sig { fill: var(--signal); }
+svg .fail { fill: var(--signal-soft); stroke: var(--signal); stroke-width: 2; }
+svg .failhead { fill: var(--signal); font-size: 11px; font-weight: 700; letter-spacing: .08em; }
+svg .failcode { fill: var(--signal); font-size: 14px; font-weight: 600; }
+svg .err { stroke: var(--signal); fill: none; stroke-width: 2; }
+svg .errlbl { fill: var(--signal); font-size: 12px; font-weight: 600; }
+svg .think { fill: var(--sheet); stroke: var(--model); stroke-width: 2.5; }
+svg .act { fill: var(--sheet); stroke: var(--tool); stroke-width: 2.5; }
+svg .done { fill: var(--sheet); stroke: var(--tool); stroke-width: 2; }
+svg .donetxt { fill: var(--tool); font-size: 15px; font-weight: 600; }
+svg .frame { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 6 5; }
+
+/* Comparison */
+.compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
+.compare > div { background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; padding: 20px; display: grid; gap: 10px; align-content: start; }
+.compare ol { margin: 0; padding-left: 20px; font-family: var(--mono); font-size: 14.5px; display: grid; gap: 4px; }
+
+/* Transcript */
+.transcript { display: grid; gap: 0; max-width: 900px; }
+.turn { display: grid; grid-template-columns: 92px 1fr; gap: 16px; padding: 14px 0; border-bottom: 1px dashed var(--rule); }
+.turn:last-child { border-bottom: 0; }
+.who { font: 600 12.5px/1.3 var(--mono); text-transform: uppercase; letter-spacing: .06em; padding-top: 3px; }
+.who.rt { color: var(--ink); }
+.who.m { color: var(--model); } .who.t { color: var(--tool); } .who.u { color: var(--muted); } .who.r { color: var(--signal); }
+.turn pre { margin: 0; font: 14px/1.5 var(--mono); white-space: pre-wrap; word-break: break-word; min-width: 0; }
+.turn .note { font-size: 14.5px; color: var(--muted); margin-top: 6px; }
+.turn p + pre { margin-top: 8px; }
+.tally { display: flex; flex-wrap: wrap; gap: 10px 28px; font: 500 14px var(--mono); color: var(--muted); margin-top: 14px; }
+.tally b { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* Tables */
+.tablewrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 10px; background: var(--sheet); }
+table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 15.5px; }
+th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font: 600 12px var(--mono); text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+tr:last-child td { border-bottom: 0; }
+td code { white-space: nowrap; }
+.own-app { color: var(--tool); font-weight: 600; }
+.own-model { color: var(--model); font-weight: 600; }
+
+/* Course-opening cards */
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.cards > div { background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; padding: 18px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.cards .q { font: 700 19px/1.25 var(--display); font-variation-settings: "wdth" 88; }
+.cards .ans { font: 500 12.5px var(--mono); color: var(--signal); letter-spacing: .02em; }
+tr.now td { background: var(--signal-soft); }
+.cards.six { grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); }
+.cards.pairs { grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr)); }
+
+/* Guards */
+.guards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+.guard { background: var(--sheet); border: 1px solid var(--rule); border-top: 3px solid var(--signal); border-radius: 8px;
+  padding: 16px 18px; display: grid; gap: 8px; align-content: start; }
+.guard .code { font: 600 15px var(--mono); color: var(--signal); }
+.guard .lim { font: 500 13px var(--mono); color: var(--muted); }
+
+/* Terminal bands */
+.terminal { margin-block: 30px 6px; background: var(--term-bg); color: var(--term-fg); border-radius: 14px; overflow: hidden; }
+.terminal .bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;
+  padding: 14px 20px; border-bottom: 1px solid #263140; }
+.terminal .switch { font: 700 13px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: #ff9b74;
+  display: flex; align-items: center; gap: 10px; }
+.terminal .switch::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: #ff9b74;
+  box-shadow: 0 0 0 4px rgba(255, 155, 116, .18); }
+.terminal .file { font: 500 13px var(--mono); color: #9fb0c3; }
+.terminal .body { padding: 18px 20px 20px; display: grid; gap: 14px; }
+.terminal .goal { font-size: 16px; color: #c4cfdb; max-width: 70ch; }
+.prompt { position: relative; font: 14.5px/1.6 var(--mono); background: #18212d; border: 1px solid #263140; border-radius: 8px;
+  padding: 14px 16px 14px 16px; white-space: pre-wrap; word-break: break-word; }
+.prompt .pfx { color: #ff9b74; user-select: none; }
+/* Prompts start collapsed; the copy button works either way */
+details.fold > summary { cursor: pointer; list-style: none; font: 600 13px var(--mono); color: #ff9b74;
+  display: inline-flex; align-items: center; gap: 8px; padding: 4px 0; }
+details.fold > summary::-webkit-details-marker { display: none; }
+details.fold > summary::before { content: "▸"; transition: transform .15s; }
+details.fold[open] > summary::before { transform: rotate(90deg); }
+details.fold > summary .hide, details.fold[open] > summary .show { display: none; }
+details.fold[open] > summary .hide { display: inline; }
+details.fold[open] > .prompt { margin-top: 8px; }
+.copy { font: 600 12.5px var(--mono); color: var(--term-fg); background: transparent; border: 1px solid #3a4a5e;
+  border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+.copy:hover { border-color: #ff9b74; color: #ff9b74; }
+.terminal .check { font: 500 13.5px var(--mono); color: #9fb0c3; }
+.terminal .check b { color: #8fe0c3; font-weight: 600; }
+
+/* Code excerpt */
+.excerpt { background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; overflow-x: auto; }
+.excerpt .src { font: 500 12.5px var(--mono); color: var(--muted); padding: 10px 16px; border-bottom: 1px solid var(--rule); }
+.excerpt pre { margin: 0; padding: 14px 16px; font: 14px/1.55 var(--mono); }
+.excerpt .hl { background: var(--signal-soft); display: inline-block; width: 100%; }
+.excerpt .n { color: var(--signal); font-weight: 700; display: inline-block; width: 2.4ch; }
+.excerpt .muted { color: var(--muted); }
+dl.fields { display: grid; grid-template-columns: max-content 1fr; max-width: 72ch; gap: 6px 14px; margin: 0; align-content: start; font-size: 15.5px; }
+dl.fields dt { font-weight: 600; }
+dl.fields dd { margin: 0; }
+dl.fields dd.note { grid-column: 1 / -1; color: var(--muted); font-style: italic; margin-top: 4px; }
+ul.key { margin: 0; padding-left: 22px; display: grid; gap: 6px; max-width: 72ch; }
+
+/* Exercise grid */
+.predict { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+.predict div { border: 1px solid var(--rule); border-radius: 10px; padding: 16px; background: var(--sheet); display: grid; gap: 6px; }
+.predict .set { font: 500 14px var(--mono); }
+.predict .out { font: 600 15px var(--mono); color: var(--signal); }
+
+.result { font: 14px/1.5 var(--mono); background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; padding: 16px 18px; overflow-x: auto; margin: 0; }
+.big { font: 800 clamp(56px, 9vw, 96px)/1 var(--display); font-variation-settings: "wdth" 70; color: var(--signal); }
+footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 14px; display: grid; gap: 8px; }
+@media (max-width: 560px) {
+  .turn { grid-template-columns: 1fr; gap: 4px; }
+  .ticket dl { grid-template-columns: 1fr; gap: 2px 0; }
+  .ticket dd { margin-bottom: 8px; }
+  body { font-size: 16px; }
+}
+/* Session 02 additions */
+.guard.ok { border-top-color: var(--tool); }
+.guard.ok .code { color: var(--tool); }
+#review { display: grid; gap: 14px; }
+.shot { display: block; width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 10px; background: var(--sheet); }
+.terminal .rlabel { font-size: 16px; color: #c4cfdb; max-width: 70ch; }
+</style>
+
+<div class="view" role="group" aria-label="View">
+  <button type="button" data-view="read" aria-pressed="true">Read</button>
+  <button type="button" data-view="present" aria-pressed="false">Present</button>
+</div>
+
+<main>
+
+<header class="hero" id="start">
+  <p class="course">Innovate · L3 · 2026 · Session 02 · just the prompts</p>
+  <h1>Reliable tools and MCP<span class="sub">Every prompt for this session, in order, with what each one adds to your platform</span></h1>
+  <p class="lede">By the end your project has its lasting layout, a running platform with a console, and a tool boundary every call passes through: checked before dispatch, approved per exact action, written once, and reached over a real MCP connection. Run the prompts in this order, in your coding agent started in ~/agentic-course, and read each result before you paste the next one.</p>
+  <div class="facts"><span><b>10 prompts</b> in order</span><span>ends at <b>12 passed</b> · <code>LESSON = 2</code></span><span>offline mock model · real MCP over stdio</span></div>
+</header>
+
+<section class="ch" id="goal">
+  <p class="eyebrow"><span>The build goal</span></p>
+  <h2>What these prompts build</h2>
+  <div class="stack">
+    <div class="criteria">
+      <div><b>A visible platform</b>your Session 01 agent runs INC-001 from the console before you build anything.</div>
+      <div><b>A tool boundary</b>known tool, granted to this run, valid arguments, before any handler runs.</div>
+      <div><b>Exact approval, one effect</b>an approval covers one action, and a repeated write happens once.</div>
+      <div><b>Real MCP</b>the read tools travel over stdio, and the boundary does not move.</div>
+    </div>
+    <nav class="route" id="route" aria-label="Prompt route">
+      <a href="#s0">Prepare</a><span class="arr" aria-hidden="true">→</span><a href="#s1">Move and start the platform</a><span class="arr" aria-hidden="true">→</span><a href="#s2">Add the check pack</a><span class="arr" aria-hidden="true">→</span><a href="#s3">Validate before dispatch</a><span class="arr" aria-hidden="true">→</span><a href="#s4">Exact approval, one effect</a><span class="arr" aria-hidden="true">→</span><a href="#s5">The MCP server</a><span class="arr" aria-hidden="true">→</span><a href="#s6">Reads over MCP</a><span class="arr" aria-hidden="true">→</span><a href="#s7">Break it on purpose</a><span class="arr" aria-hidden="true">→</span><a href="#s8">Verify and push</a><span class="arr" aria-hidden="true">→</span><a href="#s9">Review</a>
+    </nav>
+    <p class="muted">A coding agent saying "done" is not evidence: after each prompt, look at the change and at the check output before you paste the next one. The explanations, diagrams and code are on the <a href="https://maxvpavlov.github.io/ciklum-innovate-l3-2026/lesson-02/">full Session 02 page</a>.</p>
+  </div>
+</section>
+
+<section class="ch" id="prompts">
+  <p class="eyebrow"><span>The prompts</span></p>
+  <h2>Paste them in this order</h2>
+  <div class="terminal" id="s0">
+    <div class="bar"><span class="switch">Prompt 1 of 10 · Prepare</span><span class="file">confirms lesson-01 · refreshes the course copy</span></div>
+    <div class="body">
+      <p class="goal">Opens your project, confirms your Session 01 work still passes, and refreshes your read-only copy of the course repository so it holds the Session 02 kit. Nothing is changed yet.</p>
+      <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="s0-text"><span class="pfx">PROMPT ▸ </span>Prepare my learner project for Lesson 02. Open my project repository in my course GitLab group on gitlab.ciklum.net, cloning it into ~/agentic-course/my-platform if it is not there, and confirm it holds my completed lesson-01 work with all its checks passing. Update my read-only copy of the course repository in ~/agentic-course/course, cloning it from https://github.com/maxvpavlov/ciklum-innovate-l3-2026 if it is missing; its learner-kit folder is the course kit. Use the pinned Python 3.12 environment and the offline mock provider. Do not add this lesson's work yet. Report the project location, its current checkpoint, the test results and any missing prerequisites. Do not ask me to run terminal commands.</div></details>
+      <div><button class="copy" type="button" data-copy="s0-text">Copy prompt</button></div>
+      <p class="check">Expect: <code>LESSON = 1</code> with <b>7 passed</b>, and <code>learner-kit/lessons/02</code> in your course copy.</p>
+    </div>
+  </div>
+  <div class="terminal" id="s1">
+    <div class="bar"><span class="switch">Prompt 2 of 10 · Move and start the platform</span><span class="file">incident/ → agent_runtime/ and course/ · new agentic_platform/</span></div>
+    <div class="body">
+      <p class="goal">Moves your runtime into <code>agent_runtime/</code> and the course scaffolding into <code>course/</code>, copies the given platform shell from the kit into <code>agentic_platform/</code> (each as its own commit), and starts the platform. Sign in as demo-astro, submit INC-001 in Runs, and open Tools.</p>
+      <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="s1-text"><span class="pfx">PROMPT ▸ </span>Move my learner project to the course layout and start the platform, without adding this lesson's work, as the first section of learner-kit/lessons/02/README.md in the course repository describes. Move incident/core.py and incident/providers.py into a new agent_runtime/ package, and incident/__init__.py with my LESSON value, incident/lab.py and incident/fixtures.py into a new course/ package. Replace my tests with test_setup.py and test_lesson01.py from learner-kit/lessons/02/checks/tests, and incident/labs/ with __init__.py and l01.py from learner-kit/lessons/02/checks/course/labs, unchanged. Update the imports in my own modules, remove the empty incident/ folder, run the full test suite, which must still report 7 passed, and commit the move on its own. Then copy the given platform shell, everything under learner-kit/lessons/02/given/agentic_platform, into a top-level agentic_platform/ folder unchanged and commit it on its own. Start the platform API on loopback with the offline mock provider, keep it running and give me the console address: I will sign in as demo-astro, submit INC-001 in Runs and open the Tools view. Tell me how to stop it.</div></details>
+      <div><button class="copy" type="button" data-copy="s1-text">Copy prompt</button></div>
+      <p class="check">Expect: still <b>7 passed</b>; the console shows checkpoint lesson-01, INC-001 answered with cited evidence, and a Tools view saying the tool boundary is not built yet.</p>
+    </div>
+  </div>
+  <div class="terminal" id="s2">
+    <div class="bar"><span class="switch">Prompt 3 of 10 · Add the check pack</span><span class="file">checks · no code yet</span></div>
+    <div class="body">
+      <p class="goal">Copies the Session 02 checks into your project and lists the exact interfaces they expect, including what the given platform needs from your executor. This defines done before anything is built.</p>
+      <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="s2-text"><span class="pfx">PROMPT ▸ </span>Read learner-kit/lessons/02 in the course repository: its README, the given files and the check pack. The platform shell under given/agentic_platform is already in my project from the previous prompt; leave it unchanged. Copy the remaining given files and the check pack into my project exactly as the README says, without changing them, and commit that; a given definition that must be pasted into a module is added in the build step that creates or changes that module. Then run the tests and report what fails and why: at first this lesson's test file may fail to import, because the modules it needs do not exist yet. List the interfaces my code must provide, with the exact names, signatures, fields and error codes the tests use, and the capability they verify. Explain the implementation sequence before we begin. Do not write the implementation yet, and do not look for or use a finished solution.</div></details>
+      <div><button class="copy" type="button" data-copy="s2-text">Copy prompt</button></div>
+      <p class="check">Expect: <code>test_lesson02.py</code> fails to import, because the tool boundary does not exist yet.</p>
+    </div>
+  </div>
+  <div class="terminal" id="s3">
+    <div class="bar"><span class="switch">Prompt 4 of 10 · Validate before dispatch</span><span class="file">new · agent_runtime/tools.py</span></div>
+    <div class="body">
+      <p class="goal">Builds ToolExecutor: an unknown tool, a tool the run was not granted, and malformed or extra arguments are refused before any handler runs, with errors that say whether a retry can help.</p>
+      <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="s3-text"><span class="pfx">PROMPT ▸ </span>For Lesson 02, continue in my learner project. Implement ToolExecutor in agent_runtime/tools.py. Check tool existence, application-owned capabilities and JSON arguments before dispatch. Reject unexpected tenant arguments and oversized results. Return structured errors that distinguish terminal failures from retryable read failures. Preserve the existing agent loop. Demonstrate malformed arguments and a tool the run was not granted being rejected before a handler runs. The check pack needs ToolExecutor(db=":memory:", read_handler=simple_tools, output_limit=6000), whose output_limit attribute a test changes; available(context), which returns only the schemas the context allows; and async execute(name, args, context), which returns the handler's result or {"ok": false, "error": code, "retryable": true or false}. Use the codes unknown_tool, permission_denied, invalid_arguments and output_too_large (all terminal), and tool_unavailable (retryable) when a read still times out or loses its connection after one retry. Check the permission before validating the arguments. The given platform shell also creates ToolExecutor() with no arguments, so give every parameter a default (an in-memory database and the Session 01 readers), and it lists the tool catalogue from a schemas attribute: every tool the executor knows, which gains mock_remediate in the next step. This lesson's test file cannot import until action_key exists in the next step, so check this step with your demonstration and the Session 01 tests. Build to the interfaces the Lesson 02 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div></details>
+      <div><button class="copy" type="button" data-copy="s3-text">Copy prompt</button></div>
+      <p class="check">Expect: rejections shown in a demonstration; Session 01 tests still <b>7 passed</b> (the new test file imports from step 2).</p>
+    </div>
+  </div>
+  <div class="terminal" id="s4">
+    <div class="bar"><span class="switch">Prompt 5 of 10 · Exact approval, one effect</span><span class="file">agent_runtime/tools.py · approval and ledger</span></div>
+    <div class="body">
+      <p class="goal">Adds the mock_remediate write tool, an approval bound to tenant, run, tool and arguments, and a SQLite ledger that records the effect once, so a repeated approved write is replayed, not redone.</p>
+      <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="s4-text"><span class="pfx">PROMPT ▸ </span>For Lesson 02, continue in my learner project. Add exact-action approval and idempotent mock remediation to ToolExecutor. Add a mock_remediate tool schema with incident_id (INC- followed by three digits) and action (only rollback), and add it to schemas. Use ApprovalRequired in agent_runtime/core.py, adding it if your core does not have it yet: an exception whose action attribute holds the proposed key, name and args. action_key(name, args, context) returns the key; execute raises ApprovalRequired when that key is not in context.approved, and an approved write returns its result with replayed false the first time and the stored result with replayed true after that. Bind the action key to tenant, run, tool name and canonical arguments. Commit the local mock effect and its deduplication record atomically in SQLite. Test the same approved write after reopening the executor and test changed arguments against the original approval. Show that only one local effect exists, and explain the limit of this guarantee for external APIs. Build to the interfaces the Lesson 02 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div></details>
+      <div><button class="copy" type="button" data-copy="s4-text">Copy prompt</button></div>
+      <p class="check">Expect: replayed false, then true after reopening; one effect stored; <b>11 passed, 1 failed</b> (the MCP check).</p>
+    </div>
+  </div>
+  <div class="terminal" id="s5">
+    <div class="bar"><span class="switch">Prompt 6 of 10 · The MCP server</span><span class="file">new · agent_runtime/mcp_bridge.py</span></div>
+    <div class="body">
+      <p class="goal">Puts the two read tools and the runbook resource behind a real MCP server, with the tenant fixed by the launcher and stdout kept for the protocol.</p>
+      <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="s5-text"><span class="pfx">PROMPT ▸ </span>For Lesson 02, continue in my learner project. Implement the MCP server in agent_runtime/mcp_bridge.py with the pinned SDK. Expose the existing tenant-scoped log and runbook readers plus the runbook resource. Bind tenant identity in trusted launcher configuration, keep protocol stdout clean, and serve only the two read tools and the runbook resource: no write tool and no prompts. If the pinned SDK still advertises an empty capability, report it rather than working around it. Explain the host, client, server and resource roles before demonstrating discovery. Build to the interfaces the Lesson 02 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div></details>
+      <div><button class="copy" type="button" data-copy="s5-text">Copy prompt</button></div>
+      <p class="check">Expect: discovery lists log_lookup, runbook_search and the runbook resource; still <b>11 passed, 1 failed</b>.</p>
+    </div>
+  </div>
+  <div class="terminal" id="s6">
+    <div class="bar"><span class="switch">Prompt 7 of 10 · Reads over MCP</span><span class="file">agent_runtime/mcp_bridge.py · client and adapter</span></div>
+    <div class="body">
+      <p class="goal">Connects the stdio client behind the executor and runs the same investigation through it. Discovery grants nothing: the executor still decides, and a lost connection comes back as tool_unavailable.</p>
+      <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="s6-text"><span class="pfx">PROMPT ▸ </span>For Lesson 02, continue in my learner project. Implement the MCP read adapter and connect it behind ToolExecutor. The check pack needs stdio_client(tenant="astro"), which returns the pinned SDK's Client for a server started as python -m agent_runtime.mcp_bridge with INCIDENT_TENANT set by the launcher, and MCPReadAdapter(client), a read handler that returns the result's structured content when present and otherwise parses its JSON text content. Use the real local stdio transport and the pinned SDK's result shapes. A lost or closed MCP connection must reach ToolExecutor as a retryable read failure, so the executor returns tool_unavailable; the pinned SDK does not raise ConnectionError for it, so check what it does raise and show the result by stopping the server. Make the Session 02 check pack pass, show the negotiated protocol and discovered tools with your own short script (python -m course.lab 2 runs only once the verify step raises LESSON), and run the same investigation through the adapter. Confirm that transport discovery does not grant new permissions and show the unchanged cited outcome. Build to the interfaces the Lesson 02 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div></details>
+      <div><button class="copy" type="button" data-copy="s6-text">Copy prompt</button></div>
+      <p class="check">Expect: protocol 2026-07-28, the same cited answer as Session 01, and <b>12 passed</b>.</p>
+    </div>
+  </div>
+  <div class="terminal" id="s7">
+    <div class="bar"><span class="switch">Prompt 8 of 10 · Break it on purpose</span><span class="file">a throwaway script and the console</span></div>
+    <div class="body">
+      <p class="goal">Predicts, then runs: a tenant argument, a write from a read-only run, a tiny output limit and an approved write repeated after reopening. Then repeats the denied and approval cases in the console's Tools view as demo-astro and demo-operator.</p>
+      <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="s7-text"><span class="pfx">PROMPT ▸ </span>Help me carry out the Lesson 02 learner exercise in my existing project: Add an unexpected tenant argument to a log request, call mock_remediate with a read-only Context, lower output_limit, and repeat an approved mock write after reopening the SQLite executor. Record the error category or replay behaviour for each case; the replay case stays in the script, because the console's Tools view never approves a write. Then start the platform API on loopback with the offline provider and give me the console address: I will sign in as demo-astro and then demo-operator, submit INC-001 in Runs, and repeat the denied and approval cases in the Tools view. Tell me that console runs use the in-process readers rather than MCP, and that the Overview shows checkpoint lesson-01 until the verify step raises LESSON. First state the expected outcomes, then run the experiment in a throwaway script outside tests/, or from a clean Git state you can restore. Show the observed results and explain any discrepancy. Keep the original acceptance criteria and restore temporary experiments when finished.</div></details>
+      <div><button class="copy" type="button" data-copy="s7-text">Copy prompt</button></div>
+      <p class="check">Expect: invalid_arguments, permission_denied, output_too_large, replayed true, and approval_required with a key.</p>
+    </div>
+  </div>
+  <div class="terminal" id="s8">
+    <div class="bar"><span class="switch">Prompt 9 of 10 · Verify and push</span><span class="file">LESSON = 2 · commit · push</span></div>
+    <div class="body">
+      <p class="goal">Runs the full suite and the Session 02 demo unchanged, raises the checkpoint to 2 only if the capability is there, and pushes your work. This is the evidence, not the agent's summary.</p>
+      <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="s8-text"><span class="pfx">PROMPT ▸ </span>Verify my Lesson 02 implementation against its completion criteria. Update the checkpoint indicator in course/__init__.py to 2 only when the required capability is present. Run the full test suite, which includes the Lesson 02 check pack and every earlier lesson's tests, and then the Session 02 demonstration with python -m course.lab 2, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 02 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result, then commit my work and push it to my repository on gitlab.ciklum.net; if glab is also signed in to other GitLab hosts, make sure the push goes to gitlab.ciklum.net. Do not equate an unrun or skipped check with a pass.</div></details>
+      <div><button class="copy" type="button" data-copy="s8-text">Copy prompt</button></div>
+      <p class="check">Expect: <b>12 passed</b>, <code>LESSON = 2</code>, and your work on gitlab.ciklum.net.</p>
+    </div>
+  </div>
+  <div class="terminal" id="s9">
+    <div class="bar"><span class="switch">Prompt 10 of 10 · Review</span><span class="file">no changes</span></div>
+    <div class="body">
+      <p class="goal">Walks through what you built against the completion criteria and points out the design choices the checks do not force, such as what your adapter trusts about the tenant.</p>
+      <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="s9-text"><span class="pfx">PROMPT ▸ </span>Review my completed Lesson 02 work against the Lesson 02 check pack and completion criteria. Show the files I changed and the interfaces I provide, and explain how each completion criterion is met with code or test evidence. Point out the design choices I made that the check pack does not force, and what each one costs or gains. Preserve deliberate improvements and earlier capabilities.</div></details>
+      <div><button class="copy" type="button" data-copy="s9-text">Copy prompt</button></div>
+      <p class="check">Expect: A review you can discuss in the next session.</p>
+    </div>
+  </div>
+</section>
+
+<section class="ch" id="recover">
+  <p class="eyebrow"><span>When something breaks</span></p>
+  <h2>Recovery prompts</h2>
+  <p class="lede">Use one only when you see its symptom. Each asks your agent to reproduce the problem, make the smallest fix and rerun the checks.</p>
+  <div class="terminal" id="r0">
+    <div class="bar"><span class="switch">Recover · MCP startup or parsing fails</span><span class="file">only when you hit it</span></div>
+    <div class="body">
+      <p class="goal">When the MCP server will not start or its replies cannot be read.</p>
+      <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="r0-text"><span class="pfx">PROMPT ▸ </span>I am working on Lesson 02. The symptom is: MCP startup or parsing fails. Diagnostic focus: Look for debug output written to stdout or a process started from the wrong repository directory. Recovery guidance: Keep protocol stdout clean, use stderr logging and rerun the isolated stdio test. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.</div></details>
+      <div><button class="copy" type="button" data-copy="r0-text">Copy prompt</button></div>
+    </div>
+  </div>
+  <div class="terminal" id="r1">
+    <div class="bar"><span class="switch">Recover · Result-field attribute error</span><span class="file">only when you hit it</span></div>
+    <div class="body">
+      <p class="goal">When code reading an MCP result fails on a missing field.</p>
+      <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="r1-text"><span class="pfx">PROMPT ▸ </span>I am working on Lesson 02. The symptom is: Result-field attribute error. Diagnostic focus: Compare the installed MCP version with the lock file and the result field names in the adapter. Recovery guidance: Restore the pinned Python 3.12 environment from the project lock file. Avoid mixing 1.x tutorial code with the 2.2.0 adapter. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.</div></details>
+      <div><button class="copy" type="button" data-copy="r1-text">Copy prompt</button></div>
+    </div>
+  </div>
+  <div class="terminal" id="r2">
+    <div class="bar"><span class="switch">Recover · Tool exists but returns permission_denied</span><span class="file">only when you hit it</span></div>
+    <div class="body">
+      <p class="goal">When a tool you expect to work is refused for this run.</p>
+      <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="r2-text"><span class="pfx">PROMPT ▸ </span>I am working on Lesson 02. The symptom is: Tool exists but returns permission_denied. Diagnostic focus: Inspect Context.allowed rather than the server's discovery list. Recovery guidance: Use the intended read-only investigator or construct an operator-owned context explicitly for the mock-approval exercise. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.</div></details>
+      <div><button class="copy" type="button" data-copy="r2-text">Copy prompt</button></div>
+    </div>
+  </div>
+  <div class="terminal" id="r3">
+    <div class="bar"><span class="switch">Recover · A changed schema breaks an integration</span><span class="file">only when you hit it</span></div>
+    <div class="body">
+      <p class="goal">When a tool's contract changed and a caller now fails.</p>
+      <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="r3-text"><span class="pfx">PROMPT ▸ </span>I am working on Lesson 02. The symptom is: A changed schema breaks an integration. Diagnostic focus: The client-side tool contract and the discovered server contract differ. Recovery guidance: Pin the compatible server/client versions, update the adapter deliberately and rerun contract tests before using the changed tool. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.</div></details>
+      <div><button class="copy" type="button" data-copy="r3-text">Copy prompt</button></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>Full session page: <a href="https://maxvpavlov.github.io/ciklum-innovate-l3-2026/lesson-02/">maxvpavlov.github.io/ciklum-innovate-l3-2026/lesson-02/</a> · kit: <code>learner-kit/lessons/02</code> · all prompts: <a href="https://github.com/maxvpavlov/ciklum-innovate-l3-2026/blob/main/L3%202026%20Agentic%20Platform%20Instructor%20Materials/incident-platform/LEARNER_PROMPTS.md">LEARNER_PROMPTS.md</a></p>
+  <p>Next: Session 03: Context, retrieval and memory.</p>
+</footer>
+</main>
+
+<script>
+(() => {
+  // Copy buttons: copy the prompt text without the "PROMPT ▸" prefix.
+  document.querySelectorAll(".copy").forEach((button) => {
+    button.addEventListener("click", () => {
+      const block = document.getElementById(button.dataset.copy);
+      const text = [...block.childNodes].filter((n) => !(n.classList && n.classList.contains("pfx")))
+        .map((n) => n.textContent).join("").trim();
+      const done = () => { button.textContent = "Copied"; setTimeout(() => { button.textContent = "Copy prompt"; }, 1600); };
+      const select = () => {
+        const fold = block.closest("details"); if (fold) fold.open = true;
+        const range = document.createRange(); range.selectNodeContents(block);
+        const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+        button.textContent = "Selected · press Ctrl+C";
+      };
+      try { navigator.clipboard.writeText(text).then(done, select); } catch (e) { select(); }
+    });
+  });
+
+  // N / P jump between sections; V switches between Read and Present.
+  const stops = [...document.querySelectorAll("#start, section.ch, .terminal[id]")];
+  const current = () => {
+    const y = window.scrollY + window.innerHeight * 0.25;
+    let index = 0;
+    stops.forEach((el, i) => { if (el.getBoundingClientRect().top + window.scrollY <= y) index = i; });
+    return index;
+  };
+  document.addEventListener("keydown", (event) => {
+    if (event.target.closest("input, textarea, [contenteditable]") || event.metaKey || event.ctrlKey || event.altKey) return;
+    const key = event.key.toLowerCase();
+    if (key === "v") { setView(document.body.classList.contains("present") ? "read" : "present"); event.preventDefault(); return; }
+    if (key !== "n" && key !== "p") return;
+    const next = Math.max(0, Math.min(stops.length - 1, current() + (key === "n" ? 1 : -1)));
+    stops[next].scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+    event.preventDefault();
+  });
+
+  // Read / Present toggle; keeps the reader's place and remembers the choice in this browser.
+  const buttons = [...document.querySelectorAll(".view button")];
+  const setView = (view) => {
+    const anchor = stops[current()];
+    document.body.classList.toggle("present", view === "present");
+    buttons.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.view === view)));
+    anchor.scrollIntoView({ block: "start" });
+    try { localStorage.setItem("lesson-view", view); } catch (e) { /* storage unavailable */ }
+  };
+  buttons.forEach((b) => b.addEventListener("click", () => setView(b.dataset.view)));
+  try { if (localStorage.getItem("lesson-view") === "present") setView("present"); } catch (e) { /* default view */ }
+})();
+</script>
+</body>
+</html>
