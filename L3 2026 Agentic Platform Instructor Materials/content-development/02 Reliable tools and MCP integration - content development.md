@@ -135,7 +135,7 @@ Provide the proposed flow and approximate timing.
 
 | Section | Topic | Approx. time | Format |
 |---|---|---|---|
-| 1 | Reconnect to INC-001 and your Session 01 checkpoint; open your platform's first console | 0–10 min | Discussion + live demo |
+| 1 | Reconnect to INC-001 and your Session 01 checkpoint; one prompt moves your project to the course layout and starts your platform's first console | 0–10 min | Discussion + live demo |
 | 2 | Concept: the tool boundary, terminal vs retryable errors, exact approval, MCP roles | 10–30 min | Presentation + discussion |
 | 3 | Build steps 1 and 2: the executor, approval and the effect ledger | 30–50 min | Guided build |
 | 4 | Build steps 3 and 4: the MCP server and the read adapter | 50–75 min | Guided build |
@@ -204,6 +204,8 @@ Identify where participants should actively engage.
 
 For each activity include: Purpose • Instructions • Time • Expected outcome • Debrief / discussion points.
 
+**0. Live demo: move to the course layout and start the platform.** Purpose: give each component its own folder in source control and make the platform visible before anything is built. Instructions: run the first Session 02 prompt; the agent moves the runtime into agent_runtime/ and the course scaffolding into course/ (still 7 tests passing), copies the given platform shell into agentic_platform/ (each as its own commit) and starts the platform on loopback. Learners sign in as demo-astro, submit INC-001 in Runs and open Tools. Time: 5 min, within section 1. Expected outcome: the platform map at checkpoint lesson-01, INC-001 answered with cited evidence by their own Session 01 agent, and a Tools view saying the tool boundary is not built yet. Debrief: what should this view show once today's boundary exists?
+
 **1. Discussion: the most consequential line.** Purpose: see a tool call as untrusted input. Instructions: show `result = await execute(...)` from the Session 01 loop and ask what a model could put in a call. Time: 5 min. Expected outcome: a list including an unknown tool, an ungranted tool, malformed or extra arguments (a tenant), a huge result, a hang, an unapproved write and a duplicate write. Debrief: each gets one named check today.
 
 **2. Poll: can a correct JSON Schema make a tool safe by itself?** Options: yes / no / only for read tools. Correct: no. Time: 2 min. Debrief: a well-formed request can still be unauthorized or harmful; shape, authority and consequences are separate checks.
@@ -266,7 +268,7 @@ The Session 02 page is the presentation, with Read and Present views (https://ma
 
 • 1. Where we are: the Session 01 loop's most consequential line, where today's work sits, and the agenda.
 
-• 2. From today your platform has a console: the given run API and console, with screenshots of the Tools and Runs views.
+• 2. From today your platform has a console: the given run API and console, copied into agentic_platform/ and started by the first prompt, with screenshots of its first start and of the Tools and Runs views.
 
 • 3. What can go wrong at the tool line: eight model behaviours and the check that stops each.
 
@@ -479,7 +481,7 @@ Indicate which assets are needed and provide them where applicable.
 - Examples**✔ three worked examples in 7.3**
 - Case study**✔ 'The server is not your policy' on the Session 02 page (MCP section)**
 - Demo**✔ the learner kit (learner-kit/lessons/02 in the course repository); the reference tags lesson-01 → lesson-02 are the instructor's answer key**
-- Screenshots**✔ the console's Tools and Runs views on the Session 02 page**
+- Screenshots**✔ the console's first start (Overview at checkpoint lesson-01, Tools before the boundary exists) and its Tools and Runs views after the build, on the Session 02 page**
 - Diagrams**✔ where today sits, the tool boundary, MCP host/client/server and how the platform hands tools to an agent, on the Session 02 page**
 - Templates
 - Sample files**✔ the given platform shell (run API and console) in learner-kit/lessons/02/given; synthetic incidents and runbooks from Session 01**
@@ -520,6 +522,8 @@ List terminology that must be used consistently.
 
 • Platform shell and console: the given run API and web UI at /console (Overview, Runs, Tools); learners extend it from Session 08.
 
+• Project layout from Session 02: agent_runtime/ holds the agent runtime learners build (Sessions 01–07), agentic_platform/ holds the platform (the given shell now; registry, gateway, identity and operations later), course/ holds the course scaffolding (LESSON, the lab runner and demos, given data) and tests/ the checks. Session 01 projects keep everything in incident/ until the first Session 02 prompt moves them.
+
 ### 9.2 Common Misconceptions
 
 **Owner: [SME]**
@@ -554,7 +558,7 @@ Document exceptions, limitations, risks, assumptions or cases where the recommen
 
 • The effect ledger makes a repeated approved write safe only locally. For an external API the receiver must support an idempotency key, or a reconciliation step must check what actually happened.
 
-• The given platform shell keeps runs in memory, so they are lost when the process restarts; Session 05 makes runs durable and Session 08 replaces the shell with the platform core. A Tools check in the console never approves a write.
+• The given platform shell keeps runs in memory, so they are lost when the process restarts; Session 05 makes runs durable and Session 08 replaces the shell with the platform core. Until build steps 1 and 2 add ToolExecutor, the shell runs the Session 01 readers with no boundary in front of them and the Tools view says so. A Tools check in the console never approves a write.
 
 • The reference pins mcp 2.2.0, and the stdio connection negotiates protocol 2026-07-28. Tutorial code for the 1.x SDK uses different result field names (isError instead of is_error).
 
