@@ -54,13 +54,13 @@ List previous topics, knowledge, tools, access or skills required. If none, writ
 
 L&D provides date, calendar details and delivery logistics. SME provides estimated time needed and timing constraints.
 
-**Date:** To be confirmed by L&D (the week after Session 01, which is Oct 28, 2026)
+**Date:** **Oct 28, 2026**
 
 **Session link: zoom**
 
 **Calendar invitation text:**
 
-Draft for L&D (please add the date and link): "L3 Building Agentic Platforms, Session 02: Reliable tools and MCP integration (120 min: 30 min discussion + 90 min guided build). Bring your Session 01 checkpoint: your project in the course GitLab group with its 7 checks passing. You build the tool boundary and the MCP integration in your own project and open your platform's first console. Session page: https://maxvpavlov.github.io/ciklum-innovate-l3-2026/lesson-02/"
+Draft for L&D: "L3 Building Agentic Platforms, Session 02: Reliable tools and MCP integration, Oct 28, 2026 (120 min: 30 min discussion + 90 min guided build). Bring your Session 01 checkpoint: your project in the course GitLab group with its 7 checks passing. You build the tool boundary and the MCP integration in your own project and open your platform's first console. Session page: https://maxvpavlov.github.io/ciklum-innovate-l3-2026/lesson-02/"
 
 **Duration (SME):** 120 minutes: 30 min discussion + 90 min guided build. Timing constraint: learners need their Session 01 project working before minute 30, a local browser for the console, and a machine that can start a local Python subprocess for the MCP server.
 

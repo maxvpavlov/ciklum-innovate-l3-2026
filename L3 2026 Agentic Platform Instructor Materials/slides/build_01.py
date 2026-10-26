@@ -170,7 +170,7 @@ s = slide("Title Slide 1", "Building Agentic Platforms",
           "the ReAct runtime. In class I demonstrate; after class you repeat every prompt in your own project.")
 t = ph(s, 0, "Building Agentic\vPlatforms")
 for r in t.text_frame.paragraphs[0].runs: r.font.size = Pt(40)
-ph(s, 1, "Innovate · L3 · Session 01 of 12 · 28 October 2026")
+ph(s, 1, "Innovate · L3 · Session 01 of 12 · 21 October 2026")
 ph(s, 2, "Agent architecture and the ReAct runtime")
 
 # ------------------------------------------------------------------ 2 course at a glance

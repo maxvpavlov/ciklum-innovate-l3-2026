@@ -56,13 +56,13 @@ List previous topics, knowledge, tools, access or skills required. If none, writ
 
 L&D provides date, calendar details and delivery logistics. SME provides estimated time needed and timing constraints.
 
-**Date:** **Oct 28, 2026**
+**Date:** **Oct 21, 2026**
 
 **Session link: zoom**
 
 **Calendar invitation text:**
 
-Draft for L&D (please add the link): "L3 Building Agentic Platforms, Session 01: Agent architecture and the ReAct runtime (120 min: 30 min discussion + 90 min instructor demonstration). We open the course and start the incident-investigation platform you will extend all course long. Nothing to prepare: after the session you repeat the demonstrated prompts in your own project. Session page: https://maxvpavlov.github.io/ciklum-innovate-l3-2026/lesson-01/"
+Draft for L&D: "L3 Building Agentic Platforms, Session 01: Agent architecture and the ReAct runtime, Oct 21, 2026 (120 min: 30 min discussion + 90 min instructor demonstration). We open the course and start the incident-investigation platform you will extend all course long. Nothing to prepare: after the session you repeat the demonstrated prompts in your own project. Session page: https://maxvpavlov.github.io/ciklum-innovate-l3-2026/lesson-01/"
 
 **Duration (SME):** 120 minutes. Timing constraint: the demonstration needs about 45 uninterrupted minutes with the session page and a terminal shared on screen. Learners need nothing installed to attend.
 

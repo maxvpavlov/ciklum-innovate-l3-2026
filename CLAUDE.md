@@ -35,7 +35,7 @@ The xlsx/docx files are binary. Read them with the docx/xlsx skills, `textutil -
 ### Programme workbook (`Building Agentic Platforms - programme.xlsx`)
 
 - It replaced the earlier internal planning workbook, keeping only this programme's setup.
-- **`Programme`**: name, format (12 sessions, 20 contact hours), kick-off 2026-10-21 and first session 2026-10-28, audience and level, the short and long "About" copy, entry criteria, how learners work, the capstone, and Bloom's levels with action verbs.
+- **`Programme`**: name, format (12 sessions, 20 contact hours), kick-off and first session (Session 01) 2026-10-21, Session 02 on 2026-10-28, audience and level, the short and long "About" copy, entry criteria, how learners work, the capstone, and Bloom's levels with action verbs.
 - **`Sessions`**: one row per session with category, title, description, guided demo/build, references (title and URL from the guide specs, so every title has its link), prework, practice, platform milestone, audience, level, duration and checkpoint tag, plus a totals row (eight 90-minute and four 120-minute sessions, 1200 min).
 - A 120-minute session is "30 min discussion + 90 min guided build", except Session 01, which is an instructor demonstration that learners repeat after class. Every session ends in a runnable platform checkpoint.
 - Keep it free of personal and selection data; the repository is public.
