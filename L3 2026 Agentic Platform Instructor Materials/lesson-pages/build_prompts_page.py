@@ -106,9 +106,11 @@ SESSIONS = {
                      ("Real MCP", "the read tools travel over stdio, and the boundary does not move.")],
         "steps": [
             ("Prepare the workspace", "Prepare", "confirms lesson-01 · refreshes the course copy",
-             "Opens your project, confirms your Session 01 work still passes, and refreshes your read-only copy "
-             "of the course repository so it holds the Session 02 kit. Nothing is changed yet.",
-             "<code>LESSON = 1</code> with <b>7 passed</b>, and <code>learner-kit/lessons/02</code> in your course copy."),
+             "Opens your project, confirms your Session 01 work still passes, and updates your read-only copy "
+             "of the course repository, because the kit has changed since Session 01. Your project is not changed.",
+             "the course copy moved to the latest commit, with the Lesson 02 kit files that changed; "
+             "<code>learner-kit/lessons/02/README.md</code> opens with \"First: move to the course layout and start "
+             "the platform\". Your project still at <code>LESSON = 1</code>, <b>7 passed</b>."),
             ("Move to the course layout and start the platform", "Move and start the platform",
              "incident/ → agent_runtime/ and course/ · new agentic_platform/",
              "Moves your runtime into <code>agent_runtime/</code> and the course scaffolding into <code>course/</code>, "
