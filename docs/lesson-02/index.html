@@ -336,11 +336,46 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
   <div class="stack">
     <p class="lede" style="margin-top:0">A platform is a backend and the interface people use to run and watch it. From this session the kit gives your project a small one: a run API and a console, served by your own platform at <code>/console</code>. You do not build it; you use it to see what you build.</p>
     <div class="cards">
-      <div><span class="q">Given today</span><p><code>agentic_platform/api.py</code>, a run API that keeps runs in memory, and <code>agentic_platform/console/</code> with three views: Overview (the platform map), Runs and Tools. The first prompt copies them into the top-level <code>agentic_platform/</code> folder of your project and starts the platform; the runtime you build stays in <code>agent_runtime/</code>.</p></div>
+      <div><span class="q">Given today</span><p><code>agentic_platform/api.py</code>, a run API that keeps runs in memory, and <code>agentic_platform/console/</code> with three views: Overview (the platform map), Runs and Tools. The second prompt below copies them into the top-level <code>agentic_platform/</code> folder of your project and starts the platform; the runtime you build stays in <code>agent_runtime/</code>.</p></div>
       <div><span class="q">What it shows</span><p>Submit an investigation and read its answer and event timeline. In Tools, try calls as your role and see each decision the executor you build today makes.</p></div>
       <div><span class="q">Who you are</span><p>Sign in with a demo identity: <code>demo-astro</code> (analyst), <code>demo-operator</code> or <code>demo-locomotive</code>. Runs and decisions are scoped to your tenant.</p></div>
       <div><span class="q">How it grows</span><p>Session 08 replaces the in-memory shell with the platform core and you extend the console with Registry and Approvals; Sessions 09 to 11 add Gateway, Identity and Operations.</p></div>
     </div>
+    <h3 id="get-running">Get your platform running: two prompts</h3>
+    <p>Your Session 01 project has no platform yet. The first prompt checks your Session 01 work and refreshes the course kit; the second moves your project into its lasting layout, copies the platform from the kit into <code>agentic_platform/</code> and starts it. Run both before the build steps.</p>
+  </div>
+  <div class="terminal" id="prepare">
+    <div class="bar"><span class="switch">Switch to terminal · 1 · Prepare the workspace</span><span class="file">confirms lesson-01 · updates the course copy</span></div>
+    <div class="body">
+      <p class="goal">Start your coding agent in <code>~/agentic-course</code>, as in Session 01. The agent confirms your Session 01 work still passes and refreshes your read-only copy of the course repository, which now holds the Session 02 kit.</p>
+      <div class="prompt" id="pP"><span class="pfx">PROMPT ▸ </span>Prepare my learner project for Lesson 02. Open my project repository in my course GitLab group on gitlab.ciklum.net, cloning it into ~/agentic-course/my-platform if it is not there, and confirm it holds my completed lesson-01 work with all its checks passing. Update my read-only copy of the course repository in ~/agentic-course/course, cloning it from https://github.com/maxvpavlov/ciklum-innovate-l3-2026 if it is missing; its learner-kit folder is the course kit. Use the pinned Python 3.12 environment and the offline mock provider. Do not add this lesson's work yet. Report the project location, its current checkpoint, the test results and any missing prerequisites. Do not ask me to run terminal commands.</div>
+      <div><button class="copy" type="button" data-copy="pP">Copy prompt</button></div>
+      <p class="check">Expect: your project at checkpoint <code>LESSON = 1</code> with <b>7 passed</b>, and <code>course/learner-kit/lessons/02</code> present.</p>
+    </div>
+  </div>
+
+  <div class="terminal" id="layout">
+    <div class="bar"><span class="switch">Switch to terminal · 2 · Move to the course layout and start the platform</span><span class="file">incident/ → agent_runtime/ and course/ · new agentic_platform/ · console running</span></div>
+    <div class="body">
+      <p class="goal">Your Session 01 project keeps everything in <code>incident/</code>. One prompt moves the runtime into <code>agent_runtime/</code> and the course scaffolding into <code>course/</code>, copies the given platform shell from the kit into a top-level <code>agentic_platform/</code> folder, each as its own commit, and starts the platform. Nothing new is built yet.</p>
+      <div class="prompt" id="pL"><span class="pfx">PROMPT ▸ </span>Move my learner project to the course layout and start the platform, without adding this lesson's work, as the first section of learner-kit/lessons/02/README.md in the course repository describes. Move incident/core.py and incident/providers.py into a new agent_runtime/ package, and incident/__init__.py with my LESSON value, incident/lab.py and incident/fixtures.py into a new course/ package. Replace my tests with test_setup.py and test_lesson01.py from learner-kit/lessons/02/checks/tests, and incident/labs/ with __init__.py and l01.py from learner-kit/lessons/02/checks/course/labs, unchanged. Update the imports in my own modules, remove the empty incident/ folder, run the full test suite, which must still report 7 passed, and commit the move on its own. Then copy the given platform shell, everything under learner-kit/lessons/02/given/agentic_platform, into a top-level agentic_platform/ folder unchanged and commit it on its own. Start the platform API on loopback with the offline mock provider, keep it running and give me the console address: I will sign in as demo-astro, submit INC-001 in Runs and open the Tools view. Tell me how to stop it.</div>
+      <div><button class="copy" type="button" data-copy="pL">Copy prompt</button></div>
+      <p class="check">Expect: still <b>7 passed</b>, two commits (the move, then the platform shell), and a console address on loopback.</p>
+    </div>
+  </div>
+
+  <figure>
+    <img class="shot" src="console-first-overview.png" width="1280" height="820" alt="The console's Overview right after the move: the platform map at checkpoint lesson-01, with Session 01 built and every later session planned, and one run">
+    <figcaption>What you should see when you sign in as <code>demo-astro</code>: your platform at checkpoint lesson-01. Only the agent runtime is built; the map fills in as the course goes on.</figcaption>
+  </figure>
+  <figure>
+    <img class="shot" src="console-first-tools.png" width="1280" height="413" alt="The console's Tools view before the tool boundary exists: two read tools in the catalogue and a notice that the tool boundary is not built yet">
+    <figcaption>Submit INC-001 in Runs: your Session 01 agent answers it with cited evidence. Then open Tools: the boundary is not built yet. Build steps 1 and 2 build it, and this view becomes the one shown above.</figcaption>
+  </figure>
+
+  <div class="stack">
+    <h3>By the end of today</h3>
+    <p>When build steps 1 and 2 have added the tool boundary, the same Tools view checks every call, and a run shows the tool calls your executor allowed:</p>
     <figure>
       <img class="shot" src="console-tools.png" width="1280" height="1122" alt="The console's Tools view: the catalogue with which tools the analyst may use, a denied rollback, and a log of allowed and denied calls with their error codes">
       <figcaption>The Tools view as <code>demo-astro</code>: the analyst may read but not remediate, and every checked call is logged with its decision: an allowed read, <code>invalid_arguments</code> for a tenant argument, <code>permission_denied</code> for the rollback and <code>unknown_tool</code>.</figcaption>
@@ -669,10 +704,11 @@ resource  incident://runbooks</pre>
   <div class="prose">
     <p>The instructor shows each prompt and the change it produces; you run the same prompt in your own project, in the same order, and judge the result before moving on. Your coding agent writes the code and runs the checks.</p>
     <p class="muted">Rule for the whole build: a coding agent saying "done" is not evidence. Look at the diff and at the check output.</p>
+    <p>Start here only after the two prompts in <a href="#get-running">Get your platform running</a>: your project is in its new layout and the platform is running.</p>
   </div>
   <div class="stack">
     <nav class="route" id="route" aria-label="Build route">
-      <a href="#prepare">Prepare</a><span class="arr" aria-hidden="true">→</span><a href="#orient">Add the check pack</a><span class="arr" aria-hidden="true">→</span><a href="#step1">Build 1</a><span class="arr" aria-hidden="true">→</span><a href="#step2">Build 2</a><span class="arr" aria-hidden="true">→</span><a href="#step3">Build 3</a><span class="arr" aria-hidden="true">→</span><a href="#step4">Build 4</a><span class="arr" aria-hidden="true">→</span><a href="#exercise">Break it</a><span class="arr" aria-hidden="true">→</span><a href="#verify">Verify and push</a><span class="arr" aria-hidden="true">→</span><a href="#review">Review</a>
+      <a href="#prepare">Prepare</a><span class="arr" aria-hidden="true">→</span><a href="#layout">Move and start the platform</a><span class="arr" aria-hidden="true">→</span><a href="#orient">Add the check pack</a><span class="arr" aria-hidden="true">→</span><a href="#step1">Build 1</a><span class="arr" aria-hidden="true">→</span><a href="#step2">Build 2</a><span class="arr" aria-hidden="true">→</span><a href="#step3">Build 3</a><span class="arr" aria-hidden="true">→</span><a href="#step4">Build 4</a><span class="arr" aria-hidden="true">→</span><a href="#exercise">Break it</a><span class="arr" aria-hidden="true">→</span><a href="#verify">Verify and push</a><span class="arr" aria-hidden="true">→</span><a href="#review">Review</a>
     </nav>
     <div class="links">
       <a href="https://github.com/maxvpavlov/ciklum-innovate-l3-2026/tree/main/learner-kit/lessons/02"><span class="q">Session 02 kit</span><span class="mono">learner-kit/lessons/02</span><span class="muted">check pack and interfaces</span></a>
@@ -682,63 +718,35 @@ resource  incident://runbooks</pre>
     </div>
   </div>
 
-  <div class="terminal" id="prepare">
-    <div class="bar"><span class="switch">Switch to terminal · Prepare the workspace</span><span class="file">confirms lesson-01 · updates the course copy</span></div>
-    <div class="body">
-      <p class="goal">Start your coding agent in <code>~/agentic-course</code>, as in Session 01. The agent confirms your Session 01 work still passes and refreshes your read-only copy of the course repository, which now holds the Session 02 kit.</p>
-      <div class="prompt" id="pP"><span class="pfx">PROMPT ▸ </span>Prepare my learner project for Lesson 02. Open my project repository in my course GitLab group on gitlab.ciklum.net, cloning it into ~/agentic-course/my-platform if it is not there, and confirm it holds my completed lesson-01 work with all its checks passing. Update my read-only copy of the course repository in ~/agentic-course/course, cloning it from https://github.com/maxvpavlov/ciklum-innovate-l3-2026 if it is missing; its learner-kit folder is the course kit. Use the pinned Python 3.12 environment and the offline mock provider. Do not add this lesson's work yet. Report the project location, its current checkpoint, the test results and any missing prerequisites. Do not ask me to run terminal commands.</div>
-      <div><button class="copy" type="button" data-copy="pP">Copy prompt</button></div>
-      <p class="check">Expect: your project at checkpoint <code>LESSON = 1</code> with <b>7 passed</b>, and <code>course/learner-kit/lessons/02</code> present.</p>
-    </div>
-  </div>
-
   <div class="stack">
     <h3>What you build today</h3>
     <div class="stack" style="margin-top:0">
       <div class="excerpt">
-        <div class="src">~/agentic-course/my-platform · after Session 02 (new and changed files highlighted)</div>
-<pre>incident/
-  __init__.py             <span class="muted">LESSON = 1, raised to 2 when verified</span>
+        <div class="src">~/agentic-course/my-platform · after Session 02 (what you build today highlighted)</div>
+<pre>agent_runtime/            <span class="muted">the runtime you build · moved from incident/ by the second prompt</span>
 <span class="hl">  core.py                 you add · ApprovalRequired</span>
   providers.py            <span class="muted">Session 01</span>
-  fixtures.py             <span class="muted">given in Session 01 · the two readers and their schemas</span>
 <span class="hl">  tools.py                you build · ToolExecutor, approval, effect ledger</span>
 <span class="hl">  mcp_bridge.py           you build · MCP server, stdio client, read adapter</span>
-  labs/
-    l01.py
-<span class="hl">    l02.py                check pack · the Session 02 demo</span>
-<span class="hl">  api.py                  given · the platform shell: run API</span>
-<span class="hl">  blueprint.py            given · the platform map</span>
-<span class="hl">  console/                given · Overview, Runs and Tools views</span>
+agentic_platform/         <span class="muted">given · the platform shell, copied and started by the second prompt</span>
+  api.py                  <span class="muted">the run API</span>
+  blueprint.py            <span class="muted">the platform map</span>
+  console/                <span class="muted">Overview, Runs and Tools views</span>
+course/
+  __init__.py             <span class="muted">LESSON = 1, raised to 2 when verified</span>
+  fixtures.py             <span class="muted">given in Session 01 · the two readers and their schemas</span>
+  lab.py, labs/l01.py
+<span class="hl">  labs/l02.py             check pack · the Session 02 demo</span>
 tests/
   test_setup.py, test_lesson01.py
 <span class="hl">  test_lesson02.py        check pack · five new checks</span></pre>
       </div>
       <div class="prose" style="margin-top:0">
         <p><b><code>tools.py</code> is the tool boundary.</b> Every tool call from every agent will pass through it, or, from Session 09, through the gateway that wraps it. <b><code>mcp_bridge.py</code></b> holds both ends of the protocol so you can watch them talk: the server your platform launches, and the client adapter that plugs into the executor.</p>
-        <p>The given files this session are the platform shell: the run API, the platform map and the console. They are not what this session teaches, so copy them unchanged; they call your <code>ToolExecutor</code> and your <code>run_agent</code>, which is why the console shows exactly what you build. The MCP SDK is already pinned in your project's lock file (<code>mcp==2.2.0</code>).</p>
+        <p>The given files this session are the platform shell: the run API, the platform map and the console. They are not what this session teaches, so the second prompt copied them unchanged into <code>agentic_platform/</code>; they call your <code>run_agent</code> and, once you build it, your <code>ToolExecutor</code>, which is why the console shows exactly what you build. The MCP SDK is already pinned in your project's lock file (<code>mcp==2.2.0</code>).</p>
       </div>
     </div>
   </div>
-
-  <div class="terminal" id="layout">
-    <div class="bar"><span class="switch">Switch to terminal · Move to the course layout and start the platform</span><span class="file">incident/ → agent_runtime/ and course/ · new agentic_platform/ · console running</span></div>
-    <div class="body">
-      <p class="goal">Your Session 01 project keeps everything in <code>incident/</code>. One prompt moves the runtime into <code>agent_runtime/</code> and the course scaffolding into <code>course/</code>, copies the given platform shell from the kit into a top-level <code>agentic_platform/</code> folder, each as its own commit, and starts the platform. Nothing new is built yet.</p>
-      <div class="prompt" id="pL"><span class="pfx">PROMPT ▸ </span>Move my learner project to the course layout and start the platform, without adding this lesson's work, as the first section of learner-kit/lessons/02/README.md in the course repository describes. Move incident/core.py and incident/providers.py into a new agent_runtime/ package, and incident/__init__.py with my LESSON value, incident/lab.py and incident/fixtures.py into a new course/ package. Replace my tests with test_setup.py and test_lesson01.py from learner-kit/lessons/02/checks/tests, and incident/labs/ with __init__.py and l01.py from learner-kit/lessons/02/checks/course/labs, unchanged. Update the imports in my own modules, remove the empty incident/ folder, run the full test suite, which must still report 7 passed, and commit the move on its own. Then copy the given platform shell, everything under learner-kit/lessons/02/given/agentic_platform, into a top-level agentic_platform/ folder unchanged and commit it on its own. Start the platform API on loopback with the offline mock provider, keep it running and give me the console address: I will sign in as demo-astro, submit INC-001 in Runs and open the Tools view. Tell me how to stop it.</div>
-      <div><button class="copy" type="button" data-copy="pL">Copy prompt</button></div>
-      <p class="check">Expect: still <b>7 passed</b>, two commits (the move, then the platform shell), and a console address on loopback.</p>
-    </div>
-  </div>
-
-  <figure>
-    <img class="shot" src="console-first-overview.png" width="1280" height="820" alt="The console's Overview right after the move: the platform map at checkpoint lesson-01, with Session 01 built and every later session planned, and one run">
-    <figcaption>What you should see when you sign in as <code>demo-astro</code>: your platform at checkpoint lesson-01. Only the agent runtime is built; the map fills in as the course goes on.</figcaption>
-  </figure>
-  <figure>
-    <img class="shot" src="console-first-tools.png" width="1280" height="413" alt="The console's Tools view before the tool boundary exists: two read tools in the catalogue and a notice that the tool boundary is not built yet">
-    <figcaption>Submit INC-001 in Runs: your Session 01 agent answers it with cited evidence. Then open Tools: the boundary is not built yet. Build steps 1 and 2 build it, and this view becomes the one shown above.</figcaption>
-  </figure>
 
   <div class="terminal" id="orient">
     <div class="bar"><span class="switch">Switch to terminal · Add the check pack</span><span class="file">copies the checks · no implementation yet</span></div>
@@ -1043,7 +1051,7 @@ class MCPReadAdapter:
       <div><b>Discovery is not permission</b>MCP finds and reaches tools; the platform decides who may use them.</div>
     </div>
     <div class="ask"><span class="label">After class</span><p class="q">Finish in your own project, in this order (<a href="#route">the route</a>)</p>
-      <ol class="steps"><li><a href="#prepare">Prepare the workspace</a> and <a href="#orient">add the check pack</a></li><li><a href="#step1">Build steps 1 to 4</a>, one at a time, reading each change</li><li><a href="#exercise">Break the boundary on purpose</a></li><li><a href="#verify">Verify and push, then review</a></li></ol></div>
+      <ol class="steps"><li><a href="#prepare">Prepare the workspace</a>, <a href="#layout">move to the course layout and start the platform</a>, and <a href="#orient">add the check pack</a></li><li><a href="#step1">Build steps 1 to 4</a>, one at a time, reading each change</li><li><a href="#exercise">Break the boundary on purpose</a></li><li><a href="#verify">Verify and push, then review</a></li></ol></div>
     <p class="say">Keep this boundary intact as the platform grows. Session 09 centralizes it in a tool gateway, and Session 10 backs today's permissions with delegated, short-lived credentials.</p>
     <div class="ask"><span class="label">Next session</span><p class="q">Context, retrieval and memory</p><p>Which evidence enters the model's context, how retrieval ranks it, and how stored artifacts and memory stay separate from authority. Bring your Session 02 checkpoint.</p></div>
   </div>
