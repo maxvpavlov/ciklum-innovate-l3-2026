@@ -224,6 +224,16 @@ def build_lesson(n, known_given):
               "The checks import these names from your packages. Read the tests to see",
               "how each one is called and what it must return.", ""]
     lines += [f"- `{m}`: " + ", ".join(f"`{x}`" for x in names) for m, names in contract.items()]
+    if n == OLD_LAYOUT_UNTIL + 1:
+        lines += ["", "The given platform shell (`agentic_platform/api.py`) also uses `agent_runtime.tools`:",
+                  "", "- `ToolExecutor()` with no arguments, so every parameter needs a default (an in-memory",
+                  "  database and the Session 01 readers);",
+                  "- `ToolExecutor.schemas`, every tool the executor knows, including `mock_remediate`; the",
+                  "  Tools view lists it, and a shell test checks it.", "",
+                  "Along the way: this lesson's test file cannot import until `agent_runtime.tools` provides",
+                  "`action_key` (build step 2), the MCP test passes only after build step 4, and",
+                  "`python -m course.lab 2` runs only once `LESSON = 2`. Until then the console's Overview",
+                  "shows checkpoint lesson-01."]
     if n <= OLD_LAYOUT_UNTIL:
         for new, old in OLD_NAMES:
             lines = [line.replace(new, old) for line in lines]
