@@ -115,7 +115,8 @@ SESSIONS = {
              "incident/ → agent_runtime/ and course/ · new agentic_platform/",
              "Moves your runtime into <code>agent_runtime/</code> and the course scaffolding into <code>course/</code>, "
              "copies the given platform shell from the kit into <code>agentic_platform/</code> (each as its own commit), "
-             "and starts the platform. Sign in as demo-astro, submit INC-001 in Runs, and open Tools.",
+             "adds AGENTS.md, the briefing your coding agent reads at the start of every later session, and starts "
+             "the platform. Sign in as demo-astro, submit INC-001 in Runs, and open Tools.",
              "still <b>7 passed</b>; the console shows checkpoint lesson-01, INC-001 answered with cited evidence, and "
              "a Tools view saying the tool boundary is not built yet."),
             ("Add the check pack", "Add the check pack", "checks · no code yet",
@@ -147,7 +148,7 @@ SESSIONS = {
             ("Verify the checkpoint", "Verify and push", "LESSON = 2 · commit · push",
              "Runs the full suite and the Session 02 demo unchanged, raises the checkpoint to 2 only if the "
              "capability is there, and pushes your work. This is the evidence, not the agent's summary.",
-             "<b>12 passed</b>, <code>LESSON = 2</code>, and your work on gitlab.ciklum.net."),
+             "<b>12 passed</b>, <code>LESSON = 2</code>, a Lesson 02 entry in <code>AGENTS.md</code>, and your work on gitlab.ciklum.net."),
             ("Review the result", "Review", "no changes",
              "Walks through what you built against the completion criteria and points out the design choices "
              "the checks do not force, such as what your adapter trusts about the tenant.",

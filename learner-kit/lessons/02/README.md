@@ -14,6 +14,12 @@ folder: that folder is the platform, and the agent runtime you build stays in
 `demo-astro`. The platform map shows checkpoint lesson-01, INC-001 completes with cited
 evidence, and the Tools view says the tool boundary is not built yet: this lesson builds it.
 
+Finally add `AGENTS.template.md` from this folder to your project root as `AGENTS.md`, the
+briefing every later coding-agent session reads first, and fill in its Lesson 01 entry from
+your checkpoint and test result. If your coding agent reads a different file (Claude Code reads
+`CLAUDE.md`), add that file with a line pointing to `AGENTS.md`. From now on each Verify prompt
+adds one entry to its progress log.
+
 ## Given files
 
 Copy these into your project unchanged. They are data, test doubles and the platform

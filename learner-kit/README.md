@@ -13,6 +13,9 @@ platform yourself and prove it with the checks.
 
 From Session 02 your project keeps the agent runtime in `agent_runtime/`, the platform in
 `agentic_platform/` and the course scaffolding in `course/`; the starter README describes the layout.
+It also carries `AGENTS.md`, a briefing for your coding agent that the Session 02 kit adds
+(`lessons/02/AGENTS.template.md`): start each session by having the agent read it, and each
+verified lesson adds one entry to its progress log.
 
 The prompts for each session are on the session page your instructor shares, and in the
 course's learner prompts. All data is synthetic, and nothing here touches a real system.

@@ -55,6 +55,66 @@ OLD_NAMES = [("course/__init__.py", "incident/__init__.py"), ("course/labs/", "i
 TEST_COUNTS = [1, 7, 12, 15, 17, 19, 27, 29, 35, 39, 45, 50, 53]
 
 
+# The learner's briefing for coding agents. It starts in Lesson 02 (the move-and-start prompt adds it
+# and fills in the Lesson 01 entry); every Prepare prompt from Lesson 03 reads it and every Verify
+# prompt from Lesson 02 adds one progress entry. It lives outside given/, which "Add the check pack"
+# copies wholesale, so a learner's filled-in log is never overwritten.
+AGENTS_TEMPLATE = """# AGENTS.md
+
+Briefing for any coding agent working in this project. Read it at the start of every session and
+follow it; the prompt for the current lesson says what to do next.
+
+## What this project is
+
+My incident-investigation agent platform for the course *Building Agentic Platforms* (Ciklum
+Innovate, L3 2026), built one lesson at a time from the course kit. All data are synthetic, and the
+model is an offline, deterministic mock unless I say otherwise.
+
+- Course kit (read-only): `~/agentic-course/course/learner-kit`. Each `lessons/NN/README.md` lists
+  that lesson's given files, its checks and the interfaces the checks import.
+- My repository: the `origin` remote, in my course group on gitlab.ciklum.net. Push there when a
+  lesson is verified.
+
+## Layout
+
+| Folder | What it holds |
+|---|---|
+| `agent_runtime/` | The agent runtime I build: the loop, model providers, tools and the MCP bridge, and later context, durable runs, evaluation, the supervisor and A2A. |
+| `agentic_platform/` | The platform: the run API and console, given in Lesson 02 and unchanged until Lesson 08; then the registry, tool gateway, identity and operations I build. |
+| `course/` | Course scaffolding: `LESSON` in `__init__.py` (the checkpoint marker), the lab runner, the lesson demos in `labs/` and the given data. |
+| `tests/` | The checks, one file per lesson. |
+
+## Rules
+
+- The checks (`tests/`, `course/labs/`) and the given files come from the course kit unchanged.
+  Never edit them to get a pass, and never change an expected outcome.
+- Build from the kit and my own code. The course repository also holds a finished reference
+  implementation: do not read, copy or search it.
+- Use the offline mock model. Never call a paid or remote model unless I ask for it.
+- Python 3.12 with uv, using the pinned lock file. Run the tests with `uv run python -m pytest -q`,
+  not bare `pytest`.
+- A completion message is not evidence. Show the change and the test output, and say plainly what
+  was not run or did not pass.
+- Raise `LESSON` in `course/__init__.py` only when that lesson's checks pass.
+- Do not ask me to run terminal commands.
+
+## Running it
+
+- Tests: `uv run python -m pytest -q`
+- A lesson's demo: `uv run python -m course.lab N`, for N up to `LESSON`
+- Platform and console: `uv run uvicorn agentic_platform.api:app --port 8000` on loopback, console at
+  `http://127.0.0.1:8000/console/`; sign in as `demo-astro`, `demo-operator` or `demo-locomotive`.
+  When I ask for it, keep it running in the background and tell me how to stop it.
+
+## Progress log
+
+One entry per verified lesson, added by the Verify prompt. Facts only: the checkpoint, the test
+result actually observed, and what the lesson added, named as in that lesson's check-pack README.
+
+- Lesson 01: LESSON = 1, 7 passed. <what Lesson 01 added: the run contract and run_agent in agent_runtime/core.py, the providers in agent_runtime/providers.py>
+"""
+
+
 def git(*args):
     return subprocess.run(["git", *args], cwd=REPO, capture_output=True, text=True, check=True).stdout
 
@@ -174,6 +234,8 @@ def build_lesson(n, known_given):
     given_names = current
     whole = {m for m, d in current if d == "*"}
     contract = {m: names for m, names in interfaces(n, given_names).items() if m not in whole}
+    if n == OLD_LAYOUT_UNTIL + 1:
+        write(out / "AGENTS.template.md", AGENTS_TEMPLATE)
     lines = [f"# Lesson {nn} check pack", ""]
     if n == OLD_LAYOUT_UNTIL + 1:
         lines += ["## First: move to the course layout and start the platform", "",
@@ -186,7 +248,12 @@ def build_lesson(n, known_given):
                   "folder: that folder is the platform, and the agent runtime you build stays in",
                   "`agent_runtime/`. Start it on loopback with the offline mock provider and sign in as",
                   "`demo-astro`. The platform map shows checkpoint lesson-01, INC-001 completes with cited",
-                  "evidence, and the Tools view says the tool boundary is not built yet: this lesson builds it.", ""]
+                  "evidence, and the Tools view says the tool boundary is not built yet: this lesson builds it.", "",
+                  "Finally add `AGENTS.template.md` from this folder to your project root as `AGENTS.md`, the",
+                  "briefing every later coding-agent session reads first, and fill in its Lesson 01 entry from",
+                  "your checkpoint and test result. If your coding agent reads a different file (Claude Code reads",
+                  "`CLAUDE.md`), add that file with a line pointing to `AGENTS.md`. From now on each Verify prompt",
+                  "adds one entry to its progress log.", ""]
     if items:
         lines += ["## Given files", "",
                   "Copy these into your project unchanged. They are data, test doubles and the platform",
@@ -257,6 +324,9 @@ def build_readme():
         "",
         "From Session 02 your project keeps the agent runtime in `agent_runtime/`, the platform in",
         "`agentic_platform/` and the course scaffolding in `course/`; the starter README describes the layout.",
+        "It also carries `AGENTS.md`, a briefing for your coding agent that the Session 02 kit adds",
+        "(`lessons/02/AGENTS.template.md`): start each session by having the agent read it, and each",
+        "verified lesson adds one entry to its progress log.",
         "",
         "The prompts for each session are on the session page your instructor shares, and in the",
         "course's learner prompts. All data is synthetic, and nothing here touches a real system.",
