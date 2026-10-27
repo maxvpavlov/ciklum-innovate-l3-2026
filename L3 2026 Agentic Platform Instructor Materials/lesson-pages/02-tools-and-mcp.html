@@ -267,54 +267,6 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
   <div class="facts"><span><b>120 min</b> · 30 discussion + 90 guided build</span><span>from <b>lesson-01</b> to <b>lesson-02</b></span><span>check pack: <b>12 passed</b></span><span>offline · real MCP over stdio</span></div>
 </header>
 
-<section class="ch" id="today">
-  <p class="eyebrow"><span>Where we are</span></p>
-  <h2>Yesterday the model could ask for anything. Today the platform decides what a tool call may do.</h2>
-  <div class="stack">
-    <div class="prose" style="margin-top:0">
-      <p>Open your Session 01 loop and find its most consequential line: <code>result = await execute(call["name"], call["args"], run.context)</code>. Everything the model proposes ends up there. A model can name a tool that does not exist, ask for one this run was never given, send malformed arguments, slip in an argument that changes whose data it reads, receive a result so large it fills the context, or propose an action with real consequences.</p>
-      <p>Today that line becomes a <b>tool boundary</b>: one executor that every call passes through, whichever way the tool is reached. Then we put the read tools behind the <b>Model Context Protocol (MCP)</b> and show that the boundary does not move.</p>
-    </div>
-    <figure>
-      <div class="diagram">
-        <svg viewBox="0 0 860 380" role="img" aria-labelledby="whereTitle">
-          <title id="whereTitle">The runtime calls the tool executor, which checks every call and then reaches either in-process readers or an MCP server over stdio</title>
-          <rect class="box" x="20" y="110" width="220" height="130" rx="10"/>
-          <text class="lbl" x="40" y="142">Agent runtime</text>
-          <text class="small" x="40" y="166">Session 01 · the loop</text>
-          <text class="small" x="40" y="186">proposes tool calls</text>
-          <rect class="today" x="300" y="70" width="260" height="210" rx="10"/>
-          <text class="lbl" x="322" y="102">ToolExecutor</text>
-          <text class="small" x="322" y="128">1 known tool?</text>
-          <text class="small" x="322" y="148">2 allowed for this run?</text>
-          <text class="small" x="322" y="168">3 valid arguments?</text>
-          <text class="small" x="322" y="196">write: exact approval + ledger</text>
-          <text class="small" x="322" y="216">read: timeout · retry · size</text>
-          <text x="322" y="262" class="sig" style="font-weight:600;font-size:14px">TODAY</text>
-          <rect class="box" x="620" y="30" width="220" height="90" rx="8"/>
-          <text class="lbl" x="638" y="60">In-process readers</text>
-          <text class="small" x="638" y="82">fixtures.simple_tools</text>
-          <text class="small" x="638" y="100">Session 01's handlers</text>
-          <rect class="today" x="620" y="160" width="220" height="80" rx="8"/>
-          <text class="lbl" x="638" y="190">MCPReadAdapter</text>
-          <text class="small" x="638" y="212">SDK client · TODAY</text>
-          <rect class="today" x="620" y="290" width="220" height="74" rx="8"/>
-          <text class="lbl" x="638" y="318">MCP server process</text>
-          <text class="small" x="638" y="340">tenant fixed by launcher</text>
-          <path class="ink" d="M240 175 H294"/><path class="arrowhead" d="M298 175 l-8 -5 v10z"/>
-          <text class="small" x="244" y="164">execute</text>
-          <path class="ink" d="M560 120 L612 84"/><path class="arrowhead" d="M616 81 l-9 2 l5 7z"/>
-          <path class="ink" d="M560 200 H612"/><path class="arrowhead" d="M616 200 l-8 -5 v10z"/>
-          <text class="small" x="566" y="226">or</text>
-          <path class="ink" d="M730 240 V284"/><path class="arrowhead" d="M730 288 l-5 -8 h10z"/>
-          <text class="small" x="740" y="270">stdio</text>
-        </svg>
-      </div>
-      <figcaption>The highlighted parts are today's work. The executor's checks run before either path, so moving a tool behind MCP changes how it is reached, not who may use it.</figcaption>
-    </figure>
-  </div>
-</section>
-
 <section class="ch" id="console">
   <p class="eyebrow"><span>Your platform, visible</span></p>
   <h2>From today your platform has a console</h2>
@@ -373,39 +325,51 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
   </div>
 </section>
 
-<section class="ch" id="threats">
-  <p class="eyebrow"><span>What can go wrong at the tool line</span></p>
-  <h2>Every proposal is untrusted input. Each failure gets a named check.</h2>
+<section class="ch" id="today">
+  <p class="eyebrow"><span>Where we are</span></p>
+  <h2>Yesterday the model could ask for anything. Today the platform decides what a tool call may do.</h2>
   <div class="stack">
-    <p class="lede" style="margin-top:0">Read this table as the specification for today's executor. Each row is something a model really does, and each has exactly one check that stops it, with a result the runtime can explain.</p>
-    <div class="tablewrap">
-      <table>
-        <thead><tr><th>The model proposes</th><th>Check that stops it</th><th>Result</th><th>Retry?</th></tr></thead>
-        <tbody>
-          <tr><td>A tool that does not exist, such as <code>delete_logs</code></td><td>1 · known tool</td><td><code>unknown_tool</code></td><td>no</td></tr>
-          <tr><td><code>mock_remediate</code> from a read-only investigator</td><td>2 · the run's allowed tools</td><td><code>permission_denied</code></td><td>no</td></tr>
-          <tr><td><code>log_lookup</code> with an extra <code>"tenant": "locomotive"</code></td><td>3 · schema: no extra properties</td><td><code>invalid_arguments</code></td><td>no</td></tr>
-          <tr><td><code>log_lookup</code> with <code>{"incident": 1}</code></td><td>3 · schema: required fields and types</td><td><code>invalid_arguments</code></td><td>no</td></tr>
-          <tr><td>A read whose result is huge</td><td>output size limit</td><td><code>output_too_large</code></td><td>no</td></tr>
-          <tr><td>A read that hangs or loses its connection</td><td>2 s timeout, one retry</td><td><code>tool_unavailable</code></td><td><b>yes</b>, later</td></tr>
-          <tr><td>A write whose exact action nobody approved</td><td>approval key</td><td><code>ApprovalRequired</code>: proposed, not performed</td><td>after approval</td></tr>
-          <tr><td>The same approved write again, even after a restart</td><td>effect ledger</td><td>stored result, <code>"replayed": true</code></td><td>safe</td></tr>
-        </tbody>
-      </table>
+    <div class="prose" style="margin-top:0">
+      <p>Open your Session 01 loop and find its most consequential line: <code>result = await execute(call["name"], call["args"], run.context)</code>. Everything the model proposes ends up there. A model can name a tool that does not exist, ask for one this run was never given, send malformed arguments, slip in an argument that changes whose data it reads, receive a result so large it fills the context, or propose an action with real consequences.</p>
+      <p>Today that line becomes a <b>tool boundary</b>: one executor that every call passes through, whichever way the tool is reached. Then we put the read tools behind the <b>Model Context Protocol (MCP)</b> and show that the boundary does not move.</p>
     </div>
-    <div class="guards">
-      <div class="guard"><span class="code">unknown_tool</span><span class="lim">terminal</span><p>The name is not in the platform's catalogue.</p></div>
-      <div class="guard"><span class="code">permission_denied</span><span class="lim">terminal</span><p>The tool exists, but this run was not granted it.</p></div>
-      <div class="guard"><span class="code">invalid_arguments</span><span class="lim">terminal</span><p>The arguments break the tool's contract.</p></div>
-      <div class="guard"><span class="code">output_too_large</span><span class="lim">terminal</span><p>The result would swamp the conversation.</p></div>
-      <div class="guard ok"><span class="code">tool_unavailable</span><span class="lim">retryable</span><p>A read failed twice for transient reasons.</p></div>
-    </div>
-    <div class="prose">
-      <p><b>Terminal or retryable.</b> Every error says whether trying again could help. A permission decision will not change if the agent asks again, so retrying it only burns steps and tokens; at scale, many agents retrying terminal errors become a retry storm. A timeout or a dropped connection may clear, so the executor retries a read once itself and then reports <code>"retryable": true</code> for the caller to decide.</p>
-      <p><b>The model sees the error.</b> A denied call still returns an observation, so the model can change course, for example by answering with the evidence it has. Seeing the error never changes the decision.</p>
-    </div>
-    <div class="ask"><span class="label">Ask the room</span><p class="q">Can a correct JSON Schema make a tool safe by itself?</p>
-      <details><summary>Show the answer</summary><p>No. A perfectly well-formed request can still be unauthorized or harmful. The schema checks shape; the run's allowed tools check authority; approval and the effect ledger control consequences. They are separate checks, and the order matters.</p></details></div>
+    <figure>
+      <div class="diagram">
+        <svg viewBox="0 0 860 380" role="img" aria-labelledby="whereTitle">
+          <title id="whereTitle">The runtime calls the tool executor, which checks every call and then reaches either in-process readers or an MCP server over stdio</title>
+          <rect class="box" x="20" y="110" width="220" height="130" rx="10"/>
+          <text class="lbl" x="40" y="142">Agent runtime</text>
+          <text class="small" x="40" y="166">Session 01 · the loop</text>
+          <text class="small" x="40" y="186">proposes tool calls</text>
+          <rect class="today" x="300" y="70" width="260" height="210" rx="10"/>
+          <text class="lbl" x="322" y="102">ToolExecutor</text>
+          <text class="small" x="322" y="128">1 known tool?</text>
+          <text class="small" x="322" y="148">2 allowed for this run?</text>
+          <text class="small" x="322" y="168">3 valid arguments?</text>
+          <text class="small" x="322" y="196">write: exact approval + ledger</text>
+          <text class="small" x="322" y="216">read: timeout · retry · size</text>
+          <text x="322" y="262" class="sig" style="font-weight:600;font-size:14px">TODAY</text>
+          <rect class="box" x="620" y="30" width="220" height="90" rx="8"/>
+          <text class="lbl" x="638" y="60">In-process readers</text>
+          <text class="small" x="638" y="82">fixtures.simple_tools</text>
+          <text class="small" x="638" y="100">Session 01's handlers</text>
+          <rect class="today" x="620" y="160" width="220" height="80" rx="8"/>
+          <text class="lbl" x="638" y="190">MCPReadAdapter</text>
+          <text class="small" x="638" y="212">SDK client · TODAY</text>
+          <rect class="today" x="620" y="290" width="220" height="74" rx="8"/>
+          <text class="lbl" x="638" y="318">MCP server process</text>
+          <text class="small" x="638" y="340">tenant fixed by launcher</text>
+          <path class="ink" d="M240 175 H294"/><path class="arrowhead" d="M298 175 l-8 -5 v10z"/>
+          <text class="small" x="244" y="164">execute</text>
+          <path class="ink" d="M560 120 L612 84"/><path class="arrowhead" d="M616 81 l-9 2 l5 7z"/>
+          <path class="ink" d="M560 200 H612"/><path class="arrowhead" d="M616 200 l-8 -5 v10z"/>
+          <text class="small" x="566" y="226">or</text>
+          <path class="ink" d="M730 240 V284"/><path class="arrowhead" d="M730 288 l-5 -8 h10z"/>
+          <text class="small" x="740" y="270">stdio</text>
+        </svg>
+      </div>
+      <figcaption>The highlighted parts are today's work. The executor's checks run before either path, so moving a tool behind MCP changes how it is reached, not who may use it.</figcaption>
+    </figure>
   </div>
 </section>
 
@@ -413,6 +377,7 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
   <p class="eyebrow"><span>The tool boundary</span></p>
   <h2>Three checks before anything runs, then two different paths</h2>
   <div class="stack">
+    <p class="lede" style="margin-top:0">Every proposal is untrusted input, so each failure gets a named check. The executor runs three checks before any handler runs, then sends reads and writes down different paths.</p>
     <figure>
       <div class="diagram">
         <svg viewBox="0 0 860 320" role="img" aria-labelledby="chainTitle">
@@ -460,6 +425,36 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
       </div>
       <figcaption>The order is deliberate. Permission comes before validation, so naming a tool never reveals or exercises anything the run was not given; the write path adds approval and a ledger that the read path does not need.</figcaption>
     </figure>
+    <h3 id="threats">What each check stops</h3>
+    <p>Read this table as the specification for today's executor. Each row is something a model really does, and each is stopped at one place in the diagram above, with a result the runtime can explain.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>The model proposes</th><th>Where in the diagram</th><th>Result</th><th>Retry?</th></tr></thead>
+        <tbody>
+          <tr><td>A tool that does not exist, such as <code>delete_logs</code></td><td>① known tool</td><td><code>unknown_tool</code></td><td>no</td></tr>
+          <tr><td><code>mock_remediate</code> from a read-only investigator</td><td>② allowed: <code>context.allowed</code></td><td><code>permission_denied</code></td><td>no</td></tr>
+          <tr><td><code>log_lookup</code> with an extra <code>"tenant": "locomotive"</code></td><td>③ valid arguments: no extra properties</td><td><code>invalid_arguments</code></td><td>no</td></tr>
+          <tr><td><code>log_lookup</code> with <code>{"incident": 1}</code></td><td>③ valid arguments: required fields and types</td><td><code>invalid_arguments</code></td><td>no</td></tr>
+          <tr><td>A read whose result is huge</td><td>read path: result size ≤ <code>output_limit</code></td><td><code>output_too_large</code></td><td>no</td></tr>
+          <tr><td>A read that hangs or loses its connection</td><td>read path: 2 s timeout · one retry</td><td><code>tool_unavailable</code></td><td><b>yes</b>, later</td></tr>
+          <tr><td>A write whose exact action nobody approved</td><td>write path: exact action key in approved?</td><td><code>ApprovalRequired</code>: proposed, not performed</td><td>after approval</td></tr>
+          <tr><td>The same approved write again, even after a restart</td><td>write path: effect + ledger</td><td>stored result, <code>"replayed": true</code></td><td>safe</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="guards">
+      <div class="guard"><span class="code">unknown_tool</span><span class="lim">terminal</span><p>The name is not in the platform's catalogue.</p></div>
+      <div class="guard"><span class="code">permission_denied</span><span class="lim">terminal</span><p>The tool exists, but this run was not granted it.</p></div>
+      <div class="guard"><span class="code">invalid_arguments</span><span class="lim">terminal</span><p>The arguments break the tool's contract.</p></div>
+      <div class="guard"><span class="code">output_too_large</span><span class="lim">terminal</span><p>The result would swamp the conversation.</p></div>
+      <div class="guard ok"><span class="code">tool_unavailable</span><span class="lim">retryable</span><p>A read failed twice for transient reasons.</p></div>
+    </div>
+    <div class="prose">
+      <p><b>Terminal or retryable.</b> Every error says whether trying again could help. A permission decision will not change if the agent asks again, so retrying it only burns steps and tokens; at scale, many agents retrying terminal errors become a retry storm. A timeout or a dropped connection may clear, so the executor retries a read once itself and then reports <code>"retryable": true</code> for the caller to decide.</p>
+      <p><b>The model sees the error.</b> A denied call still returns an observation, so the model can change course, for example by answering with the evidence it has. Seeing the error never changes the decision.</p>
+    </div>
+    <div class="ask"><span class="label">Ask the room</span><p class="q">Can a correct JSON Schema make a tool safe by itself?</p>
+      <details><summary>Show the answer</summary><p>No. A perfectly well-formed request can still be unauthorized or harmful. The schema checks shape; the run's allowed tools check authority; approval and the effect ledger control consequences. They are separate checks, and the order matters.</p></details></div>
     <div class="prose">
       <p><b>Context supplies authority; the schema supplies shape.</b> The executor reads the run's <code>Context</code>, which the platform built in Session 01, and never anything the model wrote. The model cannot widen its own permissions by naming a tool, and it cannot pick another tenant through a legitimate tool, because the log schema forbids extra properties and the tenant comes from <code>Context</code>.</p>
       <p><b>The output limit protects the conversation.</b> Every observation is appended to the messages and sent back on every later turn. One unexpectedly large result could consume the whole token budget, so the executor refuses results above <code>output_limit</code> characters (6,000 by default).</p>
