@@ -282,6 +282,97 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
   <h2>From today your platform has a console</h2>
   <div class="stack">
     <p class="lede" style="margin-top:0">A platform is a backend and the interface people use to run and watch it. From this session the kit gives your project a small one: a run API and a console, served by your own platform at <code>/console</code>. You do not build it; you use it to see what you build.</p>
+    <figure>
+      <div class="diagram">
+        <svg viewBox="0 0 900 590" role="img" aria-labelledby="platformTitle">
+          <title id="platformTitle">The agentic platform: a console with its backend APIs and storage, the agent runtimes, the tool boundary, and configuration and rules, inside one boundary; people, the model and the tool servers sit outside it</title>
+          <rect class="frame" x="140" y="24" width="606" height="506" rx="14"/>
+          <text class="failhead" x="160" y="48">THE AGENTIC PLATFORM · WHAT THIS COURSE BUILDS</text>
+
+          <rect class="box" x="10" y="74" width="114" height="66" rx="8"/>
+          <text class="lbl" x="24" y="102">People</text>
+          <text class="small" x="24" y="122">in a browser</text>
+          <rect class="box" x="10" y="214" width="114" height="76" rx="8"/>
+          <text class="lbl" x="24" y="242">Model</text>
+          <text class="small" x="24" y="262">mock today,</text>
+          <text class="small" x="24" y="278">or an API</text>
+          <rect class="box" x="764" y="214" width="128" height="76" rx="8"/>
+          <text class="lbl" x="778" y="242">Tool servers</text>
+          <text class="small" x="778" y="262">readers today,</text>
+          <text class="small" x="778" y="278">MCP over stdio</text>
+
+          <rect class="today" x="160" y="70" width="170" height="78" rx="8"/>
+          <text class="lbl" x="176" y="98">Console</text>
+          <text class="small" x="176" y="118">web UI at /console</text>
+          <text class="small" x="176" y="136">given today</text>
+          <rect class="today" x="356" y="70" width="170" height="78" rx="8"/>
+          <text class="lbl" x="372" y="98">Backend APIs</text>
+          <text class="small" x="372" y="118">runs · tools · map</text>
+          <text class="small" x="372" y="136">given today</text>
+          <rect class="today" x="552" y="70" width="174" height="78" rx="8"/>
+          <text class="lbl" x="568" y="98">Storage</text>
+          <text class="small" x="568" y="118">in memory today</text>
+          <text class="small" x="568" y="136">SQLite: Session 05</text>
+
+          <rect class="box" x="160" y="204" width="262" height="96" rx="8"/>
+          <text class="lbl" x="176" y="232">Agent runtimes</text>
+          <text class="small" x="176" y="252">ReAct loop, model adapters</text>
+          <text class="small" x="176" y="270">built in Session 01;</text>
+          <text class="small" x="176" y="288">teams 06, remote agents 07</text>
+          <rect class="today" x="456" y="204" width="270" height="96" rx="8"/>
+          <text class="lbl" x="472" y="232">Tool boundary</text>
+          <text class="small" x="472" y="252">checks every call first</text>
+          <text class="small" x="472" y="270">built today; one gateway</text>
+          <text class="small" x="472" y="288">for all agents: Session 09</text>
+
+          <rect class="box" x="160" y="344" width="566" height="166" rx="8"/>
+          <text class="lbl" x="176" y="372">Configuration and rules</text>
+          <text class="small" x="176" y="392">what the platform decides, never the model</text>
+          <rect class="today" x="176" y="410" width="98" height="80" rx="6"/>
+          <text class="small" x="186" y="434">who may use</text>
+          <text class="small" x="186" y="452">which tools</text>
+          <text class="small" x="186" y="476">today</text>
+          <rect class="frame" x="284" y="410" width="104" height="80" rx="6"/>
+          <text class="small" x="294" y="434">agent</text>
+          <text class="small" x="294" y="452">registry</text>
+          <text class="small" x="294" y="476">Session 08</text>
+          <rect class="frame" x="398" y="410" width="104" height="80" rx="6"/>
+          <text class="small" x="408" y="434">gateway</text>
+          <text class="small" x="408" y="452">policy</text>
+          <text class="small" x="408" y="476">Session 09</text>
+          <rect class="frame" x="512" y="410" width="98" height="80" rx="6"/>
+          <text class="small" x="522" y="434">identity,</text>
+          <text class="small" x="522" y="452">credentials</text>
+          <text class="small" x="522" y="476">Session 10</text>
+          <rect class="frame" x="620" y="410" width="96" height="80" rx="6"/>
+          <text class="small" x="630" y="434">operations,</text>
+          <text class="small" x="630" y="452">releases</text>
+          <text class="small" x="630" y="476">Session 11</text>
+
+          <path class="ink" d="M124 107 H154"/><path class="arrowhead" d="M158 107 l-8 -5 v10z"/>
+          <path class="ink" d="M330 109 H350"/><path class="arrowhead" d="M354 109 l-8 -5 v10z"/>
+          <path class="ink" d="M526 109 H546"/><path class="arrowhead" d="M550 109 l-8 -5 v10z"/>
+          <path class="ink" d="M400 148 V198"/><path class="arrowhead" d="M400 202 l-5 -8 h10z"/>
+          <text class="small" x="408" y="180">start a run</text>
+          <path class="ink" d="M160 252 H130"/><path class="arrowhead" d="M126 252 l8 -5 v10z"/>
+          <path class="ink" d="M422 252 H450"/><path class="arrowhead" d="M454 252 l-8 -5 v10z"/>
+          <text class="small" x="425" y="240">call</text>
+          <path class="ink" d="M726 252 H758"/><path class="arrowhead" d="M762 252 l-8 -5 v10z"/>
+          <path class="ink" d="M290 344 V306"/><path class="arrowhead" d="M290 302 l-5 8 h10z"/>
+          <path class="ink" d="M590 344 V306"/><path class="arrowhead" d="M590 302 l-5 8 h10z"/>
+          <text class="small" x="298" y="330">decides</text>
+          <text class="small" x="598" y="330">decides</text>
+
+          <rect class="today" x="140" y="552" width="22" height="14" rx="3"/>
+          <text class="small" x="170" y="564">given or built today</text>
+          <rect class="box" x="340" y="552" width="22" height="14" rx="3"/>
+          <text class="small" x="370" y="564">built in Session 01 (inside the line)</text>
+          <rect class="frame" x="680" y="552" width="22" height="14" rx="3"/>
+          <text class="small" x="710" y="564">later sessions</text>
+        </svg>
+      </div>
+      <figcaption>The platform is everything inside the dashed line: the console with its backend APIs and storage, the agent runtimes, the tool boundary, and the configuration and rules that decide what agents may do. The model and the tool servers sit outside it, and people reach it through the console. This course builds the platform, not just the agent.</figcaption>
+    </figure>
     <div class="cards">
       <div><span class="q">Given today</span><p><code>agentic_platform/api.py</code>, a run API that keeps runs in memory, and <code>agentic_platform/console/</code> with three views: Overview (the platform map), Runs and Tools. The second prompt below copies them into the top-level <code>agentic_platform/</code> folder of your project and starts the platform; the runtime you build stays in <code>agent_runtime/</code>.</p></div>
       <div><span class="q">What it shows</span><p>Submit an investigation and read its answer and event timeline. In Tools, try calls as your role and see each decision the executor you build today makes.</p></div>
