@@ -197,6 +197,7 @@ def build(n):
     head = full.split("</style>", 1)[0] + "</style>"
     head = re.sub(r"<title>.*?</title>", f"<title>Session {nn} Prompts</title>", head, count=1)
     script = "<script>" + full.split("<script>", 1)[1]
+    brand = re.search(r'<svg class="brand".*?</svg>', full, re.S).group(0)  # the Ciklum logo, inline
 
     route = []
     for i, step in enumerate(cfg["steps"]):
@@ -226,7 +227,7 @@ def build(n):
 <main>
 
 <header class="hero" id="start">
-  <p class="course">Innovate · L3 · 2026 · Session {nn} · just the prompts</p>
+  <p class="course">{brand}<span aria-hidden="true">·</span><span>Innovate</span><span aria-hidden="true">·</span><span>2026</span><span aria-hidden="true">·</span><span>Session {nn} of 12 · just the prompts</span></p>
   <h1>{cfg["title"]}<span class="sub">Every prompt for this session, in order, with what each one adds to your platform</span></h1>
   <p class="lede">{cfg["goal"]}</p>
   <div class="facts">{facts}</div>
