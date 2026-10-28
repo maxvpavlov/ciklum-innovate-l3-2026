@@ -72,6 +72,14 @@ code, .mono { font-family: var(--mono); font-size: .9em; }
 .view button { font: 600 12.5px var(--mono); letter-spacing: .04em; color: var(--muted); background: transparent; border: 0;
   border-radius: 999px; padding: 6px 14px; cursor: pointer; }
 .view button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+/* Theme switcher, top left: Auto follows the system setting; Light or Dark overrides it on every lesson page */
+.theme { position: fixed; z-index: 10; top: calc(14px + env(safe-area-inset-top, 0px)); left: max(14px, env(safe-area-inset-left, 0px));
+  display: flex; padding: 3px; gap: 2px; background: var(--sheet); border: 1px solid var(--rule); border-radius: 999px;
+  box-shadow: 0 2px 10px rgba(15, 21, 29, .12); }
+.theme button { font: 600 12.5px var(--mono); letter-spacing: .04em; color: var(--muted); background: transparent; border: 0;
+  border-radius: 999px; padding: 6px 12px; cursor: pointer; }
+.theme button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+@media (max-width: 560px) { .theme { top: calc(58px + env(safe-area-inset-top, 0px)); } }
 .present .lede, .present .prose, .present figcaption, .present .say, .present .cards > div > p,
 .present .turn .note, .present .terminal .goal, .present .read { display: none; }
 
@@ -1144,6 +1152,32 @@ return run</pre>
 
 <script>
 (() => {
+  // Theme switcher (top left), added here so every page built from this one gets it. Auto follows the
+  // system setting; Light or Dark sets data-theme on the root, which the colour tokens above honour,
+  // and is remembered for all the course pages on this site.
+  const root = document.documentElement;
+  const themeBar = document.createElement("div");
+  themeBar.className = "theme";
+  themeBar.setAttribute("role", "group");
+  themeBar.setAttribute("aria-label", "Colour theme");
+  const setTheme = (choice) => {
+    if (choice === "light" || choice === "dark") root.dataset.theme = choice; else delete root.dataset.theme;
+    themeBar.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.choice === choice)));
+    try {
+      if (choice === "auto") localStorage.removeItem("lesson-theme"); else localStorage.setItem("lesson-theme", choice);
+    } catch (e) { /* storage unavailable */ }
+  };
+  [["auto", "Auto"], ["light", "Light"], ["dark", "Dark"]].forEach(([choice, label]) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.dataset.choice = choice; b.textContent = label;
+    b.addEventListener("click", () => setTheme(choice));
+    themeBar.append(b);
+  });
+  document.body.prepend(themeBar);
+  let saved = null;
+  try { saved = localStorage.getItem("lesson-theme"); } catch (e) { /* default theme */ }
+  setTheme(saved === "light" || saved === "dark" ? saved : "auto");
+
   // Copy buttons: copy the prompt text without the "PROMPT ▸" prefix.
   document.querySelectorAll(".copy").forEach((button) => {
     button.addEventListener("click", () => {
