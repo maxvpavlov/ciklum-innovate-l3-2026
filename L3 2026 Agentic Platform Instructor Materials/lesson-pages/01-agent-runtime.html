@@ -81,6 +81,9 @@ code, .mono { font-family: var(--mono); font-size: .9em; }
 .theme svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .present .lede, .present .prose, .present figcaption, .present .say, .present .cards > div > p,
 .present .turn .note, .present .terminal .goal, .present .read { display: none; }
+/* A card row whose cards hold only a title and a paragraph would show just titles in Present mode: hide it there.
+   Cards with a visible answer line (.ans) keep it, and a row marked .keep stays because its titles are the content. */
+.present .cards:not(.keep):not(:has(> div > :not(.q, p))) { display: none; }
 
 /* Say-this lines */
 .say { border-left: 3px solid var(--ink); padding: 4px 0 4px 18px; font-size: 19px; font-style: italic; max-width: 60ch; }
@@ -394,7 +397,7 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
   <p class="eyebrow"><span>Course format</span></p>
   <h2>How we work in this course</h2>
   <div class="stack">
-    <div class="cards">
+    <div class="cards keep">
       <div><span class="q">You direct a coding agent</span><p>You set scope, read the change and judge the evidence. The agent types the code and runs the checks.</p></div>
       <div><span class="q">Every session ends runnable</span><p>Each session finishes at a tagged checkpoint, <code>lesson-01</code> to <code>lesson-12</code>, with tests that pass.</p></div>
       <div><span class="q">Evidence, not claims</span><p>A coding agent saying "done" proves nothing. We look at diffs, test output and run events.</p></div>

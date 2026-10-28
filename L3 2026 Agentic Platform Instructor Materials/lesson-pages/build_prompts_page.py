@@ -175,7 +175,10 @@ def prompts_for(n):
 
 def band(pid, label, files, goal, prompt, expect=None, fold=False):
     block = f'<div class="prompt" id="{pid}-text"><span class="pfx">PROMPT ▸ </span>{html.escape(prompt, quote=False)}</div>'
-    if fold:  # collapsed by default; the copy button outside still copies the whole prompt
+    if fold:  # collapsed by default, with the expected result; the copy button outside still copies the prompt
+        if expect:
+            block += f'<div class="expect"><span class="pfx">EXPECT ▸ </span>{expect}</div>'
+            expect = None
         block = ('<details class="fold"><summary><span class="show">Show prompt</span>'
                  f'<span class="hide">Hide prompt</span></summary>{block}</details>')
     parts = [f'  <div class="terminal" id="{pid}">',

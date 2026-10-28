@@ -81,6 +81,9 @@ code, .mono { font-family: var(--mono); font-size: .9em; }
 .theme svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .present .lede, .present .prose, .present figcaption, .present .say, .present .cards > div > p,
 .present .turn .note, .present .terminal .goal, .present .read { display: none; }
+/* A card row whose cards hold only a title and a paragraph would show just titles in Present mode: hide it there.
+   Cards with a visible answer line (.ans) keep it, and a row marked .keep stays because its titles are the content. */
+.present .cards:not(.keep):not(:has(> div > :not(.q, p))) { display: none; }
 
 /* Say-this lines */
 .say { border-left: 3px solid var(--ink); padding: 4px 0 4px 18px; font-size: 19px; font-style: italic; max-width: 60ch; }
