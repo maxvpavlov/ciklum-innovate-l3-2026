@@ -275,13 +275,14 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
     <figure>
       <div class="diagram">
         <svg viewBox="0 0 900 590" role="img" aria-labelledby="platformTitle">
-          <title id="platformTitle">The agentic platform: a console with its backend APIs and storage, the agent runtimes, the tool boundary, and configuration and rules, inside one boundary; people, the model and the tool servers sit outside it</title>
+          <title id="platformTitle">The agentic platform: a console with its backend APIs and storage, the agent runtimes, the tool boundary, and configuration and rules, inside one boundary; platform administrators, the model and the tool servers sit outside it</title>
           <rect class="frame" x="140" y="24" width="606" height="506" rx="14"/>
           <text class="failhead" x="160" y="48">THE AGENTIC PLATFORM · WHAT THIS COURSE BUILDS</text>
 
-          <rect class="box" x="10" y="74" width="114" height="66" rx="8"/>
-          <text class="lbl" x="24" y="102">People</text>
-          <text class="small" x="24" y="122">in a browser</text>
+          <rect class="box" x="4" y="68" width="128" height="80" rx="8"/>
+          <text class="lbl" x="14" y="94">Platform</text>
+          <text class="lbl" x="14" y="112">administrators</text>
+          <text class="small" x="14" y="134">run and watch it</text>
           <rect class="box" x="10" y="214" width="114" height="76" rx="8"/>
           <text class="lbl" x="24" y="242">Model</text>
           <text class="small" x="24" y="262">mock today,</text>
@@ -339,7 +340,7 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
           <text class="small" x="630" y="452">releases</text>
           <text class="small" x="630" y="476">Session 11</text>
 
-          <path class="ink" d="M124 107 H154"/><path class="arrowhead" d="M158 107 l-8 -5 v10z"/>
+          <path class="ink" d="M132 107 H154"/><path class="arrowhead" d="M158 107 l-8 -5 v10z"/>
           <path class="ink" d="M330 109 H350"/><path class="arrowhead" d="M354 109 l-8 -5 v10z"/>
           <path class="ink" d="M526 109 H546"/><path class="arrowhead" d="M550 109 l-8 -5 v10z"/>
           <path class="ink" d="M400 148 V198"/><path class="arrowhead" d="M400 202 l-5 -8 h10z"/>
@@ -361,7 +362,7 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
           <text class="small" x="710" y="564">later sessions</text>
         </svg>
       </div>
-      <figcaption>The platform is everything inside the dashed line: the console with its backend APIs and storage, the agent runtimes, the tool boundary, and the configuration and rules that decide what agents may do. The model and the tool servers sit outside it, and people reach it through the console. This course builds the platform, not just the agent.</figcaption>
+      <figcaption>The platform is everything inside the dashed line: the console with its backend APIs and storage, the agent runtimes, the tool boundary, and the configuration and rules that decide what agents may do. The model and the tool servers sit outside it. Platform administrators run and watch it through the console; most people who benefit never open the console, they see the results of the agents' work. This course builds the platform, not just the agent.</figcaption>
     </figure>
     <div class="cards">
       <div><span class="q">Given today</span><p><code>agentic_platform/api.py</code>, a run API that keeps runs in memory, and <code>agentic_platform/console/</code> with three views: Overview (the platform map), Runs and Tools. The second prompt below copies them into the top-level <code>agentic_platform/</code> folder of your project and starts the platform; the runtime you build stays in <code>agent_runtime/</code>.</p></div>
