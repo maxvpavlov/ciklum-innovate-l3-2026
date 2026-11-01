@@ -1,6 +1,6 @@
 # Candidate model endpoints for real-model runs
 
-Status: **Groq and Google AI Studio (Gemini) partly tested on 22 October 2026 (see the test log); Groq is the current recommendation, with the system-prompt fix below. The others are not tested.** Session 01 and every check pack run on the offline mock model. This page lists
+Status: **Groq and Google AI Studio (Gemini) partly tested on 22 October 2026 (see the test log); Groq is the current recommendation, with the system-prompt fix below. The others are not tested.** Since 1 November 2026 Session 03 uses Groq (`qwen/qwen3.8-27b`) for the course's first live run: learners use their own free key, the system-prompt fix and named HTTP failures are in the reference from `lesson-03`, and the Lesson 03 prompts set it up. Step 6 below (a run at lesson-10 or later) is still open. Session 01 and every check pack run on the offline mock model. This page lists
 endpoints learners could use later for real-model runs, and the test each one has to pass before the
 course recommends it. Researched on 20 October 2026; free tiers, limits and model lists change monthly,
 so re-check them before testing.

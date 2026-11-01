@@ -129,8 +129,8 @@
     "The console is served at /console under a strict Content-Security-Policy, renders API data as text only and shows each identity only its tenant's runs; every API handler is asynchronous."
   ],
   "recorded_test_result": {
-    "passed": 35,
-    "seconds": "7.53"
+    "passed": 37,
+    "seconds": "5.84"
   },
   "troubleshooting": [
     {

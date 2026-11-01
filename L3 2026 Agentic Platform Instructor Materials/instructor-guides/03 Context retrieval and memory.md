@@ -2,15 +2,15 @@
 
 *Instructor guide for the L3 agentic platform programme*
 
-**Outcome** Tenant-scoped retrieval, bounded conversation context, expiring memory and versioned evidence artifacts extend the same platform.
+**Outcome** Tenant-scoped retrieval, bounded conversation context, expiring memory and versioned evidence artifacts extend the same platform, and the same loop answers through a real cloud model.
 
-Duration: 90 minutes. Starting checkpoint: lesson-02. Ending checkpoint: lesson-03 (8095b50).
+Duration: 90 minutes. Starting checkpoint: lesson-02. Ending checkpoint: lesson-03 (35b3d32).
 
 Word version: [03 Context retrieval and memory.docx](03%20Context%20retrieval%20and%20memory.docx)
 
 ## Where this session sits in the platform
 
-This session builds the platform's evidence layer: tenant-scoped retrieval, bounded context selection, expiring memory and versioned artifacts. From Session 08 the platform saves each run's answer as a versioned artifact in this store, and the console's Runs view shows that answer with its cited source IDs beside the run's event timeline. Memory stays a tenant-scoped convenience with a retention policy; the console does not display it.
+This session builds the platform's evidence layer: tenant-scoped retrieval, bounded context selection, expiring memory and versioned artifacts. From Session 08 the platform saves each run's answer as a versioned artifact in this store, and the console's Runs view shows that answer with its cited source IDs beside the run's event timeline. Memory stays a tenant-scoped convenience with a retention policy; the console does not display it. This session also connects the runtime to a real model for the first time: hardened for what real models do, configured from a key file outside the repository, and visible on the console's run page as the model, host and time of every call.
 
 | Session | Platform component | Status |
 |---|---|---|
@@ -30,6 +30,8 @@ This session builds the platform's evidence layer: tenant-scoped retrieval, boun
 ## Preparation
 
 Bring your Session 02 checkpoint. Refresh retrieval and embeddings from 2025. Review context engineering and the distinction between session state and long-term memory stores.
+
+Before the session, ask every learner to create a free Groq account at console.groq.com and an API key (no card needed), and to keep the key private: during the session they paste it into a file outside their repository, never into a prompt, the chat or the repository. Each learner needs their own key, because one shared key would hit Groq's per-minute token limit after a few runs across the room. The check pack does not need a key. Run the real-model step yourself shortly before the session: free model lists and limits change.
 
 Learners need two things: their own project repository in the course GitLab group on gitlab.ciklum.net, and the [learner kit](https://github.com/maxvpavlov/ciklum-innovate-l3-2026/tree/main/learner-kit) in the public course repository, which holds the starter project and, for each lesson, the given files and the check pack. Learners build their own implementation; the reference checkpoints in the same repository are the instructor's answer key.
 
@@ -51,11 +53,12 @@ Pinned versions in pyproject.toml and uv.lock: Python 3.12, MCP 2.2.0, A2A SDK 1
 
 | Minutes | Activity | Format |
 |---|---|---|
-| 00 to 10 | Reconnect to the incident and prior checkpoint | Discussion |
-| 10 to 30 | Concept script and architecture questions | Discussion |
-| 30 to 45 | Prompts and code review for steps 1 and 2 | Agent build |
-| 45 to 60 | Prompts and code review for steps 3 and 4 | Agent build |
-| 60 to 75 | Learner exercise and fault injection | Practice |
+| 00 to 05 | Reconnect to the incident and prior checkpoint | Discussion |
+| 05 to 20 | Concept script and architecture questions | Discussion |
+| 20 to 35 | Prompts and code review for steps 1 and 2 | Agent build |
+| 35 to 50 | Prompts and code review for steps 3 and 4 | Agent build |
+| 50 to 65 | Harden the runtime and connect a real model (Groq) | Agent build |
+| 65 to 75 | Learner exercise and fault injection | Practice |
 | 75 to 85 | Acceptance checks and result interpretation | Verification |
 | 85 to 90 | Questions and checkpoint handoff | Discussion |
 
@@ -182,7 +185,7 @@ def save_artifact(self, tenant, artifact_id, body, expected_version=0):
 
 **SHOW** The current learner implementation and `agent_runtime/context.py`. Use the following prompt to make the bounded change, then inspect the agent’s result.
 
-> **PROMPT** For Lesson 03, continue in my learner project. Add expiring tenant-scoped memory and make the Session 03 check pack pass. Compare memory with versioned artifacts and the current task history. Demonstrate expiration, provenance and access boundaries, then compare the investigation with full history and bounded context. Report the outcome as well as context size; do not call a smaller prompt an improvement if required evidence is lost. Build to the interfaces the Lesson 03 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+> **PROMPT** For Lesson 03, continue in my learner project. Add expiring tenant-scoped memory and make the Session 03 check pack pass, apart from its two real-model tests, test_real_model_reply_is_hardened and test_real_model_failures_are_named, which the next prompt covers. Compare memory with versioned artifacts and the current task history. Demonstrate expiration, provenance and access boundaries, then compare the investigation with full history and bounded context. Report the outcome as well as context size; do not call a smaller prompt an improvement if required evidence is lost. Build to the interfaces the Lesson 03 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
 
 **REVIEW** Compare the coding agent’s change with this reference excerpt. It covers source lines 69 to 71 at lesson-03; common indentation is reduced for display. Ask the agent to explain material differences in behaviour.
 
@@ -199,6 +202,14 @@ def remember(self, tenant, key, body, ttl=3600):
 **Likely answer** Preserve the conflict as evidence, prefer appropriately verified current sources, and avoid treating memory as an instruction or authorization.
 
 **PAUSE** Have learners identify the boundary in their agent’s change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.
+
+### Connect a real model
+
+**SAY** Until now every run used the deterministic mock. Now the same loop talks to a real model in the cloud, and nothing in the loop changes except the provider configuration. First harden the runtime for what real models do and the mock never did: they wrap the JSON answer in a Markdown fence, send the answer as a made-up tool call, and fail with rate limits, outages and timeouts. Then each learner connects their own free Groq key, kept in a file outside the repository, and submits INC-001 and INC-003 from the console: the run page names the model, the host and the time of every call. The check pack still runs on the mock, because only the mock's outcomes are exact; live runs are observations, and tuning for each model is normal work. Watch INC-003: a real model may claim a cause the evidence does not support, which is exactly what Session 04's evaluation is built to catch.
+
+> **PROMPT** For Lesson 03, continue in my learner project. Harden my runtime for a real model, which the offline mock never needed. In agent_runtime/core.py, add this sentence to the system prompt: Give the final answer as your message text, not as a tool call, and reply with the JSON object only: no Markdown code fence and no other text. Accept a final answer wrapped in a Markdown code fence anyway, and fail a final message that is still not JSON with invalid_final_answer. Give Reply a model and a host, defaulting to mock and offline, and record both, with the call's elapsed_ms, in every model event: the given console's run page reads them to show which model answered. In agent_runtime/providers.py, have HTTPProvider return the model the endpoint reports, falling back to the configured name, and the host of its base URL, and turn HTTP 429 into provider_rate_limited, any 5xx into provider_unavailable, another HTTP error into provider_http_ followed by the status code, and a timeout into provider_timeout, never copying response bodies, headers or the key. The two new tests in tests/test_lesson03.py check this offline. Build to the interfaces the Lesson 03 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.
+
+> **PROMPT** Connect my platform to a real model on Groq without the key ever entering my repository, a prompt or this chat. Create ~/agentic-course/groq.env, outside my project and readable only by me, with MODEL_PROVIDER=openai-compatible, MODEL_BASE_URL=https://api.groq.com/openai/v1, MODEL_NAME=qwen/qwen3.8-27b, MODEL_ALLOWED_HOSTS=api.groq.com and an empty MODEL_API_KEY= line. Tell me its path and wait while I paste my Groq API key after MODEL_API_KEY= in an editor and save it. Then check that the key line is filled without printing it, and confirm with one request to Groq's model list that the key works and that qwen/qwen3.8-27b is offered; if it is not, tell me which tool-capable models are and stop. Restart the platform API on loopback with these settings loaded into that process only, so tests and labs keep the offline mock, keep it running and give me the console address: I will sign in as demo-astro and submit INC-001 and then INC-003 in Runs. Then read both runs through the API and report for each its status, cause, cited evidence, any failure code and its model events: model, host, tokens and elapsed milliseconds. Treat these as live-model observations, not test results or cost claims. Tell me how to switch the platform back to the offline mock.
 
 ## Learner practice and checkpoints
 
@@ -236,8 +247,10 @@ def remember(self, tenant, key, body, ttl=3600):
 - Expired memory is unavailable, including after a database reopen.
 - Cross-tenant artifact lookup returns no artifact.
 - A stale artifact update fails rather than overwriting the current version.
+- A fenced final answer completes, a final message that is not JSON fails as invalid_final_answer, and HTTP 429, 5xx, other HTTP errors and timeouts end the run with named provider codes.
+- Every model event records the model, its host and the call time, and the console's run page shows them; with a learner's Groq key, INC-001 runs on a real model from the console.
 
-The independently unpacked lesson-03 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 03 check pack from the course kit. Recorded test result: 15 passed in 3.60s. Learners commit and push their checkpoint to their GitLab repository; lesson-03 (8095b50) remains the instructor's answer key.
+The independently unpacked lesson-03 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 03 check pack from the course kit. Recorded test result: 17 passed in 4.43s. Learners commit and push their checkpoint to their GitLab repository; lesson-03 (35b3d32) remains the instructor's answer key.
 
 ### Files changed in this checkpoint
 
@@ -245,6 +258,8 @@ In the reference, this checkpoint changed the files below. Learners write the im
 
 - `agent_runtime/context.py`
 - `agent_runtime/core.py`
+- `agent_runtime/providers.py`
+- `agentic_platform/console/views/runs.js`
 - `course/__init__.py`
 - `course/labs/l03.py`
 - `tests/test_lesson03.py`
@@ -269,24 +284,30 @@ In the reference, this checkpoint changed the files below. Learners write the im
 
 > **PROMPT** I am working on Lesson 03. The symptom is: Memory seems to disappear. Diagnostic focus: Check TTL and tenant identity. Recovery guidance: Use a non-expired test value in the same tenant. Treat expiry as intended retention behaviour rather than bypassing it. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
 
+### A real-model run fails
+
+> **PROMPT** I am working on Lesson 03. The symptom is: A real-model run fails. Diagnostic focus: Read the run's failure code: provider_http_401 means the key, provider_rate_limited means Groq's per-minute limit, provider_unavailable or provider_timeout means Groq's side, and invalid_final_answer, unobserved_citation or repeated_action come from what the model did. Recovery guidance: Check the key file without printing the key, or wait a minute and resubmit. For model behaviour, compare two or three runs before changing anything, then tune the system-prompt sentence for this model. Never change the checks: they run on the offline mock. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.
+
 ## Practice and discussion
 
 - Substitute a different ranking function behind context_tools and compare supported outcomes, not just retrieval scores.
 - Add a conflicting-memory case and document which source should take precedence and why.
+- Submit INC-003 three times on Groq and compare with the mock: does the real model ever claim a cause the evidence does not support, and would the citation check catch it?
 
 **Discussion prompt** Which decision would change for a larger or more sensitive workload, and what additional evidence would you require before changing it? Tie the answer to the code, the task requirements and the acceptance checks.
 
 ## Verification scope
 
-All course tags were independently unpacked and tested. The completed repository has 53 passing tests. Real local MCP stdio, the tool gateway's shared sessions and pinned definitions, A2A HTTP discovery, streaming, delegated-token authentication and cancellation were exercised. The platform console was driven in a headless Chromium browser against every checkpoint from lesson-08 onward.
+All course tags were independently unpacked and tested. The completed repository has 55 passing tests. Real local MCP stdio, the tool gateway's shared sessions and pinned definitions, A2A HTTP discovery, streaming, delegated-token authentication and cancellation were exercised. The platform console was driven in a headless Chromium browser against every checkpoint from lesson-08 onward.
 
 Live model credentials, paid provider calls, live model judging, third-party MCP or A2A services, remote MCP OAuth, an enterprise identity provider, a managed secret vault, production cloud rollout and an external observability collector were not tested. The offline provider is a deterministic fixture, so its usage and quality results are teaching measurements. Read TESTING.md for the full scope and environment details.
 
 ## Session close
 
-**SAY** Your platform now manages evidence as a first-class part of execution. Keep the source IDs, version checks and tenant boundaries when adding more sophisticated retrieval. From Session 08 the platform saves every run's answer in this artifact store, and the console shows it per run with its cited sources. Next we turn these cases into a repeatable evaluation harness.
+**SAY** Your platform now manages evidence as a first-class part of execution. Keep the source IDs, version checks and tenant boundaries when adding more sophisticated retrieval. From Session 08 the platform saves every run's answer in this artifact store, and the console shows it per run with its cited sources. Next we turn these cases into a repeatable evaluation harness. You also saw the same loop answer through a real model: keep the key outside the repository, and keep the checks on the mock.
 
 ## References and further study
 
 - [Effective context engineering](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)
 - [Persistence and memory stores](https://docs.langchain.com/oss/python/langgraph/persistence)
+- [Groq OpenAI compatibility](https://console.groq.com/docs/openai)

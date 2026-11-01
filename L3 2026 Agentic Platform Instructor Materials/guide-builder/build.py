@@ -277,6 +277,14 @@ def build_guide(spec, common, template_path, out_path):
         for fig in [f for f in figures if f["after"] == f"step{k}"]:
             g.figure(fig["image"], fig["caption"], L["figure"])
 
+    # The same loop against a real model (Lesson 03)
+    if "live_model" in spec:
+        live = spec["live_model"]
+        g.text(live["heading"], "Heading 2")
+        g.labelled(L["say"], live["say"])
+        for p in live["prompts"]:
+            g.labelled(L["prompt"], p["text"], "Agent Prompt", keep_lines=True)
+
     # Learner practice
     g.text(H["practice_checkpoints"], "Heading 1")
     g.labelled(L["prompt"], T("exercise_prompt", body=spec["exercise"]), "Agent Prompt")
@@ -328,7 +336,8 @@ def troubleshooting_prompt(entry, T):
 
 
 def lesson_prompts(spec, common):
-    """The 13 prompts of a lesson (14 with a layout move), in order, as (markdown heading, prompt text)."""
+    """A lesson's prompts in order, as (markdown heading, prompt text): 9 plus one per troubleshooting
+    entry, plus the layout move (Lesson 02) and the real-model prompts (Lesson 03)."""
     T = renderer(spec, common)
     S = common["learner_prompts"]["sections"]
     prompts = [(S["prepare"], T("prepare_prompt"))]
@@ -337,6 +346,7 @@ def lesson_prompts(spec, common):
     prompts.append((S["orient"], T("orient_prompt")))
     for k, step in enumerate(spec["steps"], 1):
         prompts.append((S["step"].format(k=k), T("step_prompt", body=step["prompt"])))
+    prompts += [(p["heading"], p["text"]) for p in spec.get("live_model", {}).get("prompts", [])]
     prompts += [(S["exercise"], T("exercise_prompt", body=spec["exercise"])),
                 (S["verify"], T("verify_prompt")),
                 (S["review"], T("review_prompt"))]

@@ -1,5 +1,13 @@
 # Lesson 03 check pack
 
+## Given files
+
+Copy these into your project unchanged. They are data, test doubles and the platform
+shell (run API and console) that everyone shares, so results are comparable; they are
+not what this lesson teaches.
+
+- `given/agentic_platform/console/views/runs.js`: copy to `agentic_platform/console/views/runs.js`.
+
 ## Checks
 
 Copy `checks/` into your project root unchanged: it holds this lesson's demo in
@@ -9,7 +17,7 @@ fail to import, because the modules it needs do not exist yet. Never edit the te
 make them pass.
 
 When everything is built, set `LESSON = 3` in `course/__init__.py`. The full
-suite should then report **15 passed**, and `python -m course.lab 3`
+suite should then report **17 passed**, and `python -m course.lab 3`
 prints the lesson's demo result.
 
 ## Interfaces your code must provide

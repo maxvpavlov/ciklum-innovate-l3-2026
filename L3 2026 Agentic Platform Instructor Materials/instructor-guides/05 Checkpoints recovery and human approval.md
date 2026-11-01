@@ -4,7 +4,7 @@
 
 **Outcome** Runs persist across worker loss, pause for exact-action approval, resume safely and reject denied or expired approvals.
 
-Duration: 90 minutes. Starting checkpoint: lesson-04. Ending checkpoint: lesson-05 (3e467a3).
+Duration: 90 minutes. Starting checkpoint: lesson-04. Ending checkpoint: lesson-05 (8b56a93).
 
 Word version: [05 Checkpoints recovery and human approval.docx](05%20Checkpoints%20recovery%20and%20human%20approval.docx)
 
@@ -225,7 +225,7 @@ async def crash_after_write(name, args, context):
 - An expired approval does not execute the action.
 - Denied and cancelled runs cannot be resumed as approved work.
 
-The independently unpacked lesson-05 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 05 check pack from the course kit. Recorded test result: 19 passed in 3.55s. Learners commit and push their checkpoint to their GitLab repository; lesson-05 (3e467a3) remains the instructor's answer key.
+The independently unpacked lesson-05 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 05 check pack from the course kit. Recorded test result: 21 passed in 3.30s. Learners commit and push their checkpoint to their GitLab repository; lesson-05 (8b56a93) remains the instructor's answer key.
 
 ### Files changed in this checkpoint
 
@@ -265,7 +265,7 @@ In the reference, this checkpoint changed the files below. Learners write the im
 
 ## Verification scope
 
-All course tags were independently unpacked and tested. The completed repository has 53 passing tests. Real local MCP stdio, the tool gateway's shared sessions and pinned definitions, A2A HTTP discovery, streaming, delegated-token authentication and cancellation were exercised. The platform console was driven in a headless Chromium browser against every checkpoint from lesson-08 onward.
+All course tags were independently unpacked and tested. The completed repository has 55 passing tests. Real local MCP stdio, the tool gateway's shared sessions and pinned definitions, A2A HTTP discovery, streaming, delegated-token authentication and cancellation were exercised. The platform console was driven in a headless Chromium browser against every checkpoint from lesson-08 onward.
 
 Live model credentials, paid provider calls, live model judging, third-party MCP or A2A services, remote MCP OAuth, an enterprise identity provider, a managed secret vault, production cloud rollout and an external observability collector were not tested. The offline provider is a deterministic fixture, so its usage and quality results are teaching measurements. Read TESTING.md for the full scope and environment details.
 

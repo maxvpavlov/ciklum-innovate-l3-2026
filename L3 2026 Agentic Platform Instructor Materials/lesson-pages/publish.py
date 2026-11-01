@@ -10,7 +10,8 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 DOCS = HERE.parent.parent / "docs"
-PAGES = {"01-agent-runtime.html": "lesson-01", "02-tools-and-mcp.html": "lesson-02"}
+PAGES = {"01-agent-runtime.html": "lesson-01", "02-tools-and-mcp.html": "lesson-02",
+         "03-context-and-memory.html": "lesson-03"}
 
 # Pages live one folder below docs/, so the icons are one level up.
 ICONS = ('<link rel="icon" href="../favicon.svg" type="image/svg+xml">\n'

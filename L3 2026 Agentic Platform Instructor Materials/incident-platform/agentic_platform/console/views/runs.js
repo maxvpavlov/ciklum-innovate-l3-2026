@@ -10,6 +10,15 @@ function eventLine(event) {
     h("b", {}, event.kind), " ", h("span", { class: "mono muted" }, detail));
 }
 
+// Model events name the model that answered and its host; only the offline mock reports fixture tokens.
+function usage(run) {
+  const calls = run.events.filter((e) => e.kind === "model");
+  const live = calls.find((e) => e.host && e.host !== "offline");
+  if (!live) return `${run.tokens} fixture tokens`;
+  const seconds = calls.reduce((sum, e) => sum + (e.elapsed_ms ?? 0), 0) / 1000;
+  return `${run.tokens} tokens from ${live.model} at ${live.host} · ${calls.length} model calls in ${seconds.toFixed(1)} s`;
+}
+
 function traceTable(trace) {
   return h("div", {}, h("h2", {}, `Correlated trace · ${trace.total_tokens} fixture tokens across ${trace.nodes.length} runs`),
     h("table", {}, h("tr", {}, ["Run", "Parent", "Role", "Status", "Tokens", "Events"].map((t) => h("th", {}, t))),
@@ -26,7 +35,7 @@ async function detail(id, navigate) {
     h("p", {}, h("a", { href: "#runs" }, "All runs")),
     h("h1", {}, "Run ", h("span", { class: "mono" }, short(run.id, 16)), " ", badge(run.status)),
     h("p", { class: "lede" }, `${config.name ?? "child run"}${config.version ? ` v${config.version}` : ""} · role ${run.role}`
-      + ` · ${run.tokens} fixture tokens`, run.parent_id ? h("span", {}, " · parent ",
+      + ` · ${usage(run)}`, run.parent_id ? h("span", {}, " · parent ",
         h("a", { href: `#runs/${run.parent_id}` }, short(run.parent_id))) : ""),
     TERMINAL.has(run.status) ? "" : h("p", {}, h("button", { class: "danger", onclick: cancel }, "Cancel run")),
     run.error ? h("div", { class: "error" }, `Failure code: ${run.error}`) : "",

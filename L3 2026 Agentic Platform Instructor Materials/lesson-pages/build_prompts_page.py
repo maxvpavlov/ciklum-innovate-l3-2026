@@ -162,6 +162,86 @@ SESSIONS = {
         ],
         "next": "Session 03: Context, retrieval and memory",
     },
+    3: {
+        "full_page": "03-context-and-memory.html",
+        "fold": True,
+        "title": "Context, memory and a real model",
+        "goal": "By the end your platform controls the evidence its agent reads, by tenant, by conversation round, "
+                "by version and by expiry, and the same loop answers through a real model on Groq, visible in your "
+                "console. Run the prompts in this order, in your coding agent started in ~/agentic-course, and read "
+                "each result before you paste the next one.",
+        "facts": ["<b>11 prompts</b> in order", "ends at <b>17 passed</b> · <code>LESSON = 3</code>",
+                  "checks offline · your own free Groq key for the live run"],
+        "outcomes": [("Tenant-scoped retrieval", "the same query finds each tenant's own runbook, with its source and version."),
+                     ("Whole rounds", "the next model request is bounded, and no tool result loses its call."),
+                     ("Versions and expiry", "a stale write fails; an expired or other-tenant memory reads as nothing."),
+                     ("A real model, named", "INC-001 runs on Groq, and the run page says which model answered and where.")],
+        "steps": [
+            ("Prepare the workspace", "Prepare", "confirms lesson-02 · refreshes the course copy",
+             "Opens your project, reads its AGENTS.md, confirms your Session 02 work still passes and updates your "
+             "read-only copy of the course repository, which now holds the Session 03 kit. Your project is not changed.",
+             "the course copy moved to the latest commit, with the Lesson 03 kit files that changed, including "
+             "<code>given/agentic_platform/console/views/runs.js</code>. Your project still at <code>LESSON = 2</code>, "
+             "<b>12 passed</b>."),
+            ("Add the check pack", "Add the check pack", "one given file and checks · no code yet",
+             "Copies the updated console run page into <code>agentic_platform/</code> and the Session 03 checks into your "
+             "project, then lists the exact interfaces they expect. This defines done before anything is built.",
+             "<b>12 passed</b>, and <code>test_lesson03.py</code> failing to import until "
+             "<code>agent_runtime.context</code> exists."),
+            ("Build step 1", "Retrieve within the tenant", "new · agent_runtime/context.py · retrieve",
+             "Builds retrieval that filters the runbooks to the run's tenant before ranking them by visible word "
+             "overlap, keeping each source's ID and version, and puts it behind the runbook_search tool.",
+             "<code>payments</code> finds <b>rb-pool-v1</b> for Astro and <b>rb-quota-v1</b> for Locomotive; earlier "
+             "checks still <b>12 passed</b>."),
+            ("Build step 2", "Whole conversation rounds", "agent_runtime/context.py · select_context",
+             "Selects the next model request: the instruction and task, then whole assistant/tool rounds from the newest "
+             "back, within a character budget. The full history is kept separately.",
+             "a reduced conversation with no orphaned tool-call IDs, and <code>task_exceeds_context_budget</code> when "
+             "even the task does not fit."),
+            ("Build step 3", "Versioned artifacts", "agent_runtime/context.py · EvidenceStore",
+             "Saves investigation reports as tenant-scoped, versioned artifacts. A writer names the version it "
+             "replaces, and a stale expectation fails inside the transaction.",
+             "version <b>1</b>, then <code>stale_artifact_version</code>; <b>14 passed, 3 failed</b> (memory and the two "
+             "real-model checks)."),
+            ("Build step 4", "Memory that expires", "agent_runtime/context.py · remember, recall",
+             "Adds tenant-scoped memory with a time to live, then compares the investigation with the full history and "
+             "with bounded context, reporting the outcome as well as the size.",
+             "the same cited answer either way; <b>15 passed, 2 failed</b>: the two real-model checks."),
+            ("Harden the runtime for a real model", "Harden for a real model",
+             "agent_runtime/core.py · agent_runtime/providers.py",
+             "Prepares the loop for what real models do: an instruction to answer with bare JSON, a fenced answer "
+             "accepted anyway, named failures for rate limits, outages, bad keys and timeouts, and model events that "
+             "record which model answered, at which host and how fast.",
+             "<b>17 passed</b>; still entirely offline."),
+            ("Connect the platform to Groq", "Connect Groq", "~/agentic-course/groq.env · platform restarted",
+             "Writes the Groq settings to a file outside your project, waits while you paste your key into it, checks "
+             "the key without printing it and restarts only the platform on Groq. You submit INC-001 and INC-003 in "
+             "the console.",
+             "INC-001's run page reads <b>tokens from qwen/qwen3.8-27b at api.groq.com</b>, with a cited answer; "
+             "INC-003 should end <code>insufficient_evidence</code>."),
+            ("Learner exercise", "Push on each boundary", "a throwaway script",
+             "Predicts, then runs: the same query for both tenants, a stale artifact write, a smaller context budget "
+             "on a long conversation, and the investigation before and after context selection.",
+             "rb-pool-v1 and rb-quota-v1, stale_artifact_version, no orphaned tool-call IDs, the same cited answer."),
+            ("Verify the checkpoint", "Verify and push", "LESSON = 3 · commit · push",
+             "Runs the full suite and the Session 03 demo unchanged on the offline mock, raises the checkpoint to 3 "
+             "only if the capability is there, and pushes your work. This is the evidence, not the agent's summary.",
+             "<b>17 passed</b>, <code>LESSON = 3</code>, a Lesson 03 entry in <code>AGENTS.md</code>, your work on "
+             "gitlab.ciklum.net, and no key in the commit."),
+            ("Review the result", "Review", "no changes",
+             "Walks through what you built against the completion criteria and points out the design choices the "
+             "checks do not force, such as how your selector measures size.",
+             "A review you can discuss in the next session."),
+        ],
+        "recover": [
+            ("Recover when no runbook matches", "When a runbook search returns nothing for a query you expected to match."),
+            ("Recover when a provider rejects conversation history", "When a model request fails after the history was trimmed."),
+            ("Recover when an artifact update reports stale_artifact_version", "When saving a report fails because another write came first."),
+            ("Recover when memory seems to disappear", "When a remembered value reads as nothing."),
+            ("Recover when a real-model run fails", "When a run on Groq ends with a provider or answer failure code."),
+        ],
+        "next": "Session 04: Build the agent evaluation harness",
+    },
 }
 
 

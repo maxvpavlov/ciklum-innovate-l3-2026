@@ -9,7 +9,7 @@ fail to import, because the modules it needs do not exist yet. Never edit the te
 make them pass.
 
 When everything is built, set `LESSON = 9` in `course/__init__.py`. The full
-suite should then report **39 passed**, and `python -m course.lab 9`
+suite should then report **41 passed**, and `python -m course.lab 9`
 prints the lesson's demo result.
 
 ## Interfaces your code must provide

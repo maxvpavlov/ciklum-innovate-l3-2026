@@ -84,8 +84,8 @@
     "The slow remote task reaches TASK_STATE_CANCELED."
   ],
   "recorded_test_result": {
-    "passed": 29,
-    "seconds": "6.09"
+    "passed": 31,
+    "seconds": "5.12"
   },
   "troubleshooting": [
     {

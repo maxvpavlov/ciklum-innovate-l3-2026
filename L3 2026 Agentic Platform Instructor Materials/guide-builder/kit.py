@@ -52,7 +52,7 @@ PACKAGES = {"agent_runtime", "agentic_platform", "course", "incident"}
 OLD_LAYOUT_UNTIL = 1
 OLD_NAMES = [("course/__init__.py", "incident/__init__.py"), ("course/labs/", "incident/labs/"),
              ("course.lab ", "incident.lab "), ("from your packages", "from your `incident` package")]
-TEST_COUNTS = [1, 7, 12, 15, 17, 19, 27, 29, 35, 39, 45, 50, 53]
+TEST_COUNTS = [1, 7, 12, 17, 19, 21, 29, 31, 37, 41, 47, 52, 55]
 
 
 # The learner's briefing for coding agents. It starts in Lesson 02 (the move-and-start prompt adds it

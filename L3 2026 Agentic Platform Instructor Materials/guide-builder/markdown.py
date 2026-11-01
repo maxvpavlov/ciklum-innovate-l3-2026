@@ -104,6 +104,14 @@ def build_markdown(spec, common, T, troubleshooting_prompt):
         labelled(L["pause"], step.get("pause") or T("step_pause"))
         figures(f"step{k}")
 
+    # The same loop against a real model (Lesson 03)
+    if "live_model" in spec:
+        live = spec["live_model"]
+        add(f"### {live['heading']}")
+        labelled(L["say"], live["say"])
+        for p in live["prompts"]:
+            prompt(p["text"])
+
     # Learner practice
     add(f"## {H['practice_checkpoints']}")
     prompt(T("exercise_prompt", body=spec["exercise"]))

@@ -117,8 +117,8 @@
     "Mismatched or stale replies fail validation, and non-converging review escalates."
   ],
   "recorded_test_result": {
-    "passed": 27,
-    "seconds": "4.41"
+    "passed": 29,
+    "seconds": "3.27"
   },
   "troubleshooting": [
     {

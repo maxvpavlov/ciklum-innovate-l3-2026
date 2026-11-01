@@ -71,7 +71,8 @@ def check_guide(path, n, md_prompts, common, specs_dir):
     prompts = [text for b in blocks if b["kind"] == "p" and b["style"] == "Agent Prompt"
                for label, text in [labelled(b)] if label == labels["prompt"]]
     spec = json.loads((Path(specs_dir) / f"{n:02d}.json").read_text(encoding="utf-8"))
-    expected = 13 + ("layout_prompt" in spec)
+    expected = (9 + len(spec["troubleshooting"]) + ("layout_prompt" in spec)
+                + len(spec.get("live_model", {}).get("prompts", [])))
     if len(prompts) != expected:
         errors.append(f"{len(prompts)} PROMPT paragraphs, expected {expected}")
     if prompts != md_prompts:

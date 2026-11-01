@@ -42,7 +42,8 @@ $PY build.py --make-template "../instructor-guides/09 Build the reusable platfor
 - `check.py` exits non-zero if any of these fails:
   - The header hash does not equal `git rev-parse --short=7 lesson-NN`, or the header does not
     name lesson-(N-1)/lesson-N.
-  - A guide does not have exactly 13 PROMPT paragraphs (14 when its spec has a `layout_prompt`).
+  - A guide does not have exactly 9 PROMPT paragraphs plus one per troubleshooting entry, plus one for a
+    `layout_prompt` (Lesson 02) and one per `live_model` prompt (Lesson 03).
   - A lesson's prompts do not appear verbatim, in order, in its `LEARNER_PROMPTS.md` section, or
     that section holds prompts the guide lacks.
   - A guide does not have exactly 4 REVIEW excerpts, each citing `lesson-NN` and equal to the
@@ -92,6 +93,7 @@ Some templates take extra fields, for example `{body}`, `{file}`, `{start}`/`{en
 | `opening_say` | str | SAY under "Opening and orientation". The SHOW is boilerplate. |
 | `concept_say` | str | SAY under "Concept discussion". The PAUSE is boilerplate. |
 | `steps` | [4 × step] | Build steps 1–4, described below |
+| `live_model` | `{heading, say, prompts: [{heading, text}]}`, optional | A Heading 2 section after step 4 with a SAY and literal prompts, which follow Build step 4 in `LEARNER_PROMPTS.md` under their own headings (used only by 03: harden the runtime for a real model, connect Groq) |
 | `exercise` | str | Body of the learner-exercise prompt, without the "Help me carry out…" / "First state…" frame |
 | `expected_json` | object | Expected lab output, rendered with `json.dumps(indent=2)`. For now it is stored, not computed. |
 | `completion_criteria` | [str] | Bullets |

@@ -4,7 +4,7 @@
 
 **Outcome** Participants present the platform they built through its own console, justify a bounded tuning change with comparable, recorded evidence and explain the architecture, the four platform components, failures and remaining limitations.
 
-Duration: 90 minutes. Starting checkpoint: lesson-11. Ending checkpoint: lesson-12 (bf699c7).
+Duration: 90 minutes. Starting checkpoint: lesson-11. Ending checkpoint: lesson-12 (2c253d6).
 
 Word version: [12 Tune and present your agentic platform.docx](12%20Tune%20and%20present%20your%20agentic%20platform.docx)
 
@@ -267,7 +267,7 @@ return {"baseline_success": baseline["success_rate"], "candidate_success": candi
 - Permission, recovery or cancellation behaviour is demonstrated.
 - The presenter can explain code ownership, protocol boundaries, measurements and limitations.
 
-The independently unpacked lesson-12 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 12 check pack from the course kit. Recorded test result: 53 passed in 28.71s. Learners commit and push their checkpoint to their GitLab repository; lesson-12 (bf699c7) remains the instructor's answer key.
+The independently unpacked lesson-12 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 12 check pack from the course kit. Recorded test result: 55 passed in 20.39s. Learners commit and push their checkpoint to their GitLab repository; lesson-12 (2c253d6) remains the instructor's answer key.
 
 ### Files changed in this checkpoint
 
@@ -309,7 +309,7 @@ In the reference, this checkpoint changed the files below. Learners write the im
 
 ## Verification scope
 
-All course tags were independently unpacked and tested. The completed repository has 53 passing tests. Real local MCP stdio, the tool gateway's shared sessions and pinned definitions, A2A HTTP discovery, streaming, delegated-token authentication and cancellation were exercised. The platform console was driven in a headless Chromium browser against every checkpoint from lesson-08 onward.
+All course tags were independently unpacked and tested. The completed repository has 55 passing tests. Real local MCP stdio, the tool gateway's shared sessions and pinned definitions, A2A HTTP discovery, streaming, delegated-token authentication and cancellation were exercised. The platform console was driven in a headless Chromium browser against every checkpoint from lesson-08 onward.
 
 Live model credentials, paid provider calls, live model judging, third-party MCP or A2A services, remote MCP OAuth, an enterprise identity provider, a managed secret vault, production cloud rollout and an external observability collector were not tested. The offline provider is a deterministic fixture, so its usage and quality results are teaching measurements. Read TESTING.md for the full scope and environment details.
 

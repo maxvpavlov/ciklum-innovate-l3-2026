@@ -4,7 +4,7 @@
 
 **Outcome** Agents become validated, immutable registry definitions that run through one platform API, remote A2A agents are pinned by Agent Card hash, and analysts and operators inspect the platform in a tenant-scoped console.
 
-Duration: 90 minutes. Starting checkpoint: lesson-07. Ending checkpoint: lesson-08 (36ee7ea).
+Duration: 90 minutes. Starting checkpoint: lesson-07. Ending checkpoint: lesson-08 (841cd77).
 
 Word version: [08 Platform core agent registry and console.docx](08%20Platform%20core%20agent%20registry%20and%20console.docx)
 
@@ -306,7 +306,7 @@ export function h(tag, attrs = {}, ...children) {
 - A second lease claim is rejected, another tenant's run returns 404, and a decision requires an operator and the current action key.
 - The console is served at /console under a strict Content-Security-Policy, renders API data as text only and shows each identity only its tenant's runs; every API handler is asynchronous.
 
-The independently unpacked lesson-08 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 08 check pack from the course kit. Recorded test result: 35 passed in 7.53s. Learners commit and push their checkpoint to their GitLab repository; lesson-08 (36ee7ea) remains the instructor's answer key.
+The independently unpacked lesson-08 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 08 check pack from the course kit. Recorded test result: 37 passed in 5.84s. Learners commit and push their checkpoint to their GitLab repository; lesson-08 (841cd77) remains the instructor's answer key.
 
 ### Files changed in this checkpoint
 
@@ -356,7 +356,7 @@ In the reference, this checkpoint changed the files below. Learners write the im
 
 ## Verification scope
 
-All course tags were independently unpacked and tested. The completed repository has 53 passing tests. Real local MCP stdio, the tool gateway's shared sessions and pinned definitions, A2A HTTP discovery, streaming, delegated-token authentication and cancellation were exercised. The platform console was driven in a headless Chromium browser against every checkpoint from lesson-08 onward.
+All course tags were independently unpacked and tested. The completed repository has 55 passing tests. Real local MCP stdio, the tool gateway's shared sessions and pinned definitions, A2A HTTP discovery, streaming, delegated-token authentication and cancellation were exercised. The platform console was driven in a headless Chromium browser against every checkpoint from lesson-08 onward.
 
 Live model credentials, paid provider calls, live model judging, third-party MCP or A2A services, remote MCP OAuth, an enterprise identity provider, a managed secret vault, production cloud rollout and an external observability collector were not tested. The offline provider is a deterministic fixture, so its usage and quality results are teaching measurements. Read TESTING.md for the full scope and environment details.
 

@@ -4,7 +4,7 @@
 
 **Outcome** Every run acts for a named user through short-lived, audience-bound tokens that narrow at each child or remote agent. The gateway and the A2A specialist verify them, secrets are released only by reference, and hostile inputs are contained.
 
-Duration: 90 minutes. Starting checkpoint: lesson-09. Ending checkpoint: lesson-10 (c208700).
+Duration: 90 minutes. Starting checkpoint: lesson-09. Ending checkpoint: lesson-10 (b410772).
 
 Word version: [10 Agent identity delegated credentials and containment.docx](10%20Agent%20identity%20delegated%20credentials%20and%20containment.docx)
 
@@ -298,7 +298,7 @@ class CredentialStore:
 - Secrets are released by reference only to named consumers, with every release audited.
 - Injected writes, path escapes, metadata egress, fabricated citations and credential strings in events are contained or redacted.
 
-The independently unpacked lesson-10 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 10 check pack from the course kit. Recorded test result: 45 passed in 21.06s. Learners commit and push their checkpoint to their GitLab repository; lesson-10 (c208700) remains the instructor's answer key.
+The independently unpacked lesson-10 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 10 check pack from the course kit. Recorded test result: 47 passed in 20.07s. Learners commit and push their checkpoint to their GitLab repository; lesson-10 (b410772) remains the instructor's answer key.
 
 ### Files changed in this checkpoint
 
@@ -351,7 +351,7 @@ In the reference, this checkpoint changed the files below. Learners write the im
 
 ## Verification scope
 
-All course tags were independently unpacked and tested. The completed repository has 53 passing tests. Real local MCP stdio, the tool gateway's shared sessions and pinned definitions, A2A HTTP discovery, streaming, delegated-token authentication and cancellation were exercised. The platform console was driven in a headless Chromium browser against every checkpoint from lesson-08 onward.
+All course tags were independently unpacked and tested. The completed repository has 55 passing tests. Real local MCP stdio, the tool gateway's shared sessions and pinned definitions, A2A HTTP discovery, streaming, delegated-token authentication and cancellation were exercised. The platform console was driven in a headless Chromium browser against every checkpoint from lesson-08 onward.
 
 Live model credentials, paid provider calls, live model judging, third-party MCP or A2A services, remote MCP OAuth, an enterprise identity provider, a managed secret vault, production cloud rollout and an external observability collector were not tested. The offline provider is a deterministic fixture, so its usage and quality results are teaching measurements. Read TESTING.md for the full scope and environment details.
 

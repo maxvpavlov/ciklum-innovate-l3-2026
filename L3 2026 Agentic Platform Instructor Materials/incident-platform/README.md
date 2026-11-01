@@ -135,7 +135,9 @@ fixture and writes only to the local SQLite effect ledger.
 
 The adapters support tool-capable OpenAI-compatible Chat Completions and
 Anthropic Messages. Live services are optional and were not exercised for the
-reference verification.
+reference verification. In Session 03 learners connect their platform to Groq with their
+own free key, kept in a file outside the repository; the Lesson 03 prompts in
+[LEARNER_PROMPTS.md](LEARNER_PROMPTS.md) show how. The check packs always run on the mock.
 
 > Help me configure the existing model adapter for a provider and model I am
 > authorized to use. Inspect the configuration interface, identify required
@@ -186,7 +188,7 @@ infrastructure controls require deliberate configuration and validation.
 ## Verification and limits
 
 See [TESTING.md](TESTING.md) for the reference verification record. Every code
-checkpoint was independently unpacked and tested, with 53 tests passing at the
+checkpoint was independently unpacked and tested, with 55 tests passing at the
 final checkpoint. Actual local MCP stdio, the gateway's shared sessions and
 pinned tool definitions, A2A HTTP transport, streaming, delegated-token
 authentication and cancellation were exercised, and the console was driven in a

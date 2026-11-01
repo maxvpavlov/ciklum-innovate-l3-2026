@@ -8,16 +8,16 @@ guide extracts its code excerpts from the exact ending Git tag.
 | lesson-00 | 1 |
 | lesson-01 | 7 |
 | lesson-02 | 12 |
-| lesson-03 | 15 |
-| lesson-04 | 17 |
-| lesson-05 | 19 |
-| lesson-06 | 27 |
-| lesson-07 | 29 |
-| lesson-08 | 35 |
-| lesson-09 | 39 |
-| lesson-10 | 45 |
-| lesson-11 | 50 |
-| lesson-12 | 53 |
+| lesson-03 | 17 |
+| lesson-04 | 19 |
+| lesson-05 | 21 |
+| lesson-06 | 29 |
+| lesson-07 | 31 |
+| lesson-08 | 37 |
+| lesson-09 | 41 |
+| lesson-10 | 47 |
+| lesson-11 | 52 |
+| lesson-12 | 55 |
 
 Every checkpoint was unpacked independently using git archive. Its full test
 suite and its lesson demonstration passed. The final suite includes repeated
@@ -39,6 +39,11 @@ platform components added in the reframed course are covered too:
   return the executor's decisions (permission_denied, invalid_arguments, an allowed read,
   and approval_required with an exact-action key for an operator). These two checks run
   unchanged in every later checkpoint, against the platform API that replaces the shell.
+- **Real-model hardening (from lesson-03):** with an OpenAI-compatible endpoint faked at the
+  HTTP layer, a final answer in a Markdown fence still completes, every model event records
+  the model the endpoint reported, its host and the call time, and HTTP 429, 503 and 401 and a
+  timeout end the run as provider_rate_limited, provider_unavailable, provider_http_401 and
+  provider_timeout. The console's run page shows the model and host from those events.
 - **Console:** CSP headers, tenant-scoped views, operator-only actions, a static check
   that no console script renders HTML from data, and a check that API handlers run
   on the event loop (they share one SQLite connection with the workers).

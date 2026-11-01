@@ -91,6 +91,14 @@ class HTTPProvider:
                 response = await client.post(self.base_url+path, headers=headers, json=body)
                 response.raise_for_status()
                 data = response.json()
+            except httpx.TimeoutException:
+                raise RuntimeError("provider_timeout") from None
+            except httpx.HTTPStatusError as exc:
+                # Name the failures a real endpoint returns, so a run says why it stopped.
+                status = exc.response.status_code
+                raise RuntimeError("provider_rate_limited" if status == 429 else
+                                   "provider_unavailable" if status >= 500 else
+                                   f"provider_http_{status}") from None
             except (httpx.HTTPError, ValueError) as exc:
                 # Avoid copying response bodies or header material into logs.
                 raise RuntimeError(f"provider_{type(exc).__name__}") from None
@@ -108,7 +116,8 @@ class HTTPProvider:
             raw = data["choices"][0]["message"]
             message = {k: v for k, v in raw.items() if k in {"role", "content", "tool_calls"}}
             ins, outs = usage.get("prompt_tokens", 0), usage.get("completion_tokens", 0)
-        return Reply(message, ins+outs, (ins*self.input_rate+outs*self.output_rate)/1_000_000)
+        return Reply(message, ins+outs, (ins*self.input_rate+outs*self.output_rate)/1_000_000,
+                     model=data.get("model") or self.model, host=httpx.URL(self.base_url).host)
 
 
 def provider_from_env(credentials=None):

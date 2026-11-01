@@ -1,0 +1,1028 @@
+<title>Session 03: Context and memory</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: one long scroll on drafting-paper ground; chapters that alternate prose and evidence,
+   full-width "switch to terminal" bands, and a Read/Present toggle that hides reading prose. */
+:root {
+  --paper: #f2f4f6;        /* cool drafting paper */
+  --sheet: #fbfcfd;        /* raised surfaces */
+  --ink: #15202e;          /* navy ink */
+  --muted: #586678;
+  --rule: #cfd6df;
+  --signal: #d9481f;       /* incident signal: today's box, guards, terminal cues */
+  --signal-soft: #fbe4dc;
+  --model: #3f5bd0;        /* the model's turn in transcripts */
+  --tool: #1d7a62;         /* tool observations */
+  --term-bg: #10161f;
+  --term-fg: #dfe6ee;
+  --display: "Archivo", "Arial Narrow", system-ui, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0f151d; --sheet: #161e29; --ink: #e5ebf2; --muted: #9aa8b8; --rule: #2a3542;
+    --signal: #ff7a4d; --signal-soft: #3a1d14; --model: #8ea2ff; --tool: #57c9a6;
+    --term-bg: #0a0e14; --term-fg: #dfe6ee; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0f151d; --sheet: #161e29; --ink: #e5ebf2; --muted: #9aa8b8; --rule: #2a3542;
+  --signal: #ff7a4d; --signal-soft: #3a1d14; --model: #8ea2ff; --tool: #57c9a6;
+  --term-bg: #0a0e14; --term-fg: #dfe6ee; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  background: var(--paper); color: var(--ink); font: 17px/1.6 var(--body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--signal); outline-offset: 3px; }
+
+main { max-width: 1040px; margin: 0 auto; }
+section.ch { padding-block: 72px 24px; border-top: 1px solid var(--rule); scroll-margin-top: 8px; }
+section.ch:first-of-type { border-top: 0; }
+.eyebrow { font: 600 12.5px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--signal);
+  display: flex; gap: 14px; flex-wrap: wrap; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; }
+h2 { font-size: clamp(30px, 4.4vw, 46px); font-variation-settings: "wdth" 82; font-weight: 750;
+  line-height: 1.05; letter-spacing: -.01em; margin-top: 14px; }
+h3 { font-size: 21px; font-weight: 650; font-variation-settings: "wdth" 92; }
+p { margin: 0; }
+.lede { font-size: 20px; line-height: 1.55; max-width: 62ch; color: var(--ink); margin-top: 18px; }
+.prose { max-width: 66ch; display: grid; gap: 14px; margin-top: 18px; }
+.muted { color: var(--muted); }
+code, .mono { font-family: var(--mono); font-size: .9em; }
+.stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; margin-top: 34px; }
+.stack > * { min-width: 0; }
+.two { display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.two > * { min-width: 0; }
+
+/* Read / Present toggle: always visible; Present hides reading prose and keeps headings, diagrams and key points */
+.view { position: fixed; z-index: 10; top: calc(14px + env(safe-area-inset-top, 0px)); right: max(14px, env(safe-area-inset-right, 0px));
+  display: flex; padding: 3px; gap: 2px; background: var(--sheet); border: 1px solid var(--rule); border-radius: 999px;
+  box-shadow: 0 2px 10px rgba(15, 21, 29, .12); }
+.view button { font: 600 12.5px var(--mono); letter-spacing: .04em; color: var(--muted); background: transparent; border: 0;
+  border-radius: 999px; padding: 6px 14px; cursor: pointer; }
+.view button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+/* Theme toggle, top left: one icon button. The page follows the system theme until the viewer toggles it;
+   the choice (light or dark) is then remembered for all the course pages. */
+.theme { position: fixed; z-index: 10; top: calc(14px + env(safe-area-inset-top, 0px)); left: max(14px, env(safe-area-inset-left, 0px));
+  display: grid; place-items: center; width: 38px; height: 38px; padding: 0; color: var(--muted); background: var(--sheet);
+  border: 1px solid var(--rule); border-radius: 999px; box-shadow: 0 2px 10px rgba(15, 21, 29, .12); cursor: pointer; }
+.theme:hover { color: var(--ink); }
+.theme svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.present .lede, .present .prose, .present figcaption, .present .say, .present .cards > div > p,
+.present .turn .note, .present .terminal .goal, .present .read { display: none; }
+/* A card row whose cards hold only a title and a paragraph would show just titles in Present mode: hide it there.
+   Cards with a visible answer line (.ans) keep it, and a row marked .keep stays because its titles are the content. */
+.present .cards:not(.keep):not(:has(> div > :not(.q, p))) { display: none; }
+
+/* Say-this lines */
+.say { border-left: 3px solid var(--ink); padding: 4px 0 4px 18px; font-size: 19px; font-style: italic; max-width: 60ch; }
+.ask { display: grid; gap: 6px; padding: 18px 20px; background: var(--sheet); border: 1px solid var(--rule);
+  border-radius: 10px; max-width: 68ch; }
+.ask .q { font: 650 19px/1.35 var(--display); font-variation-settings: "wdth" 92; }
+.ask .label { font: 600 11.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.ask details summary { cursor: pointer; color: var(--muted); font-size: 15px; }
+.ask details p { margin-top: 6px; }
+.ask ol.steps { margin: 4px 0 0; padding-left: 22px; display: grid; gap: 4px; }
+.route { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 6px; font: 600 13.5px var(--mono); }
+.route a { text-decoration: none; color: var(--ink); background: var(--sheet); border: 1px solid var(--rule); border-radius: 999px; padding: 6px 12px; }
+.route a:hover { border-color: var(--signal); color: var(--signal); }
+.route .arr { color: var(--muted); }
+pre.layout { margin: 0; font: 13.5px/1.55 var(--mono); background: #18212d; border: 1px solid #263140; border-radius: 8px; padding: 12px 16px; overflow-x: auto; color: var(--term-fg); }
+pre.layout .dim { color: #8193a8; }
+pre.layout .mark { background: rgba(255, 155, 116, .16); display: inline-block; width: 100%; }
+.links { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.links a { display: grid; gap: 4px; padding: 14px 16px; background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; text-decoration: none; min-width: 0; }
+.links a:hover { border-color: var(--signal); }
+.links .q { font: 700 16px var(--display); font-variation-settings: "wdth" 90; color: var(--ink); }
+.links .mono { font-size: 13px; color: var(--signal); overflow-wrap: anywhere; }
+.links .muted { font-size: 13.5px; }
+
+/* Hero */
+.hero { padding-block: 64px 56px; display: grid; gap: 22px; }
+.hero .course { font: 600 13px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.hero .course { display: flex; align-items: center; flex-wrap: wrap; gap: 0 .5em; }
+.hero .course .brand { height: 18px; width: auto; display: block; }
+.hero .course .brand .word { fill: var(--ink); }
+.hero h1 { font-size: clamp(44px, 8.2vw, 104px); line-height: .92; font-weight: 800;
+  font-variation-settings: "wdth" 68; letter-spacing: -.015em; }
+.hero h1 .sub { display: block; font-weight: 500; font-variation-settings: "wdth" 100; font-size: .34em;
+  letter-spacing: 0; line-height: 1.2; margin-top: 18px; color: var(--muted); }
+.facts { display: flex; flex-wrap: wrap; gap: 10px 26px; font: 500 14px var(--mono); color: var(--muted); }
+.facts b { color: var(--ink); font-weight: 600; }
+
+/* Incident ticket */
+.ticket { background: var(--sheet); border: 1px solid var(--rule); border-radius: 12px; overflow: hidden; max-width: 760px; }
+.ticket header { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 14px 20px;
+  border-bottom: 1px solid var(--rule); font: 600 14px var(--mono); }
+.sev { color: var(--signal); }
+.ticket dl { display: grid; grid-template-columns: max-content 1fr; gap: 8px 22px; margin: 0; padding: 18px 20px; }
+.ticket dt { font: 500 13px var(--mono); color: var(--muted); }
+.ticket dd { margin: 0; }
+.criteria { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); counter-reset: c; }
+.criteria div { padding-top: 14px; border-top: 2px solid var(--ink); }
+.criteria b { display: block; font: 650 18px var(--display); font-variation-settings: "wdth" 92; margin-bottom: 4px; }
+
+/* Diagrams */
+figure { margin: 0; }
+.diagram { background: var(--sheet); border: 1px solid var(--rule); border-radius: 12px; padding: 18px; overflow-x: auto; }
+.diagram svg { display: block; width: 100%; min-width: 620px; height: auto; }
+figcaption { font-size: 14.5px; color: var(--muted); margin: 10px auto 0; max-width: 70ch; text-align: center; }
+svg text { font-family: var(--mono); fill: var(--ink); }
+svg .lbl { font-family: var(--body); font-size: 15px; font-weight: 600; }
+svg .small { font-size: 12px; fill: var(--muted); }
+svg .box { fill: var(--paper); stroke: var(--rule); stroke-width: 1.5; }
+svg .today { fill: var(--signal-soft); stroke: var(--signal); stroke-width: 2.5; }
+svg .ink { stroke: var(--ink); fill: none; stroke-width: 1.8; }
+svg .arrowhead { fill: var(--ink); }
+svg .sig { fill: var(--signal); }
+svg .fail { fill: var(--signal-soft); stroke: var(--signal); stroke-width: 2; }
+svg .failhead { fill: var(--signal); font-size: 11px; font-weight: 700; letter-spacing: .08em; }
+svg .failcode { fill: var(--signal); font-size: 14px; font-weight: 600; }
+svg .err { stroke: var(--signal); fill: none; stroke-width: 2; }
+svg .errlbl { fill: var(--signal); font-size: 12px; font-weight: 600; }
+svg .think { fill: var(--sheet); stroke: var(--model); stroke-width: 2.5; }
+svg .act { fill: var(--sheet); stroke: var(--tool); stroke-width: 2.5; }
+svg .done { fill: var(--sheet); stroke: var(--tool); stroke-width: 2; }
+svg .donetxt { fill: var(--tool); font-size: 15px; font-weight: 600; }
+svg .frame { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 6 5; }
+
+/* Comparison */
+.compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
+.compare > div { background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; padding: 20px; display: grid; gap: 10px; align-content: start; }
+.compare ol { margin: 0; padding-left: 20px; font-family: var(--mono); font-size: 14.5px; display: grid; gap: 4px; }
+
+/* Transcript */
+.transcript { display: grid; gap: 0; max-width: 900px; }
+.turn { display: grid; grid-template-columns: 92px 1fr; gap: 16px; padding: 14px 0; border-bottom: 1px dashed var(--rule); }
+.turn:last-child { border-bottom: 0; }
+.who { font: 600 12.5px/1.3 var(--mono); text-transform: uppercase; letter-spacing: .06em; padding-top: 3px; }
+.who.rt { color: var(--ink); }
+.who.m { color: var(--model); } .who.t { color: var(--tool); } .who.u { color: var(--muted); } .who.r { color: var(--signal); }
+.turn pre { margin: 0; font: 14px/1.5 var(--mono); white-space: pre-wrap; word-break: break-word; min-width: 0; }
+.turn .note { font-size: 14.5px; color: var(--muted); margin-top: 6px; }
+.turn p + pre { margin-top: 8px; }
+.tally { display: flex; flex-wrap: wrap; gap: 10px 28px; font: 500 14px var(--mono); color: var(--muted); margin-top: 14px; }
+.tally b { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* Tables */
+.tablewrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 10px; background: var(--sheet); }
+table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 15.5px; }
+th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font: 600 12px var(--mono); text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+tr:last-child td { border-bottom: 0; }
+td code { white-space: nowrap; }
+.own-app { color: var(--tool); font-weight: 600; }
+.own-model { color: var(--model); font-weight: 600; }
+
+/* Course-opening cards */
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.cards > div { background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; padding: 18px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.cards .q { font: 700 19px/1.25 var(--display); font-variation-settings: "wdth" 88; }
+.cards .ans { font: 500 12.5px var(--mono); color: var(--signal); letter-spacing: .02em; }
+tr.now td { background: var(--signal-soft); }
+.cards.six { grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); }
+.cards.pairs { grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr)); }
+
+/* Guards */
+.guards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+.guard { background: var(--sheet); border: 1px solid var(--rule); border-top: 3px solid var(--signal); border-radius: 8px;
+  padding: 16px 18px; display: grid; gap: 8px; align-content: start; }
+.guard .code { font: 600 15px var(--mono); color: var(--signal); }
+.guard .lim { font: 500 13px var(--mono); color: var(--muted); }
+
+/* Terminal bands */
+.terminal { margin-block: 30px 6px; background: var(--term-bg); color: var(--term-fg); border-radius: 14px; overflow: hidden; }
+.terminal .bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;
+  padding: 14px 20px; border-bottom: 1px solid #263140; }
+.terminal .switch { font: 700 13px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: #ff9b74;
+  display: flex; align-items: center; gap: 10px; }
+.terminal .switch::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: #ff9b74;
+  box-shadow: 0 0 0 4px rgba(255, 155, 116, .18); }
+.terminal .file { font: 500 13px var(--mono); color: #9fb0c3; }
+.terminal .body { padding: 18px 20px 20px; display: grid; gap: 14px; }
+.terminal .goal { font-size: 16px; color: #c4cfdb; max-width: 70ch; }
+.prompt { position: relative; font: 14.5px/1.6 var(--mono); background: #18212d; border: 1px solid #263140; border-radius: 8px;
+  padding: 14px 16px 14px 16px; white-space: pre-wrap; word-break: break-word; }
+.prompt .pfx { color: #ff9b74; user-select: none; }
+/* Prompts start collapsed; the copy button works either way */
+details.fold > summary { cursor: pointer; list-style: none; font: 600 13px var(--mono); color: #ff9b74;
+  display: inline-flex; align-items: center; gap: 8px; padding: 4px 0; }
+details.fold > summary::-webkit-details-marker { display: none; }
+details.fold > summary::before { content: "▸"; transition: transform .15s; }
+details.fold[open] > summary::before { transform: rotate(90deg); }
+details.fold > summary .hide, details.fold[open] > summary .show { display: none; }
+details.fold[open] > summary .hide { display: inline; }
+details.fold[open] > .prompt { margin-top: 8px; }
+.expect { font: 500 13.5px/1.6 var(--mono); color: #9fb0c3; background: #18212d; border: 1px solid #263140;
+  border-radius: 8px; padding: 10px 16px; margin-top: 8px; white-space: pre-wrap; word-break: break-word; }
+.expect .pfx { color: #ff9b74; user-select: none; }
+.expect b { color: #8fe0c3; font-weight: 600; }
+.copy { font: 600 12.5px var(--mono); color: var(--term-fg); background: transparent; border: 1px solid #3a4a5e;
+  border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+.copy:hover { border-color: #ff9b74; color: #ff9b74; }
+.terminal .check { font: 500 13.5px var(--mono); color: #9fb0c3; }
+.terminal .check b { color: #8fe0c3; font-weight: 600; }
+
+/* Code excerpt */
+.excerpt { background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; overflow-x: auto; }
+.excerpt .src { font: 500 12.5px var(--mono); color: var(--muted); padding: 10px 16px; border-bottom: 1px solid var(--rule); }
+.excerpt pre { margin: 0; padding: 14px 16px; font: 14px/1.55 var(--mono); }
+.excerpt .hl { background: var(--signal-soft); display: inline-block; width: 100%; }
+.excerpt .n { color: var(--signal); font-weight: 700; display: inline-block; width: 2.4ch; }
+.excerpt .muted { color: var(--muted); }
+dl.fields { display: grid; grid-template-columns: max-content 1fr; max-width: 72ch; gap: 6px 14px; margin: 0; align-content: start; font-size: 15.5px; }
+dl.fields dt { font-weight: 600; }
+dl.fields dd { margin: 0; }
+dl.fields dd.note { grid-column: 1 / -1; color: var(--muted); font-style: italic; margin-top: 4px; }
+ul.key { margin: 0; padding-left: 22px; display: grid; gap: 6px; max-width: 72ch; }
+
+/* Exercise grid */
+.predict { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+.predict div { border: 1px solid var(--rule); border-radius: 10px; padding: 16px; background: var(--sheet); display: grid; gap: 6px; }
+.predict .set { font: 500 14px var(--mono); }
+.predict .out { font: 600 15px var(--mono); color: var(--signal); }
+
+.result { font: 14px/1.5 var(--mono); background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; padding: 16px 18px; overflow-x: auto; margin: 0; }
+.big { font: 800 clamp(56px, 9vw, 96px)/1 var(--display); font-variation-settings: "wdth" 70; color: var(--signal); }
+footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 14px; display: grid; gap: 8px; }
+@media (max-width: 560px) {
+  .turn { grid-template-columns: 1fr; gap: 4px; }
+  .ticket dl { grid-template-columns: 1fr; gap: 2px 0; }
+  .ticket dd { margin-bottom: 8px; }
+  body { font-size: 16px; }
+}
+/* Session 02 additions */
+.guard.ok { border-top-color: var(--tool); }
+.guard.ok .code { color: var(--tool); }
+#review { display: grid; gap: 14px; }
+.shot { display: block; width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 10px; background: var(--sheet); }
+.terminal .rlabel { font-size: 16px; color: #c4cfdb; max-width: 70ch; }
+</style>
+
+<div class="view" role="group" aria-label="View">
+  <button type="button" data-view="read" aria-pressed="true">Read</button>
+  <button type="button" data-view="present" aria-pressed="false">Present</button>
+</div>
+
+<main>
+
+<header class="hero" id="start">
+  <p class="course"><svg class="brand" viewBox="0 0 201 63" role="img" aria-label="Ciklum"><title>Ciklum</title><g clip-path="url(#clip0_66_2876)"><path d="M32.5376 62.9997C14.8709 62.9997 0.5 48.8685 0.5 31.4992C0.5 14.1298 14.8709 -0.000291626 32.5376 -0.000291626C40.6964 -0.012511 48.5501 3.04901 54.4842 8.5533C55.387 9.37423 55.4412 10.7595 54.6062 11.647C53.7713 12.5346 52.3623 12.5879 51.4595 11.767C51.4505 11.7592 51.4426 11.7515 51.4336 11.7437C46.3243 7.00477 39.562 4.36982 32.5376 4.37982C17.3283 4.37982 4.95396 16.5459 4.95396 31.4992C4.95396 46.4524 17.3283 58.6196 32.5376 58.6196C39.8569 58.6396 46.8802 55.7791 52.0426 50.677C52.9261 49.8349 54.3362 49.8561 55.1938 50.7236C56.0321 51.5734 56.0321 52.9242 55.1938 53.774C49.1975 59.7005 41.0399 63.023 32.5376 62.9997Z" fill="url(#paint0_linear_66_2876)"></path><path d="M32.5376 54.4153C19.6864 54.4153 9.23053 44.1354 9.23053 31.4994C9.19776 21.4884 15.8053 12.6249 25.5244 9.64001C26.6848 9.23677 27.9582 9.83441 28.3683 10.9742C28.7785 12.115 28.1706 13.3669 27.0113 13.7702C26.9628 13.7868 26.9142 13.8024 26.8645 13.8157C19.0017 16.2307 13.6585 23.4013 13.6856 31.4994C13.6856 41.7193 22.1427 50.0352 32.5376 50.0352C34.3126 50.0352 36.0797 49.7908 37.7858 49.3065C38.9677 48.9688 40.2037 49.6375 40.5472 50.7995C40.8907 51.9614 40.2105 53.1767 39.0287 53.5144C36.9192 54.1131 34.734 54.4164 32.5376 54.4153Z" fill="url(#paint1_linear_66_2876)"></path><path d="M32.5376 45.8306C24.4883 45.8306 17.9622 39.4154 17.9622 31.5006C17.9622 27.5559 19.6152 23.7868 22.5325 21.0796C23.4263 20.2487 24.8363 20.2887 25.6815 21.1674C26.5266 22.0461 26.486 23.4324 25.5922 24.2622C23.5585 26.1362 22.4082 28.7578 22.4207 31.4983C22.4229 36.9937 26.956 41.446 32.5455 41.4438C35.2549 41.4427 37.8513 40.373 39.7518 38.4756C40.6037 37.6025 42.0138 37.5736 42.9019 38.4112C43.79 39.2488 43.8193 40.6351 42.9674 41.5083C42.9539 41.5227 42.9403 41.536 42.9256 41.5494C40.1936 44.2965 36.4458 45.8406 32.5376 45.8295V45.8306Z" fill="url(#paint2_linear_66_2876)"></path><path d="M89.1148 35.9531C88.7058 35.9531 88.4832 36.1753 88.2979 36.3553C86.4416 38.1804 84.7705 38.7992 82.2452 38.7992C77.8647 38.7992 74.5621 35.3311 74.5621 30.801C74.5621 26.2709 77.9042 22.8028 82.2452 22.8028C84.5479 22.8028 86.1817 23.606 88.0742 25.0656C88.3002 25.2878 88.7058 25.4678 88.8911 25.4678C89.5227 25.4678 90.1543 24.8468 90.1543 24.2258C90.1543 24.0037 89.9283 23.606 89.7453 23.2038C88.0742 21.7908 85.9953 20.37 82.2452 20.37C76.4162 20.37 72.0357 24.8601 72.0357 30.8121V31.0343C72.0357 36.9851 76.4162 41.4763 82.2452 41.4763C85.3648 41.4763 87.6686 40.6732 89.9283 38.4104C90.1543 38.1882 90.3374 37.7894 90.3374 37.6072C90.3396 36.5741 89.708 35.9531 89.1148 35.9531Z" class="word"></path><path d="M99.9164 20.4031C99.2848 20.4031 98.6544 21.0241 98.6544 21.6439V39.4176C98.6544 40.0386 99.2848 40.6585 99.9164 40.6585C100.548 40.6585 101.178 40.0386 101.178 39.4176V21.6073C101.181 21.0241 100.55 20.4031 99.9164 20.4031Z" class="word"></path><path d="M119.485 29.6021L126.581 22.6293C126.989 22.2282 126.989 22.0094 126.989 21.8261C126.989 21.2062 126.358 20.5853 125.727 20.5853C125.318 20.5853 125.096 20.8074 124.91 20.9874L113.433 32.4859V21.8628C113.433 21.2429 112.802 20.6219 112.171 20.6219C111.541 20.6219 110.909 21.0241 110.909 21.8628V39.6765C110.909 40.2974 111.539 40.9173 112.171 40.9173C112.803 40.9173 113.433 40.2974 113.433 39.6765V35.5885L117.815 31.2806L125.314 40.2974C125.54 40.6984 125.945 40.6984 126.353 40.6984C126.985 40.6984 127.616 40.0786 127.616 39.4576C127.616 39.0566 127.39 38.8367 127.207 38.6545L119.485 29.6021Z" class="word"></path><path d="M148.594 38.399H138.199V21.6073C138.199 20.9874 137.567 20.3664 136.937 20.3664C136.306 20.3664 135.674 20.9874 135.674 21.6073V39.421C135.674 40.0419 136.305 40.6618 136.937 40.6618H148.595C149.225 40.6618 149.857 40.0419 149.857 39.421C149.857 38.8367 149.224 38.399 148.594 38.399Z" class="word"></path><path d="M171.279 20.4031C170.648 20.4031 170.016 21.0241 170.016 21.6439V32.267C170.016 36.355 167.937 38.6178 163.964 38.6178C160.214 38.6178 157.913 36.1739 157.913 32.0838V21.6417C157.913 21.0218 157.281 20.4009 156.651 20.4009C156.02 20.4009 155.393 21.0241 155.393 21.6439V32.267C155.393 37.5992 158.735 41.0639 163.933 41.0639C169.13 41.0639 172.472 37.5958 172.472 32.0471V21.605C172.541 21.0241 171.91 20.4031 171.279 20.4031Z" class="word"></path><path d="M200.5 21.6439V39.4565C200.482 40.0675 199.859 40.6684 199.238 40.6684C198.616 40.6684 197.976 40.0486 197.976 39.4276V25.2942L191.923 34.0911C191.882 34.1644 191.834 34.2333 191.78 34.2977C191.763 34.3188 191.743 34.3388 191.724 34.3577C191.505 34.5832 191.202 34.7109 190.885 34.712H190.801L190.716 34.702C190.345 34.6454 190.023 34.4199 189.845 34.0944L183.794 25.2975V39.421C183.794 40.0419 183.162 40.6618 182.532 40.6618C181.901 40.6618 181.267 40.0419 181.267 39.421V21.6473C181.267 21.0263 181.899 20.4064 182.53 20.4064H182.716C183.347 20.4064 183.533 20.8074 183.755 21.0263L190.885 31.2528L198.013 21.0263C198.239 20.8041 198.421 20.4064 199.053 20.4064H199.232C199.868 20.4031 200.5 21.023 200.5 21.6439Z" class="word"></path></g><defs><linearGradient id="paint0_linear_66_2876" x1="27.5006" y1="45.0805" x2="36.3635" y2="-14.7968" gradientUnits="userSpaceOnUse"><stop stop-color="#8CFFC6"></stop><stop offset="0.6" stop-color="#1324BF"></stop></linearGradient><linearGradient id="paint1_linear_66_2876" x1="24.9335" y1="10.6742" x2="24.9335" y2="41.7171" gradientUnits="userSpaceOnUse"><stop offset="0.47" stop-color="#1324BF"></stop><stop offset="1" stop-color="#8CFFC6"></stop></linearGradient><linearGradient id="paint2_linear_66_2876" x1="24.6601" y1="23.579" x2="31.0212" y2="38.0706" gradientUnits="userSpaceOnUse"><stop stop-color="#1324BF"></stop><stop offset="1" stop-color="#8CFFC6"></stop></linearGradient><clipPath id="clip0_66_2876"><rect width="200" height="63" fill="white" transform="translate(0.5)"></rect></clipPath></defs></svg><span aria-hidden="true">·</span><span>Innovate</span><span aria-hidden="true">·</span><span>2026</span><span aria-hidden="true">·</span><span>Session 03 of 12</span></p>
+  <h1>Context, retrieval and memory<span class="sub">Decide what evidence the loop gets to read, then let it talk to a real model</span></h1>
+  <p class="lede">In Session 02 the platform decided what a tool call may do. Today it decides what the model gets to read: which tenant's sources, how much of the conversation, what is saved as a versioned record and what is only remembered for a while. Then the same loop answers through a real model in the cloud, and your console shows it.</p>
+  <div class="facts"><span><b>90 min</b> · guided build</span><span>from <b>lesson-02</b> to <b>lesson-03</b></span><span>check pack: <b>17 passed</b></span><span>checks offline · live run on Groq</span></div>
+</header>
+
+<section class="ch" id="before">
+  <p class="eyebrow"><span>Before the session</span></p>
+  <h2>Bring your own free Groq key</h2>
+  <div class="stack">
+    <p class="lede" style="margin-top:0">Today your platform makes its first real model call. Groq serves open models through the same chat-completions API your Session 01 adapter already speaks, with a free tier that needs no card. Each of you uses your own key.</p>
+    <div class="cards keep">
+      <div><span class="q">Get a key at console.groq.com</span><p>Sign in, open API keys, create one and copy it. No card is needed for the free tier.</p></div>
+      <div><span class="q">Keep it out of prompts, chats and repositories</span><p>In the session you paste it into a file outside your project. Your coding agent checks that it is there without ever printing it.</p></div>
+      <div><span class="q">One key per learner</span><p>The free tier allows about 8,000 tokens a minute per model. One shared key would run out after a few investigations across the room.</p></div>
+      <div><span class="q">The checks never need it</span><p>Every check pack runs on the offline mock model, whose results are exact. The live run is something you watch, not something you are graded on.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="ch" id="today">
+  <p class="eyebrow"><span>Where we are</span></p>
+  <h2>Yesterday the platform decided what a tool may do. Today it decides what the model gets to read.</h2>
+  <div class="stack">
+    <div class="prose" style="margin-top:0">
+      <p>A larger context window does not decide which information is relevant, current or authorized. Your agent already has a loop and a tool boundary; today we control the evidence that flows through them. In the payments incident there are four kinds of it, and each lives for a different length of time: what this run has seen so far, the runbooks each tenant keeps, the reports we save, and small things worth remembering for a while.</p>
+      <p>Permissions stay where Session 01 put them, in the run's <code>Context</code>. None of the four stores grants anything.</p>
+    </div>
+    <figure>
+      <div class="diagram">
+        <svg viewBox="0 0 900 420" role="img" aria-labelledby="storesTitle">
+          <title id="storesTitle">The agent runtime in the middle, with the message history and the runbook sources on the left, versioned artifacts and memory on the right, the run's Context above it and the model below it</title>
+          <rect class="box" x="300" y="14" width="300" height="64" rx="8"/>
+          <text class="lbl" x="318" y="40">Context</text>
+          <text class="small" x="318" y="62">tenant · role · allowed tools</text>
+
+          <rect class="box" x="330" y="150" width="240" height="100" rx="10"/>
+          <text class="lbl" x="350" y="182">Agent runtime</text>
+          <text class="small" x="350" y="204">the Session 01 loop</text>
+          <text class="small" x="350" y="224">asks for evidence,</text>
+          <text class="small" x="350" y="240">answers with citations</text>
+
+          <rect class="today" x="16" y="110" width="270" height="84" rx="8"/>
+          <text class="lbl" x="32" y="138">Message history</text>
+          <text class="small" x="32" y="160">this run · select_context</text>
+          <text class="small" x="32" y="178">next request: whole rounds</text>
+          <rect class="today" x="16" y="226" width="270" height="84" rx="8"/>
+          <text class="lbl" x="32" y="254">Runbook sources</text>
+          <text class="small" x="32" y="276">per tenant · retrieve</text>
+          <text class="small" x="32" y="294">filter by tenant, then rank</text>
+
+          <rect class="today" x="614" y="110" width="270" height="84" rx="8"/>
+          <text class="lbl" x="630" y="138">Versioned artifacts</text>
+          <text class="small" x="630" y="160">reports · save_artifact</text>
+          <text class="small" x="630" y="178">name the version replaced</text>
+          <rect class="today" x="614" y="226" width="270" height="84" rx="8"/>
+          <text class="lbl" x="630" y="254">Memory</text>
+          <text class="small" x="630" y="276">remember · recall</text>
+          <text class="small" x="630" y="294">expires · never authority</text>
+
+          <rect class="today" x="330" y="320" width="240" height="78" rx="8"/>
+          <text class="lbl" x="350" y="348">Model</text>
+          <text class="small" x="350" y="370">mock for the checks,</text>
+          <text class="small" x="350" y="388">Groq from today</text>
+
+          <path class="ink" d="M450 78 V144"/><path class="arrowhead" d="M450 148 l-5 -8 h10z"/>
+          <text class="small" x="460" y="118">decides</text>
+          <path class="ink" d="M286 152 H324"/><path class="arrowhead" d="M328 152 l-8 -5 v10z"/>
+          <path class="ink" d="M286 268 L324 236"/><path class="arrowhead" d="M327 233 l-9 3 l6 7z"/>
+          <path class="ink" d="M570 172 H608"/><path class="arrowhead" d="M612 172 l-8 -5 v10z"/>
+          <path class="ink" d="M570 230 L608 262"/><path class="arrowhead" d="M611 265 l-4 -8 l-5 7z"/>
+          <path class="ink" d="M450 250 V314"/><path class="arrowhead" d="M450 318 l-5 -8 h10z"/>
+          <text class="small" x="460" y="290">next request</text>
+        </svg>
+      </div>
+      <figcaption>The highlighted parts are today's work. The Context above the runtime decides what a run may do; the four stores only hold evidence, each with its own lifetime, and the model at the bottom becomes a real one at the end of the session.</figcaption>
+    </figure>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Store</th><th>What it holds</th><th>Lives for</th><th>Today's rule</th></tr></thead>
+        <tbody>
+          <tr><td>Message history</td><td>this run's turns and tool results</td><td>the run</td><td>the next model request gets the task plus the newest <b>complete</b> rounds that fit</td></tr>
+          <tr><td>Runbook sources</td><td>reusable runbooks, each owned by one tenant</td><td>until revised (each has a version)</td><td>filter to the run's tenant <b>before</b> ranking</td></tr>
+          <tr><td>Versioned artifacts</td><td>saved investigation reports</td><td>kept, one row per version</td><td>a writer names the version it replaces, or gets <code>stale_artifact_version</code></td></tr>
+          <tr><td>Memory</td><td>small conveniences, such as the last incident looked at</td><td>until it expires</td><td>an expired or other-tenant value is simply not there</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="ask"><span class="label">Ask</span><p class="q">What should the agent do when memory conflicts with what the logs say now?</p>
+      <details><summary>Show the answer</summary><p>Keep the conflict as evidence, prefer the verified current source, and never treat memory as an instruction or a permission. Memory is a convenience with a retention policy, not the truth.</p></details></div>
+  </div>
+</section>
+
+<section class="ch" id="retrieval">
+  <p class="eyebrow"><span>Retrieval</span></p>
+  <h2>Filter by tenant first, then rank</h2>
+  <div class="stack">
+    <p class="lede" style="margin-top:0">Read the tenant filter before you discuss ranking quality. The same query must give different results for different tenants, because the data each one may see is different.</p>
+    <div class="two">
+      <div class="excerpt">
+        <div class="src">the same query, two tenants · retrieve("payments", tenant)</div>
+<pre>astro       → <span class="hl">rb-pool-v1</span>   v1
+              "payments connection pool exhaustion
+               DB wait after deployment"
+              cause connection_pool_exhaustion
+
+locomotive  → <span class="hl">rb-quota-v1</span>  v1
+              "payments provider quota exhausted"
+              cause quota_exhaustion</pre>
+      </div>
+      <dl class="fields">
+        <dt>filter</dt><dd>Only the run's tenant's runbooks are candidates; the tenant comes from <code>Context</code>, never from the query.</dd>
+        <dt>rank</dt><dd>Score is the number of query words found in the runbook text, highest first.</dd>
+        <dt>tie</dt><dd>Equal scores sort by source ID, so the same query always gives the same order.</dd>
+        <dt>provenance</dt><dd>Every result keeps its <code>source_id</code> and <code>version</code>, so an answer can cite exactly what it used.</dd>
+        <dd class="note">This is transparent word matching, not embeddings, so you can see why a runbook was chosen. A vector or hybrid retriever can replace it later behind the same <code>context_tools</code> contract.</dd>
+      </dl>
+    </div>
+    <div class="ask"><span class="label">Ask the room</span><p class="q">Could we search all runbooks, take the top 10, and then drop the ones from other tenants?</p>
+      <details><summary>Show the answer</summary><p>That can return too few results for the tenant and leaks what other tenants have, for example through scores or counts. Apply the boundary to the population you search, or use a retrieval design that enforces it equivalently.</p></details></div>
+  </div>
+</section>
+
+<section class="ch" id="rounds">
+  <p class="eyebrow"><span>Bounded context</span></p>
+  <h2>Trim the conversation by complete rounds, never half a round</h2>
+  <div class="stack">
+    <p class="lede" style="margin-top:0">Each model request resends the whole conversation, so a long investigation needs a budget. The selector keeps the instruction and the task, then adds whole rounds from the newest backwards while they fit. The full history is still kept for diagnosis; only the next request is smaller.</p>
+    <figure>
+      <div class="diagram">
+        <svg viewBox="0 0 900 330" role="img" aria-labelledby="roundsTitle">
+          <title id="roundsTitle">The instruction and task are always kept; rounds 3 and 4, the newest, fit the budget and are sent; rounds 1 and 2 are left out whole. Below, a wrong selection keeps the tool result of round 2 without its call, which a real provider rejects</title>
+          <text class="failhead" x="20" y="24">SENT TO THE MODEL · WITHIN max_chars</text>
+          <rect class="today" x="20" y="40" width="150" height="62" rx="6"/>
+          <text class="small" x="34" y="66">system</text>
+          <text class="small" x="34" y="86">+ task INC-001</text>
+          <rect class="frame" x="190" y="40" width="160" height="62" rx="6"/>
+          <text class="small" x="204" y="66">call c1</text>
+          <text class="small" x="204" y="86">+ result c1</text>
+          <rect class="frame" x="360" y="40" width="160" height="62" rx="6"/>
+          <text class="small" x="374" y="66">call c2</text>
+          <text class="small" x="374" y="86">+ result c2</text>
+          <rect class="today" x="530" y="40" width="160" height="62" rx="6"/>
+          <text class="small" x="544" y="66">call c3</text>
+          <text class="small" x="544" y="86">+ result c3</text>
+          <rect class="today" x="700" y="40" width="160" height="62" rx="6"/>
+          <text class="small" x="714" y="66">call c4</text>
+          <text class="small" x="714" y="86">+ result c4</text>
+          <text class="small" x="34" y="122">always kept</text>
+          <text class="small" x="204" y="122">round 1</text>
+          <text class="small" x="374" y="122">round 2</text>
+          <text class="small" x="544" y="122">round 3</text>
+          <text class="small" x="714" y="122">round 4 · newest</text>
+          <path class="ink" d="M860 146 H536"/><path class="arrowhead" d="M532 146 l8 -5 v10z"/>
+          <text class="small" x="544" y="168">whole rounds, newest first, while they fit</text>
+          <text class="small" x="204" y="168">left out whole, kept in the full history</text>
+
+          <text class="failhead" x="20" y="218">NEVER · HALF A ROUND</text>
+          <rect class="box" x="20" y="234" width="150" height="62" rx="6"/>
+          <text class="small" x="34" y="260">system</text>
+          <text class="small" x="34" y="280">+ task INC-001</text>
+          <rect class="today" x="190" y="234" width="160" height="62" rx="6"/>
+          <text class="small" x="204" y="260">result c2</text>
+          <text class="small" x="204" y="280">its call dropped</text>
+          <text class="sig" x="372" y="256" style="font-size:13px">✕ tool_call_id c2 matches no call, so a real</text>
+          <text class="sig" x="372" y="276" style="font-size:13px">provider rejects the whole request.</text>
+          <text class="sig" x="372" y="296" style="font-size:13px">The mock never notices.</text>
+        </svg>
+      </div>
+      <figcaption>The selector groups the conversation into rounds (an assistant's tool calls and their results) and keeps or drops each round whole. If even the instruction and the task do not fit, it raises <code>task_exceeds_context_budget</code> instead of cutting the instruction.</figcaption>
+    </figure>
+    <div class="ask"><span class="label">Ask</span><p class="q">Is a shorter prompt always a better prompt?</p>
+      <details><summary>Show the answer</summary><p>No. It may leave out the evidence the answer needs. Compare the outcome and the context size on the same cases before adopting a trimming policy; Session 04 gives you the harness to do that.</p></details></div>
+  </div>
+</section>
+
+<section class="ch" id="evidence">
+  <p class="eyebrow"><span>Saved evidence</span></p>
+  <h2>Artifacts keep their versions; memory expires</h2>
+  <div class="stack">
+    <div class="two">
+      <div class="transcript" role="list">
+        <div class="turn" role="listitem"><span class="who rt">Writer A</span><div><pre>save_artifact("astro", "report", body, expected_version=0)  → 1</pre></div></div>
+        <div class="turn" role="listitem"><span class="who t">Writer B</span><div><pre>save_artifact("astro", "report", body, expected_version=0)</pre><p class="note">B still believes nothing is saved. The transaction sees version 1 and refuses.</p></div></div>
+        <div class="turn" role="listitem"><span class="who r">Result</span><div><pre>ValueError: stale_artifact_version</pre><p class="note">B reads version 1, reconciles, and writes again with expected_version=1.</p></div></div>
+      </div>
+      <dl class="fields">
+        <dt>artifact</dt><dd>A versioned output you may audit. Overwriting newer evidence silently would hide a coordination problem, so a stale writer fails.</dd>
+        <dt>memory</dt><dd>Selected context with a time to live. An expired value reads as nothing, and so does another tenant's.</dd>
+        <dt>tenant</dt><dd>Both are keyed by tenant, so Locomotive's lookup of Astro's report returns nothing.</dd>
+        <dd class="note">From Session 08 the platform saves every run's answer as an artifact in this store, and the console shows it per run with its cited sources.</dd>
+      </dl>
+    </div>
+    <div class="ask"><span class="label">Ask</span><p class="q">After a version conflict, should the writer simply retry with the latest version number?</p>
+      <details><summary>Show the answer</summary><p>Not without reading the newer content first. Retrying blindly turns conflict detection back into an unconditional overwrite.</p></details></div>
+  </div>
+</section>
+
+<section class="ch" id="live">
+  <p class="eyebrow"><span>A real model</span></p>
+  <h2>The same loop, a real model: only the provider changes</h2>
+  <div class="stack">
+    <div class="prose" style="margin-top:0">
+      <p>Every run so far used the deterministic mock. Your Session 01 adapter already speaks the chat-completions format that Groq serves, so connecting a real model is configuration: a provider, a base URL, a model name and a key, read by the platform when it starts a run. Nothing in the loop changes.</p>
+      <p>What changes is the other side. A real model does things the mock never did, so first you harden the runtime for them. Tuning for each model is normal work; these are the habits we measured when we tested free endpoints in October.</p>
+    </div>
+    <figure>
+      <div class="diagram">
+        <svg viewBox="0 0 900 400" role="img" aria-labelledby="liveTitle">
+          <title id="liveTitle">Inside your platform the console sends a run to the run API, which starts the agent runtime; its HTTP provider calls Groq over HTTPS with the key from a file outside the repository and records the model and host in each model event, which the console shows. Tests and labs keep the offline mock</title>
+          <rect class="frame" x="10" y="20" width="620" height="365" rx="14"/>
+          <text class="failhead" x="28" y="44">YOUR PLATFORM · ON LOOPBACK</text>
+          <rect class="box" x="28" y="96" width="160" height="64" rx="8"/>
+          <text class="lbl" x="44" y="122">Console</text>
+          <text class="small" x="44" y="144">submit INC-001</text>
+          <rect class="box" x="218" y="96" width="160" height="64" rx="8"/>
+          <text class="lbl" x="234" y="122">Run API</text>
+          <text class="small" x="234" y="144">given shell</text>
+          <rect class="box" x="408" y="96" width="200" height="64" rx="8"/>
+          <text class="lbl" x="424" y="122">run_agent</text>
+          <text class="small" x="424" y="144">the same loop</text>
+          <rect class="today" x="408" y="208" width="200" height="84" rx="8"/>
+          <text class="lbl" x="424" y="236">HTTPProvider</text>
+          <text class="small" x="424" y="258">hardened today:</text>
+          <text class="small" x="424" y="276">model, host, failures</text>
+          <rect class="today" x="28" y="208" width="320" height="84" rx="8"/>
+          <text class="lbl" x="44" y="236">~/agentic-course/groq.env</text>
+          <text class="small" x="44" y="258">outside the repository</text>
+          <text class="small" x="44" y="276">read by the platform only</text>
+          <rect class="box" x="408" y="314" width="200" height="58" rx="8"/>
+          <text class="lbl" x="424" y="338">Tests and labs</text>
+          <text class="small" x="424" y="360">offline mock only</text>
+          <rect class="today" x="690" y="196" width="190" height="104" rx="8"/>
+          <text class="lbl" x="706" y="224">Groq</text>
+          <text class="small" x="706" y="246">api.groq.com</text>
+          <text class="small" x="706" y="266">qwen/qwen3.8-27b</text>
+          <text class="small" x="706" y="286">in the cloud</text>
+
+          <path class="ink" d="M188 128 H212"/><path class="arrowhead" d="M216 128 l-8 -5 v10z"/>
+          <path class="ink" d="M378 128 H402"/><path class="arrowhead" d="M406 128 l-8 -5 v10z"/>
+          <path class="ink" d="M508 160 V202"/><path class="arrowhead" d="M508 206 l-5 -8 h10z"/>
+          <path class="ink" d="M348 250 H402"/><path class="arrowhead" d="M406 250 l-8 -5 v10z"/>
+          <text class="small" x="362" y="242">key</text>
+          <path class="ink" d="M608 228 H684"/><path class="arrowhead" d="M688 228 l-8 -5 v10z"/>
+          <text class="small" x="636" y="220">HTTPS</text>
+          <path class="ink" d="M690 272 H614"/><path class="arrowhead" d="M610 272 l8 -5 v10z"/>
+          <text class="small" x="636" y="292">reply</text>
+          <path class="ink" d="M508 96 V76 H108 V88"/><path class="arrowhead" d="M108 92 l-5 -8 h10z"/>
+          <text class="small" x="262" y="68">model events: model · host · ms</text>
+        </svg>
+      </div>
+      <figcaption>The platform process is the only thing that reads the key file. The console shows what the runtime recorded: which model answered, at which host, and how long each call took. Tests and labs never load the file, so they stay on the mock.</figcaption>
+    </figure>
+    <h3>What real models do that the mock never did</h3>
+    <div class="guards">
+      <div class="guard ok"><span class="code">```json fence</span><span class="lim">accepted</span><p>The answer arrives wrapped in a Markdown fence. Gemini did it in 6 of 6 answers in our test.</p></div>
+      <div class="guard"><span class="code">answer as a tool call</span><span class="lim">one sentence</span><p>A model sends its final answer as a call to a tool named json; Groq refuses it with HTTP 400.</p></div>
+      <div class="guard ok"><span class="code">provider_rate_limited</span><span class="lim">429 · wait</span><p>The free tier's tokens-per-minute limit. About 3 to 5 investigations a minute per key.</p></div>
+      <div class="guard ok"><span class="code">provider_unavailable</span><span class="lim">5xx · later</span><p>The provider is overloaded or down. Nothing to fix on your side.</p></div>
+      <div class="guard ok"><span class="code">provider_timeout</span><span class="lim">later</span><p>No reply within 15 seconds.</p></div>
+      <div class="guard"><span class="code">provider_http_401</span><span class="lim">fix the key</span><p>The key is missing, mistyped or revoked.</p></div>
+    </div>
+    <div class="prose">
+      <p><b>One sentence handles the two answer habits.</b> In our test, adding "Give the final answer as your message text, not as a tool call, and reply with the JSON object only: no Markdown code fence and no other text." to the system prompt stopped both on the model we recommend, <code>qwen/qwen3.8-27b</code>; a model that kept sending fake tool calls even with it, <code>openai/gpt-oss-120b</code>, is not recommended. The runtime still accepts a fenced answer, because the instruction is a request, not a guarantee.</p>
+      <p><b>Failures get names.</b> Without hardening, a rate limit and a bad key both end as <code>provider_HTTPStatusError</code>. With it, the run says why it stopped, and the console shows the code, so you know whether to wait, fix the key or look at the model's behaviour.</p>
+      <p><b>Every model call says who answered.</b> Each model event records the model the endpoint reported, its host and the call's milliseconds. The mock reports itself as <code>model=mock host=offline</code>, which is how the console tells fixture tokens from real ones.</p>
+    </div>
+    <h3>What your console shows</h3>
+    <div class="two">
+      <div class="excerpt">
+        <div class="src">the run page's summary line · before and after</div>
+<pre>offline mock
+INC-001 · role analyst · 75 fixture tokens
+  model step=1 tokens=20 … model=mock host=offline
+
+on Groq
+<span class="hl">INC-001 · role analyst · &lt;N&gt; tokens from qwen/qwen3.8-27b</span>
+<span class="hl">  at api.groq.com · &lt;k&gt; model calls in &lt;s&gt; s</span>
+  model step=1 tokens=&lt;n&gt; … model=qwen/qwen3.8-27b
+    host=api.groq.com elapsed_ms=&lt;ms&gt;</pre>
+      </div>
+      <dl class="fields">
+        <dt>model</dt><dd>The name Groq reports in its reply, not the one you configured, so the page shows what really answered.</dd>
+        <dt>host</dt><dd>Where the call went. <code>offline</code> means the mock.</dd>
+        <dt>tokens</dt><dd>Groq's reported usage. Real numbers vary run to run; they are observations, not a cost claim.</dd>
+        <dt>time</dt><dd>Milliseconds per call: 0.8 to 2 seconds per whole investigation on Groq in our test.</dd>
+        <dd class="note">Placeholders in angle brackets: real values differ on every run.</dd>
+      </dl>
+    </div>
+    <div class="ask"><span class="label">Ask the room</span><p class="q">The live INC-003 answer names a cause, and the citation check passed. Is the answer right?</p>
+      <details><summary>Show the answer</summary><p>Not necessarily. In our October test a real model concluded <code>connection_pool_exhaustion</code> for INC-003 from a runbook it really had retrieved, so every citation was observed, yet the evidence did not support the cause. An observed citation is necessary, not sufficient. Session 04's evaluation is built to judge whether the evidence supports the answer.</p></details></div>
+  </div>
+</section>
+
+<section class="ch" id="build">
+  <p class="eyebrow"><span>Guided build</span></p>
+  <h2>How you build it: four bounded prompts, then a real model</h2>
+  <div class="prose">
+    <p>The instructor shows each prompt and the change it produces; you run the same prompt in your own project, in the same order, and judge the result before moving on. Your coding agent writes the code and runs the checks.</p>
+    <p class="muted">Rule for the whole build: a coding agent saying "done" is not evidence. Look at the diff and at the check output.</p>
+  </div>
+  <div class="stack">
+    <nav class="route" id="route" aria-label="Build route">
+      <a href="#prepare">Prepare</a><span class="arr" aria-hidden="true">→</span><a href="#orient">Add the check pack</a><span class="arr" aria-hidden="true">→</span><a href="#step1">Build 1</a><span class="arr" aria-hidden="true">→</span><a href="#step2">Build 2</a><span class="arr" aria-hidden="true">→</span><a href="#step3">Build 3</a><span class="arr" aria-hidden="true">→</span><a href="#step4">Build 4</a><span class="arr" aria-hidden="true">→</span><a href="#harden">Harden</a><span class="arr" aria-hidden="true">→</span><a href="#groq">Connect Groq</a><span class="arr" aria-hidden="true">→</span><a href="#exercise">Exercise</a><span class="arr" aria-hidden="true">→</span><a href="#verify">Verify and push</a><span class="arr" aria-hidden="true">→</span><a href="#review">Review</a>
+    </nav>
+    <div class="links">
+      <a href="https://github.com/maxvpavlov/ciklum-innovate-l3-2026/tree/main/learner-kit/lessons/03"><span class="q">Session 03 kit</span><span class="mono">learner-kit/lessons/03</span><span class="muted">check pack and interfaces</span></a>
+      <a href="https://github.com/maxvpavlov/ciklum-innovate-l3-2026/blob/main/L3%202026%20Agentic%20Platform%20Instructor%20Materials/incident-platform/LEARNER_PROMPTS.md#03-context-retrieval-and-memory"><span class="q">Every session's prompts</span><span class="mono">LEARNER_PROMPTS.md</span><span class="muted">the same prompts as this page</span></a>
+      <a href="https://maxvpavlov.github.io/ciklum-innovate-l3-2026/lesson-02/"><span class="q">Session 02 page</span><span class="mono">maxvpavlov.github.io/…/lesson-02</span><span class="muted">the tool boundary this session uses</span></a>
+      <a href="https://maxvpavlov.github.io/ciklum-innovate-l3-2026/lesson-03-just-prompts/"><span class="q">Just the prompts</span><span class="mono">maxvpavlov.github.io/…/lesson-03-just-prompts</span><span class="muted">all eleven in order, for after class</span></a>
+      <a href="https://maxvpavlov.github.io/ciklum-innovate-l3-2026/lesson-03/"><span class="q">This page</span><span class="mono">maxvpavlov.github.io/…/lesson-03</span><span class="muted">bookmark it for after class</span></a>
+    </div>
+  </div>
+
+  <div class="stack">
+    <h3>What you build today</h3>
+    <div class="stack" style="margin-top:0">
+      <div class="excerpt">
+        <div class="src">~/agentic-course/my-platform · after Session 03 (what you build today highlighted)</div>
+<pre>agent_runtime/
+<span class="hl">  context.py              you build · retrieve, context_tools, select_context, EvidenceStore</span>
+<span class="hl">  core.py                 you harden · bare-JSON instruction, fenced answers, model events</span>
+<span class="hl">  providers.py            you harden · reported model and host, named failures</span>
+  tools.py, mcp_bridge.py <span class="muted">Session 02</span>
+agentic_platform/         <span class="muted">given · the platform shell</span>
+<span class="hl">  console/views/runs.js   check pack · the run page names the model that answered</span>
+course/
+  __init__.py             <span class="muted">LESSON = 2, raised to 3 when verified</span>
+<span class="hl">  labs/l03.py             check pack · the Session 03 demo</span>
+tests/
+<span class="hl">  test_lesson03.py        check pack · five new checks</span>
+~/agentic-course/groq.env <span class="muted">outside the project · your key, never committed</span></pre>
+      </div>
+      <div class="prose" style="margin-top:0">
+        <p><b><code>context.py</code> is the evidence layer.</b> Retrieval, context selection, artifacts and memory live together because they share one rule: evidence carries its tenant and its source, and it never carries authority.</p>
+        <p>The check pack updates one given file, the console's run page, so it can show which model answered. The two real-model checks fake Groq's replies at the HTTP layer, so they run offline like every other check.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="terminal" id="prepare">
+    <div class="bar"><span class="switch">Switch to terminal · Prepare the workspace</span><span class="file">confirms lesson-02 · updates the course copy</span></div>
+    <div class="body">
+      <p class="goal">Start your coding agent in <code>~/agentic-course</code>. It reads your <code>AGENTS.md</code>, confirms your Session 02 work still passes and refreshes your read-only copy of the course repository, which now holds the Session 03 kit.</p>
+      <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="pP"><span class="pfx">PROMPT ▸ </span>Prepare my learner project for Lesson 03. Open my project repository in my course GitLab group on gitlab.ciklum.net, cloning it into ~/agentic-course/my-platform if it is not there, read its AGENTS.md first if it has one and follow it, and confirm it holds my completed lesson-02 work with all its checks passing. Update my read-only copy of the course repository in ~/agentic-course/course, cloning it from https://github.com/maxvpavlov/ciklum-innovate-l3-2026 if it is missing, and tell me the commit it was at before and after the update and which files under learner-kit/lessons/03 changed; its learner-kit folder is the course kit. Use the pinned Python 3.12 environment and the offline mock provider. Do not add this lesson's work yet. Report the project location, its current checkpoint, the test results and any missing prerequisites. Do not ask me to run terminal commands.</div><div class="expect"><span class="pfx">EXPECT ▸ </span>the course copy moved to the latest commit, with the Lesson 03 kit files that changed, including <code>given/agentic_platform/console/views/runs.js</code>. Your project itself is unchanged: <code>LESSON = 2</code>, <b>12 passed</b>.</div></details>
+      <div><button class="copy" type="button" data-copy="pP">Copy prompt</button></div>
+    </div>
+  </div>
+
+  <div class="terminal" id="orient">
+    <div class="bar"><span class="switch">Switch to terminal · Add the check pack</span><span class="file">one given file and the checks · no implementation yet</span></div>
+    <div class="body">
+      <p class="goal">The agent copies the updated run page into <code>agentic_platform/</code> and the Session 03 checks into your project, shows which checks fail and why, and lists the interfaces they need, before writing any code.</p>
+      <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="pO"><span class="pfx">PROMPT ▸ </span>Read learner-kit/lessons/03 in the course repository: its README, the given files and the check pack. Copy the whole given files and the check pack into my project exactly as the README says, without changing them, and commit that; a given definition that must be pasted into a module is added in the build step that creates or changes that module. Then run the tests and report what fails and why: at first this lesson's test file may fail to import, because the modules it needs do not exist yet. List the interfaces my code must provide, with the exact names, signatures, fields and error codes the tests use, and the capability they verify. Explain the implementation sequence before we begin. Do not write the implementation yet, and do not look for or use a finished solution.</div><div class="expect"><span class="pfx">EXPECT ▸ </span><b>12 passed</b> from Sessions 01 and 02, and <code>test_lesson03.py</code> failing to import until <code>agent_runtime.context</code> exists.</div></details>
+      <div><button class="copy" type="button" data-copy="pO">Copy prompt</button></div>
+    </div>
+  </div>
+
+  <div class="terminal" id="step1">
+    <div class="bar"><span class="switch">Switch to terminal · Build step 1 of 4</span><span class="file">new file · agent_runtime/context.py · retrieval</span></div>
+    <div class="body">
+      <p class="goal">Retrieve within the tenant boundary: filter the runbooks to the run's tenant, rank by visible word overlap, keep source IDs and versions.</p>
+      <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="p1"><span class="pfx">PROMPT ▸ </span>For Lesson 03, continue in my learner project. Implement tenant-scoped runbook retrieval and context_tools in agent_runtime/context.py. Filter authorized sources before ranking and retain source IDs and versions. Use transparent lexical ranking for this lesson so I can inspect why a record was selected. Compare the same payments query for Astro and Locomotive. Keep the tool contract compatible with the existing executor and explain the returned evidence. Build to the interfaces the Lesson 03 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div><div class="expect"><span class="pfx">EXPECT ▸ </span><code>payments</code> returns <b>rb-pool-v1</b> for Astro and <b>rb-quota-v1</b> for Locomotive. <code>test_lesson03.py</code> still cannot import until steps 2 and 3 add <code>select_context</code> and <code>EvidenceStore</code>; earlier checks still <b>12 passed</b>.</div></details>
+      <div><button class="copy" type="button" data-copy="p1">Copy prompt</button></div>
+    </div>
+  </div>
+  <div class="stack">
+    <div class="excerpt">
+      <div class="src">filter, then rank · agent_runtime/context.py · lines 9–13 at lesson-03</div>
+<pre>def retrieve(query, tenant, limit=2):
+    words = set(re.findall(r"[a-z]+", query.lower().replace("_", " ")))
+<span class="hl">    ranked = [(len(words &amp; set(r["text"].split())), r) for r in RUNBOOKS if r["tenant"] == tenant]</span>
+    return [r for score, r in sorted(ranked, key=lambda x: (-x[0], x[1]["source_id"]))
+            if score &gt; 0][:limit]</pre>
+    </div>
+    <ul class="key">
+      <li><b>The filter is in the comprehension.</b> Other tenants' runbooks never become candidates, so nothing about them can leak through a score.</li>
+      <li><b>Visible ranking.</b> The score is the count of shared words; ties sort by source ID. You can predict the result before you run it.</li>
+    </ul>
+  </div>
+
+  <div class="terminal" id="step2">
+    <div class="bar"><span class="switch">Switch to terminal · Build step 2 of 4</span><span class="file">agent_runtime/context.py · select_context</span></div>
+    <div class="body">
+      <p class="goal">Select complete conversation rounds for the next model request, newest first, within a character budget; keep the full history separately.</p>
+      <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="p2"><span class="pfx">PROMPT ▸ </span>For Lesson 03, continue in my learner project. Add select_context and connect it to the runtime as selection for the next model request. Preserve the instruction and original task, retain complete assistant/tool rounds within the configured allowance, and keep the full run history separately. Reject a task that cannot fit. Demonstrate a reduced conversation with no orphaned tool-call IDs and explain the evidence that was omitted. Build to the interfaces the Lesson 03 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div><div class="expect"><span class="pfx">EXPECT ▸ </span>a reduced conversation in which every tool result has its call, and <code>task_exceeds_context_budget</code> when even the task does not fit. Earlier checks still <b>12 passed</b>.</div></details>
+      <div><button class="copy" type="button" data-copy="p2">Copy prompt</button></div>
+    </div>
+  </div>
+  <div class="stack">
+    <div class="excerpt">
+      <div class="src">rounds, then a budget · agent_runtime/context.py · lines 22–40 at lesson-03</div>
+<pre>def select_context(messages, max_chars=6000):
+    """Keep instruction/task and newest COMPLETE tool rounds; never orphan tool IDs."""
+    head, rounds, current = messages[:2], [], []
+    for message in messages[2:]:
+<span class="hl">        if message["role"] == "assistant" and current:</span>
+<span class="hl">            rounds.append(current)</span>
+<span class="hl">            current = []</span>
+        current.append(message)
+    if current:
+        rounds.append(current)
+    retained = []
+<span class="hl">    for group in reversed(rounds):</span>
+<span class="hl">        candidate = head + group + retained</span>
+<span class="hl">        if len(json.dumps(candidate)) &gt; max_chars:</span>
+<span class="hl">            break</span>
+<span class="hl">        retained = group + retained</span>
+    if len(json.dumps(head)) &gt; max_chars:
+        raise ValueError("task_exceeds_context_budget")
+    return head + retained</pre>
+    </div>
+    <ul class="key">
+      <li><b>A round starts at each assistant message.</b> Its tool results follow it into the same group, so they are kept or dropped together.</li>
+      <li><b>Newest first.</b> Rounds are added from the end until the next one would break <code>max_chars</code>.</li>
+      <li><b>Characters, not tokens.</b> A cheap approximation; with a real model, measure the provider's reported usage.</li>
+    </ul>
+  </div>
+
+  <div class="terminal" id="step3">
+    <div class="bar"><span class="switch">Switch to terminal · Build step 3 of 4</span><span class="file">agent_runtime/context.py · EvidenceStore artifacts</span></div>
+    <div class="body">
+      <p class="goal">Version artifacts explicitly: a writer states the version it replaces, and a stale expectation fails inside the transaction.</p>
+      <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="p3"><span class="pfx">PROMPT ▸ </span>For Lesson 03, continue in my learner project. Implement EvidenceStore's versioned artifact operations. Scope identities by tenant, require the writer's expected version and reject stale updates in a transaction. Demonstrate version one, a conflicting update and a cross-tenant lookup. Preserve newer evidence rather than automatically overwriting it after a conflict. Show how a caller should inspect and reconcile the current artifact before retrying. Build to the interfaces the Lesson 03 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div><div class="expect"><span class="pfx">EXPECT ▸ </span>version <b>1</b>, then <code>stale_artifact_version</code> for a writer still expecting 0, and nothing for Locomotive's lookup. The test file now imports: <b>14 passed, 3 failed</b> (memory, and the two real-model checks).</div></details>
+      <div><button class="copy" type="button" data-copy="p3">Copy prompt</button></div>
+    </div>
+  </div>
+  <div class="stack">
+    <div class="excerpt">
+      <div class="src">the version check · agent_runtime/context.py · lines 49–62 at lesson-03</div>
+<pre>def save_artifact(self, tenant, artifact_id, body, expected_version=0):
+<span class="hl">    self.db.execute("BEGIN IMMEDIATE")</span>
+    try:
+        version = self.db.execute("SELECT COALESCE(MAX(version),0) FROM artifacts WHERE tenant=? AND id=?",
+                                  (tenant, artifact_id)).fetchone()[0]
+<span class="hl">        if version != expected_version:</span>
+<span class="hl">            raise ValueError("stale_artifact_version")</span>
+        self.db.execute("INSERT INTO artifacts VALUES (?,?,?,?)",
+                        (tenant, artifact_id, version+1, json.dumps(body)))
+        self.db.execute("COMMIT")
+        return version+1
+    except BaseException:
+        self.db.execute("ROLLBACK")
+        raise</pre>
+    </div>
+    <ul class="key">
+      <li><b><code>BEGIN IMMEDIATE</code></b> takes the write lock before reading the version, so two writers cannot both see version 0.</li>
+      <li><b>The failure is the feature.</b> A stale writer learns that newer evidence exists instead of erasing it.</li>
+    </ul>
+  </div>
+
+  <div class="terminal" id="step4">
+    <div class="bar"><span class="switch">Switch to terminal · Build step 4 of 4</span><span class="file">agent_runtime/context.py · memory with expiry</span></div>
+    <div class="body">
+      <p class="goal">Add tenant-scoped memory that expires, then compare the investigation with the full history and with bounded context.</p>
+      <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="p4"><span class="pfx">PROMPT ▸ </span>For Lesson 03, continue in my learner project. Add expiring tenant-scoped memory and make the Session 03 check pack pass, apart from its two real-model tests, test_real_model_reply_is_hardened and test_real_model_failures_are_named, which the next prompt covers. Compare memory with versioned artifacts and the current task history. Demonstrate expiration, provenance and access boundaries, then compare the investigation with full history and bounded context. Report the outcome as well as context size; do not call a smaller prompt an improvement if required evidence is lost. Build to the interfaces the Lesson 03 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div><div class="expect"><span class="pfx">EXPECT ▸ </span>an expired value and another tenant's value both read as nothing; the same cited answer with full and bounded context; <b>15 passed, 2 failed</b>: the two real-model checks, which the next prompt makes pass.</div></details>
+      <div><button class="copy" type="button" data-copy="p4">Copy prompt</button></div>
+    </div>
+  </div>
+  <div class="stack">
+    <div class="excerpt">
+      <div class="src">memory with a time to live · agent_runtime/context.py · lines 69–71 at lesson-03</div>
+<pre>def remember(self, tenant, key, body, ttl=3600):
+    self.db.execute("INSERT OR REPLACE INTO memories VALUES (?,?,?,?)",
+<span class="hl">                    (tenant, key, json.dumps(body), time.time()+ttl))</span></pre>
+    </div>
+    <ul class="key">
+      <li><b>Expiry on read.</b> <code>recall</code> only returns rows whose <code>expires</code> is in the future; production cleanup, encryption and retention policy are separate decisions.</li>
+    </ul>
+  </div>
+
+  <div class="terminal" id="harden">
+    <div class="bar"><span class="switch">Switch to terminal · Harden the runtime for a real model</span><span class="file">agent_runtime/core.py · agent_runtime/providers.py</span></div>
+    <div class="body">
+      <p class="goal">Prepare the loop for what a real model does: one instruction sentence, a fenced answer accepted, named provider failures, and model events that say which model answered, where and how fast.</p>
+      <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="pH"><span class="pfx">PROMPT ▸ </span>For Lesson 03, continue in my learner project. Harden my runtime for a real model, which the offline mock never needed. In agent_runtime/core.py, add this sentence to the system prompt: Give the final answer as your message text, not as a tool call, and reply with the JSON object only: no Markdown code fence and no other text. Accept a final answer wrapped in a Markdown code fence anyway, and fail a final message that is still not JSON with invalid_final_answer. Give Reply a model and a host, defaulting to mock and offline, and record both, with the call's elapsed_ms, in every model event: the given console's run page reads them to show which model answered. In agent_runtime/providers.py, have HTTPProvider return the model the endpoint reports, falling back to the configured name, and the host of its base URL, and turn HTTP 429 into provider_rate_limited, any 5xx into provider_unavailable, another HTTP error into provider_http_ followed by the status code, and a timeout into provider_timeout, never copying response bodies, headers or the key. The two new tests in tests/test_lesson03.py check this offline. Build to the interfaces the Lesson 03 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div><div class="expect"><span class="pfx">EXPECT ▸ </span><b>17 passed</b>: a fenced answer completes, each model event names the model and host, and 429, 503, 401 and a timeout end as <code>provider_rate_limited</code>, <code>provider_unavailable</code>, <code>provider_http_401</code> and <code>provider_timeout</code>.</div></details>
+      <div><button class="copy" type="button" data-copy="pH">Copy prompt</button></div>
+    </div>
+  </div>
+  <div class="stack">
+    <div class="excerpt">
+      <div class="src">accept one habit, name the rest · agent_runtime/core.py · lines 139–146 at lesson-03</div>
+<pre>text = (reply.message.get("content") or "{}").strip()
+# Real models often fence the JSON despite the instruction; accept that one habit.
+<span class="hl">if text.startswith("```"):</span>
+<span class="hl">    text = text.strip("`").removeprefix("json").strip()</span>
+try:
+    answer = json.loads(text)
+except ValueError:
+<span class="hl">    raise ValueError("invalid_final_answer") from None</span></pre>
+    </div>
+    <div class="excerpt">
+      <div class="src">failures with names · agent_runtime/providers.py · lines 86–93 at lesson-03</div>
+<pre>except httpx.TimeoutException:
+<span class="hl">    raise RuntimeError("provider_timeout") from None</span>
+except httpx.HTTPStatusError as exc:
+    # Name the failures a real endpoint returns, so a run says why it stopped.
+    status = exc.response.status_code
+<span class="hl">    raise RuntimeError("provider_rate_limited" if status == 429 else</span>
+<span class="hl">                       "provider_unavailable" if status &gt;= 500 else</span>
+<span class="hl">                       f"provider_http_{status}") from None</span></pre>
+    </div>
+    <div class="excerpt">
+      <div class="src">who answered, where, how fast · agent_runtime/core.py · lines 126–128 at lesson-03</div>
+<pre>run.event("model", step=run.steps, tokens=reply.tokens,
+<span class="hl">          cost_usd=reply.cost_usd, model=reply.model, host=reply.host,</span>
+<span class="hl">          elapsed_ms=(time.monotonic()-started)*1000)</span></pre>
+    </div>
+    <ul class="key">
+      <li><b>Accept, then validate.</b> Stripping a fence changes nothing about trust: the answer still has to be JSON with the four fields, citing only observed sources.</li>
+      <li><b>No secrets in errors.</b> The codes carry the status, never the response body, headers or key.</li>
+      <li><b>The endpoint's word.</b> <code>model</code> is what Groq says served the request, so the console shows what really answered.</li>
+    </ul>
+  </div>
+
+  <div class="terminal" id="groq">
+    <div class="bar"><span class="switch">Switch to terminal · Connect the platform to Groq</span><span class="file">~/agentic-course/groq.env · the platform restarted on Groq</span></div>
+    <div class="body">
+      <p class="goal">The agent writes the settings file outside your project, waits while you paste your key into it, checks the key against Groq's model list without printing it, and restarts only the platform on Groq. Then you submit INC-001 and INC-003 in the console.</p>
+      <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="pG"><span class="pfx">PROMPT ▸ </span>Connect my platform to a real model on Groq without the key ever entering my repository, a prompt or this chat. Create ~/agentic-course/groq.env, outside my project and readable only by me, with MODEL_PROVIDER=openai-compatible, MODEL_BASE_URL=https://api.groq.com/openai/v1, MODEL_NAME=qwen/qwen3.8-27b, MODEL_ALLOWED_HOSTS=api.groq.com and an empty MODEL_API_KEY= line. Tell me its path and wait while I paste my Groq API key after MODEL_API_KEY= in an editor and save it. Then check that the key line is filled without printing it, and confirm with one request to Groq's model list that the key works and that qwen/qwen3.8-27b is offered; if it is not, tell me which tool-capable models are and stop. Restart the platform API on loopback with these settings loaded into that process only, so tests and labs keep the offline mock, keep it running and give me the console address: I will sign in as demo-astro and submit INC-001 and then INC-003 in Runs. Then read both runs through the API and report for each its status, cause, cited evidence, any failure code and its model events: model, host, tokens and elapsed milliseconds. Treat these as live-model observations, not test results or cost claims. Tell me how to switch the platform back to the offline mock.</div><div class="expect"><span class="pfx">EXPECT ▸ </span>a console address on loopback. INC-001's run page reads <b>tokens from qwen/qwen3.8-27b at api.groq.com</b> with a few model calls in about a second or two, and a cited answer. INC-003 should end <code>insufficient_evidence</code>; if it names a cause, keep it for Session 04.</div></details>
+      <div><button class="copy" type="button" data-copy="pG">Copy prompt</button></div>
+    </div>
+  </div>
+  <div class="stack">
+    <div class="cards keep">
+      <div><span class="q">The key stays in one file</span><p><code>~/agentic-course/groq.env</code>, readable only by you, outside your repository. The agent never prints it, and the platform process is the only reader.</p></div>
+      <div><span class="q">The checks stay on the mock</span><p>The settings are loaded into the platform process only, so tests and labs still run offline with exact results.</p></div>
+      <div><span class="q">Live runs are observations</span><p>Status, cause and tokens can differ between runs and models. Report what you saw; do not change a check to match it.</p></div>
+      <div><span class="q">Back to the mock</span><p>Restart the platform without the file. The run page then says fixture tokens and <code>model=mock host=offline</code> again.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="ch" id="exercise">
+  <p class="eyebrow"><span>Learner exercise</span></p>
+  <h2>Push on each boundary: predict first, then run</h2>
+  <div class="stack">
+    <p class="lede">Write down the result you expect for each case, then run it in a throwaway script and compare.</p>
+    <div class="predict">
+      <div><span class="set">"payments" as Astro, then Locomotive</span><span class="out">rb-pool-v1 · rb-quota-v1</span><span class="muted">Different tenants, different evidence.</span></div>
+      <div><span class="set">save again expecting version 0</span><span class="out">stale_artifact_version</span><span class="muted">Version 1 already exists.</span></div>
+      <div><span class="set">long conversation, smaller max_chars</span><span class="out">fewer rounds, no orphans</span><span class="muted">Every kept result still has its call.</span></div>
+      <div><span class="set">a task bigger than max_chars</span><span class="out">task_exceeds_context_budget</span><span class="muted">The instruction is never cut.</span></div>
+    </div>
+    <div class="terminal" style="margin-top:0">
+      <div class="bar"><span class="switch">Switch to terminal · Exercise</span><span class="file">a throwaway script · restore afterwards</span></div>
+      <div class="body">
+        <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="p5"><span class="pfx">PROMPT ▸ </span>Help me carry out the Lesson 03 learner exercise in my existing project: Run the same retrieval for Astro and Locomotive, inspect source IDs, and attempt a stale artifact write. Build a long synthetic conversation and reduce max_chars while checking valid tool-call pairs. Compare the investigation outcome before and after context selection. First state the expected outcomes, then run the experiment in a throwaway script outside tests/, or from a clean Git state you can restore. Show the observed results and explain any discrepancy. Keep the original acceptance criteria and restore temporary experiments when finished.</div></details>
+      <div><button class="copy" type="button" data-copy="p5">Copy prompt</button></div>
+      </div>
+    </div>
+    <div class="cards pairs">
+      <div><span class="q">More practice: the real model and INC-003</span><p>Submit INC-003 three times on Groq and compare with the mock. Does the real model ever claim a cause the evidence does not support, and would the citation check catch it?</p></div>
+      <div><span class="q">More practice: another ranking</span><p>Put a different ranking function behind <code>context_tools</code> and compare the supported outcomes, not just the scores. Then add a conflicting-memory case and decide which source should win.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="ch" id="verify">
+  <p class="eyebrow"><span>Verification</span></p>
+  <h2>Evidence, not claims</h2>
+  <div class="stack">
+    <div class="two">
+      <div class="prose" style="margin-top:0">
+        <p class="big">17 passed</p>
+        <p>Twelve from Sessions 01 and 02, still passing, plus five new checks: tenant-scoped retrieval with provenance; the stale artifact write and expired memory; complete rounds under a budget; a real-model reply that arrives fenced and is still accepted, with the model and host recorded; and named failures for 429, 503, 401 and a timeout. All five run offline.</p>
+        <p class="muted">Unrun or skipped checks are not passes. Look at the actual output, not the agent's summary. The live Groq runs are not part of this count.</p>
+      </div>
+      <figure>
+<pre class="result">{
+  "answer": {
+    "status": "complete",
+    "cause": "connection_pool_exhaustion",
+    "summary": "INC-001: connection_pool_exhaustion",
+    "evidence": ["log-astro-001", "rb-pool-v1"]
+  },
+  "artifact_version": 1,
+  "expired_memory": null,
+  "cross_tenant_artifact": null
+}</pre>
+        <figcaption>The Session 03 lab output, on the offline mock. The cited answer, the version and the two empty lookups must not change.</figcaption>
+      </figure>
+    </div>
+    <div class="terminal" style="margin-top:0">
+      <div class="bar"><span class="switch">Switch to terminal · Verify and push</span><span class="file">check pack · full suite · push to GitLab</span></div>
+      <div class="body">
+        <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="p6"><span class="pfx">PROMPT ▸ </span>Verify my Lesson 03 implementation against its completion criteria. Update the checkpoint indicator in course/__init__.py to 3 only when the required capability is present. Run the full test suite, which includes the Lesson 03 check pack and every earlier lesson's tests, and then the Session 03 demonstration with python -m course.lab 3, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 03 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result. When the checks pass, add this lesson's entry to the progress log in AGENTS.md: the checkpoint, the test result you observed and what the lesson added, named as in the Lesson 03 check pack README, and nothing you did not see. Then commit my work and push it to my repository on gitlab.ciklum.net; if glab is also signed in to other GitLab hosts, make sure the push goes to gitlab.ciklum.net. Do not equate an unrun or skipped check with a pass.</div><div class="expect"><span class="pfx">EXPECT ▸ </span><b>17 passed</b> on the offline mock, <code>LESSON = 3</code>, a Lesson 03 entry in <code>AGENTS.md</code>, and your work pushed to your repository on gitlab.ciklum.net. <code>groq.env</code> is not in the commit.</div></details>
+      <div><button class="copy" type="button" data-copy="p6">Copy prompt</button></div>
+        <div id="review"><details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="p7"><span class="pfx">PROMPT ▸ </span>Review my completed Lesson 03 work against the Lesson 03 check pack and completion criteria. Show the files I changed and the interfaces I provide, and explain how each completion criterion is met with code or test evidence. Point out the design choices I made that the check pack does not force, and what each one costs or gains. Preserve deliberate improvements and earlier capabilities.</div></details>
+      <div><button class="copy" type="button" data-copy="p7">Copy prompt</button></div></div>
+      </div>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Completion criterion</th><th>Shown by</th></tr></thead>
+        <tbody>
+          <tr><td>Retrieval returns only the selected tenant's source records.</td><td>the retrieval check; Astro and Locomotive in the exercise</td></tr>
+          <tr><td>Compaction retains matching assistant/tool pairs.</td><td>the complete-rounds check</td></tr>
+          <tr><td>Expired memory is unavailable, including after a database reopen.</td><td>the memory check; the lab's <code>expired_memory</code></td></tr>
+          <tr><td>Cross-tenant artifact lookup returns no artifact.</td><td>the lab's <code>cross_tenant_artifact</code></td></tr>
+          <tr><td>A stale artifact update fails rather than overwriting the current version.</td><td><code>stale_artifact_version</code></td></tr>
+          <tr><td>A fenced answer completes, a non-JSON answer fails as <code>invalid_final_answer</code>, and provider failures have names.</td><td>the two real-model checks</td></tr>
+          <tr><td>Every model event names the model, host and call time, and the console shows them.</td><td>the run page, on the mock and on Groq</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted"><b>Not tested in this session:</b> the quality of any live model's answers, embeddings-based retrieval, and production retention, encryption and cleanup of memory. Live Groq runs are observations; tokens they report are not cost claims.</p>
+  </div>
+</section>
+
+<section class="ch" id="recover">
+  <p class="eyebrow"><span>When something breaks</span></p>
+  <h2>Recovery prompts for the usual failures</h2>
+  <div class="stack">
+    <p class="lede" style="margin-top:0">Paste the matching prompt; it asks your agent to reproduce, fix the smallest thing and rerun the checks.</p>
+    <div class="terminal" style="margin-top:0">
+      <div class="bar"><span class="switch">Switch to terminal · Recover</span><span class="file">only when you hit the symptom</span></div>
+      <div class="body">
+        <p class="rlabel"><b>No runbook matches.</b> Look at the query's words and at which runbooks this tenant has, not at the ranking.</p>
+        <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="r1"><span class="pfx">PROMPT ▸ </span>I am working on Lesson 03. The symptom is: No runbook matches. Diagnostic focus: Inspect the tokenized query and the authorized source population. Recovery guidance: Use a diagnostic term from the fixture, then expand evaluation cases before changing ranking. Do not remove the tenant filter to obtain a result. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.</div></details>
+      <div><button class="copy" type="button" data-copy="r1">Copy prompt</button></div>
+        <p class="rlabel"><b>A provider rejects the conversation history.</b> A tool result lost its call when the history was trimmed.</p>
+        <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="r2"><span class="pfx">PROMPT ▸ </span>I am working on Lesson 03. The symptom is: A provider rejects conversation history. Diagnostic focus: Check that retained tool messages have their matching assistant calls. Recovery guidance: Run the complete-round test and restore the grouping logic before tuning the budget. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.</div></details>
+      <div><button class="copy" type="button" data-copy="r2">Copy prompt</button></div>
+        <p class="rlabel"><b>An artifact update reports stale_artifact_version.</b> Another write got there first; read it before writing again.</p>
+        <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="r3"><span class="pfx">PROMPT ▸ </span>I am working on Lesson 03. The symptom is: An artifact update reports stale_artifact_version. Diagnostic focus: Another write has advanced the artifact version. Recovery guidance: Read the latest artifact, reconcile the content and submit the correct expected version. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.</div></details>
+      <div><button class="copy" type="button" data-copy="r3">Copy prompt</button></div>
+        <p class="rlabel"><b>Memory seems to disappear.</b> It expired, or you asked as another tenant. Both are intended.</p>
+        <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="r4"><span class="pfx">PROMPT ▸ </span>I am working on Lesson 03. The symptom is: Memory seems to disappear. Diagnostic focus: Check TTL and tenant identity. Recovery guidance: Use a non-expired test value in the same tenant. Treat expiry as intended retention behaviour rather than bypassing it. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.</div></details>
+      <div><button class="copy" type="button" data-copy="r4">Copy prompt</button></div>
+        <p class="rlabel"><b>A real-model run fails.</b> Read the failure code on the run page: it says whether to fix the key, wait, or look at what the model did.</p>
+        <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="r5"><span class="pfx">PROMPT ▸ </span>I am working on Lesson 03. The symptom is: A real-model run fails. Diagnostic focus: Read the run's failure code: provider_http_401 means the key, provider_rate_limited means Groq's per-minute limit, provider_unavailable or provider_timeout means Groq's side, and invalid_final_answer, unobserved_citation or repeated_action come from what the model did. Recovery guidance: Check the key file without printing the key, or wait a minute and resubmit. For model behaviour, compare two or three runs before changing anything, then tune the system-prompt sentence for this model. Never change the checks: they run on the offline mock. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.</div></details>
+      <div><button class="copy" type="button" data-copy="r5">Copy prompt</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="ch" id="close">
+  <p class="eyebrow"><span>Close</span></p>
+  <h2>Evidence with a source, a tenant and a lifetime, and a loop that talks to a real model</h2>
+  <div class="stack">
+    <div class="criteria">
+      <div><b>Filter, then rank</b>a tenant's query only ever searches that tenant's sources.</div>
+      <div><b>Whole rounds</b>the next request is smaller, and every tool result keeps its call.</div>
+      <div><b>Versions and expiry</b>a stale writer fails; an expired memory is simply gone.</div>
+      <div><b>A real model, named</b>the run page says which model answered, where, and why a run stopped.</div>
+    </div>
+    <div class="ask"><span class="label">After class</span><p class="q">Finish in your own project, in this order (<a href="#route">the route</a>)</p>
+      <ol class="steps"><li><a href="#prepare">Prepare the workspace</a> and <a href="#orient">add the check pack</a></li><li><a href="#step1">Build steps 1 to 4</a>, one at a time, reading each change</li><li><a href="#harden">Harden the runtime</a> and <a href="#groq">connect Groq</a></li><li><a href="#exercise">Push on each boundary</a></li><li><a href="#verify">Verify and push, then review</a></li></ol></div>
+    <p class="say">Keep the source IDs, version checks and tenant boundaries when you add more sophisticated retrieval, and keep the key outside the repository. From Session 08 every run's answer is saved in this artifact store and shown with its sources.</p>
+    <div class="ask"><span class="label">Next session</span><p class="q">Build the agent evaluation harness</p><p>The checks so far prove that the code does what we specified. Next we measure how well the agent investigates: the same cases, run many times and scored, so that a change to the prompt, the retrieval or the model can be judged on evidence. Bring your Session 03 checkpoint and your Groq key.</p></div>
+  </div>
+</section>
+
+<footer>
+  <p>Course repository: <a href="https://github.com/maxvpavlov/ciklum-innovate-l3-2026">github.com/maxvpavlov/ciklum-innovate-l3-2026</a> · kit: <code>learner-kit/lessons/03</code> · all incident data are synthetic.</p>
+  <p>Further reading: <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents">Effective context engineering</a> · <a href="https://docs.langchain.com/oss/python/langgraph/persistence">Persistence and memory stores</a> · <a href="https://console.groq.com/docs/openai">Groq OpenAI compatibility</a></p>
+</footer>
+</main>
+
+
+<script>
+(() => {
+  // Theme toggle (top left), added here so every page built from this one gets it. Until the viewer
+  // toggles it the page follows the system theme; a toggle sets data-theme on the root, which the colour
+  // tokens above honour, and is remembered for all the course pages on this site.
+  const themeRoot = document.documentElement;
+  const systemDark = window.matchMedia("(prefers-color-scheme: dark)");
+  const SVG_NS = "http://www.w3.org/2000/svg";
+  const THEME_ICONS = {  // the icon shows the theme a click switches to
+    dark: ["M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"],
+    light: ["M12 8a4 4 0 1 0 0 8a4 4 0 1 0 0-8z", "M12 2v2", "M12 20v2", "M4.9 4.9l1.4 1.4", "M17.7 17.7l1.4 1.4",
+            "M2 12h2", "M20 12h2", "M4.9 19.1l1.4-1.4", "M17.7 6.3l1.4-1.4"],
+  };
+  const themeToggle = document.createElement("button");
+  themeToggle.type = "button"; themeToggle.className = "theme";
+  const shownTheme = () => themeRoot.dataset.theme || (systemDark.matches ? "dark" : "light");
+  const drawThemeToggle = () => {
+    const next = shownTheme() === "dark" ? "light" : "dark";
+    const svg = document.createElementNS(SVG_NS, "svg");
+    svg.setAttribute("viewBox", "0 0 24 24"); svg.setAttribute("aria-hidden", "true");
+    THEME_ICONS[next].forEach((d) => { const path = document.createElementNS(SVG_NS, "path"); path.setAttribute("d", d); svg.append(path); });
+    themeToggle.replaceChildren(svg);
+    themeToggle.title = `Switch to the ${next} theme`; themeToggle.setAttribute("aria-label", themeToggle.title);
+  };
+  themeToggle.addEventListener("click", () => {
+    const next = shownTheme() === "dark" ? "light" : "dark";
+    themeRoot.dataset.theme = next;
+    try { localStorage.setItem("lesson-theme", next); } catch (e) { /* storage unavailable */ }
+    drawThemeToggle();
+  });
+  systemDark.addEventListener("change", drawThemeToggle);
+  try {
+    const saved = localStorage.getItem("lesson-theme");
+    if (saved === "light" || saved === "dark") themeRoot.dataset.theme = saved;
+  } catch (e) { /* follow the system theme */ }
+  document.body.prepend(themeToggle);
+  drawThemeToggle();
+
+  // Copy buttons: copy the prompt text without the "PROMPT ▸" prefix.
+  document.querySelectorAll(".copy").forEach((button) => {
+    button.addEventListener("click", () => {
+      const block = document.getElementById(button.dataset.copy);
+      const text = [...block.childNodes].filter((n) => !(n.classList && n.classList.contains("pfx")))
+        .map((n) => n.textContent).join("").trim();
+      const done = () => { button.textContent = "Copied"; setTimeout(() => { button.textContent = "Copy prompt"; }, 1600); };
+      const select = () => {
+        const fold = block.closest("details"); if (fold) fold.open = true;
+        const range = document.createRange(); range.selectNodeContents(block);
+        const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+        button.textContent = "Selected · press Ctrl+C";
+      };
+      try { navigator.clipboard.writeText(text).then(done, select); } catch (e) { select(); }
+    });
+  });
+
+  // N / P jump between sections; V switches between Read and Present.
+  const stops = [...document.querySelectorAll("#start, section.ch, .terminal[id]")];
+  const current = () => {
+    const y = window.scrollY + window.innerHeight * 0.25;
+    let index = 0;
+    stops.forEach((el, i) => { if (el.getBoundingClientRect().top + window.scrollY <= y) index = i; });
+    return index;
+  };
+  document.addEventListener("keydown", (event) => {
+    if (event.target.closest("input, textarea, [contenteditable]") || event.metaKey || event.ctrlKey || event.altKey) return;
+    const key = event.key.toLowerCase();
+    if (key === "v") { setView(document.body.classList.contains("present") ? "read" : "present"); event.preventDefault(); return; }
+    if (key !== "n" && key !== "p") return;
+    const next = Math.max(0, Math.min(stops.length - 1, current() + (key === "n" ? 1 : -1)));
+    stops[next].scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+    event.preventDefault();
+  });
+
+  // Read / Present toggle; keeps the reader's place and remembers the choice in this browser.
+  const buttons = [...document.querySelectorAll(".view button")];
+  const setView = (view) => {
+    const anchor = stops[current()];
+    document.body.classList.toggle("present", view === "present");
+    buttons.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.view === view)));
+    anchor.scrollIntoView({ block: "start" });
+    try { localStorage.setItem("lesson-view", view); } catch (e) { /* storage unavailable */ }
+  };
+  buttons.forEach((b) => b.addEventListener("click", () => setView(b.dataset.view)));
+  try { if (localStorage.getItem("lesson-view") === "present") setView("present"); } catch (e) { /* default view */ }
+})();
+</script>

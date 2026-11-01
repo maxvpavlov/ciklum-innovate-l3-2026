@@ -17,7 +17,7 @@ fail to import, because the modules it needs do not exist yet. Never edit the te
 make them pass.
 
 When everything is built, set `LESSON = 7` in `course/__init__.py`. The full
-suite should then report **29 passed**, and `python -m course.lab 7`
+suite should then report **31 passed**, and `python -m course.lab 7`
 prints the lesson's demo result.
 
 ## Interfaces your code must provide

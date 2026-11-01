@@ -4,7 +4,7 @@
 
 **Outcome** Every agent tool call passes one gateway that applies policy, audits the decision, shares one upstream MCP session per server and tenant, and quarantines a server whose pinned tool definitions change.
 
-Duration: 90 minutes. Starting checkpoint: lesson-08. Ending checkpoint: lesson-09 (ac6669a).
+Duration: 90 minutes. Starting checkpoint: lesson-08. Ending checkpoint: lesson-09 (9e46a86).
 
 Word version: [09 MCP tool gateway and policy.docx](09%20MCP%20tool%20gateway%20and%20policy.docx)
 
@@ -272,7 +272,7 @@ def pin_tools(self, name, pins):
 - Every decision is audited with an argument hash, and the Gateway view is tenant-scoped.
 - Workers reach tools only through the gateway, and the platform closes upstream sessions on shutdown.
 
-The independently unpacked lesson-09 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 09 check pack from the course kit. Recorded test result: 39 passed in 16.65s. Learners commit and push their checkpoint to their GitLab repository; lesson-09 (ac6669a) remains the instructor's answer key.
+The independently unpacked lesson-09 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 09 check pack from the course kit. Recorded test result: 41 passed in 9.53s. Learners commit and push their checkpoint to their GitLab repository; lesson-09 (9e46a86) remains the instructor's answer key.
 
 ### Files changed in this checkpoint
 
@@ -319,7 +319,7 @@ In the reference, this checkpoint changed the files below. Learners write the im
 
 ## Verification scope
 
-All course tags were independently unpacked and tested. The completed repository has 53 passing tests. Real local MCP stdio, the tool gateway's shared sessions and pinned definitions, A2A HTTP discovery, streaming, delegated-token authentication and cancellation were exercised. The platform console was driven in a headless Chromium browser against every checkpoint from lesson-08 onward.
+All course tags were independently unpacked and tested. The completed repository has 55 passing tests. Real local MCP stdio, the tool gateway's shared sessions and pinned definitions, A2A HTTP discovery, streaming, delegated-token authentication and cancellation were exercised. The platform console was driven in a headless Chromium browser against every checkpoint from lesson-08 onward.
 
 Live model credentials, paid provider calls, live model judging, third-party MCP or A2A services, remote MCP OAuth, an enterprise identity provider, a managed secret vault, production cloud rollout and an external observability collector were not tested. The offline provider is a deterministic fixture, so its usage and quality results are teaching measurements. Read TESTING.md for the full scope and environment details.
 
