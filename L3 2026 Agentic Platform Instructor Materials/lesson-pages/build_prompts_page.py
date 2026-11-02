@@ -171,7 +171,7 @@ SESSIONS = {
                 "console. Run the prompts in this order, in your coding agent started in ~/agentic-course, and read "
                 "each result before you paste the next one.",
         "facts": ["<b>11 prompts</b> in order", "ends at <b>17 passed</b> · <code>LESSON = 3</code>",
-                  "checks offline · your own free Groq key for the live run"],
+                  "checks offline · your own free <a href=\"../groq-key/\">Groq key</a> for the live run"],
         "outcomes": [("Tenant-scoped retrieval", "the same query finds each tenant's own runbook, with its source and version."),
                      ("Whole rounds", "the next model request is bounded, and no tool result loses its call."),
                      ("Versions and expiry", "a stale write fails; an expired or other-tenant memory reads as nothing."),
@@ -216,7 +216,7 @@ SESSIONS = {
             ("Connect the platform to Groq", "Connect Groq", "~/agentic-course/groq.env · platform restarted",
              "Writes the Groq settings to a file outside your project, waits while you paste your key into it, checks "
              "the key without printing it and restarts only the platform on Groq. You submit INC-001 and INC-003 in "
-             "the console.",
+             "the console. No key yet? <a href=\"../groq-key/\">Get one first</a>.",
              "INC-001's run page reads <b>tokens from qwen/qwen3.8-27b at api.groq.com</b>, with a cited answer; "
              "INC-003 should end <code>insufficient_evidence</code>."),
             ("Learner exercise", "Push on each boundary", "a throwaway script",

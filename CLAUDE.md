@@ -111,7 +111,7 @@ Configuration comes from environment variables only; no `.env` file is loaded:
 
 The live adapters were tested only against mock HTTP and, for the lesson-03 console path, a local fake OpenAI-compatible endpoint. Default to `mock`, and never run a paid call without explicit authorization.
 
-From Session 03 learners connect their platform to Groq (free tier, `qwen/qwen3.8-27b`, base URL `https://api.groq.com/openai/v1`) with their own key, kept in `~/agentic-course/groq.env` outside the repository and loaded only into the platform process; tests and labs stay on the mock. `inference-candidates.md` records why Groq was chosen (the October 2026 test log).
+From Session 03 learners connect their platform to Groq (free tier, `qwen/qwen3.8-27b`, base URL `https://api.groq.com/openai/v1`) with their own key, kept in `~/agentic-course/groq.env` outside the repository and loaded only into the platform process; tests and labs stay on the mock. How to get the key is on its own page, `lesson-pages/groq-key.html` (published to `docs/groq-key/`, https://maxvpavlov.github.io/ciklum-innovate-l3-2026/groq-key/), which the Lesson 03 guide's preparation, its Connect and real-model troubleshooting prompts and both Session 03 pages link to; don't repeat the instructions elsewhere. `inference-candidates.md` records why Groq was chosen (the October 2026 test log).
 
 ## Course content conventions
 
