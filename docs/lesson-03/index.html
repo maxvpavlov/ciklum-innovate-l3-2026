@@ -314,7 +314,7 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
   <div class="stack">
     <p class="lede" style="margin-top:0">The model makes every decision from what is in the request it receives: the instruction, the task, the conversation so far and the evidence its tools returned. Too little and it guesses; too much, stale or another tenant's, and it is misled or leaks. So before each request goes to the model, the platform keeps it in order. Today you build that housekeeping in three places, then send the same well-kept request to a real model.</p>
     <div class="cards keep">
-      <div><span class="q">1 · What the agent can find</span><p>Its tools return only the run's tenant's runbooks, ranked, each with a source ID it can cite. <a href="#retrieval">Filter by tenant first, then rank</a>.</p></div>
+      <div><span class="q">1 · What the agent can find</span><p>Its tools return only the run's tenant's runbooks, ranked, each with a source ID it can cite. <a href="#retrieval">Finding the runbook</a>.</p></div>
       <div><span class="q">2 · What the next request carries</span><p>The instruction, the task and the newest complete rounds that fit a budget; the full history is kept aside. <a href="#rounds">Trim by complete rounds</a>.</p></div>
       <div><span class="q">3 · What outlives the request</span><p>Reports saved as versioned artifacts, and small facts remembered until they expire. <a href="#evidence">Artifacts and memory</a>.</p></div>
       <div><span class="q">4 · Who reads the request</span><p>The same loop, now talking to a real model on Groq, which needs the request spelled out even more carefully. <a href="#live">The same loop, a real model</a>.</p></div>
@@ -398,28 +398,36 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
 
 <section class="ch" id="retrieval">
   <p class="eyebrow"><span>Retrieval</span></p>
-  <h2>Filter by tenant first, then rank</h2>
+  <h2>Finding the runbook: only the run's tenant's, best match first</h2>
   <div class="stack">
-    <p class="lede" style="margin-top:0">First, what the agent can find. When the model asks <code>runbook_search</code> for evidence, the platform decides which runbooks are candidates before any ranking happens: only those of the run's tenant. So the same query gives different results for different tenants, and every result carries the source ID the answer will cite.</p>
+    <p class="lede" style="margin-top:0">First, what the agent can find. Follow INC-001 for Astro. The agent reads the log, decides it needs a runbook and searches with words from the log. The platform answers that search with Astro's runbooks only, because the tenant comes from the run's Context, and puts the best match first. The model chooses the words; it never chooses the tenant.</p>
+    <div class="transcript" role="list">
+      <div class="turn" role="listitem"><span class="who m">Model</span><div><pre>log_lookup(incident_id="INC-001")</pre><p class="note">Reads the incident's log first, as the system prompt says.</p></div></div>
+      <div class="turn" role="listitem"><span class="who t">Tool</span><div><pre>log-astro-001 · payments · connection_pool_exhaustion
+"DB pool wait 900ms after deploy d42"</pre></div></div>
+      <div class="turn" role="listitem"><span class="who m">Model</span><div><pre>runbook_search(query="payments connection pool exhaustion")</pre><p class="note">Decides it needs a runbook and searches with words from the log. There is no tenant argument: a call that adds one is refused as <code>invalid_arguments</code>.</p></div></div>
+      <div class="turn" role="listitem"><span class="who rt">1 · Filter</span><div><pre>tenant from Context: astro
+candidates: rb-pool-v1, rb-clock-v1</pre><p class="note">Only Astro's runbooks are searched. Locomotive's <code>rb-quota-v1</code> is never a candidate, so it cannot be returned, counted or scored.</p></div></div>
+      <div class="turn" role="listitem"><span class="who rt">2 · Rank</span><div><pre>rb-pool-v1   4 of 4 query words   → returned
+rb-clock-v1  0 of 4               → left out</pre><p class="note">Score each candidate by how many query words its text contains, best first; drop those with none and return at most two.</p></div></div>
+      <div class="turn" role="listitem"><span class="who r">Answer</span><div><pre>complete · connection_pool_exhaustion
+evidence: log-astro-001, rb-pool-v1</pre><p class="note">Each result keeps its <code>source_id</code> and version, so the answer cites exactly what it read.</p></div></div>
+    </div>
     <div class="two">
+      <div class="prose" style="margin-top:0">
+        <p><b>Why filter first.</b> The tenant boundary belongs on what is searched, not on what is shown afterwards. Search everyone's runbooks and then drop other tenants' results, and the agent can get too few results of its own, while scores and counts reveal that other tenants' runbooks exist.</p>
+        <p><b>Why rank at all.</b> A real tenant has hundreds of runbooks, not two. Returning them all would fill the next request with text that does not matter, and an irrelevant runbook, such as clock skew for a pool problem, can mislead the model. Ranking keeps the request small and on topic: that is the housekeeping.</p>
+        <p class="muted">This is transparent word matching, not embeddings, so you can see why a runbook was chosen. A vector or hybrid retriever can replace it later behind the same <code>context_tools</code> contract, as long as it filters by tenant first and keeps the source IDs.</p>
+      </div>
       <div class="excerpt">
-        <div class="src">the same query, two tenants · retrieve("payments", tenant)</div>
+        <div class="src">the same words, two tenants · retrieve("payments", tenant)</div>
 <pre>astro       → <span class="hl">rb-pool-v1</span>   v1
               "payments connection pool exhaustion
                DB wait after deployment"
-              cause connection_pool_exhaustion
 
 locomotive  → <span class="hl">rb-quota-v1</span>  v1
-              "payments provider quota exhausted"
-              cause quota_exhaustion</pre>
+              "payments provider quota exhausted"</pre>
       </div>
-      <dl class="fields">
-        <dt>filter</dt><dd>Only the run's tenant's runbooks are candidates; the tenant comes from <code>Context</code>, never from the query.</dd>
-        <dt>rank</dt><dd>Score is the number of query words found in the runbook text, highest first.</dd>
-        <dt>tie</dt><dd>Equal scores sort by source ID, so the same query always gives the same order.</dd>
-        <dt>provenance</dt><dd>Every result keeps its <code>source_id</code> and <code>version</code>, so an answer can cite exactly what it used.</dd>
-        <dd class="note">This is transparent word matching, not embeddings, so you can see why a runbook was chosen. A vector or hybrid retriever can replace it later behind the same <code>context_tools</code> contract.</dd>
-      </dl>
     </div>
     <div class="ask"><span class="label">Ask the room</span><p class="q">Could we search all runbooks, take the top 10, and then drop the ones from other tenants?</p>
       <details><summary>Show the answer</summary><p>That can return too few results for the tenant and leaks what other tenants have, for example through scores or counts. Apply the boundary to the population you search, or use a retrieval design that enforces it equivalently.</p></details></div>
