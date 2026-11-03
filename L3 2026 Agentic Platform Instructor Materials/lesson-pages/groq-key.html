@@ -302,7 +302,7 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
   <h2>Save it in groq.env</h2>
   <div class="two">
     <div class="stack" style="align-content:start">
-      <p>One plain-text file in your course folder, outside your project. You make it yourself, in any text editor; no coding agent and no terminal are needed. Copy these six lines:</p>
+      <p>One plain-text file, <code>groq.env</code>, in your <code>agentic-course</code> folder, outside your project. You make it yourself in a text editor; no coding agent and no terminal are needed. These are its six lines:</p>
       <div class="terminal"><div class="body">
 <pre class="prompt" id="envfile">MODEL_PROVIDER=openai-compatible
 MODEL_BASE_URL=https://api.groq.com/openai/v1
@@ -315,10 +315,10 @@ MODEL_API_KEY=</pre>
     </div>
     <div class="stack" style="align-content:start">
       <ol class="prose">
-        <li><b>Find your course folder</b>: <code>agentic-course</code> in your home folder, the one that holds <code>my-platform</code> and <code>course</code>. On macOS that is <code>/Users/&lt;you&gt;/agentic-course</code>, on Linux <code>/home/&lt;you&gt;/agentic-course</code>, on Windows <code>C:\Users\&lt;you&gt;\agentic-course</code>. Create the folder if it is not there yet.</li>
-        <li><b>Open a new plain-text file</b>: in VS Code, File › New Text File; on Windows, Notepad; on macOS, TextEdit, then Format › Make Plain Text. Not Word or Pages.</li>
-        <li><b>Paste the six lines, then your key</b>: put the cursor right after <code>MODEL_API_KEY=</code> on the last line and paste the key, with no space, no quotes and nothing after it.</li>
-        <li><b>Save it as <code>groq.env</code> in that folder</b>: exactly that name. In Notepad set "Save as type" to "All files"; in TextEdit untick "If no extension is provided, use .txt". The file must not end in <code>.txt</code>.</li>
+        <li><b>Open a text editor</b> with a new, empty plain-text file: in VS Code, File › New Text File; on Windows, Notepad; on macOS, TextEdit, then Format › Make Plain Text. Not Word or Pages.</li>
+        <li><b>Copy the six lines</b> with the button on the left and paste them into the file.</li>
+        <li><b>Copy your key from the Groq website</b> and paste it right after <code>MODEL_API_KEY=</code> on the last line: no space, no quotes, nothing after it.</li>
+        <li><b>Save the file as</b><br><code>/Users/&lt;you&gt;/agentic-course/groq.env</code> on macOS,<br><code>/home/&lt;you&gt;/agentic-course/groq.env</code> on Linux,<br><code>C:\Users\&lt;you&gt;\agentic-course\groq.env</code> on Windows,<br>where <code>&lt;you&gt;</code> is your user name. <code>agentic-course</code> is the folder that already holds <code>my-platform</code> and <code>course</code>; create it if it is not there. The name is exactly <code>groq.env</code>: in Notepad set "Save as type" to "All files", in TextEdit untick "If no extension is provided, use .txt".</li>
         <li><b>Close the file.</b> Never paste the key into your coding agent, a chat or your project.</li>
       </ol>
       <p class="muted">In Session 03 the Connect prompt finds this file, checks the key line is filled without printing it and makes the file readable only by you. Not saved by then? The prompt creates the file with an empty key line and waits while you paste the key.</p>
