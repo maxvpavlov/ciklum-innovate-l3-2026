@@ -304,7 +304,9 @@ def build_lesson(n, known_given):
     if n == 3:
         lines += ["", "The checks also call these, beyond the imported names:", "",
                   "- `run_agent(..., select_messages=...)`: the selection the next model request gets, while",
-                  "  the run keeps its full history;",
+                  "  the run keeps its full history; `run_agent` calls it with the messages alone, so",
+                  "  `select_context(messages, max_chars=6000)` needs a default allowance, and a system prompt",
+                  "  and task that cannot fit raise `ValueError`;",
                   "- `Reply.model` and `Reply.host` (default `mock` and `offline`), recorded with `elapsed_ms` in",
                   "  every model event; a request that fails still records a model event with its `error` code;",
                   "- `HTTPProvider(kind, model, key, ..., transport=..., reasoning_effort=...)` and its failure codes",
