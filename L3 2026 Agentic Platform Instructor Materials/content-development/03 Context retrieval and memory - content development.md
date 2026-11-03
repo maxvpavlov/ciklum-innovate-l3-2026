@@ -190,7 +190,7 @@ Versioned artifacts and expiring memory
 
 The same loop, a real model
 
-**Key concepts:** only the provider changes. Real models need what the mock never did: the system prompt spells out the tool procedure and the answer format; the given tool definitions describe what each tool returns and every argument; the loop takes the first JSON object from a reply (a fence or a sentence before it is accepted, a reply with none fails as invalid_final_answer); a tool call Groq refuses (tool_use_failed) is requested again at most twice, then fails as provider_tool_call_invalid; rate limits, outages and timeouts end the run with named codes. MODEL_REASONING_EFFORT=low lets the course model think briefly before each call. The key lives in ~/agentic-course/groq.env, outside the repository, loaded only into the platform process; the console's run page shows the model, host and time of every call.
+**Key concepts:** only the provider changes. Real models need what the mock never did: the system prompt spells out the tool procedure and the answer format; the given tool definitions describe what each tool returns and every argument; the loop takes the first JSON object from a reply (a fence or a sentence before it is accepted, a reply with none fails as invalid_final_answer); a tool call Groq refuses (tool_use_failed) is requested again at most twice, then fails as provider_tool_call_invalid; rate limits, outages and timeouts end the run with named codes. MODEL_REASONING_EFFORT=low lets the course model think briefly before each call. The key lives in ~/agentic-course/groq.env, outside the repository, loaded only into the platform process; the console's run page shows the model, host and time of every call, including a request that failed.
 
 **Common misconceptions:** a live run is a test result; a passed citation check means the answer is right; a prompt that works on one model works on another; the checks need the key.
 
@@ -403,7 +403,7 @@ Provide examples that can stand on their own in e-learning. Include enough conte
 
 **Example 2: a stale write fails.** Two writers read the INC-001 report at version 1. The first saves version 2. The second still expects version 1, so its write fails as stale_artifact_version instead of silently replacing the newer report; it must read version 2 and decide again.
 
-**Example 3: a real model, named failures.** With a learner's Groq key, INC-001 runs on qwen/qwen3.8-27b. The run page shows each model call with its model, host, tokens and time. If Groq refuses a malformed tool call, the provider asks again at most twice and then the run fails as provider_tool_call_invalid; a rate limit fails as provider_rate_limited. The mock and the checks are unaffected.
+**Example 3: a real model, named failures.** With a learner's Groq key, INC-001 runs on qwen/qwen3.8-27b. The run page shows each model call with its model, host, tokens and time. If Groq refuses a malformed tool call, the provider asks again at most twice and then the run fails as provider_tool_call_invalid; a rate limit fails as provider_rate_limited, and a request with no reply within 15 seconds as provider_timeout. A failed request still appears on the run page as a model call with its error. The mock and the checks are unaffected.
 
 ### 7.4 Knowledge Check
 
@@ -565,7 +565,7 @@ Document exceptions, limitations, risks, assumptions or cases where the recommen
 
 • Memory expiry is enforced on read; production cleanup, encryption and storage policy need further decisions.
 
-• Live results vary by model, day and load. In the course's November 2026 tests qwen/qwen3.8-27b on Groq succeeded on INC-001 and INC-003 with the hardened runtime and reasoning effort low, but the sample was small; free model lists and limits change, so the instructor reruns the live step shortly before the session.
+• Live results vary by model, day and load. In the course's November 2026 tests qwen/qwen3.8-27b on Groq succeeded on INC-001 and INC-003 with the hardened runtime and reasoning effort low, and in two learner dry runs of the Session 03 prompts on 3 November INC-001 completed 2 of 2 and INC-003 2 of 3 (one Groq timeout); the sample is small, and free model lists and limits change, so the instructor reruns the live step shortly before the session.
 
 • Groq's free tier allows about 8,000 tokens a minute per model on each account and one investigation uses about 3,000, so learners submit INC-003 only after INC-001 finishes, and each learner needs their own key.
 
