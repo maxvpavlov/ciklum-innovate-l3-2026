@@ -32,3 +32,17 @@ how each one is called and what it must return.
 - `agent_runtime.providers`: `HTTPProvider`, `provider_from_env`
 - `agent_runtime.tools`: `ToolExecutor`, `action_key`
 - `course`: `LESSON`
+
+The checks also call these, beyond the imported names:
+
+- `run_agent(..., select_messages=...)`: the selection the next model request gets, while
+  the run keeps its full history;
+- `Reply.model` and `Reply.host` (default `mock` and `offline`), recorded with `elapsed_ms` in
+  every model event; a request that fails still records a model event with its `error` code;
+- `HTTPProvider(kind, model, key, ..., transport=..., reasoning_effort=...)` and its failure codes
+  `provider_rate_limited`, `provider_unavailable`, `provider_http_<status>`, `provider_timeout`
+  and `provider_tool_call_invalid`, plus `invalid_final_answer` for a reply with no JSON object.
+
+Along the way: this lesson's test file cannot import until `agent_runtime.context` provides
+every name above (build step 3), and its two real-model tests pass only after the hardening
+prompt.

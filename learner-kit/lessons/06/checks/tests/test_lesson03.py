@@ -86,6 +86,9 @@ async def test_real_model_failures_are_named():
                           (httpx.ReadTimeout("slow"), "provider_timeout")]:
         run = await run_agent(failing(outcome), simple_tools, SCHEMAS, "INC-001")
         assert run.status == "failed" and run.error == code
+        # The failed request is still a model call, so the run shows where it went and why it failed.
+        assert [(e["model"], e["host"], e["tokens"], e["error"]) for e in run.events
+                if e["kind"] == "model"] == [("test-model", "api.openai.com", 0, code)]
 
     # A tool call the endpoint refuses is asked for again, at most twice, before the run names it.
     def rejecting(valid_after):

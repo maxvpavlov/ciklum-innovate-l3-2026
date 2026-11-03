@@ -165,8 +165,17 @@ async def run_agent(provider, execute: Callable, schemas: list, task: str,
                 if run.tokens + estimated_input + limits.max_output_tokens > limits.tokens:
                     raise ValueError("token_budget")
                 started = time.monotonic()
-                reply = await provider.complete(model_messages, schemas,
-                                                limits.max_output_tokens)
+                try:
+                    reply = await provider.complete(model_messages, schemas,
+                                                    limits.max_output_tokens)
+                except RuntimeError as exc:
+                    # A failed request is still a model call: record where it went, how long it took and why.
+                    from urllib.parse import urlsplit
+                    run.event("model", step=run.steps + 1, tokens=0, cost_usd=0.0,
+                              model=getattr(provider, "model", "mock"),
+                              host=urlsplit(getattr(provider, "base_url", "")).hostname or "offline",
+                              elapsed_ms=(time.monotonic()-started)*1000, error=str(exc))
+                    raise
                 run.steps += 1
                 run.tokens += reply.tokens
                 run.cost_usd += reply.cost_usd

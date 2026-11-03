@@ -301,6 +301,18 @@ def build_lesson(n, known_given):
                   "`action_key` (build step 2), the MCP test passes only after build step 4, and",
                   "`python -m course.lab 2` runs only once `LESSON = 2`. Until then the console's Overview",
                   "shows checkpoint lesson-01."]
+    if n == 3:
+        lines += ["", "The checks also call these, beyond the imported names:", "",
+                  "- `run_agent(..., select_messages=...)`: the selection the next model request gets, while",
+                  "  the run keeps its full history;",
+                  "- `Reply.model` and `Reply.host` (default `mock` and `offline`), recorded with `elapsed_ms` in",
+                  "  every model event; a request that fails still records a model event with its `error` code;",
+                  "- `HTTPProvider(kind, model, key, ..., transport=..., reasoning_effort=...)` and its failure codes",
+                  "  `provider_rate_limited`, `provider_unavailable`, `provider_http_<status>`, `provider_timeout`",
+                  "  and `provider_tool_call_invalid`, plus `invalid_final_answer` for a reply with no JSON object.", "",
+                  "Along the way: this lesson's test file cannot import until `agent_runtime.context` provides",
+                  "every name above (build step 3), and its two real-model tests pass only after the hardening",
+                  "prompt."]
     if n <= OLD_LAYOUT_UNTIL:
         for new, old in OLD_NAMES:
             lines = [line.replace(new, old) for line in lines]
