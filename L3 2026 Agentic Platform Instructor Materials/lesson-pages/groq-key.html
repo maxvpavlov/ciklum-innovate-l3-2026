@@ -315,7 +315,7 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
   <h2>Where the key goes</h2>
   <div class="two">
     <div class="stack" style="align-content:start">
-      <p>Your coding agent writes this file outside your project, readable only by you, and waits. You open it in an editor, paste your key after <code>MODEL_API_KEY=</code> and save.</p>
+      <p>Your coding agent writes this file in your course folder, next to <code>my-platform</code> and <code>course</code> and outside your project, readable only by you: <code>~/agentic-course/groq.env</code> on macOS and Linux, <code>C:\Users\&lt;you&gt;\agentic-course\groq.env</code> on Windows. It tells you the full path and waits.</p>
 <pre class="layout"><span class="dim"># ~/agentic-course/groq.env</span>
 MODEL_PROVIDER=openai-compatible
 MODEL_BASE_URL=https://api.groq.com/openai/v1
@@ -323,6 +323,11 @@ MODEL_NAME=qwen/qwen3.8-27b
 MODEL_REASONING_EFFORT=low
 MODEL_ALLOWED_HOSTS=api.groq.com
 <span class="mark">MODEL_API_KEY=<span class="dim">   ← your key</span></span></pre>
+      <ol class="prose">
+        <li>Open that path in a plain-text editor: in VS Code, File › Open File and paste the path; or Notepad on Windows, TextEdit in plain-text mode on macOS. Keep the name <code>groq.env</code>, not <code>groq.env.txt</code>.</li>
+        <li>Put the cursor right after <code>MODEL_API_KEY=</code> on the last line and paste the key: no space, no quotes, nothing after it. Save and close.</li>
+        <li>Reply "done" to the agent, never the key itself.</li>
+      </ol>
     </div>
     <div class="stack" style="align-content:start">
       <ol class="prose">
