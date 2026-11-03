@@ -308,6 +308,20 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
   </div>
 </section>
 
+<section class="ch" id="housekeeping">
+  <p class="eyebrow"><span>The idea</span></p>
+  <h2>An agent decides well only from a well-kept request</h2>
+  <div class="stack">
+    <p class="lede" style="margin-top:0">The model makes every decision from what is in the request it receives: the instruction, the task, the conversation so far and the evidence its tools returned. Too little and it guesses; too much, stale or another tenant's, and it is misled or leaks. So before each request goes to the model, the platform keeps it in order. Today you build that housekeeping in three places, then send the same well-kept request to a real model.</p>
+    <div class="cards keep">
+      <div><span class="q">1 · What the agent can find</span><p>Its tools return only the run's tenant's runbooks, ranked, each with a source ID it can cite. <a href="#retrieval">Filter by tenant first, then rank</a>.</p></div>
+      <div><span class="q">2 · What the next request carries</span><p>The instruction, the task and the newest complete rounds that fit a budget; the full history is kept aside. <a href="#rounds">Trim by complete rounds</a>.</p></div>
+      <div><span class="q">3 · What outlives the request</span><p>Reports saved as versioned artifacts, and small facts remembered until they expire. <a href="#evidence">Artifacts and memory</a>.</p></div>
+      <div><span class="q">4 · Who reads the request</span><p>The same loop, now talking to a real model on Groq, which needs the request spelled out even more carefully. <a href="#live">The same loop, a real model</a>.</p></div>
+    </div>
+  </div>
+</section>
+
 <section class="ch" id="today">
   <p class="eyebrow"><span>Where we are</span></p>
   <h2>Yesterday the platform decided what a tool may do. Today it decides what the model gets to read.</h2>
@@ -386,7 +400,7 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
   <p class="eyebrow"><span>Retrieval</span></p>
   <h2>Filter by tenant first, then rank</h2>
   <div class="stack">
-    <p class="lede" style="margin-top:0">Read the tenant filter before you discuss ranking quality. The same query must give different results for different tenants, because the data each one may see is different.</p>
+    <p class="lede" style="margin-top:0">First, what the agent can find. When the model asks <code>runbook_search</code> for evidence, the platform decides which runbooks are candidates before any ranking happens: only those of the run's tenant. So the same query gives different results for different tenants, and every result carries the source ID the answer will cite.</p>
     <div class="two">
       <div class="excerpt">
         <div class="src">the same query, two tenants · retrieve("payments", tenant)</div>
@@ -416,7 +430,7 @@ locomotive  → <span class="hl">rb-quota-v1</span>  v1
   <p class="eyebrow"><span>Bounded context</span></p>
   <h2>Trim the conversation by complete rounds, never half a round</h2>
   <div class="stack">
-    <p class="lede" style="margin-top:0">Each model request resends the whole conversation, so a long investigation needs a budget. The selector keeps the instruction and the task, then adds whole rounds from the newest backwards while they fit. The full history is still kept for diagnosis; only the next request is smaller.</p>
+    <p class="lede" style="margin-top:0">Second, what the next request carries. Each model request resends the whole conversation, so a long investigation needs a budget. The selector keeps the instruction and the task, then adds whole rounds from the newest backwards while they fit. The full history is still kept for diagnosis; only the next request is smaller.</p>
     <figure>
       <div class="diagram">
         <svg viewBox="0 0 900 330" role="img" aria-labelledby="roundsTitle">
@@ -469,6 +483,7 @@ locomotive  → <span class="hl">rb-quota-v1</span>  v1
   <p class="eyebrow"><span>Saved evidence</span></p>
   <h2>Artifacts keep their versions; memory expires</h2>
   <div class="stack">
+    <p class="lede" style="margin-top:0">Third, what outlives the request. The message history ends with the run, so anything worth keeping is written somewhere with clear rules: a report as a versioned artifact that refuses a stale overwrite, a small fact as memory that expires. Neither is ever a permission.</p>
     <div class="two">
       <div class="transcript" role="list">
         <div class="turn" role="listitem"><span class="who rt">Writer A</span><div><pre>save_artifact("astro", "report", body, expected_version=0)  → 1</pre></div></div>
@@ -492,7 +507,7 @@ locomotive  → <span class="hl">rb-quota-v1</span>  v1
   <h2>The same loop, a real model: only the provider changes</h2>
   <div class="stack">
     <div class="prose" style="margin-top:0">
-      <p>Every run so far used the deterministic mock. Your Session 01 adapter already speaks the chat-completions format that Groq serves, so connecting a real model is configuration: a provider, a base URL, a model name and a key, read by the platform when it starts a run. Nothing in the loop changes.</p>
+      <p>Finally, who reads the request. Every run so far used the deterministic mock. Your Session 01 adapter already speaks the chat-completions format that Groq serves, so connecting a real model is configuration: a provider, a base URL, a model name and a key, read by the platform when it starts a run. Nothing in the loop changes.</p>
       <p>What changes is the other side. A real model does things the mock never did, so first you harden the runtime for them. Tuning for each model is normal work; these are the habits we measured when we tested free endpoints in October and again on 2 and 3 November.</p>
     </div>
     <figure>
