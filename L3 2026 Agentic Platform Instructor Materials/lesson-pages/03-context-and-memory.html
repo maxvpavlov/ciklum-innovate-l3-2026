@@ -390,7 +390,7 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
   <p class="eyebrow"><span>Retrieval</span></p>
   <h2>Finding the runbook: only the run's tenant's, best match first</h2>
   <div class="stack">
-    <p class="lede" style="margin-top:0">First, what the agent can find. Follow INC-001 for Astro. The agent reads the log, decides it needs a runbook and searches with words from the log. The platform answers that search with Astro's runbooks only, because the tenant comes from the run's Context, and puts the best match first. The model chooses the words; it never chooses the tenant.</p>
+    <p class="lede" style="margin-top:0">Retrieval is how an agent finds evidence it was not given: it calls a search tool and gets back a few records to read. Here the records are runbooks, a team's written procedures for known problems, such as what to check when the payments database runs out of connections, and each runbook belongs to one tenant. Follow INC-001 for Astro. The agent reads the log, decides it needs a runbook and searches with words from the log. The platform answers that search with Astro's runbooks only, because the tenant comes from the run's Context, and puts the best match first. The model chooses the words; it never chooses the tenant.</p>
     <div class="transcript" role="list">
       <div class="turn" role="listitem"><span class="who m">Model</span><div><pre>log_lookup(incident_id="INC-001")</pre><p class="note">Reads the incident's log first, as the system prompt says.</p></div></div>
       <div class="turn" role="listitem"><span class="who t">Tool</span><div><pre>log-astro-001 · payments · connection_pool_exhaustion
@@ -428,7 +428,7 @@ locomotive  → <span class="hl">rb-quota-v1</span>  v1
   <p class="eyebrow"><span>Bounded context</span></p>
   <h2>Trim the conversation by complete rounds, never half a round</h2>
   <div class="stack">
-    <p class="lede" style="margin-top:0">Second, what the next request carries. Each model request resends the whole conversation, so a long investigation needs a budget. The selector keeps the instruction and the task, then adds whole rounds from the newest backwards while they fit. The full history is still kept for diagnosis; only the next request is smaller.</p>
+    <p class="lede" style="margin-top:0">A model remembers nothing between calls: every request has to carry the instruction, the task and every tool call with its result so far. In a long investigation that grows with each step, until the request is slow, costly or larger than the model accepts. Context selection decides what the next request carries. The selector keeps the instruction and the task, then adds whole rounds from the newest backwards while they fit a budget; a round is one assistant message that calls tools together with all the results of those calls. The full history is still kept for diagnosis; only the next request is smaller.</p>
     <figure>
       <div class="diagram">
         <svg viewBox="0 0 900 330" role="img" aria-labelledby="roundsTitle">
@@ -481,7 +481,7 @@ locomotive  → <span class="hl">rb-quota-v1</span>  v1
   <p class="eyebrow"><span>Saved evidence</span></p>
   <h2>Artifacts keep their versions; memory expires</h2>
   <div class="stack">
-    <p class="lede" style="margin-top:0">Third, what outlives the request. The message history ends with the run, so anything worth keeping is written somewhere with clear rules: a report as a versioned artifact that refuses a stale overwrite, a small fact as memory that expires. Neither is ever a permission.</p>
+    <p class="lede" style="margin-top:0">The message history ends with the run, but some results must outlive it. An <b>artifact</b> is a saved output of the agent's work that people and other agents rely on later, such as the investigation report for INC-001, a remediation plan an operator approves or a postmortem draft. It has a name and a version, because several writers may update it: each write names the version it replaces, and a write based on an old version fails instead of silently erasing newer work. <b>Memory</b> is different: small facts worth keeping for a while, such as the last incident a user looked at, with an expiry. It is a convenience, never a source of truth, and neither store grants a permission.</p>
     <div class="two">
       <div class="transcript" role="list">
         <div class="turn" role="listitem"><span class="who rt">Writer A</span><div><pre>save_artifact("astro", "report", body, expected_version=0)  → 1</pre></div></div>
@@ -505,8 +505,8 @@ locomotive  → <span class="hl">rb-quota-v1</span>  v1
   <h2>The same loop, a real model: only the provider changes</h2>
   <div class="stack">
     <div class="prose" style="margin-top:0">
-      <p>Finally, who reads the request. Every run so far used the deterministic mock. Your Session 01 adapter already speaks the chat-completions format that Groq serves, so connecting a real model is configuration: a provider, a base URL, a model name and a key, read by the platform when it starts a run. Nothing in the loop changes.</p>
-      <p>What changes is the other side. A real model does things the mock never did, so first you harden the runtime for them. Tuning for each model is normal work; these are the habits we measured when we tested free endpoints in October and again on 2 and 3 November.</p>
+      <p>The model is the part that reads the request and decides the next step. Every run so far used the course's deterministic mock: a fixed policy that always makes the same calls, so the checks can expect exact results. A real model reasons from the text it is given, so it can decide better or worse, and it fails in ways the mock never does. Your Session 01 adapter already speaks the chat-completions format that Groq serves, so connecting a real model is configuration: a provider, a base URL, a model name and a key, read by the platform when it starts a run. Nothing in the loop changes.</p>
+      <p>What changes is the model's behaviour, so first you harden the runtime for what a real model does and the mock never did. Tuning for each model is normal work; these are the habits we measured when we tested free endpoints in October and again on 2 and 3 November.</p>
     </div>
     <figure>
       <div class="diagram">
