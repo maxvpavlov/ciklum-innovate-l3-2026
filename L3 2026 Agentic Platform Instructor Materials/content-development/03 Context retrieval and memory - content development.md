@@ -44,7 +44,7 @@ List previous topics, knowledge, tools, access or skills required. If none, writ
 
 • Basic retrieval ideas (lexical vs embedding search) and what a database transaction guarantees.
 
-• A free Groq account and API key, created before the session from the course page https://maxvpavlov.github.io/ciklum-innovate-l3-2026/groq-key/ (no card needed), kept private: never in a prompt, a chat or a repository.
+• A free Groq account and API key, created before the session from the course page https://maxvpavlov.github.io/ciklum-innovate-l3-2026/groq-key/ (no card needed), saved straight away in ~/agentic-course/groq.env as that page shows, and kept private: never in a prompt, a chat or a repository.
 
 • Your coding agent signed in to gitlab.ciklum.net, a local browser for the platform console, and a machine that can run Python 3.12 and reach api.groq.com.
 
@@ -123,7 +123,7 @@ If nothing is required, write: “No pre-work required.”
 
 **Pre-work:**
 
-Complete your Session 02 checkpoint (the Session 02 after-class work): your project in the course GitLab group with the Lesson 02 check pack passing (12 tests) and LESSON = 2. Create a free Groq account and an API key following https://maxvpavlov.github.io/ciklum-innovate-l3-2026/groq-key/ and keep it private. Optional (20 min): 'Effective context engineering for AI agents' (Anthropic) and a refresher on retrieval and embeddings.
+Complete your Session 02 checkpoint (the Session 02 after-class work): your project in the course GitLab group with the Lesson 02 check pack passing (12 tests) and LESSON = 2. Create a free Groq account and an API key following https://maxvpavlov.github.io/ciklum-innovate-l3-2026/groq-key/, save it straight away in ~/agentic-course/groq.env as that page shows, and keep it private. Optional (20 min): 'Effective context engineering for AI agents' (Anthropic) and a refresher on retrieval and embeddings.
 
 ## 4. Live Session Design
 
