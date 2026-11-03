@@ -221,7 +221,7 @@ For each activity include: Purpose • Instructions • Time • Expected outcom
 
 **3. Guided build: the four build steps.** Purpose: learners build the evidence layer in their own project. Instructions: for each step the instructor explains it and runs the prompt; learners run the same prompt and compare the agent's change and the checks with the code excerpt on the session page. Time: 30 min. Expected outcome: retrieval, context selection, artifacts and memory built, with the Lesson 03 checks passing step by step. Debrief: where does the tenant come from in your retrieval code?
 
-**4. Guided build and live demo: a real model.** Purpose: run the same loop on a real cloud model. Instructions: the Harden prompt adds the spelled-out system prompt, tolerant answer parsing, named provider failures and the bounded retry; the Connect prompt writes ~/agentic-course/groq.env outside the repository, restarts the platform with it, and submits INC-001, then INC-003 once INC-001 has finished. Learners read the model, host, tokens and time on the run page. Time: 15 min. Expected outcome: a cited INC-001 answer from Groq, or a named failure code the learner can explain. Debrief: what changed in the loop? Only the provider.
+**4. Guided build and live demo: a real model.** Purpose: run the same loop on a real cloud model. Instructions: the Harden prompt adds the spelled-out system prompt, tolerant answer parsing, named provider failures and the bounded retry; the Connect prompt uses the ~/agentic-course/groq.env learners saved with their key (or creates it and waits for the key), restarts the platform with it, and learners submit INC-001, then INC-003 once INC-001 has finished. Learners read the model, host, tokens and time on the run page. Time: 15 min. Expected outcome: a cited INC-001 answer from Groq, or a named failure code the learner can explain. Debrief: what changed in the loop? Only the provider.
 
 **5. Case study: right answer or plausible answer?** Purpose: separate a valid citation from a correct conclusion. Instructions: show a live INC-003 run whose answer names a cause while the citation check passes. Time: 5 min. Expected outcome: learners notice that INC-003's evidence names no cause, so the supported answer is insufficient_evidence; the citation check proves the sources were observed, not that the reasoning is sound. Debrief: this is why Session 04 measures outcomes.
 
@@ -492,7 +492,7 @@ Indicate which assets are needed and provide them where applicable.
 - Demo**✔ the learner kit (learner-kit/lessons/03 in the course repository); the reference tags lesson-02 → lesson-03; a Groq key for the instructor's live run**
 - Screenshots**✔ the console's run page for a live run (model, host, tokens and time per call), on the Session 03 page**
 - Diagrams**✔ four stores and their lifetimes, tenant-first retrieval, complete-round selection, artifacts vs memory, and the loop with a real model, on the Session 03 page**
-- Templates**✔ groq.env, the key file outside the repository (its contents are shown on the Groq key page)**
+- Templates**✔ groq.env, the key file outside the repository: its six lines, with a copy button, and the steps to save it are on the Groq key page**
 - Sample files**✔ synthetic incidents and runbooks for Astro and Locomotive; the given course/fixtures.py with described tools and arguments, and the console's run view, in learner-kit/lessons/03/given**
 - Quiz questions**✔ five questions in 7.4**
 - Practice assignment**✔ 7.5 and LEARNER_PROMPTS.md, Lesson 03**
