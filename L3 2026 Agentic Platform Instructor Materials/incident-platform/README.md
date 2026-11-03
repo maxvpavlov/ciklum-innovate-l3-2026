@@ -149,7 +149,8 @@ own free key, kept in a file outside the repository; the Lesson 03 prompts in
 > prerequisite.
 
 For the coding agent's reference, provider selection uses MODEL_PROVIDER,
-MODEL_NAME, MODEL_API_KEY and optionally MODEL_BASE_URL and MODEL_ALLOWED_HOSTS.
+MODEL_NAME, MODEL_API_KEY and optionally MODEL_BASE_URL, MODEL_ALLOWED_HOSTS and
+MODEL_REASONING_EFFORT (sent as reasoning_effort; the Groq course model uses low).
 Pricing uses MODEL_INPUT_USD_PER_MILLION and MODEL_OUTPUT_USD_PER_MILLION.
 The project does not automatically load a .env file. Unknown live pricing
 remains unavailable in evaluation reports.

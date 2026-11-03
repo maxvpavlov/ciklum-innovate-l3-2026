@@ -34,7 +34,7 @@ def test_compaction_retains_complete_rounds():
 
 
 async def test_real_model_reply_is_hardened():
-    """A fenced answer from a real endpoint still completes, and each model event names the model."""
+    """A fenced answer after a sentence completes, a reply with no JSON fails, and model events name the model."""
     requests = []
 
     def handler(request):
@@ -45,21 +45,35 @@ async def test_real_model_reply_is_hardened():
         else:
             answer = {"status": "complete", "cause": "connection_pool_exhaustion",
                       "summary": "INC-001: pool exhausted", "evidence": ["log-astro-001"]}
-            message = {"role": "assistant", "content": "```json\n" + json.dumps(answer) + "\n```"}
+            message = {"role": "assistant",
+                       "content": "The log names the cause.\n```json\n" + json.dumps(answer) + "\n```"}
         return httpx.Response(200, json={"model": "served-model", "choices": [{"message": message}],
                                          "usage": {"prompt_tokens": 90, "completion_tokens": 10}})
 
-    provider = HTTPProvider("openai-compatible", "test-model", "test-only", transport=httpx.MockTransport(handler))
+    provider = HTTPProvider("openai-compatible", "test-model", "test-only", transport=httpx.MockTransport(handler),
+                            reasoning_effort="low")
     tools, ctx = ToolExecutor(read_handler=context_tools), Context()
     run = await run_agent(provider, tools.execute, tools.available(ctx), "INC-001", ctx)
     assert run.status == "completed" and run.answer["evidence"] == ["log-astro-001"]
-    assert "no Markdown code fence" in requests[0]["messages"][0]["content"]
+    system = requests[0]["messages"][0]["content"]
+    assert "no Markdown code fence" in system and "exactly the argument names" in system
+    assert requests[0]["reasoning_effort"] == "low"
+    # The model reads a description of every argument it may send.
+    assert all(arg.get("description") for tool in requests[0]["tools"]
+               for arg in tool["function"]["parameters"]["properties"].values())
     models = [e for e in run.events if e["kind"] == "model"]
     assert [(e["model"], e["host"], e["tokens"]) for e in models] == [("served-model", "api.openai.com", 100)] * 2
 
+    def prose(request):
+        message = {"role": "assistant", "content": "The cause is unclear."}
+        return httpx.Response(200, json={"choices": [{"message": message}]})
+    provider = HTTPProvider("openai-compatible", "test-model", "test-only", transport=httpx.MockTransport(prose))
+    run = await run_agent(provider, simple_tools, SCHEMAS, "INC-001")
+    assert (run.status, run.error) == ("failed", "invalid_final_answer")
+
 
 async def test_real_model_failures_are_named():
-    """Rate limits, outages, rejected keys and timeouts end the run with a code that says why."""
+    """Rate limits, outages, rejected keys or tool calls and timeouts end the run with a code that says why."""
     def failing(outcome):
         def handler(request):
             if isinstance(outcome, Exception):
@@ -68,6 +82,27 @@ async def test_real_model_failures_are_named():
         return HTTPProvider("openai-compatible", "test-model", "test-only", transport=httpx.MockTransport(handler))
 
     for outcome, code in [(429, "provider_rate_limited"), (503, "provider_unavailable"),
-                          (401, "provider_http_401"), (httpx.ReadTimeout("slow"), "provider_timeout")]:
+                          (401, "provider_http_401"), (400, "provider_http_400"),
+                          (httpx.ReadTimeout("slow"), "provider_timeout")]:
         run = await run_agent(failing(outcome), simple_tools, SCHEMAS, "INC-001")
         assert run.status == "failed" and run.error == code
+
+    # A tool call the endpoint refuses is asked for again, at most twice, before the run names it.
+    def rejecting(valid_after):
+        sent = []
+
+        def handler(request):
+            sent.append(request)
+            if len(sent) <= valid_after:
+                return httpx.Response(400, json={"error": {"code": "tool_use_failed", "message": "provider detail"}})
+            answer = {"status": "insufficient_evidence", "cause": "unknown", "summary": "none", "evidence": []}
+            return httpx.Response(200, json={"choices": [{"message": {"role": "assistant",
+                                                                      "content": json.dumps(answer)}}]})
+        transport = httpx.MockTransport(handler)
+        return HTTPProvider("openai-compatible", "test-model", "test-only", transport=transport), sent
+
+    for valid_after, status, error, calls in [(2, "completed", None, 3),
+                                              (3, "failed", "provider_tool_call_invalid", 3)]:
+        provider, sent = rejecting(valid_after)
+        run = await run_agent(provider, simple_tools, SCHEMAS, "INC-001")
+        assert (run.status, run.error, len(sent)) == (status, error, calls)

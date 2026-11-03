@@ -181,11 +181,13 @@ SESSIONS = {
              "Opens your project, reads its AGENTS.md, confirms your Session 02 work still passes and updates your "
              "read-only copy of the course repository, which now holds the Session 03 kit. Your project is not changed.",
              "the course copy moved to the latest commit, with the Lesson 03 kit files that changed, including "
-             "<code>given/agentic_platform/console/views/runs.js</code>. Your project still at <code>LESSON = 2</code>, "
+             "<code>given/course/fixtures.py</code> and <code>given/agentic_platform/console/views/runs.js</code>. Your "
+             "project still at <code>LESSON = 2</code>, "
              "<b>12 passed</b>."),
-            ("Add the check pack", "Add the check pack", "one given file and checks · no code yet",
-             "Copies the updated console run page into <code>agentic_platform/</code> and the Session 03 checks into your "
-             "project, then lists the exact interfaces they expect. This defines done before anything is built.",
+            ("Add the check pack", "Add the check pack", "two given files and checks · no code yet",
+             "Copies the updated tool definitions into <code>course/</code>, the updated console run page into "
+             "<code>agentic_platform/</code> and the Session 03 checks into your project, then lists the exact "
+             "interfaces they expect. This defines done before anything is built.",
              "<b>12 passed</b>, and <code>test_lesson03.py</code> failing to import until "
              "<code>agent_runtime.context</code> exists."),
             ("Build step 1", "Retrieve within the tenant", "new · agent_runtime/context.py · retrieve",
@@ -209,16 +211,19 @@ SESSIONS = {
              "the same cited answer either way; <b>15 passed, 2 failed</b>: the two real-model checks."),
             ("Harden the runtime for a real model", "Harden for a real model",
              "agent_runtime/core.py · agent_runtime/providers.py",
-             "Prepares the loop for what real models do: an instruction to answer with bare JSON, a fenced answer "
-             "accepted anyway, named failures for rate limits, outages, bad keys and timeouts, and model events that "
-             "record which model answered, at which host and how fast.",
+             "Prepares the loop for what real models do: a system prompt that spells out which tool to call first, "
+             "with which argument names, when to stop and what the answer must hold; the JSON answer taken from a "
+             "fenced or prefaced reply; a tool call Groq refuses asked for again at most twice; a reasoning-effort "
+             "setting; named failures for rate limits, outages, bad keys and timeouts; and model events that record "
+             "which model answered, at which host and how fast.",
              "<b>17 passed</b>; still entirely offline."),
             ("Connect the platform to Groq", "Connect Groq", "~/agentic-course/groq.env · platform restarted",
-             "Writes the Groq settings to a file outside your project, waits while you paste your key into it, checks "
-             "the key without printing it and restarts only the platform on Groq. You submit INC-001 and INC-003 in "
-             "the console. No key yet? <a href=\"../groq-key/\">Get one first</a>.",
+             "Writes the Groq settings to a file outside your project, including <code>MODEL_REASONING_EFFORT=low</code>, "
+             "waits while you paste your key into it, checks the key without printing it and restarts only the "
+             "platform on Groq. You submit INC-001, then INC-003 once it has finished. No key yet? "
+             "<a href=\"../groq-key/\">Get one first</a>.",
              "INC-001's run page reads <b>tokens from qwen/qwen3.8-27b at api.groq.com</b>, with a cited answer; "
-             "INC-003 should end <code>insufficient_evidence</code>."),
+             "INC-003 should end <code>insufficient_evidence</code>. A failed run names its code."),
             ("Learner exercise", "Push on each boundary", "a throwaway script",
              "Predicts, then runs: the same query for both tenants, a stale artifact write, a smaller context budget "
              "on a long conversation, and the investigation before and after context selection.",
@@ -238,7 +243,7 @@ SESSIONS = {
             ("Recover when a provider rejects conversation history", "When a model request fails after the history was trimmed."),
             ("Recover when an artifact update reports stale_artifact_version", "When saving a report fails because another write came first."),
             ("Recover when memory seems to disappear", "When a remembered value reads as nothing."),
-            ("Recover when a real-model run fails", "When a run on Groq ends with a provider or answer failure code."),
+            ("Recover when a real-model run fails", "When a run on Groq ends with a provider, tool-call or answer failure code."),
         ],
         "next": "Session 04: Build the agent evaluation harness",
     },

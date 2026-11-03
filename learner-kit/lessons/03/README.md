@@ -6,6 +6,7 @@ Copy these into your project unchanged. They are data, test doubles and the plat
 shell (run API and console) that everyone shares, so results are comparable; they are
 not what this lesson teaches.
 
+- `given/course/fixtures.py`: copy to `course/fixtures.py`.
 - `given/agentic_platform/console/views/runs.js`: copy to `agentic_platform/console/views/runs.js`.
 
 ## Checks

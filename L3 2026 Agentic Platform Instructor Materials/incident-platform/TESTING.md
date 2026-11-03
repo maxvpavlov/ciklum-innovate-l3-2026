@@ -40,10 +40,15 @@ platform components added in the reframed course are covered too:
   and approval_required with an exact-action key for an operator). These two checks run
   unchanged in every later checkpoint, against the platform API that replaces the shell.
 - **Real-model hardening (from lesson-03):** with an OpenAI-compatible endpoint faked at the
-  HTTP layer, a final answer in a Markdown fence still completes, every model event records
-  the model the endpoint reported, its host and the call time, and HTTP 429, 503 and 401 and a
-  timeout end the run as provider_rate_limited, provider_unavailable, provider_http_401 and
-  provider_timeout. The console's run page shows the model and host from those events.
+  HTTP layer, a final answer in a Markdown fence after a sentence still completes and a reply
+  with no JSON object fails as invalid_final_answer; the request carries the system prompt's
+  tool procedure, a description of every tool argument and, when configured, reasoning_effort;
+  every model event records the model the endpoint reported, its host and the call time; HTTP
+  429, 503, 401 and 400 and a timeout end the run as provider_rate_limited,
+  provider_unavailable, provider_http_401, provider_http_400 and provider_timeout; and a tool
+  call the endpoint refuses with tool_use_failed is requested again at most twice before the
+  run fails as provider_tool_call_invalid. The console's run page shows the model and host from
+  those events.
 - **Console:** CSP headers, tenant-scoped views, operator-only actions, a static check
   that no console script renders HTML from data, and a check that API handlers run
   on the event loop (they share one SQLite connection with the workers).
@@ -59,10 +64,11 @@ Linux ARM64 image built from the Dockerfile, and lessons 11 and 12 passed as the
 non-root user in a read-only container with only temporary writable directories,
 no external network, dropped capabilities and no-new-privileges enabled. The
 Dockerfile and Compose file are unchanged, but the container was not rebuilt
-after the reframing, so repeat that check before relying on it. The normal live API adapters were tested with mock
-HTTP request/response contracts, not real model credentials.
+after the reframing, so repeat that check before relying on it. The live API adapters were tested with mock
+HTTP request/response contracts; the lesson-03 runtime was also run against Groq's free tier
+(qwen/qwen3.8-27b) on 3 November 2026, as observations rather than tests.
 
-Not exercised: paid/live model calls, external model judging, third-party MCP or
+Not exercised: paid model calls, live model calls beyond those lesson-03 observations, external model judging, third-party MCP or
 A2A deployments, remote MCP OAuth, an enterprise identity provider, a managed
 secret vault, production persistence, cloud rollout or a production
 observability collector. Tokens use one shared HMAC development key; the

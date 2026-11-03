@@ -49,12 +49,13 @@ class MockProvider:
 class HTTPProvider:
     """OpenAI-compatible chat or Anthropic Messages; never log credentials."""
     def __init__(self, kind, model, key, base_url=None, transport=None,
-                 input_rate=0.0, output_rate=0.0):
+                 input_rate=0.0, output_rate=0.0, reasoning_effort=None):
         self.kind, self.model, self.key = kind, model, key
         self.base_url = (base_url or ("https://api.anthropic.com/v1" if kind == "anthropic"
                                      else "https://api.openai.com/v1")).rstrip("/")
         self.transport = transport
         self.input_rate, self.output_rate = input_rate, output_rate
+        self.reasoning_effort = reasoning_effort
         from agent_runtime.security import validate_endpoint
         hosts = set(os.getenv("MODEL_ALLOWED_HOSTS", "api.openai.com,api.anthropic.com").split(","))
         validate_endpoint(self.base_url, hosts, allow_loopback=True)
@@ -63,6 +64,9 @@ class HTTPProvider:
         headers = {"Authorization": f"Bearer {self.key}"}
         body = {"model": self.model, "messages": messages, "tools": tools,
                 "max_completion_tokens": max_tokens}
+        # Per-model tuning lives in configuration: a little reasoning steadies some models' tool calls.
+        if self.reasoning_effort:
+            body["reasoning_effort"] = self.reasoning_effort
         path = "/chat/completions"
         if self.kind == "anthropic":
             headers = {"x-api-key": self.key, "anthropic-version": "2023-06-01"}
@@ -88,7 +92,13 @@ class HTTPProvider:
         async with httpx.AsyncClient(transport=self.transport, timeout=15,
                                      follow_redirects=False) as client:
             try:
-                response = await client.post(self.base_url+path, headers=headers, json=body)
+                for attempt in range(3):
+                    response = await client.post(self.base_url+path, headers=headers, json=body)
+                    if not rejected_tool_call(response):
+                        break
+                    # The endpoint refused a tool call the model wrote; a new sample is usually valid.
+                    if attempt == 2:
+                        raise RuntimeError("provider_tool_call_invalid")
                 response.raise_for_status()
                 data = response.json()
             except httpx.TimeoutException:
@@ -120,6 +130,18 @@ class HTTPProvider:
                      model=data.get("model") or self.model, host=httpx.URL(self.base_url).host)
 
 
+def rejected_tool_call(response):
+    """Groq answers 400 with code tool_use_failed when the model's tool call breaks its definition."""
+    if response.status_code != 400:
+        return False
+    try:
+        error = response.json().get("error")
+    except (ValueError, AttributeError):
+        return False
+    # Read only the error code: the rest of the body repeats what the model wrote.
+    return isinstance(error, dict) and error.get("code") == "tool_use_failed"
+
+
 def provider_from_env(credentials=None):
     kind = os.getenv("MODEL_PROVIDER", "mock")
     if kind == "mock":
@@ -136,4 +158,5 @@ def provider_from_env(credentials=None):
         raise ValueError("Live mode requires MODEL_API_KEY and MODEL_NAME")
     return HTTPProvider(kind, model, key, os.getenv("MODEL_BASE_URL"),
                         input_rate=float(os.getenv("MODEL_INPUT_USD_PER_MILLION", "0")),
-                        output_rate=float(os.getenv("MODEL_OUTPUT_USD_PER_MILLION", "0")))
+                        output_rate=float(os.getenv("MODEL_OUTPUT_USD_PER_MILLION", "0")),
+                        reasoning_effort=os.getenv("MODEL_REASONING_EFFORT") or None)
