@@ -309,10 +309,11 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
     <figure>
       <div class="diagram">
         <svg viewBox="0 0 900 420" role="img" aria-labelledby="storesTitle">
-          <title id="storesTitle">The agent runtime in the middle, with the message history and the runbook sources on the left, versioned artifacts and memory on the right, the run's Context above it and the model below it</title>
-          <rect class="box" x="300" y="14" width="300" height="64" rx="8"/>
-          <text class="lbl" x="318" y="40">Context</text>
-          <text class="small" x="318" y="62">tenant · role · allowed tools</text>
+          <title id="storesTitle">The agent runtime in the middle, with the message history and the runbook sources on the left, versioned artifacts and memory on the right, the run's Context, set by the platform at sign-in, above it and going with every call, and the model below it</title>
+          <rect class="box" x="300" y="10" width="300" height="84" rx="8"/>
+          <text class="lbl" x="318" y="36">The run's Context</text>
+          <text class="small" x="318" y="58">tenant · role · allowed tools</text>
+          <text class="small" x="318" y="78">set by the platform at sign-in</text>
 
           <rect class="box" x="330" y="150" width="240" height="100" rx="10"/>
           <text class="lbl" x="350" y="182">Agent runtime</text>
@@ -343,8 +344,8 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
           <text class="small" x="350" y="370">mock for the checks,</text>
           <text class="small" x="350" y="388">Groq from today</text>
 
-          <path class="ink" d="M450 78 V144"/><path class="arrowhead" d="M450 148 l-5 -8 h10z"/>
-          <text class="small" x="460" y="118">decides</text>
+          <path class="ink" d="M450 94 V144"/><path class="arrowhead" d="M450 148 l-5 -8 h10z"/>
+          <text class="small" x="460" y="124">goes with every call</text>
           <path class="ink" d="M286 152 H324"/><path class="arrowhead" d="M328 152 l-8 -5 v10z"/>
           <path class="ink" d="M286 268 L324 236"/><path class="arrowhead" d="M327 233 l-9 3 l6 7z"/>
           <path class="ink" d="M570 172 H608"/><path class="arrowhead" d="M612 172 l-8 -5 v10z"/>
@@ -353,7 +354,7 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
           <text class="small" x="460" y="290">next request</text>
         </svg>
       </div>
-      <figcaption>The highlighted parts are today's work. The Context above the runtime decides what a run may do; the four stores only hold evidence, each with its own lifetime, and the model at the bottom becomes a real one at the end of the session.</figcaption>
+      <figcaption>The highlighted parts are today's work. The run's Context is set by the platform from who signed in and goes with every tool call, so the runtime reads only that tenant's evidence and calls only the allowed tools. The four stores only hold evidence, each with its own lifetime, and the model at the bottom becomes a real one at the end of the session.</figcaption>
     </figure>
     <div class="tablewrap">
       <table>
