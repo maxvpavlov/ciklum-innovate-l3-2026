@@ -394,17 +394,20 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
   <p class="eyebrow"><span>Retrieval</span></p>
   <h2>Finding the runbook: only the run's tenant's, best match first</h2>
   <div class="stack">
-    <p class="lede" style="margin-top:0">Retrieval is how an agent finds evidence it was not given: it calls a search tool and gets back a few records to read. Here the records are runbooks, a team's written procedures for known problems, such as what to check when the payments database runs out of connections, and each runbook belongs to one tenant. Follow INC-001 for Astro. The agent reads the log, decides it needs a runbook and searches with words from the log. The platform answers that search with Astro's runbooks only, because the tenant comes from the run's identity, and puts the best match first. The model chooses the words; the tenant never enters the model's context, because the tool reads it from the run's identity.</p>
+    <p class="lede" style="margin-top:0">Retrieval is how an agent finds evidence it was not given: it calls a search tool and gets back a few records to read. Here the records are runbooks, a team's written procedures for known problems, such as what to check when the payments database runs out of connections, and each runbook belongs to one tenant. Follow INC-001 for Astro. The agent reads the log, decides it needs a runbook and searches with words from the log. The platform answers that search with Astro's runbooks only, because the tenant comes from the run's identity, and ranks them. <b>Ranking</b> means putting the candidates in order of how well they match the search words, so the best match comes first and only the top few are returned. The model chooses the words; the tenant never enters the model's context, because the tool reads it from the run's identity.</p>
     <div class="transcript" role="list">
       <div class="turn" role="listitem"><span class="who m">Model</span><div><pre>log_lookup(incident_id="INC-001")</pre><p class="note">Reads the incident's log first, as the system prompt says.</p></div></div>
       <div class="turn" role="listitem"><span class="who t">Tool</span><div><pre>log-astro-001 · payments · connection_pool_exhaustion
 "DB pool wait 900ms after deploy d42"</pre></div></div>
       <div class="turn" role="listitem"><span class="who m">Model</span><div><pre>runbook_search(query="payments connection pool exhaustion")</pre><p class="note">Decides it needs a runbook and searches with words from the log. There is no tenant argument: a call that adds one is refused as <code>invalid_arguments</code>.</p></div></div>
-      <div class="turn" role="listitem"><span class="who rt">1 · Filter</span><div><pre>tenant from run identity: astro
-candidates: rb-pool-v1, rb-clock-v1</pre><p class="note">Only Astro's runbooks are searched. Locomotive's <code>rb-quota-v1</code> is never a candidate, so it cannot be returned, counted or scored.</p></div></div>
-      <div class="turn" role="listitem"><span class="who rt">2 · Rank</span><div><pre>rb-pool-v1   4 of 4 query words   → returned
-rb-clock-v1  0 of 4               → left out</pre><p class="note">Score each candidate by how many query words its text contains, best first; drop those with none and return at most two.</p></div></div>
-      <div class="turn" role="listitem"><span class="who r">Answer</span><div><pre>complete · connection_pool_exhaustion
+      <div class="turn" role="listitem"><span class="who rt">Code · filter</span><div><pre>retrieve(query, tenant="astro")
+tenant from run identity: astro
+candidates: rb-pool-v1, rb-clock-v1</pre><p class="note">No model is involved in this step or the next: <code>runbook_search</code> runs <code>retrieve(query, tenant)</code> in <code>agent_runtime/context.py</code>, the code you write in build step 1, and passes it the tenant from the run's identity. Only Astro's runbooks are searched. Locomotive's <code>rb-quota-v1</code> is never a candidate, so it cannot be returned, counted or scored.</p></div></div>
+      <div class="turn" role="listitem"><span class="who rt">Code · rank</span><div><pre>rb-pool-v1   4 of 4 query words   → returned
+rb-clock-v1  0 of 4               → left out</pre><p class="note">The same <code>retrieve</code> scores each candidate by how many query words its text contains, sorts best first, drops those with none and returns at most two.</p></div></div>
+      <div class="turn" role="listitem"><span class="who t">Tool</span><div><pre>rb-pool-v1 · v1 · connection_pool_exhaustion
+"payments connection pool exhaustion DB wait after deployment"</pre><p class="note">This result is what enters the model's context for its next decision.</p></div></div>
+      <div class="turn" role="listitem"><span class="who m">Model</span><div><pre>answer: complete · connection_pool_exhaustion
 evidence: log-astro-001, rb-pool-v1</pre><p class="note">Each result keeps its <code>source_id</code> and version, so the answer cites exactly what it read.</p></div></div>
     </div>
     <div class="two">
