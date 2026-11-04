@@ -247,6 +247,71 @@ SESSIONS = {
         ],
         "next": "Session 04: Build the agent evaluation harness",
     },
+    4: {
+        "full_page": "04-evaluation-harness.html",
+        "fold": True,
+        "title": "Build the agent evaluation harness",
+        "goal": "By the end your platform has a measuring instrument: five cases with their expected outcomes, "
+                "repeated trials with every row kept, separate grades for outcome, evidence and tool policy, and a "
+                "judge you can calibrate. Run the prompts in this order, in your coding agent started in "
+                "~/agentic-course, and read each result before you paste the next one.",
+        "facts": ["<b>9 prompts</b> in order", "ends at <b>19 passed</b> · <code>LESSON = 4</code>",
+                  "offline · no model key needed"],
+        "outcomes": [("Cases first", "the expected outcome is written before any run, and the dataset has a hash."),
+                     ("Three grades", "outcome, evidence and tool policy, each with its own verdict."),
+                     ("Every row", "repeated trials, held-out cases apart, no average hiding a bad case."),
+                     ("A checked judge", "a model that grades is calibrated against people before it counts.")],
+        "steps": [
+            ("Prepare the workspace", "Prepare", "confirms lesson-03 · refreshes the course copy",
+             "Opens your project, reads its AGENTS.md, confirms your Session 03 work still passes and updates your "
+             "read-only copy of the course repository, which now holds the Session 04 kit. Your project is not changed.",
+             "your project at the lesson-03 checkpoint with <b>17 passed</b>, and the course copy moved to the latest "
+             "commit with the Lesson 04 kit: <code>given/CASES.py</code>, <code>given/MockProvider.py</code> and the checks."),
+            ("Add the check pack", "Add the check pack", "the checks · no code yet",
+             "Copies the Session 04 checks into your project and lists the exact interfaces they expect. The two given "
+             "definitions are added later, in the build steps that change their files.",
+             "<b>17 passed</b>, and <code>test_lesson04.py</code> failing to import until <code>agent_runtime.evaluate</code> "
+             "provides <code>CASES</code>, <code>evaluate</code>, <code>grade</code> and <code>judge_agreement</code>."),
+            ("Build step 1", "The cases", "new · agent_runtime/evaluate.py · CASES",
+             "Adds the five given cases unchanged: each names a tenant, an incident and the outcome a correct "
+             "investigation must reach, split into development and held-out cases, with a hash of the whole list.",
+             "<code>CASES</code> exactly as given, each case explained, a dataset hash of <code>7d345084…</code>; the "
+             "earlier <b>17</b> still pass."),
+            ("Build step 2", "Three separate grades", "agent_runtime/evaluate.py · grade · the given mock",
+             "Grades every run on its outcome, its evidence and its tool policy separately, shows a plausible but wrong "
+             "answer failing, then swaps in the given mock, which no longer takes a cause from a runbook alone.",
+             "the clock-skew answer for INC-001 graded <b>outcome false</b>; INC-404 ending <code>insufficient_evidence</code> "
+             "and <code>unknown</code>."),
+            ("Build step 3", "Repeated trials", "agent_runtime/evaluate.py · evaluate",
+             "Runs every case several times with a fresh start each time, keeps a row per trial and reports the "
+             "dataset, split, quality, usage and latency, with no cost unless pricing is configured.",
+             "two trials on the held-out split give <b>four rows</b>, all passed on the mock."),
+            ("Build step 4", "A judge you calibrate", "agent_runtime/evaluate.py · judge_agreement · model_judge",
+             "Compares paired human and judge labels and flags the disagreements for a person, and adds the optional "
+             "judge interface, which treats the agent's answer as data to grade.",
+             "agreement <b>0.67</b> with review index <b>1</b>, and <b>19 passed</b>."),
+            ("Learner exercise", "Break the grades on purpose", "a throwaway script",
+             "Predicts, then runs: an answer with no evidence, a run that tried to remediate, two held-out trials and "
+             "the calibration example.",
+             "evidence false, tool_policy false, four rows, review index 1; the project restored."),
+            ("Verify the checkpoint", "Verify and push", "LESSON = 4 · commit · push",
+             "Runs the full suite and the Session 04 demo unchanged on the offline mock, raises the checkpoint to 4 "
+             "only if the capability is there, and pushes your work. This is the evidence, not the agent's summary.",
+             "<b>19 passed</b>, <code>LESSON = 4</code>, a Lesson 04 entry in <code>AGENTS.md</code> and your work on "
+             "gitlab.ciklum.net."),
+            ("Review the result", "Review", "no changes",
+             "Walks through what you built against the completion criteria and points out the design choices the "
+             "checks do not force.",
+             "A review you can discuss in the next session."),
+        ],
+        "recover": [
+            ("Recover when a comparison improves after changing the cases", "When a result looks better but the cases or the split changed."),
+            ("Recover when live cost appears unavailable", "When a live evaluation reports no cost."),
+            ("Recover when one live trial passes and another fails", "When repeated live trials disagree."),
+            ("Recover when the judge disagrees with an obvious check", "When the model judge contradicts a deterministic check."),
+        ],
+        "next": "Session 05: Checkpoints, recovery and human approval",
+    },
 }
 
 
