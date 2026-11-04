@@ -51,7 +51,7 @@ Pinned versions in pyproject.toml and uv.lock: Python 3.12, MCP 2.2.0, A2A SDK 1
 
 | Minutes | Activity | Format |
 |---|---|---|
-| 00 to 10 | Reconnect to the incident and prior checkpoint | Discussion |
+| 00 to 10 | Reconnect: recall discussion on artifacts and the Session 03 checkpoint | Discussion |
 | 10 to 30 | Concept script and architecture questions | Discussion |
 | 30 to 45 | Prompts and code review for steps 1 and 2 | Agent build |
 | 45 to 60 | Prompts and code review for steps 3 and 4 | Agent build |
@@ -68,6 +68,26 @@ Use SAY for instructor narration, SHOW and REVIEW for the code and evidence part
 **SAY** Before adding more agents, we need evidence that complexity helps. Today we build the measuring instrument we will use for the rest of the programme. The current platform can investigate several incidents, including missing or ambiguous evidence. We will define success independently of the agent's preferred sequence of tool calls, run repeated trials and retain a held-out partition. The baseline becomes a reference point for parallel orchestration, provider changes, context policies and capstone tuning.
 
 **SHOW** The coding agent’s baseline report, current learner project, synthetic incident records and lesson outcome. Ask participants to explain what already works before authorizing the next bounded change.
+
+### Recall discussion: artifacts
+
+**SAY** Session 03 saved the INC-001 report with save_artifact. Recall what made it an artifact rather than memory or message history: other people, agents or later runs rely on it, so it has a name, a version, a tenant and its sources, and a write based on an old version fails with stale_artifact_version. Agentic systems produce several kinds: findings and reports (an investigation report, a root-cause analysis, a review result); plans and proposals (a remediation plan waiting for approval); work products (a patch or pull request, a configuration change, a drafted message, a ticket update); hand-off records between agents (a supervisor's brief, a specialist's result); execution records (runs, traces, tool-call audit, approvals); evaluation artifacts (a case dataset, scored results, a release decision); definitions and configuration (agent definitions, tool manifests, system prompts, model settings); and derived knowledge (a new runbook drafted from a resolved incident). Each needs provenance (which run, agent version, model and sources produced it), a version, an owner and a lifecycle such as draft, proposed, approved, applied, superseded. Writing an artifact is safe; applying it, such as running a remediation plan, is a tool call that goes through approval. Keep this to about five minutes.
+
+**ASK** Which outputs of your Session 03 platform are artifacts, which are memory and which are only message history?
+
+**Likely answer** The saved INC-001 report is an artifact: versioned, tenant-scoped and cited. A note such as the last incident looked at is memory: it expires and is never authoritative. The run's turns and tool results are message history: they belong to the run and the next request carries only a selection of them.
+
+**ASK** An operator approves a remediation plan, and then the agent edits the plan. What must happen before it runs?
+
+**Likely answer** The edit creates a new version, and the approval no longer applies: it was given for the old version, just as an approval in Session 02 binds to an exact action key. The new version needs approving again.
+
+**ASK** Name one artifact your own team's agents produce or could produce. What would you need to know about it before trusting it?
+
+**Likely answer** Answers vary: a pull request, a ticket update, an incident summary, a generated report. The common list is provenance: which agent and version wrote it, with which model, from which sources, and whether a person reviewed it.
+
+**ASK** Today we build an evaluation harness. Which artifacts will it produce, and what makes two of them comparable?
+
+**Likely answer** The versioned case dataset, the per-case result rows and the evaluation report. Two results are comparable only when they used the same dataset hash and the same split, which is why the harness records both.
 
 ### Concept discussion
 

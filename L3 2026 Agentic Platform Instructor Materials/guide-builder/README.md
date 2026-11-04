@@ -94,6 +94,7 @@ Some templates take extra fields, for example `{body}`, `{file}`, `{start}`/`{en
 | `concept_say` | str | SAY under "Concept discussion". The PAUSE is boilerplate. |
 | `steps` | [4 × step] | Build steps 1–4, described below |
 | `live_model` | `{heading, say, prompts: [{heading, text}]}`, optional | A Heading 2 section after step 4 with a SAY and literal prompts, which follow Build step 4 in `LEARNER_PROMPTS.md` under their own headings (used only by 03: harden the runtime for a real model, connect Groq) |
+| `recall` | `{heading, say, questions: [{ask, answer}]}`, optional | A Heading 2 discussion after the opening that recalls the previous session, with a SAY and ASK/Likely answer pairs; no prompts (used by 04: artifacts) |
 | `exercise` | str | Body of the learner-exercise prompt, without the "Help me carry out…" / "First state…" frame |
 | `expected_json` | object | Expected lab output, rendered with `json.dumps(indent=2)`. For now it is stored, not computed. |
 | `completion_criteria` | [str] | Bullets |

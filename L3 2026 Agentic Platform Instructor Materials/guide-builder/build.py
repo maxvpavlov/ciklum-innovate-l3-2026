@@ -254,6 +254,13 @@ def build_guide(spec, common, template_path, out_path):
     g.text(H["opening"], "Heading 2")
     g.labelled(L["say"], spec["opening_say"])
     g.labelled(L["show"], T("opening_show"))
+    recall = spec.get("recall")
+    if recall:  # optional discussion recalling the previous session
+        g.text(recall["heading"], "Heading 2")
+        g.labelled(L["say"], recall["say"])
+        for item in recall["questions"]:
+            g.labelled(L["ask"], item["ask"])
+            g.labelled(L["answer"], item["answer"])
     g.text(H["concept"], "Heading 2")
     g.labelled(L["say"], spec["concept_say"])
     g.labelled(L["pause"], T("concept_pause"))

@@ -75,7 +75,9 @@
     "mean_latency_ms": 0.8998957055155188,
     "calibration": {
       "agreement": 0.6666666666666667,
-      "review_indices": [1]
+      "review_indices": [
+        1
+      ]
     },
     "interpretation": "Offline fixture results validate wiring and checks, not live model quality."
   },
@@ -116,7 +118,10 @@
     "Create a versioned dataset extension with a clear rationale and retain the previous baseline.",
     "Compare full history and bounded context using the same cases and report both outcome quality and usage."
   ],
-  "verification_scope": ["@tested", "@not_tested"],
+  "verification_scope": [
+    "@tested",
+    "@not_tested"
+  ],
   "close_say": "Save the baseline report with its dataset identity and configuration. We will keep using this harness as the platform becomes more capable: in Session 11 it becomes the release gate for new agent versions, and the console's Operations view keeps the log of release decisions. Next we make a run survive interruption without duplicating its effects.",
   "references": [
     {
@@ -127,5 +132,64 @@
       "title": "Evaluating tool effectiveness",
       "url": "https://www.anthropic.com/engineering/writing-tools-for-agents"
     }
-  ]
+  ],
+  "agenda": [
+    [
+      "00 to 10",
+      "Reconnect: recall discussion on artifacts and the Session 03 checkpoint",
+      "Discussion"
+    ],
+    [
+      "10 to 30",
+      "Concept script and architecture questions",
+      "Discussion"
+    ],
+    [
+      "30 to 45",
+      "Prompts and code review for steps 1 and 2",
+      "Agent build"
+    ],
+    [
+      "45 to 60",
+      "Prompts and code review for steps 3 and 4",
+      "Agent build"
+    ],
+    [
+      "60 to 75",
+      "Learner exercise and fault injection",
+      "Practice"
+    ],
+    [
+      "75 to 85",
+      "Acceptance checks and result interpretation",
+      "Verification"
+    ],
+    [
+      "85 to 90",
+      "Questions and checkpoint handoff",
+      "Discussion"
+    ]
+  ],
+  "recall": {
+    "heading": "Recall discussion: artifacts",
+    "say": "Session 03 saved the INC-001 report with save_artifact. Recall what made it an artifact rather than memory or message history: other people, agents or later runs rely on it, so it has a name, a version, a tenant and its sources, and a write based on an old version fails with stale_artifact_version. Agentic systems produce several kinds: findings and reports (an investigation report, a root-cause analysis, a review result); plans and proposals (a remediation plan waiting for approval); work products (a patch or pull request, a configuration change, a drafted message, a ticket update); hand-off records between agents (a supervisor's brief, a specialist's result); execution records (runs, traces, tool-call audit, approvals); evaluation artifacts (a case dataset, scored results, a release decision); definitions and configuration (agent definitions, tool manifests, system prompts, model settings); and derived knowledge (a new runbook drafted from a resolved incident). Each needs provenance (which run, agent version, model and sources produced it), a version, an owner and a lifecycle such as draft, proposed, approved, applied, superseded. Writing an artifact is safe; applying it, such as running a remediation plan, is a tool call that goes through approval. Keep this to about five minutes.",
+    "questions": [
+      {
+        "ask": "Which outputs of your Session 03 platform are artifacts, which are memory and which are only message history?",
+        "answer": "The saved INC-001 report is an artifact: versioned, tenant-scoped and cited. A note such as the last incident looked at is memory: it expires and is never authoritative. The run's turns and tool results are message history: they belong to the run and the next request carries only a selection of them."
+      },
+      {
+        "ask": "An operator approves a remediation plan, and then the agent edits the plan. What must happen before it runs?",
+        "answer": "The edit creates a new version, and the approval no longer applies: it was given for the old version, just as an approval in Session 02 binds to an exact action key. The new version needs approving again."
+      },
+      {
+        "ask": "Name one artifact your own team's agents produce or could produce. What would you need to know about it before trusting it?",
+        "answer": "Answers vary: a pull request, a ticket update, an incident summary, a generated report. The common list is provenance: which agent and version wrote it, with which model, from which sources, and whether a person reviewed it."
+      },
+      {
+        "ask": "Today we build an evaluation harness. Which artifacts will it produce, and what makes two of them comparable?",
+        "answer": "The versioned case dataset, the per-case result rows and the evaluation report. Two results are comparable only when they used the same dataset hash and the same split, which is why the harness records both."
+      }
+    ]
+  }
 }

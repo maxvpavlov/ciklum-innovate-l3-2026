@@ -85,6 +85,13 @@ def build_markdown(spec, common, T, troubleshooting_prompt):
     add(f"### {H['opening']}")
     labelled(L["say"], spec["opening_say"])
     labelled(L["show"], T("opening_show"))
+    recall = spec.get("recall")
+    if recall:  # optional discussion recalling the previous session
+        add(f"### {recall['heading']}")
+        labelled(L["say"], recall["say"])
+        for item in recall["questions"]:
+            labelled(L["ask"], item["ask"])
+            labelled(L["answer"], item["answer"])
     add(f"### {H['concept']}")
     labelled(L["say"], spec["concept_say"])
     labelled(L["pause"], T("concept_pause"))
