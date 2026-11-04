@@ -302,7 +302,11 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
   <p class="eyebrow"><span>The idea</span></p>
   <h2>An agent decides well only from a well-kept request</h2>
   <div class="stack">
-    <p class="lede" style="margin-top:0">The model makes every decision from what is in the request it receives: the instruction, the task, the conversation so far and the evidence its tools returned. Too little and it guesses; too much, stale or another tenant's, and it is misled or leaks. So before each request goes to the model, the platform keeps it in order. Today you build that housekeeping in three places, then send the same well-kept request to a real model.</p>
+    <p class="lede" style="margin-top:0">The model makes every decision from what is in the request it receives, its context: the instruction, the task, the conversation so far and the evidence its tools returned. Too little and it guesses; too much, stale or another tenant's, and it is misled or leaks. So before each request goes to the model, the platform keeps it in order. Today you build that housekeeping in three places, then send the same well-kept request to a real model.</p>
+    <dl class="fields">
+      <dt>model's context</dt><dd>What this session is about, and what "context" means on this page: everything sent to the model in one request, the instruction, the task, the conversation so far and the evidence its tools returned. Today's work is deciding what goes into it.</dd>
+      <dt>run identity</dt><dd>The <code>Context</code> object from Session 01. Despite its name it is not the model's context: it holds the run's tenant, role and allowed tools. The platform sets it from who signed in, and every tool call reads it; it is never sent to the model.</dd>
+    </dl>
     <div class="cards keep">
       <div><span class="q">1 · What the agent can find</span><p>Its tools return only the run's tenant's runbooks, ranked, each with a source ID it can cite. <a href="#retrieval">Finding the runbook</a>.</p></div>
       <div><span class="q">2 · What the next request carries</span><p>The instruction, the task and the newest complete rounds that fit a budget; the full history is kept aside. <a href="#rounds">Trim by complete rounds</a>.</p></div>
@@ -318,16 +322,16 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
   <div class="stack">
     <div class="prose" style="margin-top:0">
       <p>A larger context window does not decide which information is relevant, current or authorized. Your agent already has a loop and a tool boundary; today we control the evidence that flows through them. In the payments incident there are four kinds of it, and each lives for a different length of time: what this run has seen so far, the runbooks each tenant keeps, the reports we save, and small things worth remembering for a while.</p>
-      <p>Permissions stay in the run's <code>Context</code>, which Session 01 created with the tenant, role and allowed tools and Session 02's tool boundary enforces. None of the four stores grants anything.</p>
+      <p>Permissions stay in the run's identity: the <code>Context</code> object that Session 01 created with the tenant, role and allowed tools, and that Session 02's tool boundary enforces. It is never sent to the model, and none of the four stores grants anything.</p>
     </div>
     <figure>
       <div class="diagram">
         <svg viewBox="0 0 900 420" role="img" aria-labelledby="storesTitle">
-          <title id="storesTitle">The agent runtime in the middle, with the message history and the runbook sources on the left, versioned artifacts and memory on the right, the run's Context, set by the platform at sign-in, above it and going with every call, and the model below it</title>
-          <rect class="box" x="300" y="10" width="300" height="84" rx="8"/>
-          <text class="lbl" x="318" y="36">The run's Context</text>
-          <text class="small" x="318" y="58">tenant · role · allowed tools</text>
-          <text class="small" x="318" y="78">set by the platform at sign-in</text>
+          <title id="storesTitle">The agent runtime in the middle, with the message history and the runbook sources on the left, versioned artifacts and memory on the right, the run's identity (the Context object), set by the platform at sign-in and never sent to the model, above it, scoping every tool call, and the model below it, which receives the model's context</title>
+          <rect class="box" x="280" y="10" width="340" height="84" rx="8"/>
+          <text class="lbl" x="298" y="36">Run identity · the Context object</text>
+          <text class="small" x="298" y="58">tenant · role · allowed tools</text>
+          <text class="small" x="298" y="78">set at sign-in, never sent to the model</text>
 
           <rect class="box" x="330" y="150" width="240" height="100" rx="10"/>
           <text class="lbl" x="350" y="182">Agent runtime</text>
@@ -359,16 +363,16 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
           <text class="small" x="350" y="388">Groq from today</text>
 
           <path class="ink" d="M450 94 V144"/><path class="arrowhead" d="M450 148 l-5 -8 h10z"/>
-          <text class="small" x="460" y="124">goes with every call</text>
+          <text class="small" x="460" y="124">scopes tool calls</text>
           <path class="ink" d="M286 152 H324"/><path class="arrowhead" d="M328 152 l-8 -5 v10z"/>
           <path class="ink" d="M286 268 L324 236"/><path class="arrowhead" d="M327 233 l-9 3 l6 7z"/>
           <path class="ink" d="M570 172 H608"/><path class="arrowhead" d="M612 172 l-8 -5 v10z"/>
           <path class="ink" d="M570 230 L608 262"/><path class="arrowhead" d="M611 265 l-4 -8 l-5 7z"/>
           <path class="ink" d="M450 250 V314"/><path class="arrowhead" d="M450 318 l-5 -8 h10z"/>
-          <text class="small" x="460" y="290">next request</text>
+          <text class="small" x="460" y="290">the model's context</text>
         </svg>
       </div>
-      <figcaption>The highlighted parts are today's work. The run's Context is set by the platform from who signed in and goes with every tool call, so the runtime reads only that tenant's evidence and calls only the allowed tools. The four stores only hold evidence, each with its own lifetime, and the model at the bottom becomes a real one at the end of the session.</figcaption>
+      <figcaption>The highlighted parts are today's work: deciding what goes into the model's context. The run's identity, the Context object, is set by the platform from who signed in and is never sent to the model; it scopes every tool call, so the runtime reads only that tenant's evidence and calls only the allowed tools. The four stores only hold evidence, each with its own lifetime, and the model at the bottom becomes a real one at the end of the session.</figcaption>
     </figure>
     <div class="tablewrap">
       <table>
@@ -390,13 +394,13 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
   <p class="eyebrow"><span>Retrieval</span></p>
   <h2>Finding the runbook: only the run's tenant's, best match first</h2>
   <div class="stack">
-    <p class="lede" style="margin-top:0">Retrieval is how an agent finds evidence it was not given: it calls a search tool and gets back a few records to read. Here the records are runbooks, a team's written procedures for known problems, such as what to check when the payments database runs out of connections, and each runbook belongs to one tenant. Follow INC-001 for Astro. The agent reads the log, decides it needs a runbook and searches with words from the log. The platform answers that search with Astro's runbooks only, because the tenant comes from the run's Context, and puts the best match first. The model chooses the words; it never chooses the tenant.</p>
+    <p class="lede" style="margin-top:0">Retrieval is how an agent finds evidence it was not given: it calls a search tool and gets back a few records to read. Here the records are runbooks, a team's written procedures for known problems, such as what to check when the payments database runs out of connections, and each runbook belongs to one tenant. Follow INC-001 for Astro. The agent reads the log, decides it needs a runbook and searches with words from the log. The platform answers that search with Astro's runbooks only, because the tenant comes from the run's identity, and puts the best match first. The model chooses the words; the tenant never enters the model's context, because the tool reads it from the run's identity.</p>
     <div class="transcript" role="list">
       <div class="turn" role="listitem"><span class="who m">Model</span><div><pre>log_lookup(incident_id="INC-001")</pre><p class="note">Reads the incident's log first, as the system prompt says.</p></div></div>
       <div class="turn" role="listitem"><span class="who t">Tool</span><div><pre>log-astro-001 · payments · connection_pool_exhaustion
 "DB pool wait 900ms after deploy d42"</pre></div></div>
       <div class="turn" role="listitem"><span class="who m">Model</span><div><pre>runbook_search(query="payments connection pool exhaustion")</pre><p class="note">Decides it needs a runbook and searches with words from the log. There is no tenant argument: a call that adds one is refused as <code>invalid_arguments</code>.</p></div></div>
-      <div class="turn" role="listitem"><span class="who rt">1 · Filter</span><div><pre>tenant from Context: astro
+      <div class="turn" role="listitem"><span class="who rt">1 · Filter</span><div><pre>tenant from run identity: astro
 candidates: rb-pool-v1, rb-clock-v1</pre><p class="note">Only Astro's runbooks are searched. Locomotive's <code>rb-quota-v1</code> is never a candidate, so it cannot be returned, counted or scored.</p></div></div>
       <div class="turn" role="listitem"><span class="who rt">2 · Rank</span><div><pre>rb-pool-v1   4 of 4 query words   → returned
 rb-clock-v1  0 of 4               → left out</pre><p class="note">Score each candidate by how many query words its text contains, best first; drop those with none and return at most two.</p></div></div>
@@ -428,7 +432,7 @@ locomotive  → <span class="hl">rb-quota-v1</span>  v1
   <p class="eyebrow"><span>Bounded context</span></p>
   <h2>Trim the conversation by complete rounds, never half a round</h2>
   <div class="stack">
-    <p class="lede" style="margin-top:0">A model remembers nothing between calls: every request has to carry the instruction, the task and every tool call with its result so far. In a long investigation that grows with each step, until the request is slow, costly or larger than the model accepts. Context selection decides what the next request carries. The selector keeps the instruction and the task, then adds whole rounds from the newest backwards while they fit a budget; a round is one assistant message that calls tools together with all the results of those calls. The full history is still kept for diagnosis; only the next request is smaller.</p>
+    <p class="lede" style="margin-top:0">A model remembers nothing between calls: every request has to carry the instruction, the task and every tool call with its result so far. In a long investigation that grows with each step, until the request is slow, costly or larger than the model accepts. Context selection decides what the next request carries: the model's context. The selector keeps the instruction and the task, then adds whole rounds from the newest backwards while they fit a budget; a round is one assistant message that calls tools together with all the results of those calls. The full history is still kept for diagnosis; only the next request is smaller.</p>
     <figure>
       <div class="diagram">
         <svg viewBox="0 0 900 330" role="img" aria-labelledby="roundsTitle">

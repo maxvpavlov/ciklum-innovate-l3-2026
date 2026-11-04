@@ -160,7 +160,7 @@ Key message — the one thing participants should remember from this section.
 
 Tenant-scoped retrieval
 
-**Key concepts:** retrieval is a tool the agent calls, not a blob pasted into the prompt. The platform filters runbooks by the run's tenant, taken from Context, before ranking; ranking here is transparent word overlap with a source-ID tie break, so learners can see why a record was chosen. Every result keeps its source ID and version, and the final answer may cite only source IDs a tool returned.
+**Key concepts:** "context" here means the model's context, everything sent to the model in one request; the run's Context object from Session 01 is the run's identity (tenant, role, allowed tools), which is never sent to the model. Retrieval is a tool the agent calls, not a blob pasted into the prompt. The platform filters runbooks by the run's tenant, taken from the run's identity, before ranking; ranking here is transparent word overlap with a source-ID tie break, so learners can see why a record was chosen. Every result keeps its source ID and version, and the final answer may cite only source IDs a tool returned.
 
 **Common misconceptions:** a bigger context window removes the need for retrieval; filtering another tenant's results after a global top-k search is equivalent; lexical ranking is a toy that a vector store simply replaces.
 
@@ -215,7 +215,7 @@ Identify where participants should actively engage.
 
 For each activity include: Purpose • Instructions • Time • Expected outcome • Debrief / discussion points.
 
-**1. Discussion: four stores, four lifetimes.** Purpose: separate what the model reads from where it is kept. Instructions: draw the message history, runbook sources, memory and versioned artifacts; learners place a tool observation, a runbook, the task state and a saved report. Time: 5 min. Expected outcome: each store named with its lifetime, and permissions kept outside all four, in Context. Debrief: what happens when memory disagrees with the current logs?
+**1. Discussion: four stores, four lifetimes.** Purpose: separate what the model reads from where it is kept. Instructions: draw the message history, runbook sources, memory and versioned artifacts; learners place a tool observation, a runbook, the task state and a saved report. Time: 5 min. Expected outcome: each store named with its lifetime, and permissions kept outside all four, in the run's identity (the Context object), which is never sent to the model. Debrief: what happens when memory disagrees with the current logs?
 
 **2. Poll: filter after a global top-10?** Options: yes, it is the same / no / only if the index is small. Correct: no. Time: 2 min. Debrief: filtering after ranking can return too few authorized results and leaks that other tenants' sources exist; the access boundary belongs on the searched population.
 
@@ -281,7 +281,7 @@ The Session 03 page is the presentation, with Read and Present views (https://ma
 
 • 2. Where we are: yesterday the platform decided what a tool may do; today it decides what the model gets to read.
 
-• 3. Four stores with different lifetimes: messages, sources, memory and artifacts; permissions stay in Context.
+• 3. Four stores with different lifetimes: messages, sources, memory and artifacts; permissions stay in the run's identity (the Context object), which the model never sees.
 
 • 4. Filter by tenant first, then rank: transparent retrieval with source IDs.
 
@@ -399,7 +399,7 @@ Provide examples that can stand on their own in e-learning. Include enough conte
 
 **Your input:**
 
-**Example 1: one query, two tenants.** The same payments query runs for Astro and for Locomotive. Astro's retrieval returns the connection-pool runbook; Locomotive's returns its quota runbook; neither ever sees the other's sources, because the tenant from Context filters the runbooks before ranking. Each result carries its source ID and version, so the final answer can cite exactly what it used.
+**Example 1: one query, two tenants.** The same payments query runs for Astro and for Locomotive. Astro's retrieval returns the connection-pool runbook; Locomotive's returns its quota runbook; neither ever sees the other's sources, because the tenant from the run's identity (the Context object) filters the runbooks before ranking. Each result carries its source ID and version, so the final answer can cite exactly what it used.
 
 **Example 2: a stale write fails.** Two writers read the INC-001 report at version 1. The first saves version 2. The second still expects version 1, so its write fails as stale_artifact_version instead of silently replacing the newer report; it must read version 2 and decide again.
 
