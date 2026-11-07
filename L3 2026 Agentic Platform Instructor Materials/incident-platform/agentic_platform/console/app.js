@@ -92,12 +92,20 @@ export async function route() {
   document.getElementById("who").replaceChildren(
     h("span", {}, `${who.tenant} · ${who.role}`), h("button", { class: "secondary", onclick: signOut }, "Sign out"));
   const context = { who, param: rest.join("/"), navigate: (hash) => { location.hash = hash; } };
+  const fields = "select[name], input[name], textarea[name]";
   const render = async () => {
-    try { main.replaceChildren(await view.render(context)); }
-    catch (error) { main.replaceChildren(h("div", { class: "error" }, error.message)); }
+    // A refresh rebuilds the view: keep what the viewer chose or typed, so a form survives it.
+    const kept = new Map([...main.querySelectorAll(fields)].map((el) => [el.name, el.value]));
+    try {
+      const node = await view.render(context);
+      for (const el of node.querySelectorAll(fields)) if (kept.has(el.name)) el.value = kept.get(el.name);
+      main.replaceChildren(node);
+    } catch (error) { main.replaceChildren(h("div", { class: "error" }, error.message)); }
   };
   await render();
-  if (view.refreshMs) timer = setInterval(render, view.refreshMs);
+  // Skip a refresh while the viewer is using a form control, such as an open dropdown.
+  const busy = () => main.contains(document.activeElement) && document.activeElement.matches(fields);
+  if (view.refreshMs) timer = setInterval(() => { if (!busy()) render(); }, view.refreshMs);
 }
 
 window.addEventListener("hashchange", route);

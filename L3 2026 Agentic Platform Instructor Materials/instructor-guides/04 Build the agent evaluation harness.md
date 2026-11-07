@@ -4,7 +4,7 @@
 
 **Outcome** A reproducible evaluation harness records single-agent quality, usage and latency, with held-out cases and judge calibration.
 
-Duration: 90 minutes. Starting checkpoint: lesson-03. Ending checkpoint: lesson-04 (894ce9c).
+Duration: 90 minutes. Starting checkpoint: lesson-03. Ending checkpoint: lesson-04 (1f615de).
 
 Word version: [04 Build the agent evaluation harness.docx](04%20Build%20the%20agent%20evaluation%20harness.docx)
 
@@ -262,7 +262,7 @@ def judge_agreement(human_labels, judge_labels):
 - Reports identify the dataset and retain per-trial results.
 - Judge calibration identifies the mismatching labels.
 
-The independently unpacked lesson-04 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 04 check pack from the course kit. Recorded test result: 19 passed in 3.11s. Learners commit and push their checkpoint to their GitLab repository; lesson-04 (894ce9c) remains the instructor's answer key.
+The independently unpacked lesson-04 checkpoint passed its full test suite and this lesson demo, and so does the Lesson 04 check pack from the course kit. Recorded test result: 19 passed in 3.11s. Learners commit and push their checkpoint to their GitLab repository; lesson-04 (1f615de) remains the instructor's answer key.
 
 ### Files changed in this checkpoint
 
@@ -270,6 +270,7 @@ In the reference, this checkpoint changed the files below. Learners write the im
 
 - `agent_runtime/evaluate.py`
 - `agent_runtime/providers.py`
+- `agentic_platform/console/app.js`
 - `course/__init__.py`
 - `course/labs/l04.py`
 - `tests/test_lesson04.py`

@@ -8,6 +8,7 @@ not what this lesson teaches.
 
 - `given/MockProvider.py`: replace `MockProvider` in `agent_runtime/providers.py` with this version.
 - `given/CASES.py`: add `CASES` to `agent_runtime/evaluate.py` in the build step that creates that file.
+- `given/agentic_platform/console/app.js`: copy to `agentic_platform/console/app.js`.
 
 ## Checks
 

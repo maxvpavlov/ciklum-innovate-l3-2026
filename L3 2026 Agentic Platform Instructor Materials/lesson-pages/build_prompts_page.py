@@ -266,11 +266,13 @@ SESSIONS = {
              "Opens your project, reads its AGENTS.md, confirms your Session 03 work still passes and updates your "
              "read-only copy of the course repository, which now holds the Session 04 kit. Your project is not changed.",
              "your project at the lesson-03 checkpoint with <b>17 passed</b>, and the course copy moved to the latest "
-             "commit with the Lesson 04 kit: <code>given/CASES.py</code>, <code>given/MockProvider.py</code> and the checks."),
+             "commit with the Lesson 04 kit: <code>given/CASES.py</code>, <code>given/MockProvider.py</code>, the console's "
+             "<code>given/agentic_platform/console/app.js</code> and the checks."),
             ("Add the check pack", "Add the check pack", "the checks · no code yet",
              "Copies the Session 04 checks into your project and lists the exact interfaces they expect. The two given "
-             "definitions are added later, in the build steps that change their files.",
-             "<b>17 passed</b>, and <code>test_lesson04.py</code> failing to import until <code>agent_runtime.evaluate</code> "
+             "definitions are added later, in the build steps that change their files. The given console app.js is copied "
+             "now: it fixes the Runs dropdown, which used to reset to INC-001 on every refresh.",
+             "the given console <code>app.js</code> copied over; <b>17 passed</b>, and <code>test_lesson04.py</code> failing to import until <code>agent_runtime.evaluate</code> "
              "provides <code>CASES</code>, <code>evaluate</code>, <code>grade</code> and <code>judge_agreement</code>."),
             ("Build step 1", "The cases", "new · agent_runtime/evaluate.py · CASES",
              "Adds the five given cases unchanged: each names a tenant, an incident and the outcome a correct "
