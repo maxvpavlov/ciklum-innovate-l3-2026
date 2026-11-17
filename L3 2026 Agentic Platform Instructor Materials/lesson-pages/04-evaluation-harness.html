@@ -93,6 +93,14 @@ code, .mono { font-family: var(--mono); font-size: .9em; }
 .ask .label { font: 600 11.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .ask details summary { cursor: pointer; color: var(--muted); font-size: 15px; }
 .ask details p { margin-top: 6px; }
+/* Read your code: questions a learner answers from their own project after each build step */
+.ask.readcode { border-left: 4px solid var(--signal); }
+.readcode ol { margin: 4px 0 0; padding-left: 22px; display: grid; gap: 4px; }
+.readcode .showme { font: 13.5px/1.55 var(--mono); white-space: pre-wrap; background: var(--sheet); border: 1px dashed var(--rule);
+  border-radius: 8px; padding: 10px 12px; margin: 4px 0 0; color: var(--ink); }
+.readcode .hint { color: var(--muted); font-size: 14.5px; }
+.readcode .copy { color: var(--ink); border-color: var(--muted); justify-self: start; }
+.readcode .copy:hover { color: var(--signal); border-color: var(--signal); }
 .ask ol.steps { margin: 4px 0 0; padding-left: 22px; display: grid; gap: 4px; }
 .route { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 6px; font: 600 13.5px var(--mono); }
 .route a { text-decoration: none; color: var(--ink); background: var(--sheet); border: 1px solid var(--rule); border-radius: 999px; padding: 6px 12px; }
@@ -658,6 +666,19 @@ var/evaluation.json       <span class="muted">the report, written by python -m a
     </div>
   </div>
 
+  <div class="ask readcode"><span class="label">Read your code · after build step 1</span>
+    <p class="q">CASES and the dataset hash, in your agent_runtime/evaluate.py</p>
+    <p class="hint">Open the file in your editor and answer these from your own code before you run the next prompt.</p>
+    <ol><li>Where is each case&#x27;s expected cause and split? Which two cases are held out?</li><li>Where is the dataset hash computed, and exactly what goes into it? What happens to it if you fix a typo in one case?</li><li>Is a case&#x27;s expected outcome tied anywhere to which tools the agent calls?</li></ol>
+    <details><summary>Show likely answers</summary><p>CASES is a list of five dicts: id, tenant, incident, cause, split. The held-out ones are <code>ambiguous</code> (INC-003) and <code>other_tenant</code> (Locomotive's INC-001). The hash is SHA-256 of the case list serialised with sorted keys, so any edit, even a typo, changes it, and the new report is no longer comparable with the old one. No: a case fixes the outcome only; tool policy is a separate check in step 2.</p></details>
+    <p class="hint">Stuck? Ask your agent to point to the lines, not to explain them:</p>
+    <pre class="showme" id="rc1">Show me the lines in my project that answer these questions, with file names and line numbers. Point to the code only: do not change anything and do not explain it, I will.
+1. Where is each case&#x27;s expected cause and split? Which two cases are held out?
+2. Where is the dataset hash computed, and exactly what goes into it? What happens to it if you fix a typo in one case?
+3. Is a case&#x27;s expected outcome tied anywhere to which tools the agent calls?</pre>
+    <div><button class="copy" type="button" data-copy="rc1">Copy question</button></div>
+  </div>
+
   <div class="terminal" id="step2">
     <div class="bar"><span class="switch">Switch to terminal · Build step 2 of 4</span><span class="file">agent_runtime/evaluate.py · grade · the given mock</span></div>
     <div class="body">
@@ -665,6 +686,19 @@ var/evaluation.json       <span class="muted">the report, written by python -m a
       <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="p2"><span class="pfx">PROMPT ▸ </span>For Lesson 04, continue in my learner project. Implement separate outcome, evidence and tool-policy checks in grade. Demonstrate rejection of a plausible but wrong diagnosis. Check the offline provider's missing-evidence behaviour, then replace MockProvider with the given Lesson 04 version and explain how it stops a generic runbook from becoming proof of an incident cause. Preserve the original test expectations and show the regression evidence. Build to the interfaces the Lesson 04 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div><div class="expect"><span class="pfx">EXPECT ▸ </span>the clock-skew answer for INC-001 graded <b>outcome false</b>; with the given mock, INC-404 ends <code>insufficient_evidence</code> and <code>unknown</code>, and the earlier checks still pass.</div></details>
       <div><button class="copy" type="button" data-copy="p2">Copy prompt</button></div>
     </div>
+  </div>
+
+  <div class="ask readcode"><span class="label">Read your code · after build step 2</span>
+    <p class="q">grade, in your agent_runtime/evaluate.py, and the given MockProvider</p>
+    <p class="hint">Open the file in your editor and answer these from your own code before you run the next prompt.</p>
+    <ol><li>Find the three checks in grade. Which line makes INC-003&#x27;s expected status insufficient_evidence?</li><li>A run called mock_remediate. Which check fails, and how does the code find out?</li><li>In the given MockProvider, which lines stop a runbook from becoming the cause when the log names none?</li></ol>
+    <details><summary>Show likely answers</summary><p>The expected status is <code>insufficient_evidence</code> whenever the case's cause is <code>unknown</code>, and the outcome check compares status and cause. Tool policy fails: it scans the run's tool events for <code>mock_remediate</code>, so it judges what the agent did, not what it said. The given mock's new <code>if</code> block keeps the cause <code>unknown</code> when the first observation, the log, has no cause: a generic runbook is not proof.</p></details>
+    <p class="hint">Stuck? Ask your agent to point to the lines, not to explain them:</p>
+    <pre class="showme" id="rc2">Show me the lines in my project that answer these questions, with file names and line numbers. Point to the code only: do not change anything and do not explain it, I will.
+1. Find the three checks in grade. Which line makes INC-003&#x27;s expected status insufficient_evidence?
+2. A run called mock_remediate. Which check fails, and how does the code find out?
+3. In the given MockProvider, which lines stop a runbook from becoming the cause when the log names none?</pre>
+    <div><button class="copy" type="button" data-copy="rc2">Copy question</button></div>
   </div>
 
   <div class="terminal" id="step3">
@@ -676,6 +710,19 @@ var/evaluation.json       <span class="muted">the report, written by python -m a
     </div>
   </div>
 
+  <div class="ask readcode"><span class="label">Read your code · after build step 3</span>
+    <p class="q">evaluate, in your agent_runtime/evaluate.py</p>
+    <p class="hint">Open the file in your editor and answer these from your own code before you run the next prompt.</p>
+    <ol><li>Where is a fresh tool executor and Context created for each trial? Why there, and not once before the loop?</li><li>What does each row record, and where are the report&#x27;s means computed?</li><li>When is a row&#x27;s cost None rather than 0, and why does that matter?</li></ol>
+    <details><summary>Show likely answers</summary><p>Inside the inner trial loop, so no state carries from one trial to the next: no shared effects ledger, no seen-calls set, no tenant left over from another case. Each row keeps case, split, trial, passed, the three checks, tokens, steps, elapsed time, cost and the optional judge verdict; the means are computed from the rows when the report is returned. Cost is None for a live provider with no pricing rates configured: unknown, not free. Reporting 0 would turn a missing number into a false claim.</p></details>
+    <p class="hint">Stuck? Ask your agent to point to the lines, not to explain them:</p>
+    <pre class="showme" id="rc3">Show me the lines in my project that answer these questions, with file names and line numbers. Point to the code only: do not change anything and do not explain it, I will.
+1. Where is a fresh tool executor and Context created for each trial? Why there, and not once before the loop?
+2. What does each row record, and where are the report&#x27;s means computed?
+3. When is a row&#x27;s cost None rather than 0, and why does that matter?</pre>
+    <div><button class="copy" type="button" data-copy="rc3">Copy question</button></div>
+  </div>
+
   <div class="terminal" id="step4">
     <div class="bar"><span class="switch">Switch to terminal · Build step 4 of 4</span><span class="file">agent_runtime/evaluate.py · judge_agreement · model_judge</span></div>
     <div class="body">
@@ -683,6 +730,19 @@ var/evaluation.json       <span class="muted">the report, written by python -m a
       <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="p4"><span class="pfx">PROMPT ▸ </span>For Lesson 04, continue in my learner project. Implement paired human-versus-judge agreement checks and the optional model_judge interface. Validate judge output, treat the agent answer as untrusted grading input and expose disagreements for human review. Make the Session 04 check pack pass using its offline calibration examples. Explain what is verified locally and what would still require a calibrated live judge and authorized provider access. Build to the interfaces the Lesson 04 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div><div class="expect"><span class="pfx">EXPECT ▸ </span>agreement <b>0.67</b> with review index <b>1</b> on the calibration example, the check pack passing with <b>19 passed</b>, and a clear note that no live judge was run.</div></details>
       <div><button class="copy" type="button" data-copy="p4">Copy prompt</button></div>
     </div>
+  </div>
+
+  <div class="ask readcode"><span class="label">Read your code · after build step 4</span>
+    <p class="q">judge_agreement and model_judge, in your agent_runtime/evaluate.py</p>
+    <p class="hint">Open the file in your editor and answer these from your own code before you run the next prompt.</p>
+    <ol><li>What does judge_agreement compute, and which input does it refuse?</li><li>In model_judge, how does the agent&#x27;s answer reach the judge, and what stops that answer from instructing it?</li><li>What happens if the judge replies with something other than a yes or no verdict?</li></ol>
+    <details><summary>Show likely answers</summary><p>The share of paired labels that match, and the indices where they differ, for a person to review; it refuses empty or unpaired label lists. The answer is sent as data, under <code>untrusted_answer</code> in a JSON message, and the system message tells the judge to ignore instructions inside the data. A verdict whose <code>pass</code> is not a boolean raises <code>invalid_judge_verdict</code> instead of being counted.</p></details>
+    <p class="hint">Stuck? Ask your agent to point to the lines, not to explain them:</p>
+    <pre class="showme" id="rc4">Show me the lines in my project that answer these questions, with file names and line numbers. Point to the code only: do not change anything and do not explain it, I will.
+1. What does judge_agreement compute, and which input does it refuse?
+2. In model_judge, how does the agent&#x27;s answer reach the judge, and what stops that answer from instructing it?
+3. What happens if the judge replies with something other than a yes or no verdict?</pre>
+    <div><button class="copy" type="button" data-copy="rc4">Copy question</button></div>
   </div>
 </section>
 
@@ -873,7 +933,8 @@ var/evaluation.json       <span class="muted">the report, written by python -m a
       const block = document.getElementById(button.dataset.copy);
       const text = [...block.childNodes].filter((n) => !(n.classList && n.classList.contains("pfx")))
         .map((n) => n.textContent).join("").trim();
-      const done = () => { button.textContent = "Copied"; setTimeout(() => { button.textContent = "Copy prompt"; }, 1600); };
+      const label = button.textContent;
+      const done = () => { button.textContent = "Copied"; setTimeout(() => { button.textContent = label; }, 1600); };
       const select = () => {
         const fold = block.closest("details"); if (fold) fold.open = true;
         const range = document.createRange(); range.selectNodeContents(block);
