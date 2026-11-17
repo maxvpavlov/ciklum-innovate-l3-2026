@@ -101,6 +101,10 @@ code, .mono { font-family: var(--mono); font-size: .9em; }
   border-radius: 10px; max-width: 68ch; }
 .ask .q { font: 650 19px/1.35 var(--display); font-variation-settings: "wdth" 92; }
 .ask .label { font: 600 11.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+/* Learners reading the page see "Ask yourself"; when presenting to a room (Present, Instructor) it reads "Ask the room". */
+.ask .label .room { display: none; }
+.present .ask .label .room, .instructor-view .ask .label .room { display: inline; }
+.present .ask .label .self, .instructor-view .ask .label .self { display: none; }
 .ask details summary { cursor: pointer; color: var(--muted); font-size: 15px; }
 .ask details p { margin-top: 6px; }
 /* Read your code: questions a learner answers from their own project after each build step */
@@ -339,13 +343,13 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
     <aside class="instructor" aria-label="Instructor notes">
       <p><b>SAY</b> In Session 03 the lesson's demonstration saved the INC-001 answer with save_artifact, after the run and outside the loop; from Session 08 the platform does this for every run. Recall what made it an artifact rather than memory or message history: other people, agents or later runs rely on it, so it has a name, a version, a tenant and its sources, and a write based on an old version fails with stale_artifact_version. Agentic systems produce several kinds: findings and reports (an investigation report, a root-cause analysis, a review result); plans and proposals (a remediation plan waiting for approval); work products (a patch or pull request, a configuration change, a drafted message, a ticket update); hand-off records between agents (a supervisor's brief, a specialist's result); execution records (runs, traces, tool-call audit, approvals); evaluation artifacts (a case dataset, scored results, a release decision); definitions and configuration (agent definitions, tool manifests, system prompts, model settings); and derived knowledge (a new runbook drafted from a resolved incident). Each needs provenance (which run, agent version, model and sources produced it), a version, an owner and a lifecycle such as draft, proposed, approved, applied, superseded. Writing an artifact is safe; applying it, such as running a remediation plan, is a tool call that goes through approval. Keep this to about five minutes.</p>
     </aside>
-    <div class="ask"><span class="label">Ask the room</span><p class="q">Which outputs of your Session 03 platform are artifacts, which are memory and which are only message history?</p>
+    <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">Which outputs of your Session 03 platform are artifacts, which are memory and which are only message history?</p>
       <details><summary>Show the answer</summary><p>The saved INC-001 report is an artifact: versioned, tenant-scoped and cited. A note such as the last incident looked at is memory: it expires and is never authoritative. The run's turns and tool results are message history: they belong to the run and the next request carries only a selection of them.</p></details></div>
-    <div class="ask"><span class="label">Ask the room</span><p class="q">An operator approves a remediation plan, and then the agent edits the plan. What must happen before it runs?</p>
+    <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">An operator approves a remediation plan, and then the agent edits the plan. What must happen before it runs?</p>
       <details><summary>Show the answer</summary><p>The edit creates a new version, and the approval no longer applies: it was given for the old version, just as an approval in Session 02 binds to an exact action key. The new version needs approving again.</p></details></div>
-    <div class="ask"><span class="label">Ask the room</span><p class="q">Name one artifact your own team's agents produce or could produce. What would you need to know about it before trusting it?</p>
+    <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">Name one artifact your own team's agents produce or could produce. What would you need to know about it before trusting it?</p>
       <details><summary>Show the answer</summary><p>Answers vary: a pull request, a ticket update, an incident summary, a generated report. The common list is provenance: which agent and version wrote it, with which model, from which sources, and whether a person reviewed it.</p></details></div>
-    <div class="ask"><span class="label">Ask the room</span><p class="q">Today we build an evaluation harness. Which artifacts will it produce, and what makes two of them comparable?</p>
+    <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">Today we build an evaluation harness. Which artifacts will it produce, and what makes two of them comparable?</p>
       <details><summary>Show the answer</summary><p>The versioned case dataset, the per-case result rows and the evaluation report. Two results are comparable only when they used the same dataset hash and the same split, which is why the harness records both.</p></details></div>
   </div>
 </section>
@@ -472,7 +476,7 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
       <p><b>Explain the choice</b> Expected outcomes are independent of implementation details. Cases can remain stable while a valid agent changes its path or uses a different provider.</p>
       <p><b>PAUSE</b> Have learners identify the boundary in their agent's change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.</p>
     </aside>
-    <div class="ask"><span class="label">Ask the room</span><p class="q">Why not require exactly two tool calls in every successful case?</p>
+    <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">Why not require exactly two tool calls in every successful case?</p>
       <details><summary>Show the answer</summary><p>Different valid strategies can reach the same supported result. Check what matters, the outcome, its evidence and the tool policy, rather than one incidental path.</p></details></div>
   </div>
 </section>
@@ -522,7 +526,7 @@ if "log_lookup" in names:
       <p><b>Explain the choice</b> Separate checks explain failures instead of hiding them behind one score. The mock-provider correction is a regression example, not a claim that a live model was improved.</p>
       <p><b>PAUSE</b> Have learners identify the boundary in their agent's change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.</p>
     </aside>
-    <div class="ask"><span class="label">Ask the room</span><p class="q">Can one aggregate success percentage tell us whether a regression is acceptable?</p>
+    <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">Can one aggregate success percentage tell us whether a regression is acceptable?</p>
       <details><summary>Show the answer</summary><p>Not by itself. Look at which cases failed and whether evidence, permissions or a critical scenario regressed.</p></details></div>
   </div>
 </section>
@@ -572,7 +576,7 @@ for case in cases:
       <p><b>Explain the choice</b> Per-trial rows support inspection and later comparisons. A held-out partition separates tuning feedback from an additional evaluation check. Unknown pricing remains unavailable rather than being reported as a free live call.</p>
       <p><b>PAUSE</b> Have learners identify the boundary in their agent's change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.</p>
     </aside>
-    <div class="ask"><span class="label">Ask the room</span><p class="q">Why keep the raw trial rows when we already have the means?</p>
+    <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">Why keep the raw trial rows when we already have the means?</p>
       <details><summary>Show the answer</summary><p>They expose variation, the case that failed, outliers and accidental changes in which cases were tested.</p></details></div>
   </div>
 </section>
@@ -601,7 +605,7 @@ for case in cases:
       <p><b>Explain the choice</b> A judge is a measurement component that needs validation. Agreement on a tiny example illustrates the process but cannot establish reliable judge performance for a production workload.</p>
       <p><b>PAUSE</b> Have learners identify the boundary in their agent's change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.</p>
     </aside>
-    <div class="ask"><span class="label">Ask the room</span><p class="q">What should we do when the judge and the people disagree?</p>
+    <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">What should we do when the judge and the people disagree?</p>
       <details><summary>Show the answer</summary><p>Review the case and the rubric. Fix an ambiguous label or an inadequate judge before changing the agent just to satisfy the judge.</p></details></div>
   </div>
 </section>
