@@ -248,7 +248,7 @@ Finish the Session 04 build in your own project and record your single-agent bas
 
 • Practice: compare full history and bounded context (Session 03) on the same cases, and report outcome quality and usage together.
 
-• Optional: run INC-003 a few times on Groq from your console and compare with the mock's result; treat it as an observation, not a test.
+• Evaluate the real model: the held-out cases twice on Qwen through Groq, paced for the free tier, with a judge on a different model (gpt-oss-20b); label each answer yourself before seeing the judge's verdict, then compare. An observation, not a test.
 
 • Read 'Demystifying evals for AI agents' and 'Writing tools for agents' (Anthropic), about 1 hour.
 
@@ -569,6 +569,8 @@ Document exceptions, limitations, risks, assumptions or cases where the recommen
 • The calibration example uses a handful of labels to show the method; it cannot establish a judge's reliability for real workloads.
 
 • Elapsed times vary with the machine; dataset hash, rates and means on the mock do not.
+
+• Not every platform needs a harness, but every runtime needs a per-run record (events with model, host, tokens and time, tool decisions, the cited answer, artifacts, run ID and agent version), so any past run can be evaluated afterwards. In a live run on 17 November 2026 all four held-out trials passed the checks and gpt-oss-20b, as judge, failed one INC-003 answer for citing the pool runbook next to an unknown cause.
 
 • All incident data are synthetic, and the demo identities are for loopback use only.
 

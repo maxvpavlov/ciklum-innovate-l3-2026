@@ -323,8 +323,10 @@ def build_lesson(n, known_given):
     if n == 4:
         lines += ["", "The checks also rely on these, beyond the imported names:", "",
                   "- `CASES` (given): the five cases, pasted into `agent_runtime/evaluate.py` unchanged;",
-                  "- `evaluate(trials=..., split=\"all\")`, also called with no split, returning a report with",
-                  "  `dataset_sha256`, `success_rate` and `rows`, one per trial, each with its `split`;",
+                  "- `evaluate(factory=MockProvider, trials=..., split=\"all\", judge=None)`, called by the checks with only",
+                  "  `trials` and `split`, returning a report with `dataset_sha256`, `success_rate` and `rows`, one per case and trial, each with its",
+                  "  `split`; `factory()` is called for a fresh provider before each case in each trial, and a given",
+                  "  `judge(case, run)` is awaited after each run (the live evaluation prompt uses both);",
                   "- `grade(run, case)`, returning a dict whose `outcome`, `evidence` and `tool_policy` are booleans;",
                   "- `judge_agreement(human_labels, judge_labels)`, returning `agreement` and `review_indices`.", "",
                   "Optional and not checked: `model_judge(provider, case, run)`, returning",
