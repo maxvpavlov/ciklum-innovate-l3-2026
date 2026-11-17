@@ -610,6 +610,33 @@ for case in cases:
   </div>
 </section>
 
+<section class="ch" id="live">
+  <p class="eyebrow"><span>The real model</span></p>
+  <h2>Point the instrument at the real model</h2>
+  <div class="stack">
+    <p class="lede" style="margin-top:0">On the mock every answer is exact, so the harness can only prove that it works. The reason to build it is the real model you connected in Session 03, whose answers vary from one trial to the next. Running the same cases on Qwen shows how often it gets each one right, and gives a model judge real answers to grade, so you can calibrate it against your own reading of the same rows rather than a made-up example.</p>
+    <dl class="fields">
+      <dt>pace</dt><dd>Groq's free tier allows about 8,000 tokens a minute per model and one investigation uses about 3,000, so the script pauses before each trial, outside the run's own 20-second limit.</dd>
+      <dt>judge</dt><dd>A different model, <code>openai/gpt-oss-20b</code>, grades Qwen's answers, so the agent's model never grades itself. A judge failure goes in its row instead of stopping the evaluation.</dd>
+      <dt>labels</dt><dd>You label each row before you see the judge's verdict, then <code>judge_agreement</code> compares the two lists and names the rows to review.</dd>
+      <dt>status</dt><dd>An observation of one model on one day, never a test result or a cost claim. The 19 checks stay on the mock.</dd>
+    </dl>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Our run, 17 November 2026</th><th>Checks</th><th>Tokens</th><th>Judge (gpt-oss-20b)</th></tr></thead>
+        <tbody>
+          <tr><td>ambiguous (INC-003), trial 0</td><td>all pass</td><td>3,007</td><td>pass</td></tr>
+          <tr><td>ambiguous (INC-003), trial 1</td><td>all pass</td><td>3,015</td><td><b>fail</b>: cited the pool runbook next to an unknown cause</td></tr>
+          <tr><td>other_tenant (Locomotive INC-001), trial 0</td><td>all pass</td><td>2,993</td><td>pass</td></tr>
+          <tr><td>other_tenant (Locomotive INC-001), trial 1</td><td>all pass</td><td>2,986</td><td>pass</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">The checks passed INC-003 trial 1 and the judge failed it. Who is right?</p>
+      <details><summary>Show the answer</summary><p>Read the answer before deciding. Its status and cause are right, insufficient evidence and unknown, so the outcome check passes. But it cites a runbook that describes a different, known cause, which the judge reads as unsupported. Either the rubric should say whether citing a consulted but irrelevant source is acceptable, or the evidence check should be stricter. Decide that, and fix the rubric or the check, before trusting the judge's numbers or changing the agent.</p></details></div>
+  </div>
+</section>
+
 <section class="ch" id="build">
   <p class="eyebrow"><span>Guided build</span></p>
   <h2>How you build it: four bounded prompts</h2>
@@ -619,7 +646,7 @@ for case in cases:
   </div>
   <div class="stack">
     <nav class="route" id="route" aria-label="Build route">
-      <a href="#prepare">Prepare</a><span class="arr" aria-hidden="true">→</span><a href="#orient">Add the check pack</a><span class="arr" aria-hidden="true">→</span><a href="#step1">Build 1</a><span class="arr" aria-hidden="true">→</span><a href="#step2">Build 2</a><span class="arr" aria-hidden="true">→</span><a href="#step3">Build 3</a><span class="arr" aria-hidden="true">→</span><a href="#step4">Build 4</a><span class="arr" aria-hidden="true">→</span><a href="#exercise">Exercise</a><span class="arr" aria-hidden="true">→</span><a href="#verify">Verify</a>
+      <a href="#prepare">Prepare</a><span class="arr" aria-hidden="true">→</span><a href="#orient">Add the check pack</a><span class="arr" aria-hidden="true">→</span><a href="#step1">Build 1</a><span class="arr" aria-hidden="true">→</span><a href="#step2">Build 2</a><span class="arr" aria-hidden="true">→</span><a href="#step3">Build 3</a><span class="arr" aria-hidden="true">→</span><a href="#step4">Build 4</a><span class="arr" aria-hidden="true">→</span><a href="#live-run">Real model</a><span class="arr" aria-hidden="true">→</span><a href="#exercise">Exercise</a><span class="arr" aria-hidden="true">→</span><a href="#verify">Verify</a>
     </nav>
     <div class="links">
       <a href="https://github.com/maxvpavlov/ciklum-innovate-l3-2026/tree/main/learner-kit/lessons/04"><span class="q">Session 04 kit</span><span class="mono">learner-kit/lessons/04</span><span class="muted">check pack and interfaces</span></a>
@@ -757,6 +784,16 @@ var/evaluation.json       <span class="muted">the report, written by python -m a
 2. In model_judge, how does the agent&#x27;s answer reach the judge, and what stops that answer from instructing it?
 3. What happens if the judge replies with something other than the verdict format your model_judge requires?</pre>
     <div><button class="copy" type="button" data-copy="rc4">Copy question</button></div>
+  </div>
+
+  <div class="terminal" id="live-run">
+    <div class="bar"><span class="switch">Switch to terminal · Evaluate the real model</span><span class="file">a throwaway script · groq.env · held_out × 2 · a judge on another model</span></div>
+    <div class="body">
+      <p class="goal">Point the harness at Qwen on Groq for four paced trials, label each answer yourself, then compare your labels with a judge running on a different model. <a href="#live">The real model</a>.</p>
+      <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="pL"><span class="pfx">PROMPT ▸ </span>For Lesson 04, continue in my learner project. Point the harness I just built at the real model, as an observation, not a check. In a throwaway script outside tests/, read ~/agentic-course/groq.env into that script's process only, never printing the key, and run evaluate on the held_out split with two trials, with qwen/qwen3.8-27b as the agent. Groq's free tier allows about 8,000 tokens a minute per model and one investigation uses about 3,000, so pause about 25 seconds before each trial, outside the run's own time limit, for example in the provider factory that evaluate calls once per trial. Attach model_judge as the judge, using a different model, openai/gpt-oss-20b, with the same key, so the agent's model does not grade its own answers; keep each run's answer, and record a judge failure in its row instead of stopping the evaluation. First show me each row (case, trial, the three checks, tokens, elapsed time) with its answer, but not the judge's verdict, and wait while I label each row passed or failed by reading the answer. Then show the judge's verdicts and reasons, compute judge_agreement with my labels as the first list, and walk me through every row in review_indices. Report the dataset hash, split and success rate, and how they compare with the offline report. Treat all of it as one day's observation of one model, not a test result or a cost claim, keep the check pack on the offline mock, and do not change any case or expected outcome.</div>
+<div class="expect"><span class="pfx">EXPECT ▸ </span>four rows, about 3,000 tokens and 3 steps each, cost unavailable; usually all four pass the three checks, though a real model can fail one, especially INC-003. The judge may disagree with your labels: in our run it failed one INC-003 answer for citing the pool runbook next to an unknown cause. An agreement rate and the rows to review; the 19 checks still on the mock.</div></details>
+      <div><button class="copy" type="button" data-copy="pL">Copy prompt</button></div>
+    </div>
   </div>
 </section>
 

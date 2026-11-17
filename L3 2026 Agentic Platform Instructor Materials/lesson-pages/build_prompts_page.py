@@ -255,8 +255,8 @@ SESSIONS = {
                 "repeated trials with every row kept, separate grades for outcome, evidence and tool policy, and a "
                 "judge you can calibrate. Run the prompts in this order, in your coding agent started in "
                 "~/agentic-course, and read each result before you paste the next one.",
-        "facts": ["<b>9 prompts</b> in order", "ends at <b>19 passed</b> · <code>LESSON = 4</code>",
-                  "offline · no model key needed"],
+        "facts": ["<b>10 prompts</b> in order", "ends at <b>19 passed</b> · <code>LESSON = 4</code>",
+                  "checks offline · one live run with your Groq key"],
         "outcomes": [("Cases first", "the expected outcome is written before any run, and the dataset has a hash."),
                      ("Three grades", "outcome, evidence and tool policy, each with its own verdict."),
                      ("Every row", "repeated trials, held-out cases apart, no average hiding a bad case."),
@@ -292,6 +292,11 @@ SESSIONS = {
              "Compares paired human and judge labels and flags the disagreements for a person, and adds the optional "
              "judge interface, which treats the agent's answer as data to grade.",
              "agreement <b>0.67</b> with review index <b>1</b>, and <b>19 passed</b>."),
+            ("Evaluate the real model", "The real model", "a throwaway script · groq.env · held_out × 2",
+             "Runs the held-out cases twice on Qwen through Groq, paced for the free tier, with a judge on a different "
+             "model. You label each answer before you see the judge's verdict, then compare the two.",
+             "four rows of about 3,000 tokens; usually all pass the checks, and the judge may disagree with you on an "
+             "INC-003 answer; an agreement rate and the rows to review."),
             ("Learner exercise", "Break the grades on purpose", "a throwaway script",
              "Predicts, then runs: an answer with no evidence, a run that tried to remediate, two held-out trials and "
              "the calibration example.",
