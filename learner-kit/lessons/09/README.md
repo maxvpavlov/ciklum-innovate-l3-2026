@@ -12,6 +12,16 @@ When everything is built, set `LESSON = 9` in `course/__init__.py`. The full
 suite should then report **41 passed**, and `python -m course.lab 9`
 prints the lesson's demo result.
 
+## Completion criteria
+
+The Verify prompt checks your work against these, as well as the passing count:
+
+- Two team runs and one single run complete for Astro through one shared upstream MCP session.
+- Ungranted tools, writes without an operator role and oversized arguments are denied with stable reason codes before any upstream connection.
+- A changed tool description quarantines the server, and later calls to it are denied.
+- Every decision is audited with an argument hash, and the Gateway view is tenant-scoped.
+- Workers reach tools only through the gateway, and the platform closes upstream sessions on shutdown.
+
 ## Interfaces your code must provide
 
 The checks import these names from your packages. Read the tests to see

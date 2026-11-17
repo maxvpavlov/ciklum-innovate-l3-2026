@@ -12,6 +12,16 @@ When everything is built, set `LESSON = 11` in `course/__init__.py`. The full
 suite should then report **52 passed**, and `python -m course.lab 11`
 prints the lesson's demo result.
 
+## Completion criteria
+
+The Verify prompt checks your work against these, as well as the passing count:
+
+- The end-to-end investigation cites both log and runbook evidence through the gateway and the pinned A2A specialist.
+- The trace includes the parent and two child nodes, and another tenant receives 404 for it.
+- Excess work is rejected with a distinct reason, and cancellation releases capacity.
+- A tiny shared parent-and-child budget prevents execution.
+- A degraded or mismatched evaluation blocks release, every decision appears in the release log and the Operations view, and activation can return to the previous version.
+
 ## Interfaces your code must provide
 
 The checks import these names from your packages. Read the tests to see

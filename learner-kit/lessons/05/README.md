@@ -12,6 +12,16 @@ When everything is built, set `LESSON = 5` in `course/__init__.py`. The full
 suite should then report **21 passed**, and `python -m course.lab 5`
 prints the lesson's demo result.
 
+## Completion criteria
+
+The Verify prompt checks your work against these, as well as the passing count:
+
+- The initial remediation run waits for approval and has no write effect.
+- An approved action survives a simulated worker crash and resumes.
+- Crash-after-write recovery leaves exactly one mock effect.
+- An expired approval does not execute the action.
+- Denied and cancelled runs cannot be resumed as approved work.
+
 ## Interfaces your code must provide
 
 The checks import these names from your packages. Read the tests to see

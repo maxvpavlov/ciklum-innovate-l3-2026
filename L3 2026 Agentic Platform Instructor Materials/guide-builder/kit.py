@@ -15,6 +15,7 @@ Plus README.md with the interfaces the checks import from the learner's code.
 
 import argparse
 import ast
+import json
 import re
 import shutil
 import subprocess
@@ -287,6 +288,10 @@ def build_lesson(n, known_given):
               f"When everything is built, set `LESSON = {n}` in `course/__init__.py`. The full",
               f"suite should then report **{TEST_COUNTS[n]} passed**, and `python -m course.lab {n}`",
               "prints the lesson's demo result.", "",
+              "## Completion criteria", "",
+              "The Verify prompt checks your work against these, as well as the passing count:", ""]
+    criteria = json.loads((Path(__file__).parent / "specs" / f"{n:02d}.json").read_text())["completion_criteria"]
+    lines += [f"- {c}" for c in criteria] + ["",
               "## Interfaces your code must provide", "",
               "The checks import these names from your packages. Read the tests to see",
               "how each one is called and what it must return.", ""]
@@ -315,6 +320,17 @@ def build_lesson(n, known_given):
                   "Along the way: this lesson's test file cannot import until `agent_runtime.context` provides",
                   "every name above (build step 3), and its two real-model tests pass only after the hardening",
                   "prompt."]
+    if n == 4:
+        lines += ["", "The checks also rely on these, beyond the imported names:", "",
+                  "- `CASES` (given): the five cases, pasted into `agent_runtime/evaluate.py` unchanged;",
+                  "- `evaluate(trials=..., split=\"all\")`, also called with no split, returning a report with",
+                  "  `dataset_sha256`, `success_rate` and `rows`, one per trial, each with its `split`;",
+                  "- `grade(run, case)`, returning a dict whose `outcome`, `evidence` and `tool_policy` are booleans;",
+                  "- `judge_agreement(human_labels, judge_labels)`, returning `agreement` and `review_indices`.", "",
+                  "Optional and not checked: `model_judge(provider, case, run)`, returning",
+                  "`{\"pass\": true or false, \"reason\": ...}` and raising `invalid_judge_verdict` for any other reply.", "",
+                  "Along the way: this lesson's test file cannot import until `agent_runtime.evaluate` provides",
+                  "`evaluate`, `grade` and `judge_agreement`, so it imports only after build step 4."]
     if n <= OLD_LAYOUT_UNTIL:
         for new, old in OLD_NAMES:
             lines = [line.replace(new, old) for line in lines]

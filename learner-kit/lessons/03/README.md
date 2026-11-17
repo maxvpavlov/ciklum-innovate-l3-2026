@@ -21,6 +21,18 @@ When everything is built, set `LESSON = 3` in `course/__init__.py`. The full
 suite should then report **17 passed**, and `python -m course.lab 3`
 prints the lesson's demo result.
 
+## Completion criteria
+
+The Verify prompt checks your work against these, as well as the passing count:
+
+- Retrieval returns only the selected tenant's source records.
+- Compaction retains matching assistant/tool pairs.
+- Expired memory is unavailable, including after a database reopen.
+- Cross-tenant artifact lookup returns no artifact.
+- A stale artifact update fails rather than overwriting the current version.
+- A fenced answer, or one after a sentence, completes and a reply with no JSON object fails as invalid_final_answer; a tool call Groq refuses is requested again at most twice and then fails as provider_tool_call_invalid; HTTP 429, 5xx, other HTTP errors and timeouts end the run with named provider codes.
+- Every model event, including a request that failed, records the model, its host and the call time, and the console's run page shows them; with a learner's Groq key and MODEL_REASONING_EFFORT=low, INC-001 runs on a real model from the console.
+
 ## Interfaces your code must provide
 
 The checks import these names from your packages. Read the tests to see

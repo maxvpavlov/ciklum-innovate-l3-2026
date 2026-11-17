@@ -20,6 +20,17 @@ When everything is built, set `LESSON = 12` in `course/__init__.py`. The full
 suite should then report **55 passed**, and `python -m course.lab 12`
 prints the lesson's demo result.
 
+## Completion criteria
+
+The Verify prompt checks your work against these, as well as the passing count:
+
+- The Session 11 platform still runs end to end.
+- The intervention is explicit and tied to a new registry version or a documented patch.
+- Before and after use comparable cases and conditions, with failures visible, and the decision is recorded in the release log.
+- The presentation shows evidence for each platform component: the registry version and hash, gateway audit entries, a delegation chain and the console views that display them.
+- Permission, recovery or cancellation behaviour is demonstrated.
+- The presenter can explain code ownership, protocol boundaries, measurements and limitations.
+
 ## Interfaces your code must provide
 
 The checks import these names from your packages. Read the tests to see

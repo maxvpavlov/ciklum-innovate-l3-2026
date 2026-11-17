@@ -21,6 +21,15 @@ When everything is built, set `LESSON = 1` in `incident/__init__.py`. The full
 suite should then report **7 passed**, and `python -m incident.lab 1`
 prints the lesson's demo result.
 
+## Completion criteria
+
+The Verify prompt checks your work against these, as well as the passing count:
+
+- INC-001 finishes with connection_pool_exhaustion and observed source IDs.
+- The repeating provider stops with repeated_action.
+- Step, token and elapsed-time limits produce the expected failures.
+- Both live-provider request-shape tests pass without using real credentials.
+
 ## Interfaces your code must provide
 
 The checks import these names from your `incident` package. Read the tests to see

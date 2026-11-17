@@ -18,6 +18,16 @@ When everything is built, set `LESSON = 8` in `course/__init__.py`. The full
 suite should then report **37 passed**, and `python -m course.lab 8`
 prints the lesson's demo result.
 
+## Completion criteria
+
+The Verify prompt checks your work against these, as well as the passing count:
+
+- Definitions are schema-validated, use only known tools and cannot be rewritten under an existing version; the active version cannot be retired and a retired version cannot run.
+- Remote agents are pinned by Agent Card hash and discoverable by skill, and a changed card is refused at registration and at call time.
+- Single and team configurations complete through the same API, and each run records its definition version and hash.
+- A second lease claim is rejected, another tenant's run returns 404, and a decision requires an operator and the current action key.
+- The console is served at /console under a strict Content-Security-Policy, renders API data as text only and shows each identity only its tenant's runs; every API handler is asynchronous.
+
 ## Interfaces your code must provide
 
 The checks import these names from your packages. Read the tests to see

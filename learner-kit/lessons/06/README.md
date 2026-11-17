@@ -20,6 +20,17 @@ When everything is built, set `LESSON = 6` in `course/__init__.py`. The full
 suite should then report **29 passed**, and `python -m course.lab 6`
 prints the lesson's demo result.
 
+## Completion criteria
+
+The Verify prompt checks your work against these, as well as the passing count:
+
+- Children have distinct run IDs, the correct parent ID, only their role's tools and no inherited approvals.
+- A child cannot exceed its parent's capabilities; identical contracts are reused and changed ones rejected.
+- The shared budget enforces agent-count, depth and token limits before launch.
+- Concurrency never exceeds its limit and dependent work waits for successful predecessors.
+- A deadline preserves completed results and cancels unfinished work; cycles are rejected.
+- Mismatched or stale replies fail validation, and non-converging review escalates.
+
 ## Interfaces your code must provide
 
 The checks import these names from your packages. Read the tests to see

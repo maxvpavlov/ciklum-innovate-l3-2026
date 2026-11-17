@@ -12,6 +12,16 @@ When everything is built, set `LESSON = 10` in `course/__init__.py`. The full
 suite should then report **47 passed**, and `python -m course.lab 10`
 prints the lesson's demo result.
 
+## Completion criteria
+
+The Verify prompt checks your work against these, as well as the passing count:
+
+- Forged, expired and wrong-audience tokens are rejected with distinct reasons.
+- A team run's actor chains end in the submitting user, child scopes never widen, and no token is stored with a run.
+- The gateway denies missing or cross-tenant credentials, and the A2A specialist accepts only its own audience.
+- Secrets are released by reference only to named consumers, with every release audited.
+- Injected writes, path escapes, metadata egress, fabricated citations and credential strings in events are contained or redacted.
+
 ## Interfaces your code must provide
 
 The checks import these names from your packages. Read the tests to see

@@ -52,6 +52,17 @@ When everything is built, set `LESSON = 2` in `course/__init__.py`. The full
 suite should then report **12 passed**, and `python -m course.lab 2`
 prints the lesson's demo result.
 
+## Completion criteria
+
+The Verify prompt checks your work against these, as well as the passing count:
+
+- The real stdio client discovers log_lookup and runbook_search.
+- The investigation still cites the observed log and runbook.
+- Malformed and denied requests fail before dispatch.
+- Changing an approved action's arguments requires a new approval.
+- A duplicate approved mock write produces one stored effect.
+- The given console shows a completed run's timeline and each Tools check's decision for the signed-in role.
+
 ## Interfaces your code must provide
 
 The checks import these names from your packages. Read the tests to see

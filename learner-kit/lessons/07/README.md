@@ -20,6 +20,16 @@ When everything is built, set `LESSON = 7` in `course/__init__.py`. The full
 suite should then report **31 passed**, and `python -m course.lab 7`
 prints the lesson's demo result.
 
+## Completion criteria
+
+The Verify prompt checks your work against these, as well as the passing count:
+
+- The card is fetched from the well-known endpoint and advertises the expected skill.
+- The real HTTP stream contains task progress, an evidence artifact and completion.
+- Unauthenticated task requests receive HTTP 401.
+- The client rejects an incompatible tenant before making a request.
+- The slow remote task reaches TASK_STATE_CANCELED.
+
 ## Interfaces your code must provide
 
 The checks import these names from your packages. Read the tests to see

@@ -14,7 +14,7 @@
       "title": "Define cases before scoring runs",
       "say": "Read each case as a requirement. The missing incident should not inherit the most common runbook's cause. The ambiguous case should finish with insufficient evidence. The other-tenant case should use a different source population. Mark the held-out cases before tuning, and do not repeatedly edit them to accommodate a favoured implementation. Show the dataset hash in the result. It is a practical way to detect whether two reports evaluated the same case definitions. Ask learners to propose one additional failure case and state its expected outcome before running the agent.",
       "file": "agent_runtime/evaluate.py",
-      "prompt": "Add the given versioned evaluation cases to agent_runtime/evaluate.py unchanged. They cover supported diagnoses, missing evidence, ambiguity and another tenant, with explicit expected outcomes and development versus held-out partitions. Record dataset identity. Explain each case before running the agent. Do not change expected answers simply to make the current implementation pass.",
+      "prompt": "Add the given versioned evaluation cases to agent_runtime/evaluate.py unchanged. They cover supported diagnoses, missing evidence, ambiguity and another tenant, with explicit expected outcomes and development versus held-out partitions. Record the dataset identity as the SHA-256 of the cases serialised as JSON with sorted keys, so any edit to a case changes it. Explain each case before running the agent. Do not change expected answers simply to make the current implementation pass.",
       "excerpt": {
         "start": 14,
         "end": 20
@@ -53,7 +53,7 @@
       "title": "Calibrate an optional model judge",
       "say": "Use a small labelled set to demonstrate agreement calculation and inspect the disagreement index. Then open model_judge. The expected outcome and agent answer are sent as data with a bounded grading request. The agent answer remains untrusted even inside an evaluation prompt. A judge response must have the expected type. Explain that deterministic checks remain useful even when a judge is present, especially for permission violations and missing source IDs. For this session, the optional live judge is not required: use the supplied labelled example and show where real human labels and a verified live adapter would enter.",
       "file": "agent_runtime/evaluate.py",
-      "prompt": "Implement paired human-versus-judge agreement checks and the optional model_judge interface. Validate judge output, treat the agent answer as untrusted grading input and expose disagreements for human review. Make the Session 04 check pack pass using its offline calibration examples. Explain what is verified locally and what would still require a calibrated live judge and authorized provider access.",
+      "prompt": "Implement paired human-versus-judge agreement checks, and the optional model_judge(provider, case, run), which the checks do not exercise: it sends the expected cause and the agent's answer as data and returns {\"pass\": true or false, \"reason\": text}, raising invalid_judge_verdict for any other reply. Validate judge output, treat the agent answer as untrusted grading input and expose disagreements for human review. Make the Session 04 check pack pass using its offline calibration examples. Explain what is verified locally and what would still require a calibrated live judge and authorized provider access.",
       "excerpt": {
         "start": 33,
         "end": 37
@@ -63,7 +63,7 @@
       "answer": "Review the underlying cases and rubric. Correct ambiguous labels or an inadequate judge before changing the agent merely to satisfy the judge."
     }
   ],
-  "exercise": "Add one unsupported-answer case and one tool-policy violation to a local test. Verify that the relevant check fails. Run two repeated trials on the held-out partition and locate every per-case result. Use the calibration example to explain why the flagged disagreement needs human review.",
+  "exercise": "Add one unsupported-answer case and one tool-policy violation in a throwaway check outside tests/. Verify that the relevant check fails. Run two repeated trials on the held-out partition and locate every per-case result. Use the calibration example in course/labs/l04.py, whose first list holds the human labels, to explain why the flagged disagreement needs human review.",
   "expected_json": {
     "dataset_sha256": "7d345084bda36fe61cbcf61755387b76bdd342456554b7e7422a588900b35f29",
     "provider": "MockProvider",
