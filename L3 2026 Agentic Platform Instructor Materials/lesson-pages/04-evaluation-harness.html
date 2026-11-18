@@ -902,6 +902,35 @@ var/evaluation.json       <span class="muted">the report, written by python -m a
   </div>
 </section>
 
+<section class="ch" id="summary">
+  <p class="eyebrow"><span>Summary</span></p>
+  <h2>How your platform changed, and what to try in the console</h2>
+  <div class="stack">
+    <p class="lede" style="margin-top:0">Everything below appears somewhere in the steps above; this is the whole lesson in one place, to check your project against before you close the session.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>In your project</th><th>What changed</th><th>Who wrote it</th></tr></thead>
+        <tbody>
+          <tr><td><code>agent_runtime/evaluate.py</code> (new)</td><td><code>CASES</code>, the five cases with expected outcomes and splits; the dataset hash; <code>grade</code> (outcome, evidence, tool policy); <code>evaluate(factory, trials, split, judge)</code> with one row per case and trial; <code>judge_agreement</code>; the optional <code>model_judge</code></td><td>you, through build steps 1 to 4 (<code>CASES</code> given)</td></tr>
+          <tr><td><code>agent_runtime/providers.py</code></td><td>the Lesson 04 <code>MockProvider</code>: a generic runbook no longer becomes the cause when the log names none</td><td>given, swapped in at build step 2</td></tr>
+          <tr><td><code>agentic_platform/console/app.js</code></td><td>a refresh keeps what you chose in a form, so INC-002 and INC-003 stay selected in Runs</td><td>given, with the check pack</td></tr>
+          <tr><td><code>tests/test_lesson04.py</code>, <code>course/labs/l04.py</code></td><td>the Lesson 04 checks and demonstration</td><td>given, with the check pack</td></tr>
+          <tr><td><code>course/__init__.py</code>, <code>AGENTS.md</code></td><td><code>LESSON = 4</code> and the Lesson 04 progress entry</td><td>the Verify prompt</td></tr>
+          <tr><td>a throwaway script, outside your project's tests</td><td>the live evaluation on Groq with a judge; nothing in your project changes</td><td>the "Evaluate the real model" prompt</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The runtime itself, the loop, the tool boundary, retrieval and the stores, did not change. The harness sits beside it and drives it: it starts runs, reads their answers and events, and grades them. <b>The checks:</b> 19 passed, all on the mock.</p>
+    <div class="criteria">
+      <div><b>1 · Restart the platform</b>After adding the check pack, so the console loads the given <code>app.js</code>. Sign in as <code>demo-astro</code>. The Overview says checkpoint lesson-04 once Verify has raised <code>LESSON</code>.</div>
+      <div><b>2 · Run the three incidents on the mock</b>In Runs, submit INC-001, INC-002 and INC-003; the dropdown now keeps your choice. Expect complete with <code>connection_pool_exhaustion</code>, complete with <code>clock_skew</code>, and <code>insufficient_evidence</code> with cause <code>unknown</code> citing only <code>log-astro-003</code>: 75 fixture tokens each, the same every time.</div>
+      <div><b>3 · Run INC-003 on Groq a few times</b>Start the platform with your <code>groq.env</code> and submit INC-003 two or three times, one after another. Open each run page: model, host, tokens and time per call, and an answer that may differ between runs. That variation is what today's repeated trials measure.</div>
+      <div><b>4 · Read a run as a record</b>On one run page, find what an evaluation would need: the answer and its cited sources, every tool call with its decision, every model call with its model and time. That record is what lets any past run be evaluated later.</div>
+    </div>
+    <p class="muted">Not in the console yet: evaluation reports. They live in your script's output; from Session 11 the platform uses this harness as its release gate, and the Operations view lists the release decisions.</p>
+  </div>
+</section>
+
 <section class="ch" id="close">
   <p class="eyebrow"><span>Close</span></p>
   <h2>A measuring instrument you keep for the rest of the course</h2>
