@@ -347,7 +347,7 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
   <p class="eyebrow"><span>Words first</span></p>
   <h2>Investigation, run, step, worker: what each word means today</h2>
   <div class="stack">
-    <p class="lede" style="margin-top:0">"Run" is the word this lesson leans on, and it is easy to read three ways: the investigation someone asked for, the process doing the work, or one turn of the loop. In this course it is none of those. <b>A run is one agent working on one task, under one run ID and one tenant, from the request to a final status.</b> The investigation is what someone asks for; the run is the platform's record of carrying it out; steps happen inside the run; workers execute the run. Today the run starts to outlive the worker.</p>
+    <p class="lede" style="margin-top:0">An <b>investigation</b> is the question someone asks the platform: what caused INC-001 for Astro? A <b>run</b> is one agent's attempt at one task, with its own run ID, tenant, status and history. Submitting an investigation starts a run to answer it; submitting the same investigation again starts another run. The two are not always one to one: from Session 06 one investigation is answered by a supervisor's run and its child runs, and a run need not be an investigation at all, since this lesson's demonstration run carries out a remediation. Inside a run the agent takes <b>steps</b>, one model call each, and a <b>worker</b> is the process that executes the run. Until today one worker took every run from start to end; today a run starts to outlive its worker.</p>
     <figure>
       <div class="diagram">
         <svg viewBox="0 0 900 430" role="img" aria-labelledby="termsTitle">
@@ -359,7 +359,7 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
           <text class="small" x="30" y="116">as demo-astro, in Runs</text>
           <text class="small" x="30" y="134">or POST /runs</text>
           <path class="ink" d="M206 94 H262"/><path class="arrowhead" d="M266 94 l-8 -5 v10z"/>
-          <text class="small" x="210" y="84">creates</text>
+          <text class="small" x="214" y="84">starts</text>
 
           <rect class="today" x="270" y="18" width="614" height="222" rx="10"/>
           <text class="lbl" x="286" y="44">Run</text>
@@ -406,13 +406,13 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
     </figure>
     <dl class="fields">
       <dt>investigation</dt><dd>What the platform exists for, and what someone asks for: find a supported cause for one incident of one tenant. In the console you start one in Runs; through the API it is <code>POST /runs</code>.</dd>
-      <dt>run</dt><dd>One agent working on one task, from the request to a final status, under one run ID and one tenant. Each investigation you submit today is one run. A run is not always an investigation: this lesson's demonstration run is a remediation, and in Session 04 each evaluation trial was a run.</dd>
+      <dt>run</dt><dd>One agent's attempt at one task, from the request to a final status, under one run ID and one tenant. Each time you submit an investigation today, one run answers it; submit it again and a second run answers it again. Not every run answers an investigation: this lesson's demonstration run carries out a remediation, and in Session 04 each evaluation trial was a run.</dd>
       <dt>step</dt><dd>One model call inside a run. Tool calls happen between steps; INC-001 on the mock takes 3 steps and 2 tool calls. The step limit counts these.</dd>
       <dt>worker</dt><dd>The process, or task inside it, that executes a run for a while. Until today one worker took each run from start to end. From today a run can stop, wait for a person or survive a crash, and another worker continues it: still the same run, with the same run ID.</dd>
       <dt>run ID</dt><dd>The run's identity. The store keys the run by tenant and run ID, and the action key of an approval includes it, so an approval belongs to one run.</dd>
     </dl>
     <aside class="instructor" aria-label="Instructor notes">
-      <p><b>SAY</b> Before we make runs durable, agree on the words. The investigation is what someone asks for. The run is the platform's record of one agent doing one task: it has an ID, a tenant, a status and a history. Steps are model calls inside it. A worker executes it. Until today a worker took each run from start to end, so the run and the process felt identical. Today we separate them: the run is a record that outlives the worker, and a different worker can finish it.</p>
+      <p><b>SAY</b> Before we make runs durable, agree on the words. The investigation is the question someone asks. A run is one agent's attempt at a task, such as answering that question: it has an ID, a tenant, a status and a history, and asking the same question again starts another run. Steps are model calls inside it. A worker executes it. Until today a worker took each run from start to end, so the run and the process felt identical. Today we separate them: the run is a record that outlives the worker, and a different worker can finish it.</p>
       <p><b>PAUSE</b> Ask a learner to point at the run ID in their console's run page, and another to say what would make a second investigation of INC-001 a different run.</p>
     </aside>
     <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">You submit INC-001 twice in the console. How many investigations, how many runs, and could an approval given in the first apply to the second?</p>

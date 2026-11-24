@@ -512,7 +512,7 @@ List terminology that must be used consistently.
 
 • Investigation: what someone asks the platform for: a supported cause for one incident of one tenant (Runs view, POST /runs).
 
-• Run: one agent working on one task, from the request to a final status, under one run ID and one tenant. Each investigation submitted is one run; asking again is a new run; from Session 06 one investigation is a parent run with child runs. A run is not always an investigation: the lesson's remediation run is one too.
+• Run: one agent's attempt at one task, from the request to a final status, under one run ID and one tenant. Each investigation submitted starts one run to answer it; submitting it again starts another run; from Session 06 one investigation is a parent run with child runs. A run is not always an investigation: the lesson's remediation run is one too.
 
 • Step: one model call inside a run; tool calls happen between steps.
 
