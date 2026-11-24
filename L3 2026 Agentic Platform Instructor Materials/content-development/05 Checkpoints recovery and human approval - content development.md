@@ -278,6 +278,8 @@ The Session 05 page is the presentation, with Read and Present views (https://ma
 
 • 1. Recall: the Session 02 approval gate and effect ledger; what happened to a run that hit it.
 
+• 1b. Words first: investigation, run, step, worker and run ID, and how they relate (a diagram).
+
 • 2. The idea: a run must stop and continue without guessing; definitions of snapshot, pending call, checkpoint, approval decision, effect ledger, resume and terminal state.
 
 • 3. One tool call through the loop, with the moments a crash can happen and the approval branch.
@@ -507,6 +509,14 @@ Indicate which assets are needed and provide them where applicable.
 List terminology that must be used consistently.
 
 **Your input:**
+
+• Investigation: what someone asks the platform for: a supported cause for one incident of one tenant (Runs view, POST /runs).
+
+• Run: one agent working on one task, from the request to a final status, under one run ID and one tenant. Each investigation submitted is one run; asking again is a new run; from Session 06 one investigation is a parent run with child runs. A run is not always an investigation: the lesson's remediation run is one too.
+
+• Step: one model call inside a run; tool calls happen between steps.
+
+• Worker: the process that executes a run for a while; from this session a run can be continued by another worker and stays the same run.
 
 • Snapshot: the whole run as data (messages, pending calls, counters, status, answer, events), saved under tenant and run ID.
 

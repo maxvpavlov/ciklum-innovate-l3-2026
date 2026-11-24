@@ -343,6 +343,85 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
   </div>
 </section>
 
+<section class="ch" id="terms">
+  <p class="eyebrow"><span>Words first</span></p>
+  <h2>Investigation, run, step, worker: what each word means today</h2>
+  <div class="stack">
+    <p class="lede" style="margin-top:0">"Run" is the word this lesson leans on, and it is easy to read three ways: the investigation someone asked for, the process doing the work, or one turn of the loop. In this course it is none of those. <b>A run is one agent working on one task, under one run ID and one tenant, from the request to a final status.</b> The investigation is what someone asks for; the run is the platform's record of carrying it out; steps happen inside the run; workers execute the run. Today the run starts to outlive the worker.</p>
+    <figure>
+      <div class="diagram">
+        <svg viewBox="0 0 900 430" role="img" aria-labelledby="termsTitle">
+          <title id="termsTitle">An investigation, asked for in the console or through POST /runs, creates one run with its own run ID and tenant. Inside the run are steps, one model call each, with tool calls between them, ending in an answer. The run is saved as one record. A worker executes the run; from today a run can stop as waiting_approval and a second worker can continue the same run, with the same run ID. Asking again creates a new run; from Session 06 one investigation has a parent run and child runs.</title>
+          <rect class="box" x="16" y="30" width="190" height="128" rx="8"/>
+          <text class="lbl" x="30" y="58">Investigation</text>
+          <text class="small" x="30" y="80">what someone asks for:</text>
+          <text class="small" x="30" y="98">"Investigate INC-001"</text>
+          <text class="small" x="30" y="116">as demo-astro, in Runs</text>
+          <text class="small" x="30" y="134">or POST /runs</text>
+          <path class="ink" d="M206 94 H262"/><path class="arrowhead" d="M266 94 l-8 -5 v10z"/>
+          <text class="small" x="210" y="84">creates</text>
+
+          <rect class="today" x="270" y="18" width="614" height="222" rx="10"/>
+          <text class="lbl" x="286" y="44">Run</text>
+          <text class="small" x="330" y="44">run ID 7f3a… · tenant astro · status: queued → running → completed</text>
+          <rect class="box" x="286" y="62" width="104" height="58" rx="6"/>
+          <text class="lbl" x="298" y="86">step 1</text><text class="small" x="298" y="106">model call</text>
+          <rect class="box" x="408" y="62" width="104" height="58" rx="6"/>
+          <text class="lbl" x="420" y="86">tool</text><text class="small" x="420" y="106">log_lookup</text>
+          <rect class="box" x="530" y="62" width="104" height="58" rx="6"/>
+          <text class="lbl" x="542" y="86">step 2</text><text class="small" x="542" y="106">model call</text>
+          <rect class="box" x="652" y="62" width="124" height="58" rx="6"/>
+          <text class="lbl" x="664" y="86">tool</text><text class="small" x="664" y="106">runbook_search</text>
+          <rect class="box" x="788" y="62" width="84" height="58" rx="6"/>
+          <text class="lbl" x="798" y="86">step 3</text><text class="small" x="798" y="106">answer</text>
+          <path class="ink" d="M390 91 H402"/><path class="ink" d="M512 91 H524"/><path class="ink" d="M634 91 H646"/><path class="ink" d="M776 91 H788"/>
+          <text class="small" x="286" y="148">saved as one record, the snapshot:</text>
+          <text class="small" x="286" y="166">context (tenant, role, allowed tools, approved keys) · messages · pending calls</text>
+          <text class="small" x="286" y="184">steps · tokens · status · answer · events</text>
+          <text class="small" x="286" y="214">An approval binds to this run ID; a crash or a pause does not end the run.</text>
+
+          <rect class="box" x="286" y="300" width="250" height="84" rx="8"/>
+          <text class="lbl" x="300" y="326">Worker A</text>
+          <text class="small" x="300" y="348">executes the run until it</text>
+          <text class="small" x="300" y="366">stops: waiting_approval</text>
+          <rect class="today" x="586" y="300" width="250" height="84" rx="8"/>
+          <text class="lbl" x="600" y="326">Worker B, later</text>
+          <text class="small" x="600" y="348">resumes the same run,</text>
+          <text class="small" x="600" y="366">same run ID, to completed</text>
+          <path class="ink" d="M411 300 V246"/><path class="arrowhead" d="M411 242 l-5 8 h10z"/>
+          <path class="ink" d="M711 300 V246"/><path class="arrowhead" d="M711 242 l-5 8 h10z"/>
+          <text class="small" x="420" y="276">executes</text><text class="small" x="720" y="276">executes</text>
+
+          <text class="small" x="16" y="200">Ask again:</text>
+          <text class="small" x="16" y="218">a new run, new run ID;</text>
+          <text class="small" x="16" y="236">approvals do not carry over.</text>
+          <text class="small" x="16" y="320">From Session 06:</text>
+          <text class="small" x="16" y="338">one investigation is a</text>
+          <text class="small" x="16" y="356">supervisor's run plus</text>
+          <text class="small" x="16" y="374">child runs, each with its</text>
+          <text class="small" x="16" y="392">own run ID and parent ID.</text>
+        </svg>
+      </div>
+      <figcaption>The highlighted parts are what changes today: the run is a saved record, and more than one worker can execute it. Until today one worker executed each run from start to end, so "the run" and "the process" looked like the same thing.</figcaption>
+    </figure>
+    <dl class="fields">
+      <dt>investigation</dt><dd>What the platform exists for, and what someone asks for: find a supported cause for one incident of one tenant. In the console you start one in Runs; through the API it is <code>POST /runs</code>.</dd>
+      <dt>run</dt><dd>One agent working on one task, from the request to a final status, under one run ID and one tenant. Each investigation you submit today is one run. A run is not always an investigation: this lesson's demonstration run is a remediation, and in Session 04 each evaluation trial was a run.</dd>
+      <dt>step</dt><dd>One model call inside a run. Tool calls happen between steps; INC-001 on the mock takes 3 steps and 2 tool calls. The step limit counts these.</dd>
+      <dt>worker</dt><dd>The process, or task inside it, that executes a run for a while. Until today one worker took each run from start to end. From today a run can stop, wait for a person or survive a crash, and another worker continues it: still the same run, with the same run ID.</dd>
+      <dt>run ID</dt><dd>The run's identity. The store keys the run by tenant and run ID, and the action key of an approval includes it, so an approval belongs to one run.</dd>
+    </dl>
+    <aside class="instructor" aria-label="Instructor notes">
+      <p><b>SAY</b> Before we make runs durable, agree on the words. The investigation is what someone asks for. The run is the platform's record of one agent doing one task: it has an ID, a tenant, a status and a history. Steps are model calls inside it. A worker executes it. Until today a worker took each run from start to end, so the run and the process felt identical. Today we separate them: the run is a record that outlives the worker, and a different worker can finish it.</p>
+      <p><b>PAUSE</b> Ask a learner to point at the run ID in their console's run page, and another to say what would make a second investigation of INC-001 a different run.</p>
+    </aside>
+    <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">You submit INC-001 twice in the console. How many investigations, how many runs, and could an approval given in the first apply to the second?</p>
+      <details><summary>Show the answer</summary><p>Two requests for the same investigation, and two runs, each with its own run ID. The approval cannot carry over: the action key includes the run ID, so the same rollback in the second run has a different key and needs its own decision.</p></details></div>
+    <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">A run waits an hour for approval, and a different worker resumes it. Is that one run or two?</p>
+      <details><summary>Show the answer</summary><p>One run, executed twice. It keeps its run ID, tenant, messages and pending call; only the worker changed. That is what today makes possible.</p></details></div>
+  </div>
+</section>
+
 <section class="ch" id="idea">
   <p class="eyebrow"><span>The idea</span></p>
   <h2>A run must be able to stop and continue without guessing what already happened</h2>
