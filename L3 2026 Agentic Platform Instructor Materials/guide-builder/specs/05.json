@@ -14,7 +14,7 @@
       "title": "Persist reconstructible state",
       "say": "Save the full Run snapshot under tenant and run ID, then reconstruct Context explicitly when loading. We are preserving messages, pending calls, counters, status and answer. The store does not infer authority from text. Show a lookup from the wrong tenant and confirm that it fails as run_not_found. Ask learners which fields must survive a crash before the model receives its tool result. The pending call and its identifier must survive, because they connect the stored assistant request to the eventual observation. The local file is our durable boundary for the exercise; process memory is not sufficient.",
       "file": "agent_runtime/durable.py",
-      "prompt": "Implement RunStore in agent_runtime/durable.py so it persists and reconstructs the current runtime state under tenant and run ID. Preserve messages, pending calls, usage counters and control state. Use a persistent local database for restart checks. Show which data must survive a crash before a tool observation is recorded, and demonstrate that another tenant cannot load the run.",
+      "prompt": "Implement RunStore in agent_runtime/durable.py so it persists and reconstructs the current runtime state under tenant and run ID. First check that run_agent in agent_runtime/core.py can pause and continue a run, and add only what it lacks: Run.snapshot() returns a JSON-serialisable dict from which Run(**snapshot) rebuilds the run once its context dict is turned back into a Context; run_agent records a reply's tool calls as pending and calls checkpoint(run) before dispatching them; when execute raises ApprovalRequired, the run stops with status waiting_approval, keeps that call pending and is saved; and run_agent(..., initial=run) continues a stored run by dispatching its pending calls before asking the model again. Preserve messages, pending calls, usage counters and control state. Use a persistent local database for restart checks. Show which data must survive a crash before a tool observation is recorded, and demonstrate that another tenant cannot load the run.",
       "excerpt": {
         "start": 16,
         "end": 18
@@ -115,7 +115,11 @@
     "Add a crash before the write and compare its stored state with the after-write case.",
     "Write a short recovery runbook describing which operations can be retried automatically and which require reconciliation."
   ],
-  "verification_scope": ["@tested", "@not_tested", "@local_effects"],
+  "verification_scope": [
+    "@tested",
+    "@not_tested",
+    "@local_effects"
+  ],
   "close_say": "Your platform can now pause and recover with explicit action ownership. Have your coding agent save the checkpoint with its failure tests. In Session 08 these approvals get a console Approvals view that only an operator can act on, and in Session 10 that operator can authenticate with a signed, short-lived token. In the next session we apply the same runtime and authority boundaries to delegated child agents.",
   "references": [
     {

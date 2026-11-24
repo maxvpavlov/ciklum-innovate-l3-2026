@@ -35,3 +35,25 @@ how each one is called and what it must return.
 - `agent_runtime.providers`: `HTTPProvider`, `provider_from_env`
 - `agent_runtime.tools`: `ToolExecutor`, `action_key`
 - `course`: `LESSON`
+
+The checks also rely on these, beyond the imported names:
+
+- `run_agent(..., initial=..., checkpoint=...)`: tool calls are recorded in `run.pending` and
+  `checkpoint(run)` is called before they are dispatched; when `execute` raises `ApprovalRequired`
+  the run stops with status `waiting_approval`, keeps the call pending and is saved; and
+  `initial=run` continues a stored run by dispatching its pending calls before the next model call;
+- `Run.snapshot()`, a JSON-serialisable dict from which `Run(**snapshot)` rebuilds the run once
+  its `context` dict is turned back into a `Context`;
+- `RunStore(path)` with `save(run)` (passed as `checkpoint`), `load(tenant, run_id)` raising
+  `KeyError` (`run_not_found`) for a run another tenant owns, and
+  `decide(tenant, run_id, decision="approve", ttl=300)` returning the pending call's `key`, `name`,
+  `args` and `decision`; `deny` makes the run `denied`, and a negative `ttl` stores an approval
+  that has already expired;
+- `resume_run(store, tenant, run_id, provider, tools)`: a completed run is returned unchanged, a
+  denied or cancelled one raises `PermissionError`, and otherwise the run continues in the same
+  `run_agent` with only the approvals still valid, so an expired one leaves it `waiting_approval`;
+- `ToolExecutor(path)` on the same database file as the store, with `tools.available(context)`
+  and the `db` connection in which the demo counts rows of `effects`.
+
+Along the way: this lesson's test file cannot import until `agent_runtime.durable` provides
+`RunStore` and `resume_run`, so it imports only after build step 3.
