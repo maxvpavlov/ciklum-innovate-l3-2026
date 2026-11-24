@@ -662,17 +662,15 @@ for case in cases:
     <div class="stack" style="margin-top:0">
       <div class="excerpt">
         <div class="src">~/agentic-course/my-platform · after Session 04 (what you build today highlighted)</div>
-<pre>agent_runtime/
-<span class="hl">  evaluate.py             you build · CASES (given), grade, evaluate, judge_agreement, model_judge</span>
-<span class="hl">  providers.py            check pack · the Lesson 04 MockProvider replaces the old one</span>
-  core.py, context.py     <span class="muted">Sessions 01 and 03, unchanged</span>
-agentic_platform/         <span class="muted">given · the platform shell</span>
-course/
-  __init__.py             <span class="muted">LESSON = 3, raised to 4 when verified</span>
-<span class="hl">  labs/l04.py             check pack · the Session 04 demo</span>
-tests/
-<span class="hl">  test_lesson04.py        check pack · two new checks</span>
-var/evaluation.json       <span class="muted">the report, written by python -m agent_runtime.evaluate</span></pre>
+<pre><span class="hl">agent_runtime/evaluate.py            you build · CASES (given), grade, evaluate, judge_agreement, model_judge</span>
+<span class="hl">agent_runtime/providers.py           check pack · the Lesson 04 MockProvider replaces the old one</span>
+agent_runtime/core.py                <span class="muted">Session 01 (hardened in 03), unchanged · already provides Run</span>
+agent_runtime/context.py             <span class="muted">Session 03, unchanged</span>
+agentic_platform/                    <span class="muted">given · the platform shell</span>
+course/__init__.py                   <span class="muted">LESSON = 3, raised to 4 when verified</span>
+<span class="hl">course/labs/l04.py                   check pack · the Session 04 demo</span>
+<span class="hl">tests/test_lesson04.py               check pack · two new checks</span>
+var/evaluation.json                  <span class="muted">the report, written by python -m agent_runtime.evaluate</span></pre>
       </div>
       <div class="prose" style="margin-top:0">
         <p><b><code>evaluate.py</code> is the measuring instrument.</b> It runs your existing loop unchanged; nothing in the agent is rewritten today. The kit gives you the five cases and the corrected mock, because everyone must measure against the same cases to compare results.</p>
