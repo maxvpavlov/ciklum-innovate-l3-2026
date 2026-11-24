@@ -1,5 +1,7 @@
 # Lesson 08 check pack
 
+This lesson has no given files: copy `checks/` only.
+
 ## The platform is yours from here
 
 The platform shell in `agentic_platform/` is no longer given: from this lesson you extend

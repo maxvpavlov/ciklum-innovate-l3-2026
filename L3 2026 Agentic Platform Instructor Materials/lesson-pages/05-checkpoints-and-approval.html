@@ -1,0 +1,1053 @@
+<title>Session 05: Checkpoints and approval</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: one long scroll on drafting-paper ground; chapters that alternate prose and evidence,
+   full-width "switch to terminal" bands, and a Read/Present toggle that hides reading prose. */
+:root {
+  --paper: #f2f4f6;        /* cool drafting paper */
+  --sheet: #fbfcfd;        /* raised surfaces */
+  --ink: #15202e;          /* navy ink */
+  --muted: #586678;
+  --rule: #cfd6df;
+  --signal: #d9481f;       /* incident signal: today's box, guards, terminal cues */
+  --signal-soft: #fbe4dc;
+  --model: #3f5bd0;        /* the model's turn in transcripts */
+  --tool: #1d7a62;         /* tool observations */
+  --term-bg: #10161f;
+  --term-fg: #dfe6ee;
+  --display: "Archivo", "Arial Narrow", system-ui, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0f151d; --sheet: #161e29; --ink: #e5ebf2; --muted: #9aa8b8; --rule: #2a3542;
+    --signal: #ff7a4d; --signal-soft: #3a1d14; --model: #8ea2ff; --tool: #57c9a6;
+    --term-bg: #0a0e14; --term-fg: #dfe6ee; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0f151d; --sheet: #161e29; --ink: #e5ebf2; --muted: #9aa8b8; --rule: #2a3542;
+  --signal: #ff7a4d; --signal-soft: #3a1d14; --model: #8ea2ff; --tool: #57c9a6;
+  --term-bg: #0a0e14; --term-fg: #dfe6ee; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  background: var(--paper); color: var(--ink); font: 17px/1.6 var(--body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--signal); outline-offset: 3px; }
+
+main { max-width: 1040px; margin: 0 auto; }
+section.ch { padding-block: 72px 24px; border-top: 1px solid var(--rule); scroll-margin-top: 8px; }
+section.ch:first-of-type { border-top: 0; }
+.eyebrow { font: 600 12.5px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--signal);
+  display: flex; gap: 14px; flex-wrap: wrap; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; }
+h2 { font-size: clamp(30px, 4.4vw, 46px); font-variation-settings: "wdth" 82; font-weight: 750;
+  line-height: 1.05; letter-spacing: -.01em; margin-top: 14px; }
+h3 { font-size: 21px; font-weight: 650; font-variation-settings: "wdth" 92; }
+p { margin: 0; }
+.lede { font-size: 20px; line-height: 1.55; max-width: 62ch; color: var(--ink); margin-top: 18px; }
+.prose { max-width: 66ch; display: grid; gap: 14px; margin-top: 18px; }
+.muted { color: var(--muted); }
+code, .mono { font-family: var(--mono); font-size: .9em; }
+.stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; margin-top: 34px; }
+.stack > * { min-width: 0; }
+.two { display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.two > * { min-width: 0; }
+
+/* Read / Present toggle: always visible; Present hides reading prose and keeps headings, diagrams and key points */
+.view { position: fixed; z-index: 10; top: calc(14px + env(safe-area-inset-top, 0px)); right: max(14px, env(safe-area-inset-right, 0px));
+  display: flex; padding: 3px; gap: 2px; background: var(--sheet); border: 1px solid var(--rule); border-radius: 999px;
+  box-shadow: 0 2px 10px rgba(15, 21, 29, .12); }
+.view button { font: 600 12.5px var(--mono); letter-spacing: .04em; color: var(--muted); background: transparent; border: 0;
+  border-radius: 999px; padding: 6px 14px; cursor: pointer; }
+.view button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+/* Theme toggle, top left: one icon button. The page follows the system theme until the viewer toggles it;
+   the choice (light or dark) is then remembered for all the course pages. */
+.theme { position: fixed; z-index: 10; top: calc(14px + env(safe-area-inset-top, 0px)); left: max(14px, env(safe-area-inset-left, 0px));
+  display: grid; place-items: center; width: 38px; height: 38px; padding: 0; color: var(--muted); background: var(--sheet);
+  border: 1px solid var(--rule); border-radius: 999px; box-shadow: 0 2px 10px rgba(15, 21, 29, .12); cursor: pointer; }
+.theme:hover { color: var(--ink); }
+.theme svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.present .lede, .present .prose, .present figcaption, .present .say, .present .cards > div > p,
+.present .turn .note, .present .terminal .goal, .present .read { display: none; }
+/* A card row whose cards hold only a title and a paragraph would show just titles in Present mode: hide it there.
+   Cards with a visible answer line (.ans) keep it, and a row marked .keep stays because its titles are the content. */
+.present .cards:not(.keep):not(:has(> div > :not(.q, p))) { display: none; }
+
+/* Say-this lines */
+.say { border-left: 3px solid var(--ink); padding: 4px 0 4px 18px; font-size: 19px; font-style: italic; max-width: 60ch; }
+.ask { display: grid; gap: 6px; padding: 18px 20px; background: var(--sheet); border: 1px solid var(--rule);
+  border-radius: 10px; max-width: 68ch; }
+.ask .q { font: 650 19px/1.35 var(--display); font-variation-settings: "wdth" 92; }
+.ask .label { font: 600 11.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+/* Learners reading the page see "Ask yourself"; when presenting to a room (Present, Instructor) it reads "Ask the room". */
+.ask .label .room { display: none; }
+.present .ask .label .room, .instructor-view .ask .label .room { display: inline; }
+.present .ask .label .self, .instructor-view .ask .label .self { display: none; }
+.ask details summary { cursor: pointer; color: var(--muted); font-size: 15px; }
+.ask details p { margin-top: 6px; }
+/* Read your code: questions a learner answers from their own project after each build step */
+.ask.readcode { border-left: 4px solid var(--signal); }
+.readcode ol { margin: 4px 0 0; padding-left: 22px; display: grid; gap: 4px; }
+.readcode .showme { font: 13.5px/1.55 var(--mono); white-space: pre-wrap; background: var(--sheet); border: 1px dashed var(--rule);
+  border-radius: 8px; padding: 10px 12px; margin: 4px 0 0; color: var(--ink); }
+.readcode .hint { color: var(--muted); font-size: 14.5px; }
+.readcode .copy { color: var(--ink); border-color: var(--muted); justify-self: start; }
+.readcode .copy:hover { color: var(--signal); border-color: var(--signal); }
+.ask ol.steps { margin: 4px 0 0; padding-left: 22px; display: grid; gap: 4px; }
+.route { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 6px; font: 600 13.5px var(--mono); }
+.route a { text-decoration: none; color: var(--ink); background: var(--sheet); border: 1px solid var(--rule); border-radius: 999px; padding: 6px 12px; }
+.route a:hover { border-color: var(--signal); color: var(--signal); }
+.route .arr { color: var(--muted); }
+pre.layout { margin: 0; font: 13.5px/1.55 var(--mono); background: #18212d; border: 1px solid #263140; border-radius: 8px; padding: 12px 16px; overflow-x: auto; color: var(--term-fg); }
+pre.layout .dim { color: #8193a8; }
+pre.layout .mark { background: rgba(255, 155, 116, .16); display: inline-block; width: 100%; }
+.links { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.links a { display: grid; gap: 4px; padding: 14px 16px; background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; text-decoration: none; min-width: 0; }
+.links a:hover { border-color: var(--signal); }
+.links .q { font: 700 16px var(--display); font-variation-settings: "wdth" 90; color: var(--ink); }
+.links .mono { font-size: 13px; color: var(--signal); overflow-wrap: anywhere; }
+.links .muted { font-size: 13.5px; }
+
+/* Hero */
+.hero { padding-block: 64px 56px; display: grid; gap: 22px; }
+.hero .course { font: 600 13px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.hero .course { display: flex; align-items: center; flex-wrap: wrap; gap: 0 .5em; }
+.hero .course .brand { height: 18px; width: auto; display: block; }
+.hero .course .brand .word { fill: var(--ink); }
+.hero h1 { font-size: clamp(44px, 8.2vw, 104px); line-height: .92; font-weight: 800;
+  font-variation-settings: "wdth" 68; letter-spacing: -.015em; }
+.hero h1 .sub { display: block; font-weight: 500; font-variation-settings: "wdth" 100; font-size: .34em;
+  letter-spacing: 0; line-height: 1.2; margin-top: 18px; color: var(--muted); }
+.facts { display: flex; flex-wrap: wrap; gap: 10px 26px; font: 500 14px var(--mono); color: var(--muted); }
+.facts b { color: var(--ink); font-weight: 600; }
+
+/* Incident ticket */
+.ticket { background: var(--sheet); border: 1px solid var(--rule); border-radius: 12px; overflow: hidden; max-width: 760px; }
+.ticket header { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 14px 20px;
+  border-bottom: 1px solid var(--rule); font: 600 14px var(--mono); }
+.sev { color: var(--signal); }
+.ticket dl { display: grid; grid-template-columns: max-content 1fr; gap: 8px 22px; margin: 0; padding: 18px 20px; }
+.ticket dt { font: 500 13px var(--mono); color: var(--muted); }
+.ticket dd { margin: 0; }
+.criteria { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); counter-reset: c; }
+.criteria div { padding-top: 14px; border-top: 2px solid var(--ink); }
+.criteria b { display: block; font: 650 18px var(--display); font-variation-settings: "wdth" 92; margin-bottom: 4px; }
+
+/* Diagrams */
+figure { margin: 0; }
+.diagram { background: var(--sheet); border: 1px solid var(--rule); border-radius: 12px; padding: 18px; overflow-x: auto; }
+.diagram svg { display: block; width: 100%; min-width: 620px; height: auto; }
+figcaption { font-size: 14.5px; color: var(--muted); margin: 10px auto 0; max-width: 70ch; text-align: center; }
+svg text { font-family: var(--mono); fill: var(--ink); }
+svg .lbl { font-family: var(--body); font-size: 15px; font-weight: 600; }
+svg .small { font-size: 12px; fill: var(--muted); }
+svg .box { fill: var(--paper); stroke: var(--rule); stroke-width: 1.5; }
+svg .today { fill: var(--signal-soft); stroke: var(--signal); stroke-width: 2.5; }
+svg .ink { stroke: var(--ink); fill: none; stroke-width: 1.8; }
+svg .arrowhead { fill: var(--ink); }
+svg .sig { fill: var(--signal); }
+svg .fail { fill: var(--signal-soft); stroke: var(--signal); stroke-width: 2; }
+svg .failhead { fill: var(--signal); font-size: 11px; font-weight: 700; letter-spacing: .08em; }
+svg .failcode { fill: var(--signal); font-size: 14px; font-weight: 600; }
+svg .err { stroke: var(--signal); fill: none; stroke-width: 2; }
+svg .errlbl { fill: var(--signal); font-size: 12px; font-weight: 600; }
+svg .think { fill: var(--sheet); stroke: var(--model); stroke-width: 2.5; }
+svg .act { fill: var(--sheet); stroke: var(--tool); stroke-width: 2.5; }
+svg .done { fill: var(--sheet); stroke: var(--tool); stroke-width: 2; }
+svg .donetxt { fill: var(--tool); font-size: 15px; font-weight: 600; }
+svg .frame { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 6 5; }
+
+/* Comparison */
+.compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
+.compare > div { background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; padding: 20px; display: grid; gap: 10px; align-content: start; }
+.compare ol { margin: 0; padding-left: 20px; font-family: var(--mono); font-size: 14.5px; display: grid; gap: 4px; }
+
+/* Transcript */
+.transcript { display: grid; gap: 0; max-width: 900px; }
+.turn { display: grid; grid-template-columns: 92px 1fr; gap: 16px; padding: 14px 0; border-bottom: 1px dashed var(--rule); }
+.turn:last-child { border-bottom: 0; }
+.who { font: 600 12.5px/1.3 var(--mono); text-transform: uppercase; letter-spacing: .06em; padding-top: 3px; }
+.who.rt { color: var(--ink); }
+.who.m { color: var(--model); } .who.t { color: var(--tool); } .who.u { color: var(--muted); } .who.r { color: var(--signal); }
+.turn pre { margin: 0; font: 14px/1.5 var(--mono); white-space: pre-wrap; word-break: break-word; min-width: 0; }
+.turn .note { font-size: 14.5px; color: var(--muted); margin-top: 6px; }
+.turn p + pre { margin-top: 8px; }
+.tally { display: flex; flex-wrap: wrap; gap: 10px 28px; font: 500 14px var(--mono); color: var(--muted); margin-top: 14px; }
+.tally b { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* Tables */
+.tablewrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 10px; background: var(--sheet); }
+table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 15.5px; }
+th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font: 600 12px var(--mono); text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+tr:last-child td { border-bottom: 0; }
+td code { white-space: nowrap; }
+.own-app { color: var(--tool); font-weight: 600; }
+.own-model { color: var(--model); font-weight: 600; }
+
+/* Course-opening cards */
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.cards > div { background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; padding: 18px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.cards .q { font: 700 19px/1.25 var(--display); font-variation-settings: "wdth" 88; }
+.cards .ans { font: 500 12.5px var(--mono); color: var(--signal); letter-spacing: .02em; }
+tr.now td { background: var(--signal-soft); }
+.cards.six { grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); }
+.cards.pairs { grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr)); }
+
+/* Guards */
+.guards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+.guard { background: var(--sheet); border: 1px solid var(--rule); border-top: 3px solid var(--signal); border-radius: 8px;
+  padding: 16px 18px; display: grid; gap: 8px; align-content: start; }
+.guard .code { font: 600 15px var(--mono); color: var(--signal); }
+.guard .lim { font: 500 13px var(--mono); color: var(--muted); }
+
+/* Terminal bands */
+.terminal { margin-block: 30px 6px; background: var(--term-bg); color: var(--term-fg); border-radius: 14px; overflow: hidden; }
+.terminal .bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;
+  padding: 14px 20px; border-bottom: 1px solid #263140; }
+.terminal .switch { font: 700 13px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: #ff9b74;
+  display: flex; align-items: center; gap: 10px; }
+.terminal .switch::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: #ff9b74;
+  box-shadow: 0 0 0 4px rgba(255, 155, 116, .18); }
+.terminal .file { font: 500 13px var(--mono); color: #9fb0c3; }
+.terminal .body { padding: 18px 20px 20px; display: grid; gap: 14px; }
+.terminal .goal { font-size: 16px; color: #c4cfdb; max-width: 70ch; }
+.prompt { position: relative; font: 14.5px/1.6 var(--mono); background: #18212d; border: 1px solid #263140; border-radius: 8px;
+  padding: 14px 16px 14px 16px; white-space: pre-wrap; word-break: break-word; }
+.prompt .pfx { color: #ff9b74; user-select: none; }
+/* Prompts start collapsed; the copy button works either way */
+details.fold > summary { cursor: pointer; list-style: none; font: 600 13px var(--mono); color: #ff9b74;
+  display: inline-flex; align-items: center; gap: 8px; padding: 4px 0; }
+details.fold > summary::-webkit-details-marker { display: none; }
+details.fold > summary::before { content: "▸"; transition: transform .15s; }
+details.fold[open] > summary::before { transform: rotate(90deg); }
+details.fold > summary .hide, details.fold[open] > summary .show { display: none; }
+details.fold[open] > summary .hide { display: inline; }
+details.fold[open] > .prompt { margin-top: 8px; }
+.expect { font: 500 13.5px/1.6 var(--mono); color: #9fb0c3; background: #18212d; border: 1px solid #263140;
+  border-radius: 8px; padding: 10px 16px; margin-top: 8px; white-space: pre-wrap; word-break: break-word; }
+.expect .pfx { color: #ff9b74; user-select: none; }
+.expect b { color: #8fe0c3; font-weight: 600; }
+.copy { font: 600 12.5px var(--mono); color: var(--term-fg); background: transparent; border: 1px solid #3a4a5e;
+  border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+.copy:hover { border-color: #ff9b74; color: #ff9b74; }
+.terminal .check { font: 500 13.5px var(--mono); color: #9fb0c3; }
+.terminal .check b { color: #8fe0c3; font-weight: 600; }
+
+/* Code excerpt */
+.excerpt { background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; overflow-x: auto; }
+.excerpt .src { font: 500 12.5px var(--mono); color: var(--muted); padding: 10px 16px; border-bottom: 1px solid var(--rule); }
+.excerpt pre { margin: 0; padding: 14px 16px; font: 14px/1.55 var(--mono); }
+.excerpt .hl { background: var(--signal-soft); display: inline-block; width: 100%; }
+.excerpt .n { color: var(--signal); font-weight: 700; display: inline-block; width: 2.4ch; }
+.excerpt .muted { color: var(--muted); }
+dl.fields { display: grid; grid-template-columns: max-content 1fr; max-width: 72ch; gap: 6px 14px; margin: 0; align-content: start; font-size: 15.5px; }
+dl.fields dt { font-weight: 600; }
+dl.fields dd { margin: 0; }
+dl.fields dd.note { grid-column: 1 / -1; color: var(--muted); font-style: italic; margin-top: 4px; }
+ul.key { margin: 0; padding-left: 22px; display: grid; gap: 6px; max-width: 72ch; }
+
+/* Exercise grid */
+.predict { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+.predict div { border: 1px solid var(--rule); border-radius: 10px; padding: 16px; background: var(--sheet); display: grid; gap: 6px; }
+.predict .set { font: 500 14px var(--mono); }
+.predict .out { font: 600 15px var(--mono); color: var(--signal); }
+
+.result { font: 14px/1.5 var(--mono); background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; padding: 16px 18px; overflow-x: auto; margin: 0; }
+.big { font: 800 clamp(56px, 9vw, 96px)/1 var(--display); font-variation-settings: "wdth" 70; color: var(--signal); }
+footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 14px; display: grid; gap: 8px; }
+@media (max-width: 560px) {
+  .turn { grid-template-columns: 1fr; gap: 4px; }
+  .ticket dl { grid-template-columns: 1fr; gap: 2px 0; }
+  .ticket dd { margin-bottom: 8px; }
+  body { font-size: 16px; }
+}
+/* Session 02 additions */
+.guard.ok { border-top-color: var(--tool); }
+.guard.ok .code { color: var(--tool); }
+#review { display: grid; gap: 14px; }
+.shot { display: block; width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 10px; background: var(--sheet); }
+.terminal .rlabel { font-size: 16px; color: #c4cfdb; max-width: 70ch; }
+
+/* Instructor view: shown only when the page is opened with ?instructor. The parameter is not a secret (the
+   repository is public); it only keeps the facilitator's notes out of the learners' Read and Present views. */
+.instructor { display: none; }
+.instructor-view .instructor { display: grid; gap: 10px; max-width: 76ch; padding: 12px 16px 14px 18px;
+  border-left: 3px solid var(--model); border-radius: 0 10px 10px 0; background: var(--sheet);
+  font-size: 15.5px; line-height: 1.55; }
+.instructor-view .instructor::before { content: "Instructor"; font: 600 11px var(--mono); letter-spacing: .1em;
+  text-transform: uppercase; color: var(--model); }
+.instructor b { font-weight: 650; }
+.instructor .tablewrap { margin: 2px 0; }
+.instructor-view .hero .instructor { margin-top: 24px; }
+</style>
+
+<div class="view" role="group" aria-label="View">
+  <button type="button" data-view="read" aria-pressed="true">Read</button>
+  <button type="button" data-view="present" aria-pressed="false">Present</button>
+</div>
+
+<main>
+
+<header class="hero" id="start">
+  <p class="course"><svg class="brand" viewBox="0 0 201 63" role="img" aria-label="Ciklum"><title>Ciklum</title><g clip-path="url(#clip0_66_2876)"><path d="M32.5376 62.9997C14.8709 62.9997 0.5 48.8685 0.5 31.4992C0.5 14.1298 14.8709 -0.000291626 32.5376 -0.000291626C40.6964 -0.012511 48.5501 3.04901 54.4842 8.5533C55.387 9.37423 55.4412 10.7595 54.6062 11.647C53.7713 12.5346 52.3623 12.5879 51.4595 11.767C51.4505 11.7592 51.4426 11.7515 51.4336 11.7437C46.3243 7.00477 39.562 4.36982 32.5376 4.37982C17.3283 4.37982 4.95396 16.5459 4.95396 31.4992C4.95396 46.4524 17.3283 58.6196 32.5376 58.6196C39.8569 58.6396 46.8802 55.7791 52.0426 50.677C52.9261 49.8349 54.3362 49.8561 55.1938 50.7236C56.0321 51.5734 56.0321 52.9242 55.1938 53.774C49.1975 59.7005 41.0399 63.023 32.5376 62.9997Z" fill="url(#paint0_linear_66_2876)"></path><path d="M32.5376 54.4153C19.6864 54.4153 9.23053 44.1354 9.23053 31.4994C9.19776 21.4884 15.8053 12.6249 25.5244 9.64001C26.6848 9.23677 27.9582 9.83441 28.3683 10.9742C28.7785 12.115 28.1706 13.3669 27.0113 13.7702C26.9628 13.7868 26.9142 13.8024 26.8645 13.8157C19.0017 16.2307 13.6585 23.4013 13.6856 31.4994C13.6856 41.7193 22.1427 50.0352 32.5376 50.0352C34.3126 50.0352 36.0797 49.7908 37.7858 49.3065C38.9677 48.9688 40.2037 49.6375 40.5472 50.7995C40.8907 51.9614 40.2105 53.1767 39.0287 53.5144C36.9192 54.1131 34.734 54.4164 32.5376 54.4153Z" fill="url(#paint1_linear_66_2876)"></path><path d="M32.5376 45.8306C24.4883 45.8306 17.9622 39.4154 17.9622 31.5006C17.9622 27.5559 19.6152 23.7868 22.5325 21.0796C23.4263 20.2487 24.8363 20.2887 25.6815 21.1674C26.5266 22.0461 26.486 23.4324 25.5922 24.2622C23.5585 26.1362 22.4082 28.7578 22.4207 31.4983C22.4229 36.9937 26.956 41.446 32.5455 41.4438C35.2549 41.4427 37.8513 40.373 39.7518 38.4756C40.6037 37.6025 42.0138 37.5736 42.9019 38.4112C43.79 39.2488 43.8193 40.6351 42.9674 41.5083C42.9539 41.5227 42.9403 41.536 42.9256 41.5494C40.1936 44.2965 36.4458 45.8406 32.5376 45.8295V45.8306Z" fill="url(#paint2_linear_66_2876)"></path><path d="M89.1148 35.9531C88.7058 35.9531 88.4832 36.1753 88.2979 36.3553C86.4416 38.1804 84.7705 38.7992 82.2452 38.7992C77.8647 38.7992 74.5621 35.3311 74.5621 30.801C74.5621 26.2709 77.9042 22.8028 82.2452 22.8028C84.5479 22.8028 86.1817 23.606 88.0742 25.0656C88.3002 25.2878 88.7058 25.4678 88.8911 25.4678C89.5227 25.4678 90.1543 24.8468 90.1543 24.2258C90.1543 24.0037 89.9283 23.606 89.7453 23.2038C88.0742 21.7908 85.9953 20.37 82.2452 20.37C76.4162 20.37 72.0357 24.8601 72.0357 30.8121V31.0343C72.0357 36.9851 76.4162 41.4763 82.2452 41.4763C85.3648 41.4763 87.6686 40.6732 89.9283 38.4104C90.1543 38.1882 90.3374 37.7894 90.3374 37.6072C90.3396 36.5741 89.708 35.9531 89.1148 35.9531Z" class="word"></path><path d="M99.9164 20.4031C99.2848 20.4031 98.6544 21.0241 98.6544 21.6439V39.4176C98.6544 40.0386 99.2848 40.6585 99.9164 40.6585C100.548 40.6585 101.178 40.0386 101.178 39.4176V21.6073C101.181 21.0241 100.55 20.4031 99.9164 20.4031Z" class="word"></path><path d="M119.485 29.6021L126.581 22.6293C126.989 22.2282 126.989 22.0094 126.989 21.8261C126.989 21.2062 126.358 20.5853 125.727 20.5853C125.318 20.5853 125.096 20.8074 124.91 20.9874L113.433 32.4859V21.8628C113.433 21.2429 112.802 20.6219 112.171 20.6219C111.541 20.6219 110.909 21.0241 110.909 21.8628V39.6765C110.909 40.2974 111.539 40.9173 112.171 40.9173C112.803 40.9173 113.433 40.2974 113.433 39.6765V35.5885L117.815 31.2806L125.314 40.2974C125.54 40.6984 125.945 40.6984 126.353 40.6984C126.985 40.6984 127.616 40.0786 127.616 39.4576C127.616 39.0566 127.39 38.8367 127.207 38.6545L119.485 29.6021Z" class="word"></path><path d="M148.594 38.399H138.199V21.6073C138.199 20.9874 137.567 20.3664 136.937 20.3664C136.306 20.3664 135.674 20.9874 135.674 21.6073V39.421C135.674 40.0419 136.305 40.6618 136.937 40.6618H148.595C149.225 40.6618 149.857 40.0419 149.857 39.421C149.857 38.8367 149.224 38.399 148.594 38.399Z" class="word"></path><path d="M171.279 20.4031C170.648 20.4031 170.016 21.0241 170.016 21.6439V32.267C170.016 36.355 167.937 38.6178 163.964 38.6178C160.214 38.6178 157.913 36.1739 157.913 32.0838V21.6417C157.913 21.0218 157.281 20.4009 156.651 20.4009C156.02 20.4009 155.393 21.0241 155.393 21.6439V32.267C155.393 37.5992 158.735 41.0639 163.933 41.0639C169.13 41.0639 172.472 37.5958 172.472 32.0471V21.605C172.541 21.0241 171.91 20.4031 171.279 20.4031Z" class="word"></path><path d="M200.5 21.6439V39.4565C200.482 40.0675 199.859 40.6684 199.238 40.6684C198.616 40.6684 197.976 40.0486 197.976 39.4276V25.2942L191.923 34.0911C191.882 34.1644 191.834 34.2333 191.78 34.2977C191.763 34.3188 191.743 34.3388 191.724 34.3577C191.505 34.5832 191.202 34.7109 190.885 34.712H190.801L190.716 34.702C190.345 34.6454 190.023 34.4199 189.845 34.0944L183.794 25.2975V39.421C183.794 40.0419 183.162 40.6618 182.532 40.6618C181.901 40.6618 181.267 40.0419 181.267 39.421V21.6473C181.267 21.0263 181.899 20.4064 182.53 20.4064H182.716C183.347 20.4064 183.533 20.8074 183.755 21.0263L190.885 31.2528L198.013 21.0263C198.239 20.8041 198.421 20.4064 199.053 20.4064H199.232C199.868 20.4031 200.5 21.023 200.5 21.6439Z" class="word"></path></g><defs><linearGradient id="paint0_linear_66_2876" x1="27.5006" y1="45.0805" x2="36.3635" y2="-14.7968" gradientUnits="userSpaceOnUse"><stop stop-color="#8CFFC6"></stop><stop offset="0.6" stop-color="#1324BF"></stop></linearGradient><linearGradient id="paint1_linear_66_2876" x1="24.9335" y1="10.6742" x2="24.9335" y2="41.7171" gradientUnits="userSpaceOnUse"><stop offset="0.47" stop-color="#1324BF"></stop><stop offset="1" stop-color="#8CFFC6"></stop></linearGradient><linearGradient id="paint2_linear_66_2876" x1="24.6601" y1="23.579" x2="31.0212" y2="38.0706" gradientUnits="userSpaceOnUse"><stop stop-color="#1324BF"></stop><stop offset="1" stop-color="#8CFFC6"></stop></linearGradient><clipPath id="clip0_66_2876"><rect width="200" height="63" fill="white" transform="translate(0.5)"></rect></clipPath></defs></svg><span aria-hidden="true">·</span><span>Innovate</span><span aria-hidden="true">·</span><span>2026</span><span aria-hidden="true">·</span><span>Session 05 of 12</span></p>
+  <h1>Checkpoints, recovery and human approval<span class="sub">A run that stops can continue: after a crash, and after a person decides</span></h1>
+  <p class="lede">Until now a run lived only in the memory of the process running it. If the process died, the run was gone, and a write it had already made could be made again on the retry. Today the run's state is saved at every boundary, a write waits for a person's decision on the exact action, and a resumed run uses saved evidence, not a guess, to tell what has already happened.</p>
+  <div class="facts"><span><b>90 min</b> · guided build</span><span>from <b>lesson-04</b> to <b>lesson-05</b></span><span>check pack: <b>21 passed</b></span><span>offline · no model key needed</span></div>
+  <aside class="instructor" aria-label="Instructor notes">
+    <div class="tablewrap"><table>
+      <thead><tr><th>Minutes</th><th>Activity</th><th>Format</th></tr></thead>
+      <tbody>
+        <tr><td>00 to 10</td><td>Reconnect: recall discussion on the Session 02 approval and the Session 04 baseline</td><td>Discussion</td></tr>
+        <tr><td>10 to 30</td><td>Concept script and architecture questions</td><td>Discussion</td></tr>
+        <tr><td>30 to 45</td><td>Prompts and code review for steps 1 and 2</td><td>Agent build</td></tr>
+        <tr><td>45 to 60</td><td>Prompts and code review for steps 3 and 4</td><td>Agent build</td></tr>
+        <tr><td>60 to 75</td><td>Learner exercise and fault injection</td><td>Practice</td></tr>
+        <tr><td>75 to 85</td><td>Acceptance checks and result interpretation</td><td>Verification</td></tr>
+        <tr><td>85 to 90</td><td>Questions and checkpoint handoff</td><td>Discussion</td></tr>
+      </tbody>
+    </table></div>
+      <p><b>Outcome</b> Runs persist across worker loss, pause for exact-action approval, resume safely and reject denied or expired approvals. Starting checkpoint lesson-04, ending checkpoint lesson-05.</p>
+      <p><b>Readiness</b> Rehearse with a learner project built from the course kit, so you see what learners see: the check pack fails until each capability is built. The reference checkpoint is your answer key for the excerpts. In class, use one bounded prompt at a time; learners inspect the change, explain the control decision and review the check evidence.</p>
+      <p><b>Watch for</b> a learner's <code>run_agent</code> that never catches <code>ApprovalRequired</code>. Every check up to Session 04 passes without it, because the given shell catches it itself. Build step 1 asks the agent to add only what the loop lacks; expect a small change to <code>core.py</code> in many projects.</p>
+      <p><b>Offline fallback</b> Everything today runs on the offline mock and a deterministic remediation fixture; no learner needs a model key. If anyone's live configuration interferes, unset it for tests and labs and continue.</p>
+    </aside>
+</header>
+
+<section class="ch" id="recall">
+  <p class="eyebrow"><span>Recall</span></p>
+  <h2>In Session 02 a write raised ApprovalRequired. Then what?</h2>
+  <div class="stack">
+    <p class="lede" style="margin-top:0">In Session 02 your tool boundary learned to refuse <code>mock_remediate</code> unless its exact action key had been approved: it raises <code>ApprovalRequired</code> with the proposed key, tool and arguments. Nobody could approve anything yet, and nothing kept the run while it waited. Today both arrive: the run stops as <code>waiting_approval</code> with its state saved, a person's decision is stored, and the run continues from where it stopped.</p>
+    <aside class="instructor" aria-label="Instructor notes">
+      <p><b>SAY</b> Start from what the learners already have. Session 02 built the gate: an approved write needs its exact action key in <code>context.approved</code>, and the effect and its deduplication record commit in one SQLite transaction. Session 04 built the instrument that tells us whether a change helped. Today neither changes. We add what happens around the gate: the run stops and is saved, a decision is stored, and the run resumes.</p>
+    </aside>
+    <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">What did your Session 02 tool boundary do when <code>mock_remediate</code> arrived without an approved key, and what happened to the run?</p>
+      <details><summary>Show the answer</summary><p>It raised <code>ApprovalRequired</code> with the key, tool and arguments, and executed nothing. What the run did next depends on your loop: in many projects the exception simply ended the run as a failure, because nothing had to catch it until today. The console's Tools view showed the same thing as <code>approval_required</code> with the key.</p></details></div>
+    <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">The same approved rollback is executed twice, once before a crash and once after. Why is there still only one effect?</p>
+      <details><summary>Show the answer</summary><p>The effect and its record in the <code>effects</code> ledger, keyed by the action key, commit in one transaction. The second execution finds the key and returns the stored result with <code>replayed: true</code> instead of writing again. That is the Session 02 guarantee today's recovery relies on.</p></details></div>
+    <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">Your Session 04 harness reported a baseline. Which of its numbers should today's change move?</p>
+      <details><summary>Show the answer</summary><p>None. Today changes what happens when a run stops, not how it investigates. Durable state and approvals add no model calls on the investigation path, so the 19 earlier checks and the evaluation results stay as they were; only two checks are added.</p></details></div>
+  </div>
+</section>
+
+<section class="ch" id="idea">
+  <p class="eyebrow"><span>The idea</span></p>
+  <h2>A run must be able to stop and continue without guessing what already happened</h2>
+  <div class="stack">
+    <p class="lede" style="margin-top:0">A run stops for two reasons. Sometimes it means to: a write needs a person's approval, and nobody should keep a process waiting for a human. Sometimes it does not: the worker crashes, is redeployed or loses its machine. Either way the run must continue later in another process, which knows nothing except what was saved. <b>Recovery is only as good as the records it reads</b>, so the question for every boundary is: if the process dies exactly here, what is saved, and what will the resumed run do?</p>
+    <aside class="instructor" aria-label="Instructor notes">
+      <p><b>SAY</b> An agent can fail after deciding what to do, during a tool call or after an external effect has happened. A restart must distinguish those situations. Today we persist the same runtime state and demonstrate a deliberately difficult boundary: a worker disappears after a mock write but before it records the tool result. We will restart the executor, resume the run and prove that the effect ledger still contains one action. This lesson is about explicit ownership and recovery semantics, not merely saving a chat transcript.</p>
+      <p><b>SHOW</b> The coding agent's baseline report, the current learner project, the synthetic incident records and the lesson outcome. Ask participants to explain what already works before authorizing the next bounded change.</p>
+    </aside>
+    <dl class="fields">
+      <dt>snapshot</dt><dd>The whole run as data, saved under its tenant and run ID: messages, pending tool calls, step and token counters, status, answer and events. A new process rebuilds the run from it.</dd>
+      <dt>pending call</dt><dd>A tool call the model asked for that has not yet produced an observation. It is saved <b>before</b> it is dispatched, so a crash cannot lose it.</dd>
+      <dt>checkpoint</dt><dd>The moment the loop saves the snapshot: after recording pending calls, after each observation, on a pause and at the end.</dd>
+      <dt>approval decision</dt><dd>A separate record: which exact action key a person approved or denied for this run, and until when. It is not a flag on the run.</dd>
+      <dt>effect ledger</dt><dd>The <code>effects</code> table from Session 02: one row per action key, written in the same transaction as the effect. It is the evidence that a write already happened.</dd>
+      <dt>resume</dt><dd>Loading the snapshot and continuing the same <code>run_agent</code> loop: the pending call first, then the model again.</dd>
+      <dt>terminal state</dt><dd><code>completed</code>, <code>failed</code>, <code>denied</code> or <code>cancelled</code>. A denied or cancelled run never resumes as approved work.</dd>
+    </dl>
+    <figure>
+      <div class="diagram">
+        <svg viewBox="0 0 900 400" role="img" aria-labelledby="durableTitle">
+          <title id="durableTitle">One tool call through the loop: the model proposes it, the pending call is saved, the call executes, the effect and its ledger row commit together, the observation is saved. A crash before the write leaves the call pending and resume executes it; a crash after the write leaves it pending too, and resume finds the ledger row and replays the stored result. A write without an approved key stops the run as waiting_approval; a person's decision is stored with an expiry, and resume_run continues with only the approvals still valid.</title>
+          <rect class="box" x="16" y="30" width="150" height="92" rx="8"/>
+          <text class="lbl" x="30" y="58">Model</text>
+          <text class="small" x="30" y="80">proposes a</text>
+          <text class="small" x="30" y="98">tool call</text>
+
+          <rect class="today" x="192" y="30" width="150" height="92" rx="8"/>
+          <text class="lbl" x="206" y="58">Save</text>
+          <text class="small" x="206" y="80">pending call</text>
+          <text class="small" x="206" y="98">runs row</text>
+
+          <rect class="box" x="368" y="30" width="150" height="92" rx="8"/>
+          <text class="lbl" x="382" y="58">Execute</text>
+          <text class="small" x="382" y="80">tool boundary</text>
+          <text class="small" x="382" y="98">write: key approved?</text>
+
+          <rect class="box" x="544" y="30" width="150" height="92" rx="8"/>
+          <text class="lbl" x="558" y="58">Effect</text>
+          <text class="small" x="558" y="80">write + its key</text>
+          <text class="small" x="558" y="98">one transaction</text>
+
+          <rect class="today" x="720" y="30" width="164" height="92" rx="8"/>
+          <text class="lbl" x="734" y="58">Save</text>
+          <text class="small" x="734" y="80">observation</text>
+          <text class="small" x="734" y="98">runs row</text>
+
+          <path class="ink" d="M166 76 H186"/><path class="arrowhead" d="M190 76 l-8 -5 v10z"/>
+          <path class="ink" d="M342 76 H362"/><path class="arrowhead" d="M366 76 l-8 -5 v10z"/>
+          <path class="ink" d="M518 76 H538"/><path class="arrowhead" d="M542 76 l-8 -5 v10z"/>
+          <path class="ink" d="M694 76 H714"/><path class="arrowhead" d="M718 76 l-8 -5 v10z"/>
+
+          <path class="err" d="M355 20 V132"/>
+          <text class="errlbl" x="300" y="150">crash A</text>
+          <text class="small" x="196" y="168">pending saved, no effect:</text>
+          <text class="small" x="196" y="184">resume executes it</text>
+          <path class="err" d="M707 20 V132"/>
+          <text class="errlbl" x="652" y="150">crash B</text>
+          <text class="small" x="560" y="168">effect committed, observation lost:</text>
+          <text class="small" x="560" y="184">resume replays it, the ledger answers</text>
+
+          <path class="ink" d="M443 122 V228"/><path class="arrowhead" d="M443 232 l-5 -8 h10z"/>
+          <text class="small" x="452" y="214">no approved key</text>
+          <rect class="today" x="368" y="236" width="150" height="84" rx="8"/>
+          <text class="lbl" x="382" y="262">Waiting</text>
+          <text class="small" x="382" y="284">waiting_approval</text>
+          <text class="small" x="382" y="302">call kept, saved</text>
+
+          <rect class="today" x="568" y="236" width="150" height="84" rx="8"/>
+          <text class="lbl" x="582" y="262">Decide</text>
+          <text class="small" x="582" y="284">approve or deny</text>
+          <text class="small" x="582" y="302">key · expiry</text>
+          <path class="ink" d="M518 278 H562"/><path class="arrowhead" d="M566 278 l-8 -5 v10z"/>
+
+          <rect class="today" x="16" y="236" width="300" height="84" rx="8"/>
+          <text class="lbl" x="30" y="262">resume_run</text>
+          <text class="small" x="30" y="284">load snapshot · only valid approvals</text>
+          <text class="small" x="30" y="302">same run_agent, pending call first</text>
+          <path class="ink" d="M643 320 V350 H166 V326"/><path class="arrowhead" d="M166 322 l-5 8 h10z"/>
+          <path class="ink" d="M240 236 V212 H405 V132"/><path class="arrowhead" d="M405 128 l-5 8 h10z"/>
+          <text class="small" x="40" y="204">back into the loop,</text><text class="small" x="40" y="220">the pending call first</text>
+          <text class="small" x="300" y="372">denied or cancelled: terminal, never resumed · expired: still waiting</text>
+        </svg>
+      </div>
+      <figcaption>The highlighted parts are today's work; the tool boundary and the effect ledger are Session 02's. Every red line is a moment the process can die. Whatever it was doing, a new process reads the saved run, the stored decision and the ledger, and continues without asking the model what happened.</figcaption>
+    </figure>
+    <div class="cards keep">
+      <div><span class="q">1 · Save the run, stop the loop</span><p>The run can be rebuilt from saved state, and it stops cleanly when a write needs approval. <a href="#snapshot">The snapshot</a>.</p></div>
+      <div><span class="q">2 · Store the exact decision</span><p>Approve or deny one action key, with an expiry, as its own record. <a href="#approval">The approval</a>.</p></div>
+      <div><span class="q">3 · Resume from the pending call</span><p>Same loop, saved state, only the approvals still valid. <a href="#resume">The resume</a>.</p></div>
+      <div><span class="q">4 · Crash on purpose</span><p>Kill the worker right after the write and prove there is one effect. <a href="#crash">The crash</a>.</p></div>
+    </div>
+    <aside class="instructor" aria-label="Instructor notes">
+      <p><b>SAY</b> Draw three durable records: the run snapshot, the approval decision and the effect ledger. They answer different questions. The snapshot says where execution stopped. Approval says which exact action a trusted operator accepted and until when. The ledger says whether the simulated effect already committed. Explain why persisting a pending call before dispatch matters. If the process crashes after the write, the pending call is still present and will be retried, so the receiver-side idempotency key must make that retry safe. Cancellation and denial are terminal control decisions. An expired approval should leave the operation waiting rather than silently renewing authority.</p>
+      <p><b>PAUSE</b> Invite one learner to trace the control flow and another to identify a failure boundary. Resolve different interpretations before opening the implementation.</p>
+    </aside>
+    <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">Three records: the snapshot, the approval and the ledger. Which question does each one answer?</p>
+      <details><summary>Show the answer</summary><p>The snapshot: where did the run stop, and what was it about to do? The approval: did a person accept this exact action, and is that still valid? The ledger: did the effect already happen? Keeping them apart means none of them has to be inferred from another, least of all from the model's messages.</p></details></div>
+  </div>
+</section>
+
+<section class="ch" id="snapshot">
+  <p class="eyebrow"><span>Snapshot</span></p>
+  <h2>Save the whole run, and save the call before you make it</h2>
+  <div class="stack">
+    <p class="lede" style="margin-top:0">A snapshot is the run as plain data: everything a new process needs to continue, and nothing it has to guess. The order of saving matters as much as the content. The loop records the model's tool calls as pending and saves the run <b>before</b> executing them, so a crash at any later moment still leaves the call on record. When the tool boundary raises <code>ApprovalRequired</code>, the loop does not fail: it stops with status <code>waiting_approval</code>, keeps the call pending and saves.</p>
+    <div class="two">
+      <div class="excerpt">
+        <div class="src">pending, then saved, then dispatched · agent_runtime/core.py · lines 175–181 at lesson-05</div>
+<pre>calls = reply.message.get("tool_calls", [])
+if calls:
+<span class="hl">    run.pending = [{"id": c["id"], "name": c["function"]["name"],</span>
+                    "args": json.loads(c["function"]["arguments"])}
+                   for c in calls]
+<span class="hl">    save()</span>
+    continue</pre>
+      </div>
+      <div class="excerpt">
+        <div class="src">a write without approval stops the run · agent_runtime/core.py · lines 136–142 at lesson-05</div>
+<pre>started = time.monotonic()
+try:
+    result = await execute(call["name"], call["args"], run.context)
+<span class="hl">except ApprovalRequired:</span>
+<span class="hl">    run.status = "waiting_approval"</span>
+<span class="hl">    save()</span>
+<span class="hl">    return run</span></pre>
+      </div>
+    </div>
+    <div class="two">
+      <div class="excerpt">
+        <div class="src">save under tenant and run ID, rebuild Context on load · agent_runtime/durable.py · lines 16–25 at lesson-05</div>
+<pre>def save(self, run):
+<span class="hl">    self.db.execute("INSERT OR REPLACE INTO runs VALUES (?,?,?,?)",</span>
+        (run.context.tenant, run.context.run_id, run.status, json.dumps(run.snapshot())))
+
+def load(self, tenant, run_id):
+<span class="hl">    row = self.db.execute("SELECT body FROM runs WHERE tenant=? AND id=?", (tenant, run_id)).fetchone()</span>
+    if not row:
+        raise KeyError("run_not_found")
+    body = json.loads(row[0]); body["context"] = Context(**body["context"])
+    return Run(**body)</pre>
+      </div>
+      <div class="prose" style="margin-top:0">
+        <p><b>The key is the tenant and the run ID together.</b> A lookup with the wrong tenant does not find another tenant's run: it fails as <code>run_not_found</code>, exactly as if the run did not exist.</p>
+        <p><b>Context is rebuilt explicitly.</b> The saved context is a dict; <code>load</code> turns it back into a <code>Context</code>. Authority comes from that application-owned record, never from text in the messages.</p>
+        <p><b>Your loop may need a small change.</b> Every check up to Session 04 passes without catching <code>ApprovalRequired</code>, because the console shell catches it itself. Build step 1 asks your agent to add only what your loop lacks.</p>
+      </div>
+    </div>
+    <aside class="instructor" aria-label="Instructor notes">
+      <p><b>SAY</b> Save the full Run snapshot under tenant and run ID, then reconstruct Context explicitly when loading. We are preserving messages, pending calls, counters, status and answer. The store does not infer authority from text. Show a lookup from the wrong tenant and confirm that it fails as run_not_found. Ask learners which fields must survive a crash before the model receives its tool result. The pending call and its identifier must survive, because they connect the stored assistant request to the eventual observation. The local file is our durable boundary for the exercise; process memory is not sufficient.</p>
+      <p><b>Explain the choice</b> A restart can rebuild the run without replaying every previous model decision. Tenant-scoped keys preserve the access boundary during recovery.</p>
+      <p><b>PAUSE</b> Have learners identify the boundary in their agent's change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.</p>
+    </aside>
+    <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">Is saving only the final answer enough for recovery?</p>
+      <details><summary>Show the answer</summary><p>No. A run may not have a final answer, and we must know pending calls, counters and control state to resume safely.</p></details></div>
+  </div>
+</section>
+
+<section class="ch" id="approval">
+  <p class="eyebrow"><span>Approval</span></p>
+  <h2>A person approves one exact action, for a limited time</h2>
+  <div class="stack">
+    <p class="lede" style="margin-top:0">The decision is a record of its own, not a field on the run. It names the tenant, the run, the action key of the pending call, an expiry and the verdict, approve or deny. The action key binds tenant, run, tool and canonical arguments, so approving a rollback of INC-001 says nothing about a rollback of INC-002. A denial ends the run as <code>denied</code>. The proposal comes from <code>RemediationProvider</code>, a clearly labelled fixture that always proposes the same rollback: a way to reach the approval branch, not an operational recommendation.</p>
+    <div class="two">
+      <div class="excerpt">
+        <div class="src">store the decision for the exact pending call · agent_runtime/durable.py · lines 27–39 at lesson-05</div>
+<pre>def decide(self, tenant, run_id, decision="approve", ttl=300):
+    if decision not in {"approve", "deny"}:
+        raise ValueError("invalid_decision")
+    run = self.load(tenant, run_id)
+    if run.status != "waiting_approval" or not run.pending:
+        raise ValueError("no_pending_approval")
+    call = run.pending[0]
+<span class="hl">    key = action_key(call["name"], call["args"], run.context)</span>
+<span class="hl">    self.db.execute("INSERT OR REPLACE INTO approvals VALUES (?,?,?,?,?)",</span>
+<span class="hl">                    (tenant, run_id, key, time.time()+ttl, decision))</span>
+<span class="hl">    if decision == "deny":</span>
+<span class="hl">        run.status = "denied"; self.save(run)</span>
+    return {"key": key, "name": call["name"], "args": call["args"], "decision": decision}</pre>
+      </div>
+      <div class="prose" style="margin-top:0">
+        <p><b>Decide only what is pending.</b> A run that is not waiting, or has no pending call, gets <code>no_pending_approval</code>: there is nothing to approve.</p>
+        <p><b>The person, not the agent, decides.</b> When you prepare the demonstration, your coding agent shows the proposal and stops. Approving on your behalf would turn the control into a formality.</p>
+        <p><b>Expiry is part of the decision.</b> An approval given a minute ago for a five-minute window is valid; the same approval an hour later is not, and the run keeps waiting.</p>
+      </div>
+    </div>
+    <aside class="instructor" aria-label="Instructor notes">
+      <p><b>SAY</b> Start the remediation fixture and observe waiting_approval. No effect has happened. The trusted operator now approves the proposed tool name and arguments, whose canonical action key is stored with an expiry. Read the denial branch and the approved_keys query. Approval is a separate durable record and must still be valid when execution resumes. This is also where we distinguish operator action from model preference. RemediationProvider is a deterministic fixture used to reach the approval branch; it is not a real operational recommendation. All effects remain in the local mock ledger.</p>
+      <p><b>Explain the choice</b> Binding approval to tenant, run, tool and arguments prevents a decision from being reused for a different action. Expiry and denial remain enforceable after restart.</p>
+      <p><b>PAUSE</b> Have learners identify the boundary in their agent's change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.</p>
+    </aside>
+    <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">Why not simply store <code>approved=true</code> on the run?</p>
+      <details><summary>Show the answer</summary><p>That flag would not identify which operation and arguments were reviewed. A changed proposal could inherit an unrelated approval.</p></details></div>
+  </div>
+</section>
+
+<section class="ch" id="resume">
+  <p class="eyebrow"><span>Resume</span></p>
+  <h2>Continue the same loop from the saved pending call</h2>
+  <div class="stack">
+    <p class="lede" style="margin-top:0">Resuming is not a new kind of execution. <code>resume_run</code> loads the snapshot, refuses a run that was denied or cancelled, replaces the run's approved keys with the ones whose decisions are still valid, and hands the run to the same <code>run_agent</code> with <code>initial=run</code>. The loop sees a pending call and executes it before it asks the model anything. If the approval expired, the boundary raises <code>ApprovalRequired</code> again and the run is back to <code>waiting_approval</code>: authority is never renewed silently.</p>
+    <div class="two">
+      <div class="excerpt">
+        <div class="src">resume: refuse terminal runs, refresh approvals, same loop · agent_runtime/durable.py · lines 47–56 at lesson-05</div>
+<pre>async def resume_run(store, tenant, run_id, provider, tools):
+    run = store.load(tenant, run_id)
+    if run.status == "completed":
+        return run
+<span class="hl">    if run.status in {"denied", "cancelled"}:</span>
+<span class="hl">        raise PermissionError("terminal_run")</span>
+<span class="hl">    run.context = replace(run.context, approved=store.approved_keys(tenant, run_id))</span>
+    task = next(m["content"] for m in run.messages if m["role"] == "user")
+<span class="hl">    return await run_agent(provider, tools.execute, tools.available(run.context), task,</span>
+<span class="hl">                           initial=run, checkpoint=store.save)</span></pre>
+      </div>
+      <div class="excerpt">
+        <div class="src">only decisions that approve and have not expired · agent_runtime/durable.py · lines 41–44 at lesson-05</div>
+<pre>def approved_keys(self, tenant, run_id):
+    return tuple(r[0] for r in self.db.execute(
+        "SELECT key FROM approvals WHERE tenant=? AND run_id=? AND decision='approve' AND expires&gt;?",
+        (tenant, run_id, time.time())))</pre>
+      </div>
+    </div>
+    <aside class="instructor" aria-label="Instructor notes">
+      <p><b>SAY</b> Load the snapshot, reject terminal denial or cancellation, and refresh approved keys from the current approval records. Then call the same run_agent function with initial state and the save callback. The runtime processes the stored pending call before requesting another model decision. Walk through the before-write crash first, then the after-write crash. In the second case, the ledger recognizes the action key and returns the committed result. The resumed conversation can append the missing tool observation and finish. Ask participants to explain why we do not ask the model to reconstruct whether the earlier write succeeded.</p>
+      <p><b>Explain the choice</b> Recovery uses durable application evidence. The model does not decide transaction history. The local exactly-once demonstration depends on the mock effect and idempotency record sharing a SQLite transaction.</p>
+      <p><b>PAUSE</b> Have learners identify the boundary in their agent's change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.</p>
+    </aside>
+    <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">Does this guarantee exactly-once execution for every external API?</p>
+      <details><summary>Show the answer</summary><p>No. External effects require receiver-supported idempotency, transactional messaging or reconciliation. The demo proves the local ledger's boundary.</p></details></div>
+  </div>
+</section>
+
+<section class="ch" id="crash">
+  <p class="eyebrow"><span>Fault injection</span></p>
+  <h2>Kill the worker right after the write, then count the effects</h2>
+  <div class="stack">
+    <p class="lede" style="margin-top:0">Happy-path checks never visit the moment that matters most: the effect has committed, but the run has not yet saved the observation. The check pack's demonstration creates exactly that moment. It wraps the executor so that the approved write runs and then the worker "dies", opens a new store and a new executor on the same database file, as a restarted process would, resumes, and counts the rows in <code>effects</code>. The answer must be one.</p>
+    <div class="two">
+      <div class="excerpt">
+        <div class="src">the injected crash, in the given demonstration · course/labs/l05.py · lines 37–39 at lesson-05</div>
+<pre>async def crash_after_write(name, args, context):
+    await original(name, args, context)
+    raise WorkerCrash()</pre>
+      </div>
+      <div class="excerpt">
+        <div class="src">Session 02's ledger: the effect and its key in one transaction · agent_runtime/tools.py · lines 49–60 at lesson-05</div>
+<pre>self.db.execute("BEGIN IMMEDIATE")
+try:
+<span class="hl">    row = self.db.execute("SELECT result FROM effects WHERE key=?", (key,)).fetchone()</span>
+<span class="hl">    if row:</span>
+<span class="hl">        result = {**json.loads(row[0]), "replayed": True}</span>
+    else:
+        result = {"ok": True, "simulated": True, "action": args["action"],
+                  "incident_id": args["incident_id"], "replayed": False}
+<span class="hl">        self.db.execute("INSERT INTO effects VALUES (?,?,?)",</span>
+                        (key, context.tenant, json.dumps(result)))
+    self.db.execute("COMMIT")
+    return result</pre>
+      </div>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>The worker dies…</th><th>What is saved</th><th>What resume does</th><th>Effects</th></tr></thead>
+        <tbody>
+          <tr><td>before the write (crash A)</td><td>the pending call, approved</td><td>executes it</td><td>1</td></tr>
+          <tr><td>after the write, before the observation (crash B)</td><td>the pending call, and the ledger row</td><td>executes it again; the ledger returns the stored result, <code>replayed: true</code></td><td>1</td></tr>
+          <tr><td>while waiting, approval expired</td><td>the pending call; the decision, now invalid</td><td>stops again as <code>waiting_approval</code></td><td>0</td></tr>
+          <tr><td>after a denial</td><td>the run as <code>denied</code></td><td>refuses with <code>PermissionError</code></td><td>0</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <aside class="instructor" aria-label="Instructor notes">
+      <p><b>SAY</b> Read the injected failure before running it. The wrapper deliberately executes the approved effect and then raises WorkerCrash before the runtime saves the observation. We reopen the database and create a new executor, then resume. Inspect the final status and count the effects table. The result must be completed with exactly one effect. Next, expire an approval and repeat. This time the run must remain waiting. Finally, deny the proposal and show that resume is rejected. Pause until a learner can place each failure on the state diagram and name the durable record used to resolve it.</p>
+      <p><b>Explain the choice</b> Fault injection tests the exact interval that ordinary happy-path checks miss. The crash fixture derives from BaseException so the runtime does not accidentally convert a simulated process loss into a normal recoverable error.</p>
+      <p><b>PAUSE</b> Have learners identify the boundary in their agent's change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.</p>
+    </aside>
+    <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">What evidence distinguishes a safe retry from an unknown remote effect?</p>
+      <details><summary>Show the answer</summary><p>A durable receiver-side result for the same idempotency key. Without it, recovery must reconcile the external state before proceeding.</p></details></div>
+    <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">After crash B the run is resumed and finishes. Before that, what status did the saved run show, and does it matter?</p>
+      <details><summary>Show the answer</summary><p>Still <code>waiting_approval</code>: the loop sets <code>running</code> in memory when it resumes, but the next save comes only after the observation, which the crash prevented. The checks do not mind, because resume reads the pending call and the ledger, not the status. A console would show a run as waiting whose write has already happened, so a platform that shows status to people saves <code>running</code> before dispatching a resumed call.</p></details></div>
+    <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">Why does <code>WorkerCrash</code> derive from <code>BaseException</code>, not <code>Exception</code>?</p>
+      <details><summary>Show the answer</summary><p>A real process loss is not an error the loop can handle: it simply stops. Code that catches <code>Exception</code>, such as a retry or a failure handler, would otherwise turn the simulated crash into a recorded failure and save it, which a dead process could never do.</p></details></div>
+  </div>
+</section>
+
+<section class="ch" id="build">
+  <p class="eyebrow"><span>Guided build</span></p>
+  <h2>How you build it: four bounded prompts</h2>
+  <div class="prose">
+    <p>The instructor shows each prompt and the change it produces; you run the same prompt in your own project, in the same order, and judge the result before moving on. Your coding agent writes the code and runs the checks.</p>
+    <p class="muted">Rule for the whole build: a coding agent saying "done" is not evidence. Look at the diff and at the check output.</p>
+  </div>
+  <div class="stack">
+    <nav class="route" id="route" aria-label="Build route">
+      <a href="#prepare">Prepare</a><span class="arr" aria-hidden="true">→</span><a href="#orient">Add the check pack</a><span class="arr" aria-hidden="true">→</span><a href="#step1">Build 1</a><span class="arr" aria-hidden="true">→</span><a href="#step2">Build 2</a><span class="arr" aria-hidden="true">→</span><a href="#step3">Build 3</a><span class="arr" aria-hidden="true">→</span><a href="#step4">Build 4</a><span class="arr" aria-hidden="true">→</span><a href="#exercise">Exercise</a><span class="arr" aria-hidden="true">→</span><a href="#verify">Verify</a><span class="arr" aria-hidden="true">→</span><a href="#review">Review</a>
+    </nav>
+  </div>
+
+  <div class="links">
+    <a href="https://github.com/maxvpavlov/ciklum-innovate-l3-2026/tree/main/learner-kit/lessons/05"><span class="q">Session 05 kit</span><span class="mono">learner-kit/lessons/05</span><span class="muted">check pack and interfaces</span></a>
+    <a href="https://github.com/maxvpavlov/ciklum-innovate-l3-2026/blob/main/L3%202026%20Agentic%20Platform%20Instructor%20Materials/incident-platform/LEARNER_PROMPTS.md#05-checkpoints-recovery-and-human-approval"><span class="q">Every session's prompts</span><span class="mono">LEARNER_PROMPTS.md</span><span class="muted">the same prompts, in one file</span></a>
+    <a href="https://maxvpavlov.github.io/ciklum-innovate-l3-2026/lesson-04/"><span class="q">Session 04 page</span><span class="mono">maxvpavlov.github.io/…/lesson-04</span><span class="muted">the harness and baseline from last time</span></a>
+    <a href="https://maxvpavlov.github.io/ciklum-innovate-l3-2026/lesson-05-just-prompts/"><span class="q">Just the prompts</span><span class="mono">maxvpavlov.github.io/…/lesson-05-just-prompts</span><span class="muted">all nine in order, for after class</span></a>
+    <a href="https://maxvpavlov.github.io/ciklum-innovate-l3-2026/lesson-05/"><span class="q">This page</span><span class="mono">maxvpavlov.github.io/…/lesson-05</span><span class="muted">bookmark it for after class</span></a>
+  </div>
+
+  <div class="stack">
+    <h3>What you build today</h3>
+    <div class="stack" style="margin-top:0">
+      <div class="excerpt">
+        <div class="src">~/agentic-course/my-platform · after Session 05 (what you build today highlighted)</div>
+<pre><span class="hl">agent_runtime/durable.py             you build · RunStore (save, load, decide, approved_keys), resume_run</span>
+<span class="hl">agent_runtime/core.py                you build, only if your loop lacks it · pause and continue a run</span>
+agent_runtime/tools.py               <span class="muted">Session 02, unchanged · the approval gate and effect ledger</span>
+agent_runtime/evaluate.py            <span class="muted">Session 04, unchanged</span>
+agentic_platform/                    <span class="muted">given · the platform shell, unchanged</span>
+course/__init__.py                   <span class="muted">LESSON = 4, raised to 5 when verified</span>
+<span class="hl">course/labs/l05.py                   check pack · the crash demonstration and RemediationProvider</span>
+<span class="hl">tests/test_lesson05.py               check pack · two new checks</span></pre>
+      </div>
+      <div class="prose" style="margin-top:0">
+        <p><b><code>durable.py</code> sits beside the loop, not inside it.</b> The loop only calls <code>checkpoint(run)</code> at its boundaries; the store decides where that goes. This lesson's kit has no given files: only the check pack.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="terminal" id="prepare">
+    <div class="bar"><span class="switch">Switch to terminal · Prepare the workspace</span><span class="file">confirms lesson-04 · updates the course copy</span></div>
+    <div class="body">
+      <p class="goal">Start your coding agent in <code>~/agentic-course</code>. It reads your <code>AGENTS.md</code>, confirms your Session 04 work still passes and refreshes your read-only copy of the course repository, which now holds the Session 05 kit.</p>
+      <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="pP"><span class="pfx">PROMPT ▸ </span>Prepare my learner project for Lesson 05. Open my project repository in my course GitLab group on gitlab.ciklum.net, cloning it into ~/agentic-course/my-platform if it is not there, read its AGENTS.md first if it has one and follow it, and confirm it holds my completed lesson-04 work with all its checks passing. Update my read-only copy of the course repository in ~/agentic-course/course, cloning it from https://github.com/maxvpavlov/ciklum-innovate-l3-2026 if it is missing, and tell me the commit it was at before and after the update and which files under learner-kit/lessons/05 changed; its learner-kit folder is the course kit. Use the pinned Python 3.12 environment and the offline mock provider. Do not add this lesson's work yet. Report the project location, its current checkpoint, the test results and any missing prerequisites. Do not ask me to run terminal commands.</div><div class="expect"><span class="pfx">EXPECT ▸ </span>your project at lesson-04 with <b>19 passed</b>, the course copy's commit before and after, and the files that changed under <code>learner-kit/lessons/05</code>. No code changes.</div></details>
+      <div><button class="copy" type="button" data-copy="pP">Copy prompt</button></div>
+    </div>
+  </div>
+
+  <div class="terminal" id="orient">
+    <div class="bar"><span class="switch">Switch to terminal · Add the check pack</span><span class="file">the checks · no implementation yet</span></div>
+    <div class="body">
+      <p class="goal">The agent copies the Session 05 checks into your project, shows which fail and why, and lists what they need from your code before writing any. There are no given files this time.</p>
+      <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="pO"><span class="pfx">PROMPT ▸ </span>Read learner-kit/lessons/05 in the course repository: its README, the given files and the check pack. Copy the whole given files and the check pack into my project exactly as the README says, without changing them, and commit that; a given definition that must be pasted into a module is added in the build step that creates or changes that module. Then run the tests and report what fails and why: at first this lesson's test file may fail to import, because the modules it needs do not exist yet. List the interfaces my code must provide, with the exact names, signatures, fields and error codes the tests use, and the capability they verify. Explain the implementation sequence before we begin. Do not write the implementation yet, and do not look for or use a finished solution.</div><div class="expect"><span class="pfx">EXPECT ▸ </span>the check pack committed; <code>tests/test_lesson05.py</code> cannot import yet because <code>agent_runtime.durable</code> does not exist, which stops the whole test run, so the agent runs the earlier tests with <code>--ignore tests/test_lesson05.py</code>: 19 pass. A list of what the checks need: <code>RunStore</code> and <code>resume_run</code>, and from your loop <code>initial=</code>, <code>checkpoint=</code>, <code>Run.snapshot()</code> and the <code>waiting_approval</code> pause.</div></details>
+      <div><button class="copy" type="button" data-copy="pO">Copy prompt</button></div>
+    </div>
+  </div>
+
+  <div class="terminal" id="step1">
+    <div class="bar"><span class="switch">Switch to terminal · Build step 1 of 4</span><span class="file">new file · agent_runtime/durable.py · and agent_runtime/core.py if needed</span></div>
+    <div class="body">
+      <p class="goal">Make the loop able to pause and continue, then save and rebuild a run under its tenant and run ID. <a href="#snapshot">The snapshot</a>.</p>
+      <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="p1"><span class="pfx">PROMPT ▸ </span>For Lesson 05, continue in my learner project. Implement RunStore in agent_runtime/durable.py so it persists and reconstructs the current runtime state under tenant and run ID, and add a placeholder resume_run(store, tenant, run_id, provider, tools) that raises NotImplementedError until build step 3, so the Lesson 05 tests and the RemediationProvider fixture in course/labs/l05.py import from now on. First check that run_agent in agent_runtime/core.py can pause and continue a run, and add only what it lacks: Run.snapshot() returns a JSON-serialisable dict from which Run(**snapshot) rebuilds the run once its context dict is turned back into a Context; run_agent records a reply's tool calls as pending and calls checkpoint(run) before dispatching them; when execute raises ApprovalRequired, the run stops with status waiting_approval, keeps that call pending and is saved; and run_agent(..., initial=run) continues a stored run by dispatching its pending calls before asking the model again. Preserve messages, pending calls, usage counters and control state. Use a persistent local database for restart checks. Show which data must survive a crash before a tool observation is recorded, and demonstrate that another tenant cannot load the run. Build to the interfaces the Lesson 05 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div><div class="expect"><span class="pfx">EXPECT ▸ </span>a report of what your loop already had and what it added (often the <code>waiting_approval</code> pause); <code>RunStore</code> with <code>save</code> and <code>load</code>; a run saved with its pending call and rebuilt in a second store on the same file; the other tenant's lookup failing as <code>run_not_found</code>; a placeholder <code>resume_run</code>, so the Lesson 05 tests import and fail with <code>NotImplementedError</code> while the 19 earlier checks still pass.</div></details>
+      <div><button class="copy" type="button" data-copy="p1">Copy prompt</button></div>
+    </div>
+  </div>
+
+  <div class="ask readcode"><span class="label">Read your code · after build step 1</span>
+    <p class="q">run_agent in your agent_runtime/core.py, and RunStore in agent_runtime/durable.py</p>
+    <p class="hint">Open the file in your editor and answer these from your own code before you run the next prompt.</p>
+    <ol><li>Where does run_agent save the run after the model asks for tool calls, and is that before or after the first call is executed?</li><li>What happens in run_agent when execute raises ApprovalRequired? What status does the run get, and is the call still pending?</li><li>In RunStore, what is the key a run is saved under, and how does load turn the saved context back into a Context?</li></ol>
+    <details><summary>Show likely answers</summary><p>Right after the reply's tool calls are recorded in <code>run.pending</code>, and before the first is executed: <code>save()</code> then <code>continue</code> to the dispatch loop. The loop catches <code>ApprovalRequired</code>, sets <code>waiting_approval</code>, saves and returns; the call is not popped, so it is still pending. The key is the tenant and run ID together (the <code>runs</code> table's primary key); <code>load</code> parses the snapshot and rebuilds it with <code>Context(**body["context"])</code>.</p></details>
+    <p class="hint">Stuck? Ask your agent to point to the lines, not to explain them:</p>
+    <pre class="showme" id="rc1">Show me the lines in my project that answer these questions, with file names and line numbers. Point to the code only: do not change anything and do not explain it, I will.
+1. Where does run_agent save the run after the model asks for tool calls, and is that before or after the first call is executed?
+2. What happens in run_agent when execute raises ApprovalRequired? What status does the run get, and is the call still pending?
+3. In RunStore, what is the key a run is saved under, and how does load turn the saved context back into a Context?</pre>
+    <div><button class="copy" type="button" data-copy="rc1">Copy question</button></div>
+  </div>
+
+  <div class="terminal" id="step2">
+    <div class="bar"><span class="switch">Switch to terminal · Build step 2 of 4</span><span class="file">agent_runtime/durable.py · decide · approved_keys</span></div>
+    <div class="body">
+      <p class="goal">Reach <code>waiting_approval</code> with the labelled fixture, show the exact proposal, and store approve or deny with an expiry. The run you are shown stays waiting for you; the agent tries approvals only on separate throwaway runs. <a href="#approval">The approval</a>.</p>
+      <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="p2"><span class="pfx">PROMPT ▸ </span>For Lesson 05, continue in my learner project. Implement durable approval decisions with exact action keys, expiry and denial. Reach the waiting state using the clearly labelled remediation fixture, with no real external action. Show the exact proposed tool and arguments. Keep the human decision separate from execution: leave the run you show me waiting for my decision, and record approvals, expired approvals and denials only on separate fixture runs in a throwaway database. Explain how the stored decision is checked again at resume time. Build to the interfaces the Lesson 05 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div><div class="expect"><span class="pfx">EXPECT ▸ </span>a run waiting with no effect; the proposed tool <code>mock_remediate</code> with <code>INC-001</code> and <code>rollback</code> and its action key; <code>decide</code> and <code>approved_keys</code> in <code>durable.py</code>, shown on a throwaway run, and an explanation that resume will read the decision again. Your agent should not approve anything on its own initiative.</div></details>
+      <div><button class="copy" type="button" data-copy="p2">Copy prompt</button></div>
+    </div>
+  </div>
+
+  <div class="ask readcode"><span class="label">Read your code · after build step 2</span>
+    <p class="q">decide and approved_keys, in your agent_runtime/durable.py</p>
+    <p class="hint">Open the file in your editor and answer these from your own code before you run the next prompt.</p>
+    <ol><li>Which five values does one approval row hold, and where does the action key come from?</li><li>What does a deny decision change besides the approvals table?</li><li>Which approvals does approved_keys return? What does a decision with a negative ttl give you?</li></ol>
+    <details><summary>Show likely answers</summary><p>Tenant, run ID, action key, expiry time and decision. The key is computed with Session 02's <code>action_key</code> from the pending call's name and arguments and the run's context, not from anything the model wrote. A deny also sets the run's status to <code>denied</code> and saves it. Only rows that approve and whose expiry is still in the future; a negative <code>ttl</code> stores an approval that has already expired, which is how the check tests expiry.</p></details>
+    <p class="hint">Stuck? Ask your agent to point to the lines, not to explain them:</p>
+    <pre class="showme" id="rc2">Show me the lines in my project that answer these questions, with file names and line numbers. Point to the code only: do not change anything and do not explain it, I will.
+1. Which five values does one approval row hold, and where does the action key come from?
+2. What does a deny decision change besides the approvals table?
+3. Which approvals does approved_keys return? What does a decision with a negative ttl give you?</pre>
+    <div><button class="copy" type="button" data-copy="rc2">Copy question</button></div>
+  </div>
+
+  <div class="terminal" id="step3">
+    <div class="bar"><span class="switch">Switch to terminal · Build step 3 of 4</span><span class="file">agent_runtime/durable.py · resume_run</span></div>
+    <div class="body">
+      <p class="goal">Continue a stored run in the same loop with only the approvals still valid, and use the effect ledger, not the model, to tell whether a write happened. <a href="#resume">The resume</a>.</p>
+      <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="p3"><span class="pfx">PROMPT ▸ </span>For Lesson 05, continue in my learner project. Implement resume_run using the stored pending call and the same run_agent loop. Refresh currently valid approvals, reject denied or cancelled work and use the local effect ledger to reconcile a replay. Demonstrate why recovery consults durable application evidence rather than asking a model whether an earlier write succeeded. Preserve the original tenant and action boundaries. Build to the interfaces the Lesson 05 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div><div class="expect"><span class="pfx">EXPECT ▸ </span><code>resume_run(store, tenant, run_id, provider, tools)</code>; an approved run resumed to <code>completed</code> with one effect; a denied one refused with <code>PermissionError</code>; an expired approval leaving the run <code>waiting_approval</code>. Both new checks pass: <b>21 passed</b>.</div></details>
+      <div><button class="copy" type="button" data-copy="p3">Copy prompt</button></div>
+    </div>
+  </div>
+
+  <div class="ask readcode"><span class="label">Read your code · after build step 3</span>
+    <p class="q">resume_run, in your agent_runtime/durable.py</p>
+    <p class="hint">Open the file in your editor and answer these from your own code before you run the next prompt.</p>
+    <ol><li>Which statuses does resume_run refuse, and which does it return unchanged?</li><li>Where are the run's approved keys replaced, and with what? Why replace rather than add to them?</li><li>How does the resumed loop know to execute the stored call before asking the model again?</li></ol>
+    <details><summary>Show likely answers</summary><p>It returns a <code>completed</code> run unchanged and raises <code>PermissionError</code> for <code>denied</code> or <code>cancelled</code>. The context is rebuilt with <code>dataclasses.replace(run.context, approved=store.approved_keys(...))</code>: the keys valid now, so an approval that expired since the run paused is dropped rather than carried forward. <code>initial=run</code> hands the loop the saved run, whose <code>pending</code> list is not empty, and the loop drains pending calls before every model call.</p></details>
+    <p class="hint">Stuck? Ask your agent to point to the lines, not to explain them:</p>
+    <pre class="showme" id="rc3">Show me the lines in my project that answer these questions, with file names and line numbers. Point to the code only: do not change anything and do not explain it, I will.
+1. Which statuses does resume_run refuse, and which does it return unchanged?
+2. Where are the run's approved keys replaced, and with what? Why replace rather than add to them?
+3. How does the resumed loop know to execute the stored call before asking the model again?</pre>
+    <div><button class="copy" type="button" data-copy="rc3">Copy question</button></div>
+  </div>
+
+  <div class="terminal" id="step4">
+    <div class="bar"><span class="switch">Switch to terminal · Build step 4 of 4</span><span class="file">the check pack · course/labs/l05.py · the crash</span></div>
+    <div class="body">
+      <p class="goal">Confirm the check pack passes, adding code only where a check fails, and demonstrate the crash right after the write, and show one effect, an expired approval still waiting and a denied run refused. <a href="#crash">The crash</a>.</p>
+      <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="p4"><span class="pfx">PROMPT ▸ </span>For Lesson 05, continue in my learner project. Run the Session 05 check pack, including its crash-injection demonstration; it should pass now, so add code only where a check fails. Simulate worker loss after a committed mock effect but before the result checkpoint, reopen the database and resume. Prove that there is one effect. Also demonstrate expired and denied approvals. Keep my manually controlled demonstration in a throwaway script outside tests/, separate from this automated fixture test and not committed, and explain why the local transaction does not guarantee exactly-once behaviour for arbitrary remote APIs. Build to the interfaces the Lesson 05 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div><div class="expect"><span class="pfx">EXPECT ▸ </span>usually no new code: the full suite at <b>21 passed</b>; the demonstration paused, approved, crashed after the write, resumed to <code>completed</code> with <code>effects_after_crash_and_resume: 1</code>; an explanation of why that local guarantee does not cover an arbitrary remote API.</div></details>
+      <div><button class="copy" type="button" data-copy="p4">Copy prompt</button></div>
+    </div>
+  </div>
+
+  <div class="ask readcode"><span class="label">Read your code · after build step 4</span>
+    <p class="q">the given course/labs/l05.py, and the ledger in your agent_runtime/tools.py</p>
+    <p class="hint">Open the file in your editor and answer these from your own code before you run the next prompt.</p>
+    <ol><li>In the demonstration, where does the worker crash, and what is the last thing that was saved before it?</li><li>Which objects are created again after the crash, and why does that stand in for a restarted process?</li><li>In your tools.py, which lines make the second execution of the same approved rollback return replayed: true instead of writing again?</li></ol>
+    <details><summary>Show likely answers</summary><p>Inside <code>crash_after_write</code>: the original executor commits the effect, then <code>WorkerCrash</code> is raised. The last save was the pending call; the observation was never saved. A new <code>ToolExecutor</code> and a new <code>RunStore</code> on the same database file: nothing survives in memory, only what the file holds. The <code>SELECT</code> on <code>effects</code> by action key inside the transaction: when the row exists, it returns the stored result with <code>replayed: true</code>.</p></details>
+    <p class="hint">Stuck? Ask your agent to point to the lines, not to explain them:</p>
+    <pre class="showme" id="rc4">Show me the lines in my project that answer these questions, with file names and line numbers. Point to the code only: do not change anything and do not explain it, I will.
+1. In the demonstration, where does the worker crash, and what is the last thing that was saved before it?
+2. Which objects are created again after the crash, and why does that stand in for a restarted process?
+3. In your tools.py, which lines make the second execution of the same approved rollback return replayed: true instead of writing again?</pre>
+    <div><button class="copy" type="button" data-copy="rc4">Copy question</button></div>
+  </div>
+
+</section>
+
+<section class="ch" id="exercise">
+  <p class="eyebrow"><span>Learner exercise</span></p>
+  <h2>Break the recovery on purpose: predict first, then run</h2>
+  <div class="stack">
+    <p class="lede">Write down the result you expect for each case, then run it in a throwaway script and compare.</p>
+    <div class="predict">
+      <div><span class="set">crash after the write, then resume</span><span class="out">completed · 1 effect</span><span class="muted">The ledger answers the replay.</span></div>
+      <div><span class="set">approval expired before resume</span><span class="out">waiting_approval · 0 effects</span><span class="muted">Authority is not renewed.</span></div>
+      <div><span class="set">proposal denied, then resume</span><span class="out">PermissionError</span><span class="muted">Denied is terminal.</span></div>
+      <div><span class="set">approve INC-001, run proposes INC-002</span><span class="out">waiting_approval</span><span class="muted">A different key, not approved.</span></div>
+    </div>
+    <div class="terminal" style="margin-top:0">
+      <div class="bar"><span class="switch">Switch to terminal · Exercise</span><span class="file">a throwaway script · restore afterwards</span></div>
+      <div class="body">
+        <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="p5"><span class="pfx">PROMPT ▸ </span>Help me carry out the Lesson 05 learner exercise in my existing project: Run the crash-after-effect demonstration, then inspect the stored snapshot and effect count. Repeat with an expired approval and a denied proposal. Change the incident arguments and verify that the earlier approval does not authorize the new action. First state the expected outcomes, then run the experiment in a throwaway script outside tests/, or from a clean Git state you can restore. Show the observed results and explain any discrepancy. Keep the original acceptance criteria and restore temporary experiments when finished.</div><div class="expect"><span class="pfx">EXPECT ▸ </span>your predictions first; then the stored snapshot after the crash (status, the pending call) and one row in <code>effects</code>; the expired approval leaving the run waiting; the denied run refused; and changed incident arguments producing a different action key that the INC-001 approval does not cover. Nothing left behind in <code>tests/</code>.</div></details>
+      <div><button class="copy" type="button" data-copy="p5">Copy prompt</button></div>
+      </div>
+    </div>
+    <div class="cards pairs">
+      <div><span class="q">More practice: crash before the write</span><p>Add a crash before the write and compare its stored state with the after-write case: same pending call, no ledger row.</p></div>
+      <div><span class="q">More practice: a recovery runbook</span><p>Write a short runbook: which operations can be retried automatically, and which need reconciliation with the external system first.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="ch" id="verify">
+  <p class="eyebrow"><span>Verification</span></p>
+  <h2>Evidence, not claims</h2>
+  <div class="stack">
+    <div class="two">
+      <div class="prose" style="margin-top:0">
+        <p class="big">21 passed</p>
+        <p>Nineteen from Sessions 01 to 04, still passing, plus two new checks: a crash right after the approved write leaves exactly one effect once the run resumes; and an expired approval keeps the run waiting, a denied run cannot resume, and another tenant cannot load the run.</p>
+        <p class="muted">Unrun or skipped checks are not passes. Look at the actual output, not the agent's summary. One effect in a local SQLite ledger proves the local boundary, not exactly-once behaviour for an external API.</p>
+      </div>
+      <figure>
+<pre class="result">{
+  "paused": "waiting_approval",
+  "approval": {
+    "key": &lt;varies with the run ID&gt;,
+    "name": "mock_remediate",
+    "args": {
+      "incident_id": "INC-001",
+      "action": "rollback"
+    },
+    "decision": "approve"
+  },
+  "resumed": "completed",
+  "effects_after_crash_and_resume": 1
+}</pre>
+        <figcaption>The Session 05 lab output. The key changes with every run, because it binds the run ID; everything else must match.</figcaption>
+      </figure>
+    </div>
+    <div class="terminal" style="margin-top:0">
+      <div class="bar"><span class="switch">Switch to terminal · Verify and push</span><span class="file">check pack · full suite · push to GitLab</span></div>
+      <div class="body">
+        <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="p6"><span class="pfx">PROMPT ▸ </span>Verify my Lesson 05 implementation against its completion criteria. Update the checkpoint indicator in course/__init__.py to 5 only when the required capability is present. Run the full test suite, which includes the Lesson 05 check pack and every earlier lesson's tests, and then the Session 05 demonstration with python -m course.lab 5, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 05 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result. When the checks pass, add this lesson's entry to the progress log in AGENTS.md: the checkpoint, the test result you observed and what the lesson added, named as in the Lesson 05 check pack README, and nothing you did not see. Then commit my work and push it to my repository on gitlab.ciklum.net; if glab is also signed in to other GitLab hosts, make sure the push goes to gitlab.ciklum.net. Do not equate an unrun or skipped check with a pass.</div><div class="expect"><span class="pfx">EXPECT ▸ </span><b>21 passed</b>, the lab output above, <code>LESSON = 5</code>, a Lesson 05 entry in <code>AGENTS.md</code> and a push to your repository on gitlab.ciklum.net.</div></details>
+      <div><button class="copy" type="button" data-copy="p6">Copy prompt</button></div>
+        <div id="review"><details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="p7"><span class="pfx">PROMPT ▸ </span>Review my completed Lesson 05 work against the Lesson 05 check pack and completion criteria. Show the files I changed and the interfaces I provide, and explain how each completion criterion is met with code or test evidence. Point out the design choices I made that the check pack does not force, and what each one costs or gains. Preserve deliberate improvements and earlier capabilities.</div><div class="expect"><span class="pfx">EXPECT ▸ </span>the files you changed (<code>durable.py</code>, perhaps <code>core.py</code>, <code>course/__init__.py</code>, <code>AGENTS.md</code>), each completion criterion tied to a check, and the design choices the checks do not force, such as the default expiry or where the database file lives.</div></details>
+      <div><button class="copy" type="button" data-copy="p7">Copy prompt</button></div></div>
+      </div>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Completion criterion</th><th>Shown by</th></tr></thead>
+        <tbody>
+          <tr><td>The initial remediation run waits for approval and has no write effect.</td><td>the lab's <code>paused</code>; the effects count before approval</td></tr>
+          <tr><td>An approved action survives a simulated worker crash and resumes.</td><td>the lab's <code>resumed: completed</code> after <code>WorkerCrash</code></td></tr>
+          <tr><td>Crash-after-write recovery leaves exactly one mock effect.</td><td>the crash check; <code>effects_after_crash_and_resume: 1</code></td></tr>
+          <tr><td>An expired approval does not execute the action.</td><td>the expiry check: still <code>waiting_approval</code></td></tr>
+          <tr><td>Denied and cancelled runs cannot be resumed as approved work.</td><td>the denial check: <code>PermissionError</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted"><b>Not tested in this session:</b> a real model proposing a write, an approval given in the console, and any external API. The proposal comes from a deterministic fixture, the console's approval view arrives in Session 08, and the ledger's guarantee is local.</p>
+  </div>
+</section>
+
+<section class="ch" id="recover">
+  <p class="eyebrow"><span>When something breaks</span></p>
+  <h2>Recovery prompts for the usual failures</h2>
+  <div class="stack">
+    <p class="lede" style="margin-top:0">Paste the matching prompt; it asks your agent to reproduce, fix the smallest thing and rerun the checks.</p>
+    <aside class="instructor" aria-label="Instructor notes">
+      <div class="tablewrap"><table>
+        <thead><tr><th>Symptom</th><th>Diagnostic focus</th><th>Recovery</th></tr></thead>
+        <tbody>
+          <tr><td>Resume still waits after approval</td><td>Check expiry, tenant, run ID and the action key against the pending arguments.</td><td>Review the current proposal and issue a fresh, exact decision if appropriate. Do not copy an old approval flag.</td></tr>
+          <tr><td>A restart loses the run</td><td>The store may have used :memory: or a temporary directory that was removed.</td><td>Use the same persistent database path for both processes. Temporary demo directories are intentionally cleaned up after the assertion.</td></tr>
+          <tr><td>Two effects appear</td><td>The effect and idempotency record may no longer share a transaction, or the action key changed.</td><td>Restore the transaction boundary and canonical key, then rerun the crash test.</td></tr>
+          <tr><td>A remote effect cannot be reconciled</td><td>The external receiver does not provide durable idempotency evidence.</td><td>Stop automatic replay and implement explicit reconciliation. Do not infer success from the model's narrative.</td></tr>
+        </tbody>
+      </table></div>
+    </aside>
+    <div class="terminal" style="margin-top:0">
+      <div class="bar"><span class="switch">Switch to terminal · Recover</span><span class="file">only when you hit the symptom</span></div>
+      <div class="body">
+        <p class="rlabel"><b>Resume still waits after approval.</b> The approval may have expired, or it was given for different arguments, another run or another tenant.</p>
+        <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="r1"><span class="pfx">PROMPT ▸ </span>I am working on Lesson 05. The symptom is: Resume still waits after approval. Diagnostic focus: Check expiry, tenant, run ID and the action key against the pending arguments. Recovery guidance: Review the current proposal and issue a fresh, exact decision if appropriate. Do not copy an old approval flag. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.</div></details>
+      <div><button class="copy" type="button" data-copy="r1">Copy prompt</button></div>
+        <p class="rlabel"><b>A restart loses the run.</b> An in-memory or deleted database cannot survive a restart.</p>
+        <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="r2"><span class="pfx">PROMPT ▸ </span>I am working on Lesson 05. The symptom is: A restart loses the run. Diagnostic focus: The store may have used :memory: or a temporary directory that was removed. Recovery guidance: Use the same persistent database path for both processes. Temporary demo directories are intentionally cleaned up after the assertion. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.</div></details>
+      <div><button class="copy" type="button" data-copy="r2">Copy prompt</button></div>
+        <p class="rlabel"><b>Two effects appear.</b> The effect and its ledger row no longer commit together, or the key changed between runs.</p>
+        <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="r3"><span class="pfx">PROMPT ▸ </span>I am working on Lesson 05. The symptom is: Two effects appear. Diagnostic focus: The effect and idempotency record may no longer share a transaction, or the action key changed. Recovery guidance: Restore the transaction boundary and canonical key, then rerun the crash test. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.</div></details>
+      <div><button class="copy" type="button" data-copy="r3">Copy prompt</button></div>
+        <p class="rlabel"><b>A remote effect cannot be reconciled.</b> Without evidence from the receiver, stop replaying and reconcile; the model's narrative is not evidence.</p>
+        <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="r4"><span class="pfx">PROMPT ▸ </span>I am working on Lesson 05. The symptom is: A remote effect cannot be reconciled. Diagnostic focus: The external receiver does not provide durable idempotency evidence. Recovery guidance: Stop automatic replay and implement explicit reconciliation. Do not infer success from the model's narrative. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.</div></details>
+      <div><button class="copy" type="button" data-copy="r4">Copy prompt</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="ch" id="summary">
+  <p class="eyebrow"><span>Summary</span></p>
+  <h2>How your platform changed, and what to try in the console</h2>
+  <div class="stack">
+    <p class="lede" style="margin-top:0">Everything below appears somewhere in the steps above; this is the whole lesson in one place, to check your project against before you close the session.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>In your project</th><th>What changed</th><th>Who wrote it</th></tr></thead>
+        <tbody>
+          <tr><td><code>agent_runtime/durable.py</code> (new)</td><td><code>RunStore</code>: runs saved under tenant and run ID (<code>save</code>, <code>load</code>), approval decisions with expiry (<code>decide</code>, <code>approved_keys</code>); <code>resume_run</code></td><td>you, through build steps 1 to 3</td></tr>
+          <tr><td><code>agent_runtime/core.py</code></td><td>only what your loop lacked: the <code>waiting_approval</code> pause on <code>ApprovalRequired</code>, saving pending calls before dispatch, <code>initial=</code>, <code>Run.snapshot()</code></td><td>you, in build step 1, if needed</td></tr>
+          <tr><td><code>tests/test_lesson05.py</code>, <code>course/labs/l05.py</code></td><td>the Lesson 05 checks, the crash demonstration and the labelled <code>RemediationProvider</code> fixture</td><td>given, with the check pack</td></tr>
+          <tr><td><code>course/__init__.py</code>, <code>AGENTS.md</code></td><td><code>LESSON = 5</code> and the Lesson 05 progress entry</td><td>the Verify prompt</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The tool boundary, the approval gate and the effect ledger from Session 02 did not change, nor did retrieval or the harness: today adds the records around them. The console shell did not change either: it still keeps runs in memory, and the platform uses your durable store from Session 08. <b>The checks:</b> 21 passed, all on the mock.</p>
+    <div class="criteria">
+      <div><b>1 · Restart the platform</b>Sign in as <code>demo-operator</code>. The Overview says checkpoint lesson-05 once Verify has raised <code>LESSON</code>, and counts 0 runs waiting for approval: the mock investigation only reads.</div>
+      <div><b>2 · Propose a write in Tools</b>As <code>demo-operator</code>, check <code>mock_remediate</code> with <code>{"incident_id": "INC-001", "action": "rollback"}</code>. Expect <code>approval_required</code> with a 64-character action key and no result: nothing was written. Check it again: the same key.</div>
+      <div><b>3 · Change one argument</b>Check the same call with <code>INC-002</code>: <code>approval_required</code> with a different key, so an approval of the first would not cover it. Try <code>"action": "restart"</code>: <code>invalid_arguments</code>, refused before approval is considered. Sign in as <code>demo-astro</code> and check the INC-001 rollback: <code>permission_denied</code>, because an analyst may not write.</div>
+      <div><b>4 · Restart and look for your runs</b>Submit INC-001 in Runs (complete, <code>connection_pool_exhaustion</code>, 75 tokens), restart the platform and open Runs again: the list is empty. The console shell keeps runs in memory; the durable store you built today is what Session 08's platform puts behind it.</div>
+    </div>
+    <p class="muted">Not in the console yet: approving or denying a proposal, a run waiting for approval, and resuming after a restart. Session 08 adds the Approvals view, where only an operator can decide and the decision must echo the current proposal key, on top of the store you built today.</p>
+  </div>
+</section>
+
+<section class="ch" id="close">
+  <p class="eyebrow"><span>Close</span></p>
+  <h2>A run that can stop, wait and continue, without repeating itself</h2>
+  <div class="stack">
+    <div class="criteria">
+      <div><b>Saved before dispatch</b>a pending call is on record before it runs, so no crash loses it.</div>
+      <div><b>An exact decision</b>a person approves one action key, with an expiry, as its own record.</div>
+      <div><b>The same loop resumes</b>pending call first, only the approvals still valid, terminal runs refused.</div>
+      <div><b>Evidence, not narrative</b>the ledger, not the model, says whether a write already happened.</div>
+    </div>
+    <div class="ask"><span class="label">After class</span><p class="q">Finish in your own project, in this order (<a href="#route">the route</a>)</p>
+      <ol class="steps"><li><a href="#prepare">Prepare the workspace</a> and <a href="#orient">add the check pack</a></li><li><a href="#step1">Build steps 1 to 4</a>, one at a time, reading each change</li><li><a href="#exercise">The exercise</a>, predicting each result first</li><li><a href="#verify">Verify and push</a>, then review the result</li></ol></div>
+    <aside class="instructor" aria-label="Instructor notes">
+      <p><b>SAY</b> Your platform can now pause and recover with explicit action ownership. Have your coding agent save the checkpoint with its failure tests. In Session 08 these approvals get a console Approvals view that only an operator can act on, and in Session 10 that operator can authenticate with a signed, short-lived token. In the next session we apply the same runtime and authority boundaries to delegated child agents.</p>
+      <p><b>Discussion prompt</b> Which decision would change for a larger or more sensitive workload, and what additional evidence would you require before changing it? Tie the answer to the code, the task requirements and the acceptance checks.</p>
+    </aside>
+    <p class="say">Recovery reads saved records: the run, the decision and the ledger. A model's account of what it did is never one of them.</p>
+    <div class="ask"><span class="label">Next session</span><p class="q">Supervisor, subagents and parallel coordination</p><p>One agent investigates alone today. Next a supervisor delegates to scoped subagents for logs and runbooks, each with a narrowed context and permissions, under one shared budget, and coordinates them in parallel with deadlines.</p></div>
+  </div>
+</section>
+
+<footer>
+  <p>Course repository: <a href="https://github.com/maxvpavlov/ciklum-innovate-l3-2026">github.com/maxvpavlov/ciklum-innovate-l3-2026</a> · kit: <code>learner-kit/lessons/05</code> · all incident data are synthetic.</p>
+  <p>Further reading: <a href="https://docs.langchain.com/oss/python/langgraph/persistence">Checkpoint persistence</a> · <a href="https://docs.langchain.com/oss/python/langgraph/interrupts">Interrupts and human approval</a></p>
+</footer>
+</main>
+
+<script>
+(() => {
+  // Theme toggle (top left), added here so every page built from this one gets it. Until the viewer
+  // toggles it the page follows the system theme; a toggle sets data-theme on the root, which the colour
+  // tokens above honour, and is remembered for all the course pages on this site.
+  const themeRoot = document.documentElement;
+  const systemDark = window.matchMedia("(prefers-color-scheme: dark)");
+  const SVG_NS = "http://www.w3.org/2000/svg";
+  const THEME_ICONS = {  // the icon shows the theme a click switches to
+    dark: ["M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"],
+    light: ["M12 8a4 4 0 1 0 0 8a4 4 0 1 0 0-8z", "M12 2v2", "M12 20v2", "M4.9 4.9l1.4 1.4", "M17.7 17.7l1.4 1.4",
+            "M2 12h2", "M20 12h2", "M4.9 19.1l1.4-1.4", "M17.7 6.3l1.4-1.4"],
+  };
+  const themeToggle = document.createElement("button");
+  themeToggle.type = "button"; themeToggle.className = "theme";
+  const shownTheme = () => themeRoot.dataset.theme || (systemDark.matches ? "dark" : "light");
+  const drawThemeToggle = () => {
+    const next = shownTheme() === "dark" ? "light" : "dark";
+    const svg = document.createElementNS(SVG_NS, "svg");
+    svg.setAttribute("viewBox", "0 0 24 24"); svg.setAttribute("aria-hidden", "true");
+    THEME_ICONS[next].forEach((d) => { const path = document.createElementNS(SVG_NS, "path"); path.setAttribute("d", d); svg.append(path); });
+    themeToggle.replaceChildren(svg);
+    themeToggle.title = `Switch to the ${next} theme`; themeToggle.setAttribute("aria-label", themeToggle.title);
+  };
+  themeToggle.addEventListener("click", () => {
+    const next = shownTheme() === "dark" ? "light" : "dark";
+    themeRoot.dataset.theme = next;
+    try { localStorage.setItem("lesson-theme", next); } catch (e) { /* storage unavailable */ }
+    drawThemeToggle();
+  });
+  systemDark.addEventListener("change", drawThemeToggle);
+  try {
+    const saved = localStorage.getItem("lesson-theme");
+    if (saved === "light" || saved === "dark") themeRoot.dataset.theme = saved;
+  } catch (e) { /* follow the system theme */ }
+  document.body.prepend(themeToggle);
+  drawThemeToggle();
+
+  // Copy buttons: copy the prompt text without the "PROMPT ▸" prefix.
+  document.querySelectorAll(".copy").forEach((button) => {
+    button.addEventListener("click", () => {
+      const block = document.getElementById(button.dataset.copy);
+      const text = [...block.childNodes].filter((n) => !(n.classList && n.classList.contains("pfx")))
+        .map((n) => n.textContent).join("").trim();
+      const label = button.textContent;
+      const done = () => { button.textContent = "Copied"; setTimeout(() => { button.textContent = label; }, 1600); };
+      const select = () => {
+        const fold = block.closest("details"); if (fold) fold.open = true;
+        const range = document.createRange(); range.selectNodeContents(block);
+        const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+        button.textContent = "Selected · press Ctrl+C";
+      };
+      try { navigator.clipboard.writeText(text).then(done, select); } catch (e) { select(); }
+    });
+  });
+
+  // N / P jump between sections; V switches between Present and Read (or Instructor).
+  const stops = [...document.querySelectorAll("#start, section.ch, .terminal[id]")];
+  const current = () => {
+    const y = window.scrollY + window.innerHeight * 0.25;
+    let index = 0;
+    stops.forEach((el, i) => { if (el.getBoundingClientRect().top + window.scrollY <= y) index = i; });
+    return index;
+  };
+  document.addEventListener("keydown", (event) => {
+    if (event.target.closest("input, textarea, [contenteditable]") || event.metaKey || event.ctrlKey || event.altKey) return;
+    const key = event.key.toLowerCase();
+    if (key === "v") { setView(document.body.classList.contains("present") ? (instructorAllowed ? "instructor" : "read") : "present"); event.preventDefault(); return; }
+    if (key !== "n" && key !== "p") return;
+    const next = Math.max(0, Math.min(stops.length - 1, current() + (key === "n" ? 1 : -1)));
+    stops[next].scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+    event.preventDefault();
+  });
+
+  // Read / Present toggle, plus Instructor when the page is opened with ?instructor. The parameter is not a
+  // secret, since the repository is public: it only keeps the facilitator's notes (.instructor) out of the
+  // learners' views. Without it no Instructor button exists and Instructor is never selected.
+  const instructorAllowed = new URLSearchParams(location.search).has("instructor");
+  if (instructorAllowed) {
+    const b = document.createElement("button");
+    b.type = "button"; b.dataset.view = "instructor"; b.setAttribute("aria-pressed", "false"); b.textContent = "Instructor";
+    document.querySelector(".view").append(b);
+  }
+  const buttons = [...document.querySelectorAll(".view button")];
+  const viewKey = instructorAllowed ? "lesson-view-instructor" : "lesson-view";
+  const setView = (view, keepPlace = true) => {
+    if (view === "instructor" && !instructorAllowed) view = "read";
+    const anchor = stops[current()];
+    document.body.classList.toggle("present", view === "present");
+    document.body.classList.toggle("instructor-view", view === "instructor");
+    buttons.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.view === view)));
+    // In Instructor view every "Ask the room" answer is already open; leaving it folds them again.
+    document.querySelectorAll(".ask details").forEach((d) => { d.open = view === "instructor"; });
+    if (keepPlace) anchor.scrollIntoView({ block: "start" });
+    try { localStorage.setItem(viewKey, view); } catch (e) { /* storage unavailable */ }
+  };
+  buttons.forEach((b) => b.addEventListener("click", () => setView(b.dataset.view)));
+  let startView = instructorAllowed ? "instructor" : "read";
+  try {
+    const saved = localStorage.getItem(viewKey);
+    if (saved === "read" || saved === "present" || (saved === "instructor" && instructorAllowed)) startView = saved;
+  } catch (e) { /* default view */ }
+  if (startView !== "read") setView(startView, false);
+})();
+</script>

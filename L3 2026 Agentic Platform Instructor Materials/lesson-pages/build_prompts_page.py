@@ -319,6 +319,72 @@ SESSIONS = {
         ],
         "next": "Session 05: Checkpoints, recovery and human approval",
     },
+    5: {
+        "full_page": "05-checkpoints-and-approval.html",
+        "fold": True,
+        "title": "Checkpoints, recovery and human approval",
+        "goal": "By the end a run can stop and continue: its state is saved before every tool call, a write waits "
+                "for a person's decision on the exact action, and a resumed run uses saved evidence, not the model, to "
+                "tell what already happened. Run the prompts in this order, in your coding agent started in "
+                "~/agentic-course, and read each result before you paste the next one.",
+        "facts": ["<b>9 prompts</b> in order", "ends at <b>21 passed</b> · <code>LESSON = 5</code>",
+                  "offline · no model key needed"],
+        "outcomes": [("Saved before dispatch", "a pending call is on record before it runs, so no crash loses it."),
+                     ("An exact decision", "a person approves one action key, with an expiry, as its own record."),
+                     ("The same loop resumes", "pending call first, only the approvals still valid, terminal runs refused."),
+                     ("Evidence, not narrative", "the ledger, not the model, says whether a write already happened.")],
+        "steps": [
+            ("Prepare the workspace", "Prepare", "confirms lesson-04 · refreshes the course copy",
+             "Opens your project, reads its AGENTS.md, confirms your Session 04 work still passes and updates your "
+             "read-only copy of the course repository, which now holds the Session 05 kit. Your project is not changed.",
+             "your project at the lesson-04 checkpoint with <b>19 passed</b>, and the course copy moved to the latest "
+             "commit with the Lesson 05 kit: the checks only, no given files."),
+            ("Add the check pack", "Add the check pack", "the checks · no code yet",
+             "Copies the Session 05 checks into your project and lists what they need from your code, including the "
+             "pause and resume support your loop may not have yet.",
+             "<code>test_lesson05.py</code> failing to import until <code>agent_runtime.durable</code> exists, which stops "
+             "the whole run; with it ignored, <b>19 passed</b>."),
+            ("Build step 1", "Save the run, stop the loop", "new · agent_runtime/durable.py · core.py if needed",
+             "Adds only what your loop lacks to pause and continue a run, then saves and rebuilds a run under its tenant "
+             "and run ID, with a placeholder resume_run so the new checks import.",
+             "a run saved with its pending call and rebuilt from the same file; the other tenant's lookup failing as "
+             "<code>run_not_found</code>; <b>19 passed</b>, the two new checks failing with <code>NotImplementedError</code>."),
+            ("Build step 2", "Store the exact decision", "agent_runtime/durable.py · decide · approved_keys",
+             "Reaches waiting_approval with the labelled remediation fixture, shows the exact proposal and stores approve "
+             "or deny with an expiry. The run you are shown stays waiting for your decision.",
+             "a waiting run with no effect, the proposed <code>mock_remediate</code> on INC-001 with its action key, and "
+             "<code>decide</code> tried only on throwaway runs."),
+            ("Build step 3", "Resume from the pending call", "agent_runtime/durable.py · resume_run",
+             "Continues a stored run in the same loop with only the approvals still valid, and refuses denied or "
+             "cancelled runs.",
+             "an approved run resumed to <code>completed</code> with one effect, an expired approval still waiting, a "
+             "denied run refused; <b>21 passed</b>."),
+            ("Build step 4", "Crash on purpose", "the check pack · the crash demonstration",
+             "Confirms the check pack passes and demonstrates the crash right after the write, an expired approval and a "
+             "denial, in a throwaway script.",
+             "usually no new code; <code>effects_after_crash_and_resume: 1</code> and why that local guarantee does not "
+             "cover a remote API."),
+            ("Learner exercise", "Break the recovery on purpose", "a throwaway script",
+             "Predicts, then runs: a crash after the write, an expired approval, a denial and changed arguments.",
+             "completed with one effect, still waiting, PermissionError, and a new key the old approval does not cover."),
+            ("Verify the checkpoint", "Verify and push", "LESSON = 5 · commit · push",
+             "Runs the full suite and the Session 05 demo unchanged on the offline mock, raises the checkpoint to 5 "
+             "only if the capability is there, and pushes your work. This is the evidence, not the agent's summary.",
+             "<b>21 passed</b>, <code>LESSON = 5</code>, a Lesson 05 entry in <code>AGENTS.md</code> and your work on "
+             "gitlab.ciklum.net."),
+            ("Review the result", "Review", "no changes",
+             "Walks through what you built against the completion criteria and points out the design choices the "
+             "checks do not force.",
+             "A review you can discuss in the next session."),
+        ],
+        "recover": [
+            ("Recover when resume still waits after approval", "When an approved run will not continue."),
+            ("Recover when a restart loses the run", "When a run is gone after a restart."),
+            ("Recover when two effects appear", "When the crash check counts more than one effect."),
+            ("Recover when a remote effect cannot be reconciled", "When a real external system cannot confirm a write."),
+        ],
+        "next": "Session 06: Supervisor, subagents and parallel coordination",
+    },
 }
 
 

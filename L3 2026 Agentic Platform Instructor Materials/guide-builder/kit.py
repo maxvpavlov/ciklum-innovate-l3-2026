@@ -274,6 +274,8 @@ def build_lesson(n, known_given):
                 else:
                     lines.append(f"- `given/{name}.py`: add `{name}` to `{path}` in the build step that creates that file.")
         lines.append("")
+    if not items:
+        lines += ["This lesson has no given files: copy `checks/` only.", ""]
     if n == 8:
         lines += ["## The platform is yours from here", "",
                   "The platform shell in `agentic_platform/` is no longer given: from this lesson you extend",
@@ -344,15 +346,19 @@ def build_lesson(n, known_given):
                   "- `RunStore(path)` with `save(run)` (passed as `checkpoint`), `load(tenant, run_id)` raising",
                   "  `KeyError` (`run_not_found`) for a run another tenant owns, and",
                   "  `decide(tenant, run_id, decision=\"approve\", ttl=300)` returning the pending call's `key`, `name`,",
-                  "  `args` and `decision`; `deny` makes the run `denied`, and a negative `ttl` stores an approval",
-                  "  that has already expired;",
+                  "  `args` and `decision`; it accepts only `approve` or `deny` and refuses a run that is not",
+                  "  `waiting_approval` with a pending call; `deny` makes the run `denied`, and a negative `ttl` stores",
+                  "  an approval that has already expired;",
                   "- `resume_run(store, tenant, run_id, provider, tools)`: a completed run is returned unchanged, a",
                   "  denied or cancelled one raises `PermissionError`, and otherwise the run continues in the same",
                   "  `run_agent` with only the approvals still valid, so an expired one leaves it `waiting_approval`;",
+                  "  whether a `failed` run may resume is your choice, so explain the one you make;",
                   "- `ToolExecutor(path)` on the same database file as the store, with `tools.available(context)`",
                   "  and the `db` connection in which the demo counts rows of `effects`.", "",
-                  "Along the way: this lesson's test file cannot import until `agent_runtime.durable` provides",
-                  "`RunStore` and `resume_run`, so it imports only after build step 3."]
+                  "Along the way: this lesson's test file and demo cannot import until `agent_runtime.durable`",
+                  "provides `RunStore` and `resume_run`, which stops the whole test run; until build step 1 adds",
+                  "them (`resume_run` as a placeholder), run the earlier tests with `--ignore tests/test_lesson05.py`",
+                  "(19 pass). Both new checks pass once build step 3 implements `resume_run`."]
     if n <= OLD_LAYOUT_UNTIL:
         for new, old in OLD_NAMES:
             lines = [line.replace(new, old) for line in lines]

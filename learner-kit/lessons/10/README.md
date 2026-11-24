@@ -1,5 +1,7 @@
 # Lesson 10 check pack
 
+This lesson has no given files: copy `checks/` only.
+
 ## Checks
 
 Copy `checks/` into your project root unchanged: it holds this lesson's demo in
