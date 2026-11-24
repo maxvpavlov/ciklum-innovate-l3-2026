@@ -348,12 +348,12 @@ SESSIONS = {
              "Adds only what your loop lacks to pause and continue a run, then saves and rebuilds a run under its tenant "
              "and run ID, with a placeholder resume_run so the new checks import.",
              "a run saved with its pending call and rebuilt from the same file; the other tenant's lookup failing as "
-             "<code>run_not_found</code>; <b>19 passed</b>, the two new checks failing with <code>NotImplementedError</code>."),
+             "<code>run_not_found</code>; <b>19 passed</b>, the two new checks failing at <code>store.decide</code> until step 2."),
             ("Build step 2", "Store the exact decision", "agent_runtime/durable.py · decide · approved_keys",
              "Reaches waiting_approval with the labelled remediation fixture, shows the exact proposal and stores approve "
              "or deny with an expiry. The run you are shown stays waiting for your decision.",
-             "a waiting run with no effect, the proposed <code>mock_remediate</code> on INC-001 with its action key, and "
-             "<code>decide</code> tried only on throwaway runs."),
+             "a waiting run with no effect and its run ID, kept under <code>var/</code>; the proposed <code>mock_remediate</code> on "
+             "INC-001 with its action key; <code>decide</code> tried only on throwaway runs."),
             ("Build step 3", "Resume from the pending call", "agent_runtime/durable.py · resume_run",
              "Continues a stored run in the same loop with only the approvals still valid, and refuses denied or "
              "cancelled runs.",
@@ -365,8 +365,9 @@ SESSIONS = {
              "usually no new code; <code>effects_after_crash_and_resume: 1</code> and why that local guarantee does not "
              "cover a remote API."),
             ("Learner exercise", "Break the recovery on purpose", "a throwaway script",
-             "Predicts, then runs: a crash after the write, an expired approval, a denial and changed arguments.",
-             "completed with one effect, still waiting, PermissionError, and a new key the old approval does not cover."),
+             "Approves and resumes the run step 2 left waiting, as your decision; then predicts and runs a crash after the "
+             "write, an expired approval, a denial and changed arguments.",
+             "your run completed; completed with one effect, still waiting, PermissionError, and a new key the old approval does not cover."),
             ("Verify the checkpoint", "Verify and push", "LESSON = 5 · commit · push",
              "Runs the full suite and the Session 05 demo unchanged on the offline mock, raises the checkpoint to 5 "
              "only if the capability is there, and pushes your work. This is the evidence, not the agent's summary.",

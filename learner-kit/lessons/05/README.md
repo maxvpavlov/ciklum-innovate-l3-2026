@@ -62,4 +62,7 @@ The checks also rely on these, beyond the imported names:
 Along the way: this lesson's test file and demo cannot import until `agent_runtime.durable`
 provides `RunStore` and `resume_run`, which stops the whole test run; until build step 1 adds
 them (`resume_run` as a placeholder), run the earlier tests with `--ignore tests/test_lesson05.py`
-(19 pass). Both new checks pass once build step 3 implements `resume_run`.
+(19 pass). After build step 1 both new checks import but fail at `store.decide`
+(`AttributeError`) until build step 2 adds it, then with `NotImplementedError` from the
+placeholder `resume_run` until build step 3; then both pass. After a crash right after a write the
+stored status can still read `waiting_approval`: the effects ledger, not the status, is the evidence.

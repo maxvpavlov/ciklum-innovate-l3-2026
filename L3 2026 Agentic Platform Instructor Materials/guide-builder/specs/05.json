@@ -27,7 +27,7 @@
       "title": "Store the exact approval decision",
       "say": "Start the remediation fixture and observe waiting_approval. No effect has happened. The trusted operator now approves the proposed tool name and arguments, whose canonical action key is stored with an expiry. Read the denial branch and the approved_keys query. Approval is a separate durable record and must still be valid when execution resumes. This is also where we distinguish operator action from model preference. RemediationProvider is a deterministic fixture used to reach the approval branch; it is not a real operational recommendation. All effects remain in the local mock ledger.",
       "file": "agent_runtime/durable.py",
-      "prompt": "Implement durable approval decisions with exact action keys, expiry and denial. Reach the waiting state using the clearly labelled remediation fixture, with no real external action. Show the exact proposed tool and arguments. Keep the human decision separate from execution: leave the run you show me waiting for my decision, and record approvals, expired approvals and denials only on separate fixture runs in a throwaway database. Explain how the stored decision is checked again at resume time.",
+      "prompt": "Implement durable approval decisions with exact action keys, expiry and denial. Reach the waiting state using the clearly labelled remediation fixture, with no real external action. Show the exact proposed tool and arguments. Keep the human decision separate from execution: leave the run you show me waiting for my decision, in a database file under var/, and tell me its run ID; record approvals, expired approvals and denials only on separate fixture runs in a throwaway database. Explain how the stored decision is checked again at resume time.",
       "excerpt": {
         "start": 27,
         "end": 39
@@ -53,7 +53,7 @@
       "title": "Inject a crash after the effect",
       "say": "Read the injected failure before running it. The wrapper deliberately executes the approved effect and then raises WorkerCrash before the runtime saves the observation. We reopen the database and create a new executor, then resume. Inspect the final status and count the effects table. The result must be completed with exactly one effect. Next, expire an approval and repeat. This time the run must remain waiting. Finally, deny the proposal and show that resume is rejected. Pause until a learner can place each failure on the state diagram and name the durable record used to resolve it.",
       "file": "course/labs/l05.py",
-      "prompt": "Run the Session 05 check pack, including its crash-injection demonstration; it should pass now, so add code only where a check fails. Simulate worker loss after a committed mock effect but before the result checkpoint, reopen the database and resume. Prove that there is one effect. Also demonstrate expired and denied approvals. Keep my manually controlled demonstration in a throwaway script outside tests/, separate from this automated fixture test and not committed, and explain why the local transaction does not guarantee exactly-once behaviour for arbitrary remote APIs.",
+      "prompt": "Run the Session 05 check pack, including its crash-injection demonstration, which runs inside tests/test_lesson05.py (python -m course.lab 5 works only once Verify raises LESSON); it should pass now, so add code only where a check fails. Simulate worker loss after a committed mock effect but before the result checkpoint, reopen the database and resume. Prove that there is one effect. Also demonstrate expired and denied approvals. Keep my manually controlled demonstration in a throwaway script outside tests/, separate from this automated fixture test and not committed, and explain why the local transaction does not guarantee exactly-once behaviour for arbitrary remote APIs.",
       "excerpt": {
         "start": 37,
         "end": 39
@@ -63,7 +63,7 @@
       "answer": "A durable receiver-side result for the same idempotency key. Without it, recovery must reconcile the external state before proceeding."
     }
   ],
-  "exercise": "Run the crash-after-effect demonstration, then inspect the stored snapshot and effect count. Repeat with an expired approval and a denied proposal. Change the incident arguments and verify that the earlier approval does not authorize the new action.",
+  "exercise": "Approve the run that build step 2 left waiting for my decision, as my decision, and resume it. Run the crash-after-effect demonstration, then inspect the stored snapshot and effect count. Repeat with an expired approval and a denied proposal. Change the incident arguments, using a variant of the remediation fixture in the throwaway script that proposes INC-002 after INC-001 was approved, and verify that the earlier approval does not authorize the new action.",
   "expected_json": {
     "paused": "waiting_approval",
     "approval": {
