@@ -280,6 +280,8 @@ The Session 05 page is the presentation, with Read and Present views (https://ma
 
 • 1b. Words first: investigation, run, step, worker and run ID, and how they relate (a diagram).
 
+• 1c. Design choice: who owns the run. A: the platform owns runs on shared compute, the runtime embedded and created on demand (like multi-tenant SaaS); B: each runtime instance owns its sessions (like a premium client's dedicated instance), where an approval becomes cross-system state management. Two diagrams and a comparison.
+
 • 2. The idea: a run must stop and continue without guessing; definitions of snapshot, pending call, checkpoint, approval decision, effect ledger, resume and terminal state.
 
 • 3. One tool call through the loop, with the moments a crash can happen and the approval branch.
@@ -579,6 +581,8 @@ Document exceptions, limitations, risks, assumptions or cases where the recommen
 • The action key binds the run ID, so the lab's key changes on every run; the rest of its output does not.
 
 • The console shell (Sessions 02 to 07) keeps runs in memory and has no approval view: a restart empties it. The platform core puts the durable store behind the run API and adds the Approvals view in Session 08.
+
+• Design choice: the course builds platform-owned runs (design A): one run store, the runtime created per execution, an approval as a stored decision plus a resume. With independent runtime instances that own their sessions (design B), the decision must reach the instance and session that asked, so correlation, persistence on the runtime side, expiry on both sides and one agreed source of truth for status become the platform's problem. Session 07's A2A specialist, which keeps its tasks in its own memory, is design B in miniature.
 
 • All incident data are synthetic, the remediation is a mock, and the demo identities are for loopback use only.
 

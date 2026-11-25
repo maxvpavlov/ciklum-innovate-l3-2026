@@ -422,6 +422,139 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
   </div>
 </section>
 
+<section class="ch" id="ownership">
+  <p class="eyebrow"><span>Design choice</span></p>
+  <h2>Who owns the run: the platform, or the agent runtime?</h2>
+  <div class="stack">
+    <p class="lede" style="margin-top:0">Before building durable runs, decide where they live. In the first design the <b>platform owns the runs</b>: it keeps every run in its own store, and the agent runtime is a library a worker calls when there is work to do. Sessions are managed in one place, an approval is a stored decision plus a resume, and a runtime is created on demand and dropped when the run pauses. In the second design each <b>agent runtime is an independent service</b> that owns its sessions, for example one instance per client or per vendor agent. It isolates better and scales on its own, but the platform no longer holds the state it has to coordinate, and an approval turns into a state-management exercise between two systems.</p>
+    <p>It is the same choice SaaS made about tenants: one shared deployment where tenants are rows in a common database, or a dedicated instance for a premium client. Neither is wrong; they cost different things.</p>
+
+    <h3>A · The platform owns the runs: shared compute, runtime embedded</h3>
+    <figure>
+      <div class="diagram">
+        <svg viewBox="0 0 900 400" role="img" aria-labelledby="ownATitle">
+          <title id="ownATitle">One platform deployment serves every tenant. The run API and console accept submissions, decisions and resumes and write them to one run store, which keeps runs, approvals and effects keyed by tenant and run ID. Workers load a run from the store, create the agent runtime for it, save and let it go: worker 1 executes an Astro run, worker 2 is idle with no state, worker 3 resumes a Locomotive run after its approval with a new runtime.</title>
+          <rect class="frame" x="16" y="16" width="868" height="340" rx="12"/>
+          <text class="lbl" x="34" y="44">Platform: one deployment, shared by every tenant</text>
+          <rect class="box" x="40" y="62" width="220" height="86" rx="8"/>
+          <text class="lbl" x="54" y="88">Run API · console</text>
+          <text class="small" x="54" y="110">submit · inspect</text>
+          <text class="small" x="54" y="128">operator decides here</text>
+          <rect class="today" x="310" y="62" width="550" height="86" rx="8"/>
+          <text class="lbl" x="326" y="88">Run store, one database</text>
+          <text class="small" x="326" y="110">runs · approvals · effects, keyed by tenant + run ID</text>
+          <text class="small" x="326" y="128">Astro and Locomotive runs side by side</text>
+          <path class="ink" d="M260 105 H304"/><path class="arrowhead" d="M308 105 l-8 -5 v10z"/>
+          <text class="small" x="266" y="96">write</text>
+
+          <rect class="box" x="40" y="222" width="250" height="110" rx="8"/>
+          <text class="lbl" x="54" y="248">Worker 1</text>
+          <text class="small" x="54" y="270">Astro run 7f3a…</text>
+          <text class="small" x="54" y="288">runtime created for it,</text>
+          <text class="small" x="54" y="306">dropped when it pauses</text>
+          <rect class="box" x="325" y="222" width="250" height="110" rx="8"/>
+          <text class="lbl" x="339" y="248">Worker 2</text>
+          <text class="small" x="339" y="270">idle: no run,</text>
+          <text class="small" x="339" y="288">no runtime, no state</text>
+          <rect class="today" x="610" y="222" width="250" height="110" rx="8"/>
+          <text class="lbl" x="624" y="248">Worker 3</text>
+          <text class="small" x="624" y="270">Locomotive run 2c9e…</text>
+          <text class="small" x="624" y="288">resumed after approval:</text>
+          <text class="small" x="624" y="306">new runtime, same run</text>
+          <path class="ink" d="M165 222 V188 H400 V154"/><path class="arrowhead" d="M400 150 l-5 8 h10z"/>
+          <path class="ink" d="M735 222 V154"/><path class="arrowhead" d="M735 150 l-5 8 h10z"/>
+          <text class="small" x="410" y="176">load · save</text><text class="small" x="746" y="196">load · save</text>
+          <text class="small" x="16" y="386">The runtime is a library a worker calls; the run lives in the store, so any worker can continue it.</text>
+        </svg>
+      </div>
+      <figcaption>Like multi-tenant SaaS: every tenant's runs are rows in one store, isolated by the tenant key, served by a shared pool of workers. This is what you build today and what the platform core runs from Session 08.</figcaption>
+    </figure>
+
+    <h3>B · Each runtime owns its sessions: separate instances</h3>
+    <figure>
+      <div class="diagram">
+        <svg viewBox="0 0 900 440" role="img" aria-labelledby="ownBTitle">
+          <title id="ownBTitle">A platform control plane with the registry, routing, console and approvals UI holds no session state. Each tenant has its own agent runtime instance on its own host: Astro's instance and Locomotive's premium instance in its own network. Each instance contains the agent loop, its sessions and its tools, and owns the session. The platform sends a task; the instance reports that it needs approval; the platform must deliver the decision back to the instance and session that asked, which may have restarted or scaled in the meantime.</title>
+          <rect class="box" x="16" y="30" width="200" height="350" rx="8"/>
+          <text class="lbl" x="30" y="58">Platform</text>
+          <text class="lbl" x="30" y="78">control plane</text>
+          <text class="small" x="30" y="104">registry · routing</text>
+          <text class="small" x="30" y="122">console</text>
+          <text class="small" x="30" y="140">approvals UI:</text>
+          <text class="small" x="30" y="158">operator decides here</text>
+          <text class="small" x="30" y="190">holds no session;</text>
+          <text class="small" x="30" y="208">tracks what each</text>
+          <text class="small" x="30" y="226">instance reports</text>
+
+          <rect class="frame" x="380" y="16" width="504" height="186" rx="10"/>
+          <text class="lbl" x="396" y="42">Astro's runtime instance, own host</text>
+          <rect class="box" x="396" y="58" width="140" height="70" rx="6"/>
+          <text class="lbl" x="408" y="84">Agent loop</text><text class="small" x="408" y="106">run_agent</text>
+          <rect class="today" x="548" y="58" width="160" height="70" rx="6"/>
+          <text class="lbl" x="560" y="84">Sessions</text><text class="small" x="560" y="106">its memory or DB</text>
+          <rect class="box" x="720" y="58" width="150" height="70" rx="6"/>
+          <text class="lbl" x="732" y="84">Tools</text><text class="small" x="732" y="106">its credentials</text>
+          <text class="small" x="396" y="158">owns the session: messages, pending call,</text>
+          <text class="small" x="396" y="176">status; restarts or scales on its own</text>
+
+          <rect class="frame" x="380" y="232" width="504" height="186" rx="10"/>
+          <text class="lbl" x="396" y="258">Locomotive's instance, premium, own network</text>
+          <rect class="box" x="396" y="274" width="140" height="70" rx="6"/>
+          <text class="lbl" x="408" y="300">Agent loop</text><text class="small" x="408" y="322">run_agent</text>
+          <rect class="today" x="548" y="274" width="160" height="70" rx="6"/>
+          <text class="lbl" x="560" y="300">Sessions</text><text class="small" x="560" y="322">its memory or DB</text>
+          <rect class="box" x="720" y="274" width="150" height="70" rx="6"/>
+          <text class="lbl" x="732" y="300">Tools</text><text class="small" x="732" y="322">its credentials</text>
+          <text class="small" x="396" y="374">a different version, release cycle</text>
+          <text class="small" x="396" y="392">and data boundary from Astro's</text>
+
+          <path class="ink" d="M216 70 H374"/><path class="arrowhead" d="M378 70 l-8 -5 v10z"/>
+          <text class="small" x="226" y="62">1 start a task</text>
+          <path class="err" d="M380 108 H222"/><path class="arrowhead" d="M218 108 l8 -5 v10z"/>
+          <text class="errlbl" x="226" y="100">2 needs approval</text>
+          <path class="err" d="M216 146 H374"/><path class="arrowhead" d="M378 146 l-8 -5 v10z"/>
+          <text class="errlbl" x="226" y="138">3 decision: to whom?</text>
+          <text class="small" x="226" y="170">same instance?</text>
+          <text class="small" x="226" y="188">session still held?</text>
+          <path class="ink" d="M216 300 H374"/><path class="arrowhead" d="M378 300 l-8 -5 v10z"/>
+          <text class="small" x="226" y="292">tasks, events,</text>
+          <text class="small" x="226" y="320">decisions: the</text>
+          <text class="small" x="226" y="338">same questions</text>
+          <text class="small" x="226" y="356">per instance</text>
+        </svg>
+      </div>
+      <figcaption>Like a dedicated instance for a premium SaaS client: stronger isolation and independent releases, but the platform coordinates state it does not hold. The red arrows are where an approval can go wrong.</figcaption>
+    </figure>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th></th><th>A · Platform owns the runs</th><th>B · Each runtime owns its sessions</th></tr></thead>
+        <tbody>
+          <tr><td>Where a run lives</td><td>one run store for every tenant, keyed by tenant and run ID</td><td>inside each runtime instance, in its memory or its own database</td></tr>
+          <tr><td>Agent runtime</td><td>a library; created per execution, dropped when the run pauses or ends</td><td>a long-lived service per client, team or vendor agent</td></tr>
+          <tr><td>Human approval</td><td>a stored decision, then a resume by any worker</td><td>a message to the instance that asked, which must still hold the session; correlation, delivery, retries and expiry on both sides</td></tr>
+          <tr><td>Status of a run</td><td>one source of truth: the store</td><td>the instance's view and the platform's copy, kept in step by events</td></tr>
+          <tr><td>Failure</td><td>a worker dies; another resumes from the store</td><td>an instance dies; its sessions survive only if it persisted them, and the platform must find out</td></tr>
+          <tr><td>Isolation</td><td>logical: the tenant key on every row and call</td><td>physical: own host, network, credentials and release cycle</td></tr>
+          <tr><td>Cost</td><td>shared workers, low per tenant</td><td>an instance per client, idle capacity, more operations</td></tr>
+          <tr><td>SaaS analogy</td><td>multi-tenant: tenants as rows in one database</td><td>single-tenant: a premium client's own instance</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="prose" style="margin-top:0">
+      <p><b>In this course:</b> you build design A. Today the runtime learns to stop, be saved and continue; from Session 08 the platform core owns every run in <code>var/platform.db</code> and creates the runtime per execution. Session 07 meets design B in miniature: the remote A2A specialist is a separate service that keeps its own tasks in its own memory, and the platform delegates to it, streams its progress and cancels it across that boundary. Real platforms often mix the two: the platform owns the run, and a step inside it calls an independent runtime.</p>
+    </div>
+    <aside class="instructor" aria-label="Instructor notes">
+      <p><b>SAY</b> Before we make runs durable, decide who owns them. If the platform owns the runs, sessions are managed centrally, a human approval is one stored decision and a resume, and the runtime is created on demand: nothing waits in memory for a person. If each runtime is an independent service that owns its sessions, for isolation or independent releases, the platform has to coordinate state it does not hold: the approval must reach the instance and the session that asked, after restarts, scaling and timeouts. The trade-off is the same one SaaS made between multi-tenant deployments and a dedicated instance for a premium client.</p>
+      <p><b>PAUSE</b> Ask which design learners' own organisations run today, and what pushed them there: isolation, compliance, a vendor's agent, or cost.</p>
+    </aside>
+    <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">A premium client wants their agent runtime in their own network, design B. What must cross the boundary for one approval to work?</p>
+      <details><summary>Show the answer</summary><p>The proposal with its exact action key and arguments, a correlation to the session that asked, the decision with its expiry, and an acknowledgement that it arrived. The instance must persist the session while it waits, or the decision has nowhere to land, and both sides must agree which of them holds the true status of the run.</p></details></div>
+    <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">In design A, an approved run waits an hour and the worker that started it is gone. What does the platform need to resume it?</p>
+      <details><summary>Show the answer</summary><p>Only what is in its own store: the run's snapshot with its pending call and the approval row. Any idle worker creates a new runtime and continues the run. That is today's build.</p></details></div>
+  </div>
+</section>
+
 <section class="ch" id="idea">
   <p class="eyebrow"><span>The idea</span></p>
   <h2>A run must be able to stop and continue without guessing what already happened</h2>
