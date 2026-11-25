@@ -675,6 +675,48 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
   <h2>Save the whole run, and save the call before you make it</h2>
   <div class="stack">
     <p class="lede" style="margin-top:0">A snapshot is the run as plain data: everything a new process needs to continue, and nothing it has to guess. The order of saving matters as much as the content. The loop records the model's tool calls as pending and saves the run <b>before</b> executing them, so a crash at any later moment still leaves the call on record. When the tool boundary raises <code>ApprovalRequired</code>, the loop does not fail: it stops with status <code>waiting_approval</code>, keeps the call pending and saves.</p>
+    <figure id="snapshotFig">
+      <div class="diagram">
+        <svg viewBox="0 0 900 380" role="img" aria-label="One turn of the loop with its save points. A model reply asks for a tool call; the loop records it as pending and saves (save 1) before executing it. The tool boundary executes it; the observation is appended, the call removed from pending, and the run saved again (save 2) before the next model call. If the boundary raises ApprovalRequired, the loop sets waiting_approval, keeps the call pending, saves (save 3) and returns. Each save writes one row of the runs table, keyed by tenant and run ID, with the whole snapshot in its body; loading an Astro run as Locomotive fails as run_not_found.">
+          <rect class="box" x="16" y="30" width="130" height="64" rx="8"/>
+          <text class="lbl" x="28" y="56">Model reply</text><text class="small" x="28" y="78">1 tool call</text>
+          <rect class="box" x="164" y="30" width="130" height="64" rx="8"/>
+          <text class="lbl" x="176" y="56">Record</text><text class="small" x="176" y="78">pending = [call]</text>
+          <rect class="today" x="312" y="30" width="90" height="64" rx="8"/>
+          <text class="lbl" x="324" y="56">Save 1</text><text class="small" x="324" y="78">checkpoint</text>
+          <rect class="box" x="420" y="30" width="130" height="64" rx="8"/>
+          <text class="lbl" x="432" y="56">Execute</text><text class="small" x="432" y="78">tool boundary</text>
+          <rect class="box" x="568" y="30" width="130" height="64" rx="8"/>
+          <text class="lbl" x="580" y="56">Observation</text><text class="small" x="580" y="78">appended, popped</text>
+          <rect class="today" x="716" y="30" width="90" height="64" rx="8"/>
+          <text class="lbl" x="728" y="56">Save 2</text><text class="small" x="728" y="78">checkpoint</text>
+          <path class="ink" d="M146 62 H158"/><path class="arrowhead" d="M162 62 l-8 -5 v10z"/>
+          <path class="ink" d="M294 62 H306"/><path class="arrowhead" d="M310 62 l-8 -5 v10z"/>
+          <path class="ink" d="M402 62 H414"/><path class="arrowhead" d="M418 62 l-8 -5 v10z"/>
+          <path class="ink" d="M550 62 H562"/><path class="arrowhead" d="M566 62 l-8 -5 v10z"/>
+          <path class="ink" d="M698 62 H710"/><path class="arrowhead" d="M714 62 l-8 -5 v10z"/>
+          <path class="ink" d="M806 62 H838"/><path class="arrowhead" d="M842 62 l-8 -5 v10z"/>
+          <text class="small" x="812" y="110">next step</text>
+
+          <path class="err" d="M485 94 V136"/><path class="arrowhead" d="M485 140 l-5 -8 h10z"/>
+          <text class="errlbl" x="494" y="122">ApprovalRequired</text>
+          <rect class="today" x="420" y="144" width="278" height="64" rx="8"/>
+          <text class="lbl" x="432" y="170">Stop</text><text class="small" x="432" y="192">waiting_approval, call kept</text>
+          <rect class="today" x="716" y="144" width="90" height="64" rx="8"/>
+          <text class="lbl" x="728" y="170">Save 3</text><text class="small" x="728" y="192">return</text>
+          <path class="ink" d="M698 176 H710"/><path class="arrowhead" d="M714 176 l-8 -5 v10z"/>
+
+          <text class="lbl" x="16" y="250">The runs table: one row per run, written by every save</text>
+          <rect class="box" x="16" y="262" width="868" height="78" rx="6"/>
+          <text class="small" x="28" y="282">tenant</text><text class="small" x="140" y="282">id</text><text class="small" x="250" y="282">status</text><text class="small" x="430" y="282">body: the snapshot</text>
+          <path class="ink" d="M16 290 H884"/>
+          <text class="small" x="28" y="308">astro</text><text class="small" x="140" y="308">7f3a…</text><text class="small" x="250" y="308">waiting_approval</text><text class="small" x="430" y="308">context, messages, pending call, steps, tokens, events</text>
+          <text class="small" x="28" y="330">locomotive</text><text class="small" x="140" y="330">2c9e…</text><text class="small" x="250" y="330">completed</text><text class="small" x="430" y="330">context, messages, answer, events</text>
+          <text class="errlbl" x="16" y="366">load("locomotive", "7f3a…") → KeyError: run_not_found</text>
+        </svg>
+      </div>
+      <figcaption>Three saves in one turn: before the call runs, after its result, and when the boundary stops a write. Each overwrites the run's one row, keyed by tenant and run ID.</figcaption>
+    </figure>
     <div class="two">
       <div class="excerpt">
         <div class="src">pending, then saved, then dispatched · agent_runtime/core.py · lines 175–181 at lesson-05</div>
@@ -734,6 +776,36 @@ def load(self, tenant, run_id):
   <h2>A person approves one exact action, for a limited time</h2>
   <div class="stack">
     <p class="lede" style="margin-top:0">The decision is a record of its own, not a field on the run. It names the tenant, the run, the action key of the pending call, an expiry and the verdict, approve or deny. The action key binds tenant, run, tool and canonical arguments, so approving a rollback of INC-001 says nothing about a rollback of INC-002. A denial ends the run as <code>denied</code>. The proposal comes from <code>RemediationProvider</code>, a clearly labelled fixture that always proposes the same rollback: a way to reach the approval branch, not an operational recommendation.</p>
+    <figure id="approvalFig">
+      <div class="diagram">
+        <svg viewBox="0 0 900 320" role="img" aria-label="How one decision is made and stored. The pending call (mock_remediate on INC-001 with rollback) and the run's context (tenant astro, run 7f3a) go into action_key, a SHA-256 of tenant, run, tool and arguments. The operator approves or denies with a time to live, and the decision is stored as its own approvals row: tenant, run, key, expiry and decision. A proposal for INC-002 has a different key that this approval does not cover; a denial makes the run denied, and it never resumes.">
+          <rect class="box" x="16" y="30" width="210" height="76" rx="8"/>
+          <text class="lbl" x="30" y="56">Pending call</text>
+          <text class="small" x="30" y="78">mock_remediate</text><text class="small" x="30" y="96">INC-001 · rollback</text>
+          <rect class="box" x="16" y="130" width="210" height="76" rx="8"/>
+          <text class="lbl" x="30" y="156">Run context</text>
+          <text class="small" x="30" y="178">tenant astro</text><text class="small" x="30" y="196">run 7f3a…</text>
+          <rect class="box" x="276" y="80" width="180" height="76" rx="8"/>
+          <text class="lbl" x="290" y="106">action_key</text>
+          <text class="small" x="290" y="128">sha256 of tenant,</text><text class="small" x="290" y="146">run, tool, args</text>
+          <path class="ink" d="M226 68 H250 V108 H270"/><path class="arrowhead" d="M274 108 l-8 -5 v10z"/>
+          <path class="ink" d="M226 168 H250 V128 H270"/>
+          <rect class="box" x="496" y="80" width="160" height="76" rx="8"/>
+          <text class="lbl" x="510" y="106">Operator</text>
+          <text class="small" x="510" y="128">approve or deny</text><text class="small" x="510" y="146">ttl 300 s</text>
+          <path class="ink" d="M456 118 H490"/><path class="arrowhead" d="M494 118 l-8 -5 v10z"/>
+          <rect class="today" x="696" y="62" width="188" height="112" rx="8"/>
+          <text class="lbl" x="710" y="88">approvals row</text>
+          <text class="small" x="710" y="110">tenant · run</text><text class="small" x="710" y="128">key 3a03…</text>
+          <text class="small" x="710" y="146">expires now+300</text><text class="small" x="710" y="164">decision approve</text>
+          <path class="ink" d="M656 118 H690"/><path class="arrowhead" d="M694 118 l-8 -5 v10z"/>
+          <text class="errlbl" x="16" y="250">INC-002 instead of INC-001 → a different key: this approval does not cover it</text>
+          <text class="errlbl" x="16" y="276">deny → the run becomes denied and never resumes</text>
+          <text class="small" x="16" y="302">The decision is a separate record, not a flag on the run; resume reads it again and checks the expiry.</text>
+        </svg>
+      </div>
+      <figcaption>The key is computed from the pending call and the run, never from what the model wrote, so a decision covers exactly one action of one run.</figcaption>
+    </figure>
     <div class="two">
       <div class="excerpt">
         <div class="src">store the decision for the exact pending call · agent_runtime/durable.py · lines 27–39 at lesson-05</div>
@@ -774,6 +846,38 @@ def load(self, tenant, run_id):
   <h2>Continue the same loop from the saved pending call</h2>
   <div class="stack">
     <p class="lede" style="margin-top:0">Resuming is not a new kind of execution. <code>resume_run</code> loads the snapshot, refuses a run that was denied or cancelled, replaces the run's approved keys with the ones whose decisions are still valid, and hands the run to the same <code>run_agent</code> with <code>initial=run</code>. The loop sees a pending call and executes it before it asks the model anything. If the approval expired, the boundary raises <code>ApprovalRequired</code> again and the run is back to <code>waiting_approval</code>: authority is never renewed silently.</p>
+    <figure id="resumeFig">
+      <div class="diagram">
+        <svg viewBox="0 0 900 350" role="img" aria-label="What resume_run does. It loads the snapshot and checks the status: a completed run is returned unchanged; a denied or cancelled run raises PermissionError; any other run gets its approved keys replaced by the decisions still valid and continues in run_agent with initial=run, which executes the pending call first. If the approval expired, the boundary raises ApprovalRequired again and the run is back to waiting_approval.">
+          <rect class="today" x="16" y="120" width="140" height="64" rx="8"/>
+          <text class="lbl" x="28" y="146">resume_run</text><text class="small" x="28" y="168">tenant, run ID</text>
+          <rect class="box" x="186" y="120" width="140" height="64" rx="8"/>
+          <text class="lbl" x="198" y="146">Load</text><text class="small" x="198" y="168">the snapshot</text>
+          <rect class="box" x="356" y="120" width="120" height="64" rx="8"/>
+          <text class="lbl" x="368" y="146">Status?</text><text class="small" x="368" y="168">from the run</text>
+          <path class="ink" d="M156 152 H180"/><path class="arrowhead" d="M184 152 l-8 -5 v10z"/>
+          <path class="ink" d="M326 152 H350"/><path class="arrowhead" d="M354 152 l-8 -5 v10z"/>
+
+          <rect class="box" x="536" y="20" width="250" height="56" rx="8"/>
+          <text class="lbl" x="548" y="44">completed</text><text class="small" x="548" y="64">returned unchanged</text>
+          <rect class="fail" x="536" y="124" width="250" height="56" rx="8"/>
+          <text class="lbl" x="548" y="148">denied or cancelled</text><text class="errlbl" x="548" y="168">PermissionError: terminal_run</text>
+          <path class="ink" d="M476 140 H500 V48 H530"/><path class="arrowhead" d="M534 48 l-8 -5 v10z"/>
+          <path class="ink" d="M476 152 H530"/><path class="arrowhead" d="M534 152 l-8 -5 v10z"/>
+          <path class="ink" d="M476 164 H500 V258 H530"/><path class="arrowhead" d="M534 258 l-8 -5 v10z"/>
+          <text class="small" x="424" y="240">otherwise</text>
+
+          <rect class="today" x="536" y="226" width="160" height="64" rx="8"/>
+          <text class="lbl" x="548" y="252">Refresh</text><text class="small" x="548" y="274">valid keys only</text>
+          <rect class="today" x="724" y="226" width="160" height="64" rx="8"/>
+          <text class="lbl" x="736" y="252">run_agent</text><text class="small" x="736" y="274">initial=run</text>
+          <path class="ink" d="M696 258 H718"/><path class="arrowhead" d="M722 258 l-8 -5 v10z"/>
+          <text class="small" x="536" y="318">pending call first: approved → executes; expired →</text>
+          <text class="small" x="536" y="336">ApprovalRequired again, back to waiting_approval</text>
+        </svg>
+      </div>
+      <figcaption>Resume is a few checks in front of the same loop. Nothing is renewed: an approval that expired while the run waited is simply not among the keys the run gets back.</figcaption>
+    </figure>
     <div class="two">
       <div class="excerpt">
         <div class="src">resume: refuse terminal runs, refresh approvals, same loop · agent_runtime/durable.py · lines 47–56 at lesson-05</div>
@@ -813,6 +917,49 @@ def load(self, tenant, run_id):
   <h2>Kill the worker right after the write, then count the effects</h2>
   <div class="stack">
     <p class="lede" style="margin-top:0">Happy-path checks never visit the moment that matters most: the effect has committed, but the run has not yet saved the observation. The check pack's demonstration creates exactly that moment. It wraps the executor so that the approved write runs and then the worker "dies", opens a new store and a new executor on the same database file, as a restarted process would, resumes, and counts the rows in <code>effects</code>. The answer must be one.</p>
+    <figure id="crashFig">
+      <div class="diagram">
+        <svg viewBox="0 0 900 350" role="img" aria-label="The crash demonstration as three lanes. Worker A resumes the approved run and executes the rollback; the effect and its ledger row commit together in the effects table; then worker A dies before saving the result, so the runs table still shows the call pending. Worker B, a new store and executor on the same database file, resumes and executes the same pending call; the ledger finds the action key and returns the stored result marked replayed; worker B saves the result and the run completes with still one effect.">
+          <text class="lbl" x="16" y="70">Worker A</text>
+          <text class="lbl" x="16" y="190">Database</text><text class="small" x="16" y="208">one file</text>
+          <text class="lbl" x="16" y="310">Worker B</text>
+          <path class="frame" d="M120 124 H884 M120 244 H884"/>
+
+          <rect class="box" x="130" y="38" width="120" height="58" rx="8"/>
+          <text class="lbl" x="142" y="62">Resume</text><text class="small" x="142" y="82">approved run</text>
+          <rect class="box" x="280" y="38" width="170" height="58" rx="8"/>
+          <text class="lbl" x="292" y="62">Execute</text><text class="small" x="292" y="82">approved rollback</text>
+          <rect class="fail" x="480" y="38" width="190" height="58" rx="8"/>
+          <text class="lbl" x="492" y="62">Worker dies</text><text class="errlbl" x="492" y="82">before result is saved</text>
+          <path class="ink" d="M250 67 H274"/><path class="arrowhead" d="M278 67 l-8 -5 v10z"/>
+          <path class="ink" d="M450 67 H474"/><path class="arrowhead" d="M478 67 l-8 -5 v10z"/>
+
+          <rect class="today" x="280" y="150" width="220" height="70" rx="8"/>
+          <text class="lbl" x="292" y="174">effects</text><text class="small" x="292" y="194">one row for its key,</text><text class="small" x="292" y="210">committed with the write</text>
+          <rect class="box" x="530" y="150" width="220" height="70" rx="8"/>
+          <text class="lbl" x="542" y="174">runs</text><text class="small" x="542" y="194">call still pending,</text><text class="small" x="542" y="210">no result saved</text>
+          <path class="ink" d="M365 96 V144"/><path class="arrowhead" d="M365 148 l-5 -8 h10z"/>
+          <text class="small" x="374" y="114">INSERT + COMMIT</text>
+
+          <rect class="box" x="130" y="272" width="150" height="58" rx="8"/>
+          <text class="lbl" x="142" y="296">Restart</text><text class="small" x="142" y="316">new executor</text>
+          <rect class="box" x="300" y="272" width="170" height="58" rx="8"/>
+          <text class="lbl" x="312" y="296">Execute again</text><text class="small" x="312" y="316">same pending call</text>
+          <rect class="today" x="490" y="272" width="170" height="58" rx="8"/>
+          <text class="lbl" x="502" y="296">Ledger answers</text><text class="small" x="502" y="316">replayed: true</text>
+          <rect class="today" x="680" y="272" width="204" height="58" rx="8"/>
+          <text class="lbl" x="692" y="296">Completed</text><text class="small" x="692" y="316">effects still 1</text>
+          <path class="ink" d="M280 301 H294"/><path class="arrowhead" d="M298 301 l-8 -5 v10z"/>
+          <path class="ink" d="M470 301 H484"/><path class="arrowhead" d="M488 301 l-8 -5 v10z"/>
+          <path class="ink" d="M660 301 H674"/><path class="arrowhead" d="M678 301 l-8 -5 v10z"/>
+          <path class="ink" d="M400 272 V226"/><path class="arrowhead" d="M400 222 l-5 8 h10z"/>
+          <text class="small" x="410" y="258">key found</text>
+          <path class="ink" d="M720 272 V226"/><path class="arrowhead" d="M720 222 l-5 8 h10z"/>
+          <text class="small" x="730" y="258">save result</text>
+        </svg>
+      </div>
+      <figcaption>Between the two workers only the database file survives. The effects row says the write happened; the runs row says the call is still pending; together they let worker B finish without writing twice.</figcaption>
+    </figure>
     <div class="two">
       <div class="excerpt">
         <div class="src">the injected crash, in the given demonstration · course/labs/l05.py · lines 37–39 at lesson-05</div>
