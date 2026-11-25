@@ -97,6 +97,16 @@ code, .mono { font-family: var(--mono); font-size: .9em; }
 .present .ask .label .self, .instructor-view .ask .label .self { display: none; }
 .ask details summary { cursor: pointer; color: var(--muted); font-size: 15px; }
 .ask details p { margin-top: 6px; }
+/* "Ask yourself" questions fold into one collapsed group per row (see group_asks.py) */
+.askgroup { max-width: 68ch; background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; }
+.askgroup > summary { cursor: pointer; padding: 12px 20px; font: 600 11.5px var(--mono); letter-spacing: .08em;
+  text-transform: uppercase; color: var(--muted); }
+.askgroup > summary .room { display: none; }
+.present .askgroup > summary .room, .instructor-view .askgroup > summary .room { display: inline; }
+.present .askgroup > summary .self, .instructor-view .askgroup > summary .self { display: none; }
+.askgroup > .askbody { display: grid; gap: 18px; padding: 2px 20px 18px; }
+.askgroup .ask { padding: 0; background: none; border: 0; border-radius: 0; }
+.askgroup .ask > .label { display: none; }
 /* Read your code: questions a learner answers from their own project after each build step */
 .ask.readcode { border-left: 4px solid var(--signal); }
 .readcode ol { margin: 4px 0 0; padding-left: 22px; display: grid; gap: 4px; }
@@ -334,12 +344,14 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
     <aside class="instructor" aria-label="Instructor notes">
       <p><b>SAY</b> Start from what the learners already have. Session 02 built the gate: an approved write needs its exact action key in <code>context.approved</code>, and the effect and its deduplication record commit in one SQLite transaction. Session 04 built the instrument that tells us whether a change helped. Today neither changes. We add what happens around the gate: the run stops and is saved, a decision is stored, and the run resumes.</p>
     </aside>
-    <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">What did your Session 02 tool boundary do when <code>mock_remediate</code> arrived without an approved key, and what happened to the run?</p>
+    <details class="askgroup"><summary><span class="self">Ask yourself</span><span class="room">Ask the room</span> · 3 questions</summary><div class="askbody">
+      <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">What did your Session 02 tool boundary do when <code>mock_remediate</code> arrived without an approved key, and what happened to the run?</p>
       <details><summary>Show the answer</summary><p>It raised <code>ApprovalRequired</code> with the key, tool and arguments, and executed nothing. What the run did next depends on your loop: in many projects the exception simply ended the run as a failure, because nothing had to catch it until today. The console's Tools view showed the same thing as <code>approval_required</code> with the key.</p></details></div>
-    <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">The same approved rollback is executed twice, once before a crash and once after. Why is there still only one effect?</p>
+      <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">The same approved rollback is executed twice, once before a crash and once after. Why is there still only one effect?</p>
       <details><summary>Show the answer</summary><p>The effect and its record in the <code>effects</code> ledger, keyed by the action key, commit in one transaction. The second execution finds the key and returns the stored result with <code>replayed: true</code> instead of writing again. That is the Session 02 guarantee today's recovery relies on.</p></details></div>
-    <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">Your Session 04 harness reported a baseline. Which of its numbers should today's change move?</p>
+      <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">Your Session 04 harness reported a baseline. Which of its numbers should today's change move?</p>
       <details><summary>Show the answer</summary><p>None. Today changes what happens when a run stops, not how it investigates. Durable state and approvals add no model calls on the investigation path, so the 19 earlier checks and the evaluation results stay as they were; only two checks are added.</p></details></div>
+    </div></details>
   </div>
 </section>
 
@@ -415,10 +427,12 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
       <p><b>SAY</b> Before we make runs durable, agree on the words. The investigation is the question someone asks. A run is one agent's attempt at a task, such as answering that question: it has an ID, a tenant, a status and a history, and asking the same question again starts another run. Steps are model calls inside it. A worker executes it. Until today a worker took each run from start to end, so the run and the process felt identical. Today we separate them: the run is a record that outlives the worker, and a different worker can finish it.</p>
       <p><b>PAUSE</b> Ask a learner to point at the run ID in their console's run page, and another to say what would make a second investigation of INC-001 a different run.</p>
     </aside>
-    <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">You submit INC-001 twice in the console. How many investigations, how many runs, and could an approval given in the first apply to the second?</p>
+    <details class="askgroup"><summary><span class="self">Ask yourself</span><span class="room">Ask the room</span> · 2 questions</summary><div class="askbody">
+      <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">You submit INC-001 twice in the console. How many investigations, how many runs, and could an approval given in the first apply to the second?</p>
       <details><summary>Show the answer</summary><p>Two requests for the same investigation, and two runs, each with its own run ID. The approval cannot carry over: the action key includes the run ID, so the same rollback in the second run has a different key and needs its own decision.</p></details></div>
-    <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">A run waits an hour for approval, and a different worker resumes it. Is that one run or two?</p>
+      <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">A run waits an hour for approval, and a different worker resumes it. Is that one run or two?</p>
       <details><summary>Show the answer</summary><p>One run, executed twice. It keeps its run ID, tenant, messages and pending call; only the worker changed. That is what today makes possible.</p></details></div>
+    </div></details>
   </div>
 </section>
 
@@ -548,10 +562,12 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
       <p><b>SAY</b> Before we make runs durable, decide who owns them. If the platform owns the runs, sessions are managed centrally, a human approval is one stored decision and a resume, and the runtime is created on demand: nothing waits in memory for a person. If each runtime is an independent service that owns its sessions, for isolation or independent releases, the platform has to coordinate state it does not hold: the approval must reach the instance and the session that asked, after restarts, scaling and timeouts. The trade-off is the same one SaaS made between multi-tenant deployments and a dedicated instance for a premium client.</p>
       <p><b>PAUSE</b> Ask which design learners' own organisations run today, and what pushed them there: isolation, compliance, a vendor's agent, or cost.</p>
     </aside>
-    <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">A premium client wants their agent runtime in their own network, design B. What must cross the boundary for one approval to work?</p>
+    <details class="askgroup"><summary><span class="self">Ask yourself</span><span class="room">Ask the room</span> · 2 questions</summary><div class="askbody">
+      <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">A premium client wants their agent runtime in their own network, design B. What must cross the boundary for one approval to work?</p>
       <details><summary>Show the answer</summary><p>The proposal with its exact action key and arguments, a correlation to the session that asked, the decision with its expiry, and an acknowledgement that it arrived. The instance must persist the session while it waits, or the decision has nowhere to land, and both sides must agree which of them holds the true status of the run.</p></details></div>
-    <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">In design A, an approved run waits an hour and the worker that started it is gone. What does the platform need to resume it?</p>
+      <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">In design A, an approved run waits an hour and the worker that started it is gone. What does the platform need to resume it?</p>
       <details><summary>Show the answer</summary><p>Only what is in its own store: the run's snapshot with its pending call and the approval row. Any idle worker creates a new runtime and continues the run. That is today's build.</p></details></div>
+    </div></details>
   </div>
 </section>
 
@@ -651,8 +667,10 @@ footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var
       <p><b>SAY</b> Draw three durable records: the run snapshot, the approval decision and the effect ledger. They answer different questions. The snapshot says where execution stopped. Approval says which exact action a trusted operator accepted and until when. The ledger says whether the simulated effect already committed. Explain why persisting a pending call before dispatch matters. If the process crashes after the write, the pending call is still present and will be retried, so the receiver-side idempotency key must make that retry safe. Cancellation and denial are terminal control decisions. An expired approval should leave the operation waiting rather than silently renewing authority.</p>
       <p><b>PAUSE</b> Invite one learner to trace the control flow and another to identify a failure boundary. Resolve different interpretations before opening the implementation.</p>
     </aside>
-    <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">Three records: the snapshot, the approval and the ledger. Which question does each one answer?</p>
+    <details class="askgroup"><summary><span class="self">Ask yourself</span><span class="room">Ask the room</span> · 1 question</summary><div class="askbody">
+      <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">Three records: the snapshot, the approval and the ledger. Which question does each one answer?</p>
       <details><summary>Show the answer</summary><p>The snapshot: where did the run stop, and what was it about to do? The approval: did a person accept this exact action, and is that still valid? The ledger: did the effect already happen? Keeping them apart means none of them has to be inferred from another, least of all from the model's messages.</p></details></div>
+    </div></details>
   </div>
 </section>
 
@@ -708,8 +726,10 @@ def load(self, tenant, run_id):
       <p><b>Explain the choice</b> A restart can rebuild the run without replaying every previous model decision. Tenant-scoped keys preserve the access boundary during recovery.</p>
       <p><b>PAUSE</b> Have learners identify the boundary in their agent's change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.</p>
     </aside>
-    <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">Is saving only the final answer enough for recovery?</p>
+    <details class="askgroup"><summary><span class="self">Ask yourself</span><span class="room">Ask the room</span> · 1 question</summary><div class="askbody">
+      <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">Is saving only the final answer enough for recovery?</p>
       <details><summary>Show the answer</summary><p>No. A run may not have a final answer, and we must know pending calls, counters and control state to resume safely.</p></details></div>
+    </div></details>
   </div>
 </section>
 
@@ -746,8 +766,10 @@ def load(self, tenant, run_id):
       <p><b>Explain the choice</b> Binding approval to tenant, run, tool and arguments prevents a decision from being reused for a different action. Expiry and denial remain enforceable after restart.</p>
       <p><b>PAUSE</b> Have learners identify the boundary in their agent's change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.</p>
     </aside>
-    <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">Why not simply store <code>approved=true</code> on the run?</p>
+    <details class="askgroup"><summary><span class="self">Ask yourself</span><span class="room">Ask the room</span> · 1 question</summary><div class="askbody">
+      <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">Why not simply store <code>approved=true</code> on the run?</p>
       <details><summary>Show the answer</summary><p>That flag would not identify which operation and arguments were reviewed. A changed proposal could inherit an unrelated approval.</p></details></div>
+    </div></details>
   </div>
 </section>
 
@@ -783,8 +805,10 @@ def load(self, tenant, run_id):
       <p><b>Explain the choice</b> Recovery uses durable application evidence. The model does not decide transaction history. The local exactly-once demonstration depends on the mock effect and idempotency record sharing a SQLite transaction.</p>
       <p><b>PAUSE</b> Have learners identify the boundary in their agent's change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.</p>
     </aside>
-    <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">Does this guarantee exactly-once execution for every external API?</p>
+    <details class="askgroup"><summary><span class="self">Ask yourself</span><span class="room">Ask the room</span> · 1 question</summary><div class="askbody">
+      <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">Does this guarantee exactly-once execution for every external API?</p>
       <details><summary>Show the answer</summary><p>No. External effects require receiver-supported idempotency, transactional messaging or reconciliation. The demo proves the local ledger's boundary.</p></details></div>
+    </div></details>
   </div>
 </section>
 
@@ -832,12 +856,14 @@ try:
       <p><b>Explain the choice</b> Fault injection tests the exact interval that ordinary happy-path checks miss. The crash fixture derives from BaseException so the runtime does not accidentally convert a simulated process loss into a normal recoverable error.</p>
       <p><b>PAUSE</b> Have learners identify the boundary in their agent's change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.</p>
     </aside>
-    <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">What evidence distinguishes a safe retry from an unknown remote effect?</p>
+    <details class="askgroup"><summary><span class="self">Ask yourself</span><span class="room">Ask the room</span> · 3 questions</summary><div class="askbody">
+      <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">What evidence distinguishes a safe retry from an unknown remote effect?</p>
       <details><summary>Show the answer</summary><p>A durable receiver-side result for the same idempotency key. Without it, recovery must reconcile the external state before proceeding.</p></details></div>
-    <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">After crash B the run is resumed and finishes. Before that, what status did the saved run show, and does it matter?</p>
+      <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">After crash B the run is resumed and finishes. Before that, what status did the saved run show, and does it matter?</p>
       <details><summary>Show the answer</summary><p>Still <code>waiting_approval</code>: the loop sets <code>running</code> in memory when it resumes, but the next save comes only after the observation, which the crash prevented. The checks do not mind, because resume reads the pending call and the ledger, not the status. A console would show a run as waiting whose write has already happened, so a platform that shows status to people saves <code>running</code> before dispatching a resumed call.</p></details></div>
-    <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">Why does <code>WorkerCrash</code> derive from <code>BaseException</code>, not <code>Exception</code>?</p>
+      <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">Why does <code>WorkerCrash</code> derive from <code>BaseException</code>, not <code>Exception</code>?</p>
       <details><summary>Show the answer</summary><p>A real process loss is not an error the loop can handle: it simply stops. Code that catches <code>Exception</code>, such as a retry or a failure handler, would otherwise turn the simulated crash into a recorded failure and save it, which a dead process could never do.</p></details></div>
+    </div></details>
   </div>
 </section>
 
@@ -1251,7 +1277,7 @@ course/__init__.py                   <span class="muted">LESSON = 4, raised to 5
     document.body.classList.toggle("instructor-view", view === "instructor");
     buttons.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.view === view)));
     // In Instructor view every "Ask the room" answer is already open; leaving it folds them again.
-    document.querySelectorAll(".ask details").forEach((d) => { d.open = view === "instructor"; });
+    document.querySelectorAll(".ask details, details.askgroup").forEach((d) => { d.open = view === "instructor"; });
     if (keepPlace) anchor.scrollIntoView({ block: "start" });
     try { localStorage.setItem(viewKey, view); } catch (e) { /* storage unavailable */ }
   };
