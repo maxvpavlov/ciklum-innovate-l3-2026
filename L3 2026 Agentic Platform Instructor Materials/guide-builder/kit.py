@@ -274,6 +274,35 @@ def build_lesson(n, known_given):
                 else:
                     lines.append(f"- `given/{name}.py`: add `{name}` to `{path}` in the build step that creates that file.")
         lines.append("")
+    if n == 6:
+        lines += ["", "The checks also rely on these, beyond the imported names:", "",
+                  "- `run_agent(..., execute_batch=None)`: when given, the loop hands all pending calls to",
+                  "  `execute_batch(pending, context)` at once, which returns a result per tool-call ID; without it the",
+                  "  loop behaves as before;",
+                  "- `Supervisor(worker_factory=MockProvider, budget=None)` with `children` (the child runs),",
+                  "  `budget`, `delegate(name, args, parent)` and",
+                  "  `investigate(task=\"Investigate INC-001 payments latency\", context=None, provider=None, parallel=False)`,",
+                  "  which uses the given `SupervisorProvider` unless a provider is passed and the batch hook only when",
+                  "  `parallel` is true;",
+                  "- `delegate` returns the child's answer as `data` with `ok`, `child_run_id`, `task_id`, `status` and",
+                  "  `error`, or `{\"ok\": false, \"error\": ...}` with `invalid_delegation`, `task_id_conflict`,",
+                  "  `child_privilege_escalation` or `delegation_budget`; a child gets a new run ID, the parent's run ID",
+                  "  as `parent_id`, only its role's tool (`logs`: `log_lookup`, `runbooks`: `runbook_search`) and no",
+                  "  approvals, and never the `delegate` tool;",
+                  "- `SharedBudget(remaining=5000, max_agents=2, max_depth=1)` with `spawned`, `spent`,",
+                  "  `reserve(tokens, depth)` and `settle(reserved, used)`;",
+                  "- `WorkItem(id, payload, depends_on=())` and `schedule(items, runner, concurrency=2, deadline=5)`,",
+                  "  returning `status` (`completed` or `partial`) and `results` by item ID, each with a `status` of",
+                  "  `completed`, `failed`, `blocked` or `cancelled`; a cycle raises `ValueError` (`dependency_cycle`)",
+                  "  before any work starts;",
+                  "- `Envelope(correlation_id, task_id, artifact_id, version, body)`, `accept_reply(request, reply)`",
+                  "  raising `ValueError` for another request's reply or a version other than the next one, and",
+                  "  `bounded_review(artifact, producer, reviewer, max_rounds=2)` returning `accepted` or `escalated`;",
+                  "- `MockProvider(latency=...)`, given since Lesson 04, which the demo uses to compare sequential and",
+                  "  parallel runs.", "",
+                  "Along the way: this lesson's test file imports `agent_runtime.coordination` as well as",
+                  "`agent_runtime.supervisor`, so it cannot import until build step 3 creates `coordination.py`;",
+                  "until then run the earlier tests with `--ignore tests/test_lesson06.py` (21 pass)."]
     if not items:
         lines += ["This lesson has no given files: copy `checks/` only.", ""]
     if n == 8:

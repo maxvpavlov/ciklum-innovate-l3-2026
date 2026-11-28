@@ -386,6 +386,73 @@ SESSIONS = {
         ],
         "next": "Session 06: Supervisor, subagents and parallel coordination",
     },
+    6: {
+        "full_page": "06-supervisor-and-subagents.html",
+        "fold": True,
+        "title": "Supervisor, subagents and parallel coordination",
+        "goal": "By the end one investigation is answered by a supervisor and two scoped child agents: the model proposes "
+                "the work, the application decides each child's tool, budget and limits, independent work runs in "
+                "parallel under a deadline, and every reply is matched to its request. Run the prompts in this order, in "
+                "your coding agent started in ~/agentic-course, and read each result before you paste the next one.",
+        "facts": ["<b>9 prompts</b> in order", "ends at <b>29 passed</b> · <code>LESSON = 6</code>",
+                  "offline · no model key needed"],
+        "outcomes": [("Contracts, not prompts", "the model proposes a task ID, a role and an objective; the application decides the rest."),
+                     ("Scoped children", "a new run ID, the parent's ID, one tool, no approvals, no delegate."),
+                     ("One budget", "reserved before a child starts, settled after it ends."),
+                     ("Bounded coordination", "a deadline that keeps finished work, replies matched to requests, review that escalates.")],
+        "steps": [
+            ("Prepare the workspace", "Prepare", "confirms lesson-05 · refreshes the course copy",
+             "Opens your project, reads its AGENTS.md, confirms your Session 05 work still passes and updates your "
+             "read-only copy of the course repository, which now holds the Session 06 kit. Your project is not changed.",
+             "your project at the lesson-05 checkpoint with <b>21 passed</b>, and the course copy moved to the latest "
+             "commit with the Lesson 06 kit: <code>given/SupervisorProvider.py</code> and the checks."),
+            ("Add the check pack", "Add the check pack", "the checks · no code yet",
+             "Copies the Session 06 checks into your project and lists the interfaces they expect, including a small "
+             "batch hook in the loop. The given planning fixture is pasted later, in build step 1.",
+             "<code>test_lesson06.py</code> failing to import until <code>agent_runtime.coordination</code> exists, which "
+             "stops the whole run; with it ignored, <b>21 passed</b>."),
+            ("Build step 1", "A contract and a scoped child", "new · agent_runtime/supervisor.py · delegate",
+             "Validates the supervisor's proposals and starts each child with only its role's tool, a new run ID, the "
+             "parent's ID and no approvals; reuses an identical contract and refuses a changed one.",
+             "a logs child with only <code>log_lookup</code>; <code>task_id_conflict</code> and "
+             "<code>child_privilege_escalation</code> shown; <b>21 passed</b>."),
+            ("Build step 2", "One shared budget", "agent_runtime/supervisor.py · SharedBudget",
+             "Reserves a child's share before it starts and settles what it used afterwards, with limits on agents, depth "
+             "and tokens.",
+             "110 fixture tokens spent by the INC-001 team; with <code>max_agents=1</code> one child and "
+             "<code>insufficient_evidence</code>."),
+            ("Build step 3", "Parallel, with a deadline", "new · agent_runtime/coordination.py · agent_runtime/core.py",
+             "Schedules independent work with a concurrency limit and a deadline, and lets the supervisor run its "
+             "children in parallel through a small batch hook in the loop.",
+             "a cycle refused, a dependant blocked, a slow item cancelled at the deadline, and the parallel run faster "
+             "than the sequential one."),
+            ("Build step 4", "Replies and review", "agent_runtime/coordination.py · accept_reply · bounded_review",
+             "Accepts only the reply that matches its request at the next version, and stops a review that never "
+             "converges at its round limit.",
+             "a mismatched and a stale reply refused, the review escalated; <b>29 passed</b>."),
+            ("Learner exercise", "Break the coordination on purpose", "a throwaway script",
+             "Predicts, then runs: one agent allowed, a child above its parent's tools, a reused task ID, a slow worker, "
+             "a failed predecessor and a stale reply, and compares the team with the single agent.",
+             "insufficient_evidence, child_privilege_escalation, task_id_conflict, partial, blocked, ValueError; 170 "
+             "fixture tokens against 75."),
+            ("Verify the checkpoint", "Verify and push", "LESSON = 6 · commit · push",
+             "Runs the full suite and the Session 06 demo unchanged on the offline mock, raises the checkpoint to 6 "
+             "only if the capability is there, and pushes your work. This is the evidence, not the agent's summary.",
+             "<b>29 passed</b>, <code>LESSON = 6</code>, a Lesson 06 entry in <code>AGENTS.md</code> and your work on "
+             "gitlab.ciklum.net."),
+            ("Review the result", "Review", "no changes",
+             "Walks through what you built against the completion criteria and points out the design choices the "
+             "checks do not force.",
+             "A review you can discuss in the next session."),
+        ],
+        "recover": [
+            ("Recover when delegation fails before a child starts", "When delegate refuses before any child runs."),
+            ("Recover when the parent declares success with one failed child", "When the answer is complete despite a failed child."),
+            ("Recover when the scheduler appears to hang", "When scheduled work never finishes."),
+            ("Recover when parallel execution is not faster", "When the parallel run takes as long as the sequential one."),
+        ],
+        "next": "Session 07: A2A across independent agent services",
+    },
 }
 
 

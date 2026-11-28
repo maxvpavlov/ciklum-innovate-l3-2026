@@ -1,0 +1,1276 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+</head>
+<body>
+<title>Session 06: Supervisor and subagents</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: one long scroll on drafting-paper ground; chapters that alternate prose and evidence,
+   full-width "switch to terminal" bands, and a Read/Present toggle that hides reading prose. */
+:root {
+  --paper: #f2f4f6;        /* cool drafting paper */
+  --sheet: #fbfcfd;        /* raised surfaces */
+  --ink: #15202e;          /* navy ink */
+  --muted: #586678;
+  --rule: #cfd6df;
+  --signal: #d9481f;       /* incident signal: today's box, guards, terminal cues */
+  --signal-soft: #fbe4dc;
+  --model: #3f5bd0;        /* the model's turn in transcripts */
+  --tool: #1d7a62;         /* tool observations */
+  --term-bg: #10161f;
+  --term-fg: #dfe6ee;
+  --display: "Archivo", "Arial Narrow", system-ui, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0f151d; --sheet: #161e29; --ink: #e5ebf2; --muted: #9aa8b8; --rule: #2a3542;
+    --signal: #ff7a4d; --signal-soft: #3a1d14; --model: #8ea2ff; --tool: #57c9a6;
+    --term-bg: #0a0e14; --term-fg: #dfe6ee; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0f151d; --sheet: #161e29; --ink: #e5ebf2; --muted: #9aa8b8; --rule: #2a3542;
+  --signal: #ff7a4d; --signal-soft: #3a1d14; --model: #8ea2ff; --tool: #57c9a6;
+  --term-bg: #0a0e14; --term-fg: #dfe6ee; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  background: var(--paper); color: var(--ink); font: 17px/1.6 var(--body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--signal); outline-offset: 3px; }
+
+main { max-width: 1040px; margin: 0 auto; }
+section.ch { padding-block: 72px 24px; border-top: 1px solid var(--rule); scroll-margin-top: 8px; }
+section.ch:first-of-type { border-top: 0; }
+.eyebrow { font: 600 12.5px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--signal);
+  display: flex; gap: 14px; flex-wrap: wrap; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; }
+h2 { font-size: clamp(30px, 4.4vw, 46px); font-variation-settings: "wdth" 82; font-weight: 750;
+  line-height: 1.05; letter-spacing: -.01em; margin-top: 14px; }
+h3 { font-size: 21px; font-weight: 650; font-variation-settings: "wdth" 92; }
+p { margin: 0; }
+.lede { font-size: 20px; line-height: 1.55; max-width: 62ch; color: var(--ink); margin-top: 18px; }
+.prose { max-width: 66ch; display: grid; gap: 14px; margin-top: 18px; }
+.muted { color: var(--muted); }
+code, .mono { font-family: var(--mono); font-size: .9em; }
+.stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; margin-top: 34px; }
+.stack > * { min-width: 0; }
+.two { display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.two > * { min-width: 0; }
+
+/* Read / Present toggle: always visible; Present hides reading prose and keeps headings, diagrams and key points */
+.view { position: fixed; z-index: 10; top: calc(14px + env(safe-area-inset-top, 0px)); right: max(14px, env(safe-area-inset-right, 0px));
+  display: flex; padding: 3px; gap: 2px; background: var(--sheet); border: 1px solid var(--rule); border-radius: 999px;
+  box-shadow: 0 2px 10px rgba(15, 21, 29, .12); }
+.view button { font: 600 12.5px var(--mono); letter-spacing: .04em; color: var(--muted); background: transparent; border: 0;
+  border-radius: 999px; padding: 6px 14px; cursor: pointer; }
+.view button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+/* Theme toggle, top left: one icon button. The page follows the system theme until the viewer toggles it;
+   the choice (light or dark) is then remembered for all the course pages. */
+.theme { position: fixed; z-index: 10; top: calc(14px + env(safe-area-inset-top, 0px)); left: max(14px, env(safe-area-inset-left, 0px));
+  display: grid; place-items: center; width: 38px; height: 38px; padding: 0; color: var(--muted); background: var(--sheet);
+  border: 1px solid var(--rule); border-radius: 999px; box-shadow: 0 2px 10px rgba(15, 21, 29, .12); cursor: pointer; }
+.theme:hover { color: var(--ink); }
+.theme svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.present .lede, .present .prose, .present figcaption, .present .say, .present .cards > div > p,
+.present .turn .note, .present .terminal .goal, .present .read { display: none; }
+/* A card row whose cards hold only a title and a paragraph would show just titles in Present mode: hide it there.
+   Cards with a visible answer line (.ans) keep it, and a row marked .keep stays because its titles are the content. */
+.present .cards:not(.keep):not(:has(> div > :not(.q, p))) { display: none; }
+
+/* Say-this lines */
+.say { border-left: 3px solid var(--ink); padding: 4px 0 4px 18px; font-size: 19px; font-style: italic; max-width: 60ch; }
+.ask { display: grid; gap: 6px; padding: 18px 20px; background: var(--sheet); border: 1px solid var(--rule);
+  border-radius: 10px; max-width: 68ch; }
+.ask .q { font: 650 19px/1.35 var(--display); font-variation-settings: "wdth" 92; }
+.ask .label { font: 600 11.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+/* Learners reading the page see "Ask yourself"; when presenting to a room (Present, Instructor) it reads "Ask the room". */
+.ask .label .room { display: none; }
+.present .ask .label .room, .instructor-view .ask .label .room { display: inline; }
+.present .ask .label .self, .instructor-view .ask .label .self { display: none; }
+.ask details summary { cursor: pointer; color: var(--muted); font-size: 15px; }
+.ask details p { margin-top: 6px; }
+/* "Ask yourself" questions fold into one collapsed group per row (see group_asks.py) */
+.askgroup { max-width: 68ch; background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; }
+.askgroup > summary { cursor: pointer; padding: 12px 20px; font: 600 11.5px var(--mono); letter-spacing: .08em;
+  text-transform: uppercase; color: var(--muted); }
+.askgroup > summary .room { display: none; }
+.present .askgroup > summary .room, .instructor-view .askgroup > summary .room { display: inline; }
+.present .askgroup > summary .self, .instructor-view .askgroup > summary .self { display: none; }
+.askgroup > .askbody { display: grid; gap: 18px; padding: 2px 20px 18px; }
+.askgroup .ask { padding: 0; background: none; border: 0; border-radius: 0; }
+.askgroup .ask > .label { display: none; }
+/* Read your code: questions a learner answers from their own project after each build step */
+.ask.readcode { border-left: 4px solid var(--signal); }
+.readcode ol { margin: 4px 0 0; padding-left: 22px; display: grid; gap: 4px; }
+.readcode .showme { font: 13.5px/1.55 var(--mono); white-space: pre-wrap; background: var(--sheet); border: 1px dashed var(--rule);
+  border-radius: 8px; padding: 10px 12px; margin: 4px 0 0; color: var(--ink); }
+.readcode .hint { color: var(--muted); font-size: 14.5px; }
+.readcode .copy { color: var(--ink); border-color: var(--muted); justify-self: start; }
+.readcode .copy:hover { color: var(--signal); border-color: var(--signal); }
+.ask ol.steps { margin: 4px 0 0; padding-left: 22px; display: grid; gap: 4px; }
+.route { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 6px; font: 600 13.5px var(--mono); }
+.route a { text-decoration: none; color: var(--ink); background: var(--sheet); border: 1px solid var(--rule); border-radius: 999px; padding: 6px 12px; }
+.route a:hover { border-color: var(--signal); color: var(--signal); }
+.route .arr { color: var(--muted); }
+pre.layout { margin: 0; font: 13.5px/1.55 var(--mono); background: #18212d; border: 1px solid #263140; border-radius: 8px; padding: 12px 16px; overflow-x: auto; color: var(--term-fg); }
+pre.layout .dim { color: #8193a8; }
+pre.layout .mark { background: rgba(255, 155, 116, .16); display: inline-block; width: 100%; }
+.links { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.links a { display: grid; gap: 4px; padding: 14px 16px; background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; text-decoration: none; min-width: 0; }
+.links a:hover { border-color: var(--signal); }
+.links .q { font: 700 16px var(--display); font-variation-settings: "wdth" 90; color: var(--ink); }
+.links .mono { font-size: 13px; color: var(--signal); overflow-wrap: anywhere; }
+.links .muted { font-size: 13.5px; }
+
+/* Hero */
+.hero { padding-block: 64px 56px; display: grid; gap: 22px; }
+.hero .course { font: 600 13px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.hero .course { display: flex; align-items: center; flex-wrap: wrap; gap: 0 .5em; }
+.hero .course .brand { height: 18px; width: auto; display: block; }
+.hero .course .brand .word { fill: var(--ink); }
+.hero h1 { font-size: clamp(44px, 8.2vw, 104px); line-height: .92; font-weight: 800;
+  font-variation-settings: "wdth" 68; letter-spacing: -.015em; }
+.hero h1 .sub { display: block; font-weight: 500; font-variation-settings: "wdth" 100; font-size: .34em;
+  letter-spacing: 0; line-height: 1.2; margin-top: 18px; color: var(--muted); }
+.facts { display: flex; flex-wrap: wrap; gap: 10px 26px; font: 500 14px var(--mono); color: var(--muted); }
+.facts b { color: var(--ink); font-weight: 600; }
+
+/* Incident ticket */
+.ticket { background: var(--sheet); border: 1px solid var(--rule); border-radius: 12px; overflow: hidden; max-width: 760px; }
+.ticket header { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 14px 20px;
+  border-bottom: 1px solid var(--rule); font: 600 14px var(--mono); }
+.sev { color: var(--signal); }
+.ticket dl { display: grid; grid-template-columns: max-content 1fr; gap: 8px 22px; margin: 0; padding: 18px 20px; }
+.ticket dt { font: 500 13px var(--mono); color: var(--muted); }
+.ticket dd { margin: 0; }
+.criteria { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); counter-reset: c; }
+.criteria div { padding-top: 14px; border-top: 2px solid var(--ink); }
+.criteria b { display: block; font: 650 18px var(--display); font-variation-settings: "wdth" 92; margin-bottom: 4px; }
+
+/* Diagrams */
+figure { margin: 0; }
+.diagram { background: var(--sheet); border: 1px solid var(--rule); border-radius: 12px; padding: 18px; overflow-x: auto; }
+.diagram svg { display: block; width: 100%; min-width: 620px; height: auto; }
+figcaption { font-size: 14.5px; color: var(--muted); margin: 10px auto 0; max-width: 70ch; text-align: center; }
+svg text { font-family: var(--mono); fill: var(--ink); }
+svg .lbl { font-family: var(--body); font-size: 15px; font-weight: 600; }
+svg .small { font-size: 12px; fill: var(--muted); }
+svg .box { fill: var(--paper); stroke: var(--rule); stroke-width: 1.5; }
+svg .today { fill: var(--signal-soft); stroke: var(--signal); stroke-width: 2.5; }
+svg .ink { stroke: var(--ink); fill: none; stroke-width: 1.8; }
+svg .arrowhead { fill: var(--ink); }
+svg .sig { fill: var(--signal); }
+svg .fail { fill: var(--signal-soft); stroke: var(--signal); stroke-width: 2; }
+svg .failhead { fill: var(--signal); font-size: 11px; font-weight: 700; letter-spacing: .08em; }
+svg .failcode { fill: var(--signal); font-size: 14px; font-weight: 600; }
+svg .err { stroke: var(--signal); fill: none; stroke-width: 2; }
+svg .errlbl { fill: var(--signal); font-size: 12px; font-weight: 600; }
+svg .think { fill: var(--sheet); stroke: var(--model); stroke-width: 2.5; }
+svg .act { fill: var(--sheet); stroke: var(--tool); stroke-width: 2.5; }
+svg .done { fill: var(--sheet); stroke: var(--tool); stroke-width: 2; }
+svg .donetxt { fill: var(--tool); font-size: 15px; font-weight: 600; }
+svg .frame { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 6 5; }
+
+/* Comparison */
+.compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
+.compare > div { background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; padding: 20px; display: grid; gap: 10px; align-content: start; }
+.compare ol { margin: 0; padding-left: 20px; font-family: var(--mono); font-size: 14.5px; display: grid; gap: 4px; }
+
+/* Transcript */
+.transcript { display: grid; gap: 0; max-width: 900px; }
+.turn { display: grid; grid-template-columns: 92px 1fr; gap: 16px; padding: 14px 0; border-bottom: 1px dashed var(--rule); }
+.turn:last-child { border-bottom: 0; }
+.who { font: 600 12.5px/1.3 var(--mono); text-transform: uppercase; letter-spacing: .06em; padding-top: 3px; }
+.who.rt { color: var(--ink); }
+.who.m { color: var(--model); } .who.t { color: var(--tool); } .who.u { color: var(--muted); } .who.r { color: var(--signal); }
+.turn pre { margin: 0; font: 14px/1.5 var(--mono); white-space: pre-wrap; word-break: break-word; min-width: 0; }
+.turn .note { font-size: 14.5px; color: var(--muted); margin-top: 6px; }
+.turn p + pre { margin-top: 8px; }
+.tally { display: flex; flex-wrap: wrap; gap: 10px 28px; font: 500 14px var(--mono); color: var(--muted); margin-top: 14px; }
+.tally b { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* Tables */
+.tablewrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 10px; background: var(--sheet); }
+table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 15.5px; }
+th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font: 600 12px var(--mono); text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+tr:last-child td { border-bottom: 0; }
+td code { white-space: nowrap; }
+.own-app { color: var(--tool); font-weight: 600; }
+.own-model { color: var(--model); font-weight: 600; }
+
+/* Course-opening cards */
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.cards > div { background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; padding: 18px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.cards .q { font: 700 19px/1.25 var(--display); font-variation-settings: "wdth" 88; }
+.cards .ans { font: 500 12.5px var(--mono); color: var(--signal); letter-spacing: .02em; }
+tr.now td { background: var(--signal-soft); }
+.cards.six { grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); }
+.cards.pairs { grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr)); }
+
+/* Guards */
+.guards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+.guard { background: var(--sheet); border: 1px solid var(--rule); border-top: 3px solid var(--signal); border-radius: 8px;
+  padding: 16px 18px; display: grid; gap: 8px; align-content: start; }
+.guard .code { font: 600 15px var(--mono); color: var(--signal); }
+.guard .lim { font: 500 13px var(--mono); color: var(--muted); }
+
+/* Terminal bands */
+.terminal { margin-block: 30px 6px; background: var(--term-bg); color: var(--term-fg); border-radius: 14px; overflow: hidden; }
+.terminal .bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;
+  padding: 14px 20px; border-bottom: 1px solid #263140; }
+.terminal .switch { font: 700 13px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: #ff9b74;
+  display: flex; align-items: center; gap: 10px; }
+.terminal .switch::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: #ff9b74;
+  box-shadow: 0 0 0 4px rgba(255, 155, 116, .18); }
+.terminal .file { font: 500 13px var(--mono); color: #9fb0c3; }
+.terminal .body { padding: 18px 20px 20px; display: grid; gap: 14px; }
+.terminal .goal { font-size: 16px; color: #c4cfdb; max-width: 70ch; }
+.prompt { position: relative; font: 14.5px/1.6 var(--mono); background: #18212d; border: 1px solid #263140; border-radius: 8px;
+  padding: 14px 16px 14px 16px; white-space: pre-wrap; word-break: break-word; }
+.prompt .pfx { color: #ff9b74; user-select: none; }
+/* Prompts start collapsed; the copy button works either way */
+details.fold > summary { cursor: pointer; list-style: none; font: 600 13px var(--mono); color: #ff9b74;
+  display: inline-flex; align-items: center; gap: 8px; padding: 4px 0; }
+details.fold > summary::-webkit-details-marker { display: none; }
+details.fold > summary::before { content: "▸"; transition: transform .15s; }
+details.fold[open] > summary::before { transform: rotate(90deg); }
+details.fold > summary .hide, details.fold[open] > summary .show { display: none; }
+details.fold[open] > summary .hide { display: inline; }
+details.fold[open] > .prompt { margin-top: 8px; }
+.expect { font: 500 13.5px/1.6 var(--mono); color: #9fb0c3; background: #18212d; border: 1px solid #263140;
+  border-radius: 8px; padding: 10px 16px; margin-top: 8px; white-space: pre-wrap; word-break: break-word; }
+.expect .pfx { color: #ff9b74; user-select: none; }
+.expect b { color: #8fe0c3; font-weight: 600; }
+.copy { font: 600 12.5px var(--mono); color: var(--term-fg); background: transparent; border: 1px solid #3a4a5e;
+  border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+.copy:hover { border-color: #ff9b74; color: #ff9b74; }
+.terminal .check { font: 500 13.5px var(--mono); color: #9fb0c3; }
+.terminal .check b { color: #8fe0c3; font-weight: 600; }
+
+/* Code excerpt */
+.excerpt { background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; overflow-x: auto; }
+.excerpt .src { font: 500 12.5px var(--mono); color: var(--muted); padding: 10px 16px; border-bottom: 1px solid var(--rule); }
+.excerpt pre { margin: 0; padding: 14px 16px; font: 14px/1.55 var(--mono); }
+.excerpt .hl { background: var(--signal-soft); display: inline-block; width: 100%; }
+.excerpt .n { color: var(--signal); font-weight: 700; display: inline-block; width: 2.4ch; }
+.excerpt .muted { color: var(--muted); }
+dl.fields { display: grid; grid-template-columns: max-content 1fr; max-width: 72ch; gap: 6px 14px; margin: 0; align-content: start; font-size: 15.5px; }
+dl.fields dt { font-weight: 600; }
+dl.fields dd { margin: 0; }
+dl.fields dd.note { grid-column: 1 / -1; color: var(--muted); font-style: italic; margin-top: 4px; }
+ul.key { margin: 0; padding-left: 22px; display: grid; gap: 6px; max-width: 72ch; }
+
+/* Exercise grid */
+.predict { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+.predict div { border: 1px solid var(--rule); border-radius: 10px; padding: 16px; background: var(--sheet); display: grid; gap: 6px; }
+.predict .set { font: 500 14px var(--mono); }
+.predict .out { font: 600 15px var(--mono); color: var(--signal); }
+
+.result { font: 14px/1.5 var(--mono); background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; padding: 16px 18px; overflow-x: auto; margin: 0; }
+.big { font: 800 clamp(56px, 9vw, 96px)/1 var(--display); font-variation-settings: "wdth" 70; color: var(--signal); }
+footer { padding-block: 40px 80px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 14px; display: grid; gap: 8px; }
+@media (max-width: 560px) {
+  .turn { grid-template-columns: 1fr; gap: 4px; }
+  .ticket dl { grid-template-columns: 1fr; gap: 2px 0; }
+  .ticket dd { margin-bottom: 8px; }
+  body { font-size: 16px; }
+}
+/* Session 02 additions */
+.guard.ok { border-top-color: var(--tool); }
+.guard.ok .code { color: var(--tool); }
+#review { display: grid; gap: 14px; }
+.shot { display: block; width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 10px; background: var(--sheet); }
+.terminal .rlabel { font-size: 16px; color: #c4cfdb; max-width: 70ch; }
+
+/* Instructor view: shown only when the page is opened with ?instructor. The parameter is not a secret (the
+   repository is public); it only keeps the facilitator's notes out of the learners' Read and Present views. */
+.instructor { display: none; }
+.instructor-view .instructor { display: grid; gap: 10px; max-width: 76ch; padding: 12px 16px 14px 18px;
+  border-left: 3px solid var(--model); border-radius: 0 10px 10px 0; background: var(--sheet);
+  font-size: 15.5px; line-height: 1.55; }
+.instructor-view .instructor::before { content: "Instructor"; font: 600 11px var(--mono); letter-spacing: .1em;
+  text-transform: uppercase; color: var(--model); }
+.instructor b { font-weight: 650; }
+.instructor .tablewrap { margin: 2px 0; }
+.instructor-view .hero .instructor { margin-top: 24px; }
+</style>
+
+<div class="view" role="group" aria-label="View">
+  <button type="button" data-view="read" aria-pressed="true">Read</button>
+  <button type="button" data-view="present" aria-pressed="false">Present</button>
+</div>
+
+<main>
+
+<header class="hero" id="start">
+  <p class="course"><svg class="brand" viewBox="0 0 201 63" role="img" aria-label="Ciklum"><g clip-path="url(#clip0_66_2876)"><path d="M32.5376 62.9997C14.8709 62.9997 0.5 48.8685 0.5 31.4992C0.5 14.1298 14.8709 -0.000291626 32.5376 -0.000291626C40.6964 -0.012511 48.5501 3.04901 54.4842 8.5533C55.387 9.37423 55.4412 10.7595 54.6062 11.647C53.7713 12.5346 52.3623 12.5879 51.4595 11.767C51.4505 11.7592 51.4426 11.7515 51.4336 11.7437C46.3243 7.00477 39.562 4.36982 32.5376 4.37982C17.3283 4.37982 4.95396 16.5459 4.95396 31.4992C4.95396 46.4524 17.3283 58.6196 32.5376 58.6196C39.8569 58.6396 46.8802 55.7791 52.0426 50.677C52.9261 49.8349 54.3362 49.8561 55.1938 50.7236C56.0321 51.5734 56.0321 52.9242 55.1938 53.774C49.1975 59.7005 41.0399 63.023 32.5376 62.9997Z" fill="url(#paint0_linear_66_2876)"></path><path d="M32.5376 54.4153C19.6864 54.4153 9.23053 44.1354 9.23053 31.4994C9.19776 21.4884 15.8053 12.6249 25.5244 9.64001C26.6848 9.23677 27.9582 9.83441 28.3683 10.9742C28.7785 12.115 28.1706 13.3669 27.0113 13.7702C26.9628 13.7868 26.9142 13.8024 26.8645 13.8157C19.0017 16.2307 13.6585 23.4013 13.6856 31.4994C13.6856 41.7193 22.1427 50.0352 32.5376 50.0352C34.3126 50.0352 36.0797 49.7908 37.7858 49.3065C38.9677 48.9688 40.2037 49.6375 40.5472 50.7995C40.8907 51.9614 40.2105 53.1767 39.0287 53.5144C36.9192 54.1131 34.734 54.4164 32.5376 54.4153Z" fill="url(#paint1_linear_66_2876)"></path><path d="M32.5376 45.8306C24.4883 45.8306 17.9622 39.4154 17.9622 31.5006C17.9622 27.5559 19.6152 23.7868 22.5325 21.0796C23.4263 20.2487 24.8363 20.2887 25.6815 21.1674C26.5266 22.0461 26.486 23.4324 25.5922 24.2622C23.5585 26.1362 22.4082 28.7578 22.4207 31.4983C22.4229 36.9937 26.956 41.446 32.5455 41.4438C35.2549 41.4427 37.8513 40.373 39.7518 38.4756C40.6037 37.6025 42.0138 37.5736 42.9019 38.4112C43.79 39.2488 43.8193 40.6351 42.9674 41.5083C42.9539 41.5227 42.9403 41.536 42.9256 41.5494C40.1936 44.2965 36.4458 45.8406 32.5376 45.8295V45.8306Z" fill="url(#paint2_linear_66_2876)"></path><path d="M89.1148 35.9531C88.7058 35.9531 88.4832 36.1753 88.2979 36.3553C86.4416 38.1804 84.7705 38.7992 82.2452 38.7992C77.8647 38.7992 74.5621 35.3311 74.5621 30.801C74.5621 26.2709 77.9042 22.8028 82.2452 22.8028C84.5479 22.8028 86.1817 23.606 88.0742 25.0656C88.3002 25.2878 88.7058 25.4678 88.8911 25.4678C89.5227 25.4678 90.1543 24.8468 90.1543 24.2258C90.1543 24.0037 89.9283 23.606 89.7453 23.2038C88.0742 21.7908 85.9953 20.37 82.2452 20.37C76.4162 20.37 72.0357 24.8601 72.0357 30.8121V31.0343C72.0357 36.9851 76.4162 41.4763 82.2452 41.4763C85.3648 41.4763 87.6686 40.6732 89.9283 38.4104C90.1543 38.1882 90.3374 37.7894 90.3374 37.6072C90.3396 36.5741 89.708 35.9531 89.1148 35.9531Z" class="word"></path><path d="M99.9164 20.4031C99.2848 20.4031 98.6544 21.0241 98.6544 21.6439V39.4176C98.6544 40.0386 99.2848 40.6585 99.9164 40.6585C100.548 40.6585 101.178 40.0386 101.178 39.4176V21.6073C101.181 21.0241 100.55 20.4031 99.9164 20.4031Z" class="word"></path><path d="M119.485 29.6021L126.581 22.6293C126.989 22.2282 126.989 22.0094 126.989 21.8261C126.989 21.2062 126.358 20.5853 125.727 20.5853C125.318 20.5853 125.096 20.8074 124.91 20.9874L113.433 32.4859V21.8628C113.433 21.2429 112.802 20.6219 112.171 20.6219C111.541 20.6219 110.909 21.0241 110.909 21.8628V39.6765C110.909 40.2974 111.539 40.9173 112.171 40.9173C112.803 40.9173 113.433 40.2974 113.433 39.6765V35.5885L117.815 31.2806L125.314 40.2974C125.54 40.6984 125.945 40.6984 126.353 40.6984C126.985 40.6984 127.616 40.0786 127.616 39.4576C127.616 39.0566 127.39 38.8367 127.207 38.6545L119.485 29.6021Z" class="word"></path><path d="M148.594 38.399H138.199V21.6073C138.199 20.9874 137.567 20.3664 136.937 20.3664C136.306 20.3664 135.674 20.9874 135.674 21.6073V39.421C135.674 40.0419 136.305 40.6618 136.937 40.6618H148.595C149.225 40.6618 149.857 40.0419 149.857 39.421C149.857 38.8367 149.224 38.399 148.594 38.399Z" class="word"></path><path d="M171.279 20.4031C170.648 20.4031 170.016 21.0241 170.016 21.6439V32.267C170.016 36.355 167.937 38.6178 163.964 38.6178C160.214 38.6178 157.913 36.1739 157.913 32.0838V21.6417C157.913 21.0218 157.281 20.4009 156.651 20.4009C156.02 20.4009 155.393 21.0241 155.393 21.6439V32.267C155.393 37.5992 158.735 41.0639 163.933 41.0639C169.13 41.0639 172.472 37.5958 172.472 32.0471V21.605C172.541 21.0241 171.91 20.4031 171.279 20.4031Z" class="word"></path><path d="M200.5 21.6439V39.4565C200.482 40.0675 199.859 40.6684 199.238 40.6684C198.616 40.6684 197.976 40.0486 197.976 39.4276V25.2942L191.923 34.0911C191.882 34.1644 191.834 34.2333 191.78 34.2977C191.763 34.3188 191.743 34.3388 191.724 34.3577C191.505 34.5832 191.202 34.7109 190.885 34.712H190.801L190.716 34.702C190.345 34.6454 190.023 34.4199 189.845 34.0944L183.794 25.2975V39.421C183.794 40.0419 183.162 40.6618 182.532 40.6618C181.901 40.6618 181.267 40.0419 181.267 39.421V21.6473C181.267 21.0263 181.899 20.4064 182.53 20.4064H182.716C183.347 20.4064 183.533 20.8074 183.755 21.0263L190.885 31.2528L198.013 21.0263C198.239 20.8041 198.421 20.4064 199.053 20.4064H199.232C199.868 20.4031 200.5 21.023 200.5 21.6439Z" class="word"></path></g><defs><linearGradient id="paint0_linear_66_2876" x1="27.5006" y1="45.0805" x2="36.3635" y2="-14.7968" gradientUnits="userSpaceOnUse"><stop stop-color="#8CFFC6"></stop><stop offset="0.6" stop-color="#1324BF"></stop></linearGradient><linearGradient id="paint1_linear_66_2876" x1="24.9335" y1="10.6742" x2="24.9335" y2="41.7171" gradientUnits="userSpaceOnUse"><stop offset="0.47" stop-color="#1324BF"></stop><stop offset="1" stop-color="#8CFFC6"></stop></linearGradient><linearGradient id="paint2_linear_66_2876" x1="24.6601" y1="23.579" x2="31.0212" y2="38.0706" gradientUnits="userSpaceOnUse"><stop stop-color="#1324BF"></stop><stop offset="1" stop-color="#8CFFC6"></stop></linearGradient><clipPath id="clip0_66_2876"><rect width="200" height="63" fill="white" transform="translate(0.5)"></rect></clipPath></defs></svg><span aria-hidden="true">·</span><span>Innovate</span><span aria-hidden="true">·</span><span>2026</span><span aria-hidden="true">·</span><span>Session 06 of 12</span></p>
+  <h1>Supervisor, subagents and parallel coordination<span class="sub">One investigation, several bounded agents, one budget, and nothing the application did not allow</span></h1>
+  <p class="lede">So far one agent did the whole investigation. Today a supervisor splits it: a log agent and a runbook agent each work in their own run, with only the tool their role allows and a share of one budget, first one after the other and then at the same time under a deadline. The supervisor may propose the split; the application decides what each child may do, and keeps the result honest when a child fails, runs late or replies out of turn.</p>
+  <div class="facts"><span><b>120 min</b> · 30 discussion + 90 guided build</span><span>from <b>lesson-05</b> to <b>lesson-06</b></span><span>check pack: <b>29 passed</b></span><span>offline · no model key needed</span></div>
+  <aside class="instructor" aria-label="Instructor notes">
+    <div class="tablewrap"><table>
+      <thead><tr><th>Minutes</th><th>Activity</th><th>Format</th></tr></thead>
+      <tbody>
+        <tr><td>00 to 10</td><td>Reconnect: recall runs, workers and the Session 04 baseline</td><td>Discussion</td></tr>
+        <tr><td>10 to 30</td><td>Concept script and architecture questions; is a team worth it</td><td>Discussion</td></tr>
+        <tr><td>30 to 50</td><td>Prompts and code review for steps 1 and 2</td><td>Agent build</td></tr>
+        <tr><td>50 to 75</td><td>Prompts and code review for steps 3 and 4</td><td>Agent build</td></tr>
+        <tr><td>75 to 100</td><td>Learner exercise and fault injection</td><td>Practice</td></tr>
+        <tr><td>100 to 115</td><td>Acceptance checks and result interpretation</td><td>Verification</td></tr>
+        <tr><td>115 to 120</td><td>Questions and checkpoint handoff</td><td>Discussion</td></tr>
+      </tbody>
+    </table></div>
+      <p><b>Outcome</b> A supervisor delegates bounded work to isolated log and runbook agents under typed contracts and a shared budget, runs independent work concurrently with a deadline, and coordinates correlated replies, versioned artifacts and bounded review. Starting checkpoint lesson-05, ending checkpoint lesson-06.</p>
+      <p><b>Readiness</b> Rehearse with a learner project built from the course kit, so you see what learners see: the check pack fails until each capability is built. Bring the Session 04 single-agent baseline. Decide before class which component owns the reviewed report artifact.</p>
+      <p><b>Watch for</b> the Lesson 06 test file importing <code>agent_runtime.coordination</code>: it cannot import until build step 3, so until then the agent runs the earlier tests with <code>--ignore tests/test_lesson06.py</code> (21 pass). Step 3 also adds a small batch hook to <code>agent_runtime/core.py</code>.</p>
+      <p><b>Offline fallback</b> Everything today runs on the offline mock and the given <code>SupervisorProvider</code> planning fixture; no learner needs a model key.</p>
+    </aside>
+</header>
+
+<section class="ch" id="recall">
+  <p class="eyebrow"><span>Recall</span></p>
+  <h2>A run has an ID, a tenant, a status and a history. What does a child run need?</h2>
+  <div class="stack">
+    <p class="lede" style="margin-top:0">In Session 05 a run became a record that outlives its worker: one agent's attempt at one task, with its own run ID and tenant. Today one investigation is answered by several runs: the supervisor's run and a child run for each piece of work it hands out. Everything you built for a run still applies to each of them.</p>
+    <aside class="instructor" aria-label="Instructor notes">
+      <p><b>SAY</b> We now have a single agent, reliable tools, context controls, evaluation and recovery. Today we add delegation and then make it concurrent without losing those foundations. The supervisor asks one child to inspect logs and another to investigate runbooks. Each child uses the same run_agent function with a separate context and narrower capabilities. We run delegation sequentially first, so the contracts are easy to inspect, then schedule the same tasks in parallel. Ask what evidence would justify the extra agent calls, and what the platform should report when a worker is slow, a result arrives twice or a reviewer never accepts.</p>
+      <p><b>SHOW</b> The coding agent's baseline report, the current learner project, the synthetic incident records and the lesson outcome. Ask participants to explain what already works before authorizing the next bounded change.</p>
+    </aside>
+    <details class="askgroup"><summary><span class="self">Ask yourself</span><span class="room">Ask the room</span> · 3 questions</summary><div class="askbody">
+      <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">A child run is a run. Which parts of a run does it get of its own, and which does it take from its parent?</p>
+      <details><summary>Show the answer</summary><p>Its own run ID, messages, steps, tokens and status: the parent's conversation is not copied. From the parent it takes the tenant and records the parent's run ID as <code>parent_id</code>. Its tools are narrowed to its role, and it gets no approvals.</p></details></div>
+      <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">Your Session 04 baseline was 75 fixture tokens and 3 steps for INC-001. What would a two-agent team have to show to be worth more?</p>
+      <details><summary>Show the answer</summary><p>A better result on the same cases (same dataset hash and split), or a latency gain that matters to someone. More agents is not an improvement by itself; the harness is how you tell.</p></details></div>
+      <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">In Session 05 a write waited for a person. Should a child agent be able to propose a write?</p>
+      <details><summary>Show the answer</summary><p>Not today: the children are investigators with one read tool each, and they get no approvals. A child that could write would need its own exact-action approval, and it could never borrow the parent's.</p></details></div>
+    </div></details>
+  </div>
+</section>
+
+<section class="ch" id="terms">
+  <p class="eyebrow"><span>Words first</span></p>
+  <h2>Supervisor, child run, contract, shared budget</h2>
+  <div class="stack">
+    <p class="lede" style="margin-top:0">An investigation now starts one <b>supervisor</b> run. The supervisor's model has a single tool, <code>delegate</code>: it proposes pieces of work as <b>delegation contracts</b> (a task ID, a role and a bounded objective). For each contract the application starts a <b>child run</b>: an ordinary <code>run_agent</code> with its own run ID, the supervisor's run ID as its parent, only its role's tool and no approvals. All children draw on one <b>shared budget</b>. The supervisor reads the children's answers and gives the investigation's answer.</p>
+    <figure>
+      <div class="diagram">
+        <svg viewBox="0 0 900 400" role="img" aria-label="An investigation starts the supervisor run, run ID P, whose only tool is delegate. It proposes two contracts, logs and runbooks. The application starts a child run for each: the logs child with run ID L, parent P and only log_lookup; the runbooks child with run ID R, parent P and only runbook_search; neither has approvals or the delegate tool. Both reserve from one shared budget of 5,000 tokens, two agents and depth one. Their answers return to the supervisor, which gives the investigation&#x27;s answer.">
+          <rect class="box" x="16" y="30" width="180" height="90" rx="8"/>
+          <text class="lbl" x="30" y="56">Investigation</text>
+          <text class="small" x="30" y="78">"Investigate</text><text class="small" x="30" y="96">INC-001"</text>
+          <path class="ink" d="M196 75 H240"/><path class="arrowhead" d="M244 75 l-8 -5 v10z"/>
+          <text class="small" x="200" y="66">starts</text>
+          <rect class="today" x="248" y="20" width="400" height="110" rx="10"/>
+          <text class="lbl" x="264" y="46">Supervisor run</text>
+          <text class="small" x="264" y="68">run ID P · tenant astro</text>
+          <text class="small" x="264" y="86">one tool: delegate</text>
+          <text class="small" x="264" y="104">proposes contracts, gives the answer</text>
+          <rect class="box" x="676" y="30" width="208" height="90" rx="8"/>
+          <text class="lbl" x="690" y="56">Contract</text>
+          <text class="small" x="690" y="78">task_id · role</text><text class="small" x="690" y="96">objective ≤ 500 chars</text>
+          <path class="ink" d="M648 75 H670"/><path class="arrowhead" d="M674 75 l-8 -5 v10z"/>
+
+          <rect class="today" x="120" y="190" width="300" height="104" rx="10"/>
+          <text class="lbl" x="136" y="216">Child run · logs</text>
+          <text class="small" x="136" y="238">run ID L · parent_id P</text>
+          <text class="small" x="136" y="256">tools: log_lookup only</text>
+          <text class="small" x="136" y="274">no approvals, no delegate</text>
+          <rect class="today" x="480" y="190" width="300" height="104" rx="10"/>
+          <text class="lbl" x="496" y="216">Child run · runbooks</text>
+          <text class="small" x="496" y="238">run ID R · parent_id P</text>
+          <text class="small" x="496" y="256">tools: runbook_search only</text>
+          <text class="small" x="496" y="274">no approvals, no delegate</text>
+          <path class="ink" d="M380 130 V184"/><path class="arrowhead" d="M380 188 l-5 -8 h10z"/>
+          <path class="ink" d="M520 130 V184"/><path class="arrowhead" d="M520 188 l-5 -8 h10z"/>
+          <text class="small" x="300" y="164">application starts</text>
+          <text class="small" x="530" y="164">answers come back</text>
+
+          <rect class="box" x="120" y="326" width="660" height="56" rx="8"/>
+          <text class="lbl" x="136" y="350">Shared budget</text>
+          <text class="small" x="136" y="370">5,000 tokens · at most 2 agents · depth 1 · each child reserves before it starts</text>
+          <path class="ink" d="M270 294 V320"/><path class="ink" d="M630 294 V320"/>
+        </svg>
+      </div>
+      <figcaption>The highlighted runs are today's: the supervisor's and one child per contract. A child is not a differently worded prompt in a shared transcript; it is a separate run that the console will list with a link to its parent from Session 08.</figcaption>
+    </figure>
+    <dl class="fields">
+      <dt>supervisor</dt><dd>An agent whose model plans the work and whose only tool is <code>delegate</code>. Its run is the parent of every child it starts.</dd>
+      <dt>delegation contract</dt><dd>What the supervisor proposes: a <code>task_id</code>, a <code>role</code> (<code>logs</code> or <code>runbooks</code>) and an <code>objective</code> of at most 500 characters. The application validates it; the model cannot invent a role or attach tools.</dd>
+      <dt>child run</dt><dd>A run started for one contract: a new run ID, the supervisor's run ID as <code>parent_id</code>, only its role's tool, no approvals and its own small limits.</dd>
+      <dt>shared budget</dt><dd>One allowance for all children: tokens, the number of agents and the depth of delegation. A child reserves its share before it starts and settles what it used afterwards.</dd>
+      <dt>work item, deadline</dt><dd>The scheduler's unit of work and the time limit for the whole batch. Unfinished work at the deadline is cancelled; finished work is kept.</dd>
+      <dt>envelope, artifact version</dt><dd>A reply carries the request's correlation, task and artifact IDs and the next version number, so a late or misdirected reply cannot overwrite newer evidence.</dd>
+    </dl>
+  </div>
+</section>
+
+<section class="ch" id="idea">
+  <p class="eyebrow"><span>The idea</span></p>
+  <h2>The model may propose the split; the application decides what each part may do</h2>
+  <div class="stack">
+    <p class="lede" style="margin-top:0">Splitting work between agents adds three new ways to fail: a child that gets more authority than it should, children that together spend more than anyone allowed, and results that arrive late, twice or for the wrong request. None of them is fixed by a better prompt. <b>Each is fixed by a check in the application</b>, placed where the work is handed out or where a result comes back.</p>
+    <figure>
+      <div class="diagram">
+        <svg viewBox="0 0 900 300" role="img" aria-label="The path of one delegation through the application. The supervisor&#x27;s model proposes a delegate call. The application validates the contract against the schema, checks whether the task ID was seen before (same contract: reuse the result; changed: task_id_conflict), maps the role to a fixed tool and checks it against the parent&#x27;s tools (else child_privilege_escalation), and reserves from the shared budget (else delegation_budget). Only then does a child run start; its result comes back by task ID, and the budget is settled from what the child used.">
+          <rect class="box" x="16" y="40" width="130" height="70" rx="8"/>
+          <text class="lbl" x="28" y="66">Model</text><text class="small" x="28" y="88">delegate(…)</text>
+          <rect class="today" x="170" y="40" width="130" height="70" rx="8"/>
+          <text class="lbl" x="182" y="66">Schema</text><text class="small" x="182" y="88">≤ 500 chars</text>
+          <rect class="today" x="324" y="40" width="130" height="70" rx="8"/>
+          <text class="lbl" x="336" y="66">Task ID</text><text class="small" x="336" y="88">seen before?</text>
+          <rect class="today" x="478" y="40" width="130" height="70" rx="8"/>
+          <text class="lbl" x="490" y="66">Role → tool</text><text class="small" x="490" y="88">within parent's</text>
+          <rect class="today" x="632" y="40" width="110" height="70" rx="8"/>
+          <text class="lbl" x="644" y="66">Reserve</text><text class="small" x="644" y="88">budget</text>
+          <rect class="box" x="766" y="40" width="118" height="70" rx="8"/>
+          <text class="lbl" x="778" y="66">Child run</text><text class="small" x="778" y="88">starts</text>
+          <path class="ink" d="M146 75 H164"/><path class="arrowhead" d="M168 75 l-8 -5 v10z"/>
+          <path class="ink" d="M300 75 H318"/><path class="arrowhead" d="M322 75 l-8 -5 v10z"/>
+          <path class="ink" d="M454 75 H472"/><path class="arrowhead" d="M476 75 l-8 -5 v10z"/>
+          <path class="ink" d="M608 75 H626"/><path class="arrowhead" d="M630 75 l-8 -5 v10z"/>
+          <path class="ink" d="M742 75 H760"/><path class="arrowhead" d="M764 75 l-8 -5 v10z"/>
+          <path class="err" d="M235 110 V150"/><text class="errlbl" x="176" y="168">invalid_delegation</text>
+          <path class="err" d="M389 110 V150"/><text class="errlbl" x="330" y="168">task_id_conflict</text>
+          <text class="small" x="330" y="186">or the same result</text>
+          <path class="err" d="M543 110 V150"/><text class="errlbl" x="470" y="168">child_privilege_</text><text class="errlbl" x="470" y="184">escalation</text>
+          <path class="err" d="M687 110 V150"/><text class="errlbl" x="632" y="168">delegation_budget</text>
+          <path class="ink" d="M825 110 V236 H120 V116"/><path class="arrowhead" d="M120 112 l-5 8 h10z"/>
+          <text class="small" x="300" y="228">the answer, by task ID; the budget settled from what the child used</text>
+          <text class="small" x="16" y="280">Each red line is a refusal the supervisor sees as a tool result; no child starts.</text>
+        </svg>
+      </div>
+      <figcaption>Four checks before a child starts, in this order. The model only ever sees their outcome as a tool result; it never chooses a child's tools, approvals or allowance.</figcaption>
+    </figure>
+    <div class="cards keep">
+      <div><span class="q">1 · A contract and a scoped child</span><p>Validate what the model proposes, and give the child only its role's tool. <a href="#contract">The contract</a>.</p></div>
+      <div><span class="q">2 · One shared budget</span><p>Reserve before a child starts, settle after; agents, depth and tokens. <a href="#budget">The budget</a>.</p></div>
+      <div><span class="q">3 · Parallel, with a deadline</span><p>Run independent work together, keep what finished, cancel the rest. <a href="#schedule">The scheduler</a>.</p></div>
+      <div><span class="q">4 · Replies and review</span><p>Match every reply to its request; stop a review that never converges. <a href="#replies">Replies and review</a>.</p></div>
+    </div>
+    <aside class="instructor" aria-label="Instructor notes">
+      <p><b>SAY</b> Draw the parent above two workers and label each arrow with task ID, role, objective and expected result. A subagent is not a differently worded prompt in a shared transcript: it has its own messages, scoped tools, run ID and parent ID. The offline supervisor provider produces a prescribed plan; a live model can propose calls with the same delegate schema, but the application validates them. Budget reservations stop concurrent workers each assuming they own the full allowance. Then draw a dependency graph. A task is ready when its predecessors have completed; the concurrency limit decides how many ready tasks run at once; a deadline bounds the whole operation. Replies carry correlation and artifact identity, artifacts have one writer and an expected version, and review has a round limit.</p>
+      <p><b>PAUSE</b> Invite one learner to trace the control flow and another to identify a failure boundary. Resolve different interpretations before opening the implementation.</p>
+    </aside>
+  </div>
+</section>
+
+<section class="ch" id="worth">
+  <p class="eyebrow"><span>Design choice</span></p>
+  <h2>Is a team worth it? Measure it against the single agent</h2>
+  <div class="stack">
+    <p class="lede" style="margin-top:0">A team is not free. On the same INC-001 investigation the two-agent team makes twice as many model calls as the single agent and reports more than twice the fixture tokens, because the supervisor plans and combines on top of the work. What it can buy is time: independent children can run at once. Whether that trade is worth it is a measurement, made with the Session 04 harness on the same cases, not a belief.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>INC-001 on the offline mock</th><th>Single agent (Session 04 baseline)</th><th>Supervisor and two children (today)</th></tr></thead>
+        <tbody>
+          <tr><td>Model calls</td><td>3</td><td>6: the supervisor 2, each child 2</td></tr>
+          <tr><td>Fixture tokens</td><td>75</td><td>170: the supervisor 60, each child 55</td></tr>
+          <tr><td>Answer</td><td>complete, <code>connection_pool_exhaustion</code></td><td>the same, citing <code>log-astro-001</code> and <code>rb-pool-v1</code></td></tr>
+          <tr><td>Time, with 20 ms injected per worker model call</td><td>not measured</td><td>sequential about 86 ms, parallel about 45 ms</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted">Fixture tokens are teaching measurements, not tokenizer counts or cost; the timings vary from machine to machine, so judge their direction, not their milliseconds. Note too that the shared budget covers only the children: the supervisor's own 60 tokens sit outside it until Session 11 reserves them from the same pool.</p>
+    <aside class="instructor" aria-label="Instructor notes">
+      <p><b>SAY</b> Put the two columns side by side before building anything. The team spends more than twice the fixture tokens for the same answer on this case. Parallel scheduling buys back time, and on a slow real model that can matter. The honest finding may be that the team is not worth it for a three-step investigation: that is a valid result, and the Session 04 harness is how you would show it either way.</p>
+    </aside>
+    <details class="askgroup"><summary><span class="self">Ask yourself</span><span class="room">Ask the room</span> · 1 question</summary><div class="askbody">
+      <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">When would a team beat the single agent on something other than time?</p>
+      <details><summary>Show the answer</summary><p>When the work really splits into parts that need different tools, data or permissions, or when one context window cannot hold all the evidence. Isolation can also be the point: a child that may only read logs cannot be talked into doing anything else.</p></details></div>
+    </div></details>
+  </div>
+</section>
+
+<section class="ch" id="contract">
+  <p class="eyebrow"><span>Contract</span></p>
+  <h2>Validate what the supervisor proposes, then start a scoped child</h2>
+  <div class="stack">
+    <p class="lede" style="margin-top:0">The supervisor's model proposes a task ID, a role and an objective, and nothing else: the schema has no field for tools, approvals or limits. The application serialises the contract with sorted keys, so an identical contract reuses the result it already has, while a changed objective under the same task ID is refused. It maps the role to a fixed tool, refuses a child that would hold a tool its parent lacks, and builds the child's <code>Context</code> from the parent's with a new run ID, the parent's ID, the role's tool and no approvals. The parent's conversation is not copied.</p>
+    <figure>
+      <div class="diagram">
+        <svg viewBox="0 0 900 330" role="img" aria-label="Three delegate calls with the same task ID. The first, logs with objective INC-001, starts a child and stores its contract and result. The second, identical, returns the stored result without starting another child. The third, the same task ID with objective INC-002, is refused as task_id_conflict. Below, the child&#x27;s Context is built from the parent&#x27;s: tenant kept, a new run ID, parent_id set to the parent&#x27;s run ID, role logs, allowed only log_lookup, approved empty.">
+          <rect class="box" x="16" y="20" width="260" height="58" rx="8"/>
+          <text class="small" x="28" y="44">task_id same · logs</text><text class="small" x="28" y="64">objective "INC-001"</text>
+          <rect class="today" x="320" y="20" width="250" height="58" rx="8"/>
+          <text class="lbl" x="332" y="44">Child starts</text><text class="small" x="332" y="64">contract and result stored</text>
+          <rect class="box" x="16" y="94" width="260" height="58" rx="8"/>
+          <text class="small" x="28" y="118">the same contract again</text><text class="small" x="28" y="138">identical, sorted keys</text>
+          <rect class="box" x="320" y="94" width="250" height="58" rx="8"/>
+          <text class="lbl" x="332" y="118">Same result</text><text class="small" x="332" y="138">no second child</text>
+          <rect class="box" x="16" y="168" width="260" height="58" rx="8"/>
+          <text class="small" x="28" y="192">task_id same · logs</text><text class="small" x="28" y="212">objective "INC-002"</text>
+          <rect class="fail" x="320" y="168" width="250" height="58" rx="8"/>
+          <text class="lbl" x="332" y="192">Refused</text><text class="errlbl" x="332" y="212">task_id_conflict</text>
+          <path class="ink" d="M276 49 H314"/><path class="arrowhead" d="M318 49 l-8 -5 v10z"/>
+          <path class="ink" d="M276 123 H314"/><path class="arrowhead" d="M318 123 l-8 -5 v10z"/>
+          <path class="ink" d="M276 197 H314"/><path class="arrowhead" d="M318 197 l-8 -5 v10z"/>
+
+          <rect class="box" x="610" y="20" width="274" height="206" rx="8"/>
+          <text class="lbl" x="624" y="44">Child Context</text>
+          <text class="small" x="624" y="68">tenant</text><text class="small" x="724" y="68">kept</text>
+          <text class="small" x="624" y="88">run_id</text><text class="small" x="724" y="88">new</text>
+          <text class="small" x="624" y="108">parent_id</text><text class="small" x="724" y="108">parent's run ID</text>
+          <text class="small" x="624" y="128">role</text><text class="small" x="724" y="128">logs</text>
+          <text class="small" x="624" y="148">allowed</text><text class="small" x="724" y="148">log_lookup</text>
+          <text class="small" x="624" y="168">approved</text><text class="small" x="724" y="168">()</text>
+          <text class="small" x="624" y="196">messages</text><text class="small" x="724" y="196">its own, not</text>
+          <text class="small" x="724" y="214">the parent's</text>
+          <path class="ink" d="M570 49 H604"/><path class="arrowhead" d="M608 49 l-8 -5 v10z"/>
+          <text class="errlbl" x="16" y="268">a logs child for a parent with only runbook_search → child_privilege_escalation</text>
+          <text class="small" x="16" y="296">The role decides the tool; the parent's tools are the ceiling; approvals never pass to a child.</text>
+        </svg>
+      </div>
+      <figcaption>The task ID is the child's identity: the same contract twice is one child, a changed contract under the same ID is a mistake the application refuses.</figcaption>
+    </figure>
+    <div class="two">
+      <div class="excerpt">
+        <div class="src">the proposal the model may make · agent_runtime/supervisor.py · lines 13–19 at lesson-06</div>
+<pre>DELEGATE_SCHEMA = {"type": "function", "function": {
+    "name": "delegate", "description": "Delegate one bounded read-only investigation task to logs or runbooks.",
+    "parameters": {"type": "object", "properties": {
+<span class="hl">        "task_id": {"type": "string", "minLength": 1},</span>
+<span class="hl">        "role": {"type": "string", "enum": ["logs", "runbooks"]},</span>
+<span class="hl">        "objective": {"type": "string", "maxLength": 500}},</span>
+        "required": ["task_id", "role", "objective"], "additionalProperties": False}}}</pre>
+      </div>
+      <div class="excerpt">
+        <div class="src">contract identity, role to tool, a narrowed child · agent_runtime/supervisor.py · lines 79–95 at lesson-06</div>
+<pre>identity = args["task_id"]
+<span class="hl">contract = json.dumps(args, sort_keys=True)</span>
+if identity in self.contracts:
+<span class="hl">    if self.contracts[identity] != contract:</span>
+        return {"ok": False, "error": "task_id_conflict"}
+    return self.results.get(identity, {"ok": False, "error": "duplicate_in_flight"})
+<span class="hl">capabilities = ("log_lookup",) if args["role"] == "logs" else ("runbook_search",)</span>
+<span class="hl">if not set(capabilities) &lt;= set(parent.allowed):</span>
+    return {"ok": False, "error": "child_privilege_escalation"}
+reserved = 1800
+try:
+    await self.budget.reserve(reserved, depth=1)
+except ValueError as exc:
+    return {"ok": False, "error": str(exc)}
+self.contracts[identity] = contract
+<span class="hl">child = replace(parent, run_id=uuid.uuid4().hex, parent_id=parent.run_id,</span>
+<span class="hl">                role=args["role"], allowed=capabilities, approved=())</span></pre>
+      </div>
+    </div>
+    <aside class="instructor" aria-label="Instructor notes">
+      <p><b>SAY</b> The model may propose a task ID, a role and a bounded objective. It cannot invent a role or attach permissions. Read DELEGATE_SCHEMA and name the two allowed roles, then follow delegate. The contract is serialised with sorted keys: an identical contract reuses its result, while a changed objective under the same task ID is rejected as task_id_conflict. The application maps the role to a fixed tool set and refuses a child that would hold a tool its parent lacks. The child Context gets a new run ID, the parent's run ID as parent_id, the role's tools and no approvals. The parent's conversation is not copied. Ask why the objective is capped at 500 characters.</p>
+      <p><b>Explain the choice</b> The schema bounds proposed decomposition, and the role-to-tool mapping keeps authority with the application. Children never receive the delegate tool, so they cannot spawn further agents.</p>
+      <p><b>PAUSE</b> Have learners identify the boundary in their agent's change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.</p>
+    </aside>
+    <details class="askgroup"><summary><span class="self">Ask yourself</span><span class="room">Ask the room</span> · 2 questions</summary><div class="askbody">
+      <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">Should a worker choose its own permissions after reading its objective?</p>
+      <details><summary>Show the answer</summary><p>No. The application maps the validated role to a fixed capability set and checks that it does not exceed the parent's authority.</p></details></div>
+      <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">Why cap the objective at 500 characters?</p>
+      <details><summary>Show the answer</summary><p>The objective is the only free text that crosses from the supervisor to the child. A bound keeps it a task description, not a second conversation, and keeps a model from pushing evidence or instructions into the child wholesale.</p></details></div>
+    </div></details>
+  </div>
+</section>
+
+<section class="ch" id="budget">
+  <p class="eyebrow"><span>Budget</span></p>
+  <h2>Reserve before a child starts, settle after it ends</h2>
+  <div class="stack">
+    <p class="lede" style="margin-top:0">Two children that each check "is there enough left?" and then start can both see the same 5,000 tokens. So a child <b>reserves</b> its share, 1,800 fixture tokens, under a lock before it starts, and the reservation also counts it against the number of agents and the delegation depth. When the child ends, the budget is <b>settled</b> from what it reported using; a child that produced no run is charged the full reservation. A plan that needs more agents than allowed is refused at the start, and the supervisor reports what it has honestly.</p>
+    <figure>
+      <div class="diagram">
+        <svg viewBox="0 0 900 330" role="img" aria-label="The shared budget&#x27;s ledger for the INC-001 team when both children run in parallel. Start: 5,000 remaining, 0 spawned, 0 spent. The logs child reserves 1,800: 3,200 remaining, 1 spawned. The runbooks child reserves 1,800 before the first has finished: 1,400 remaining, 2 spawned. The logs child settles having used 55: 3,145 remaining, 55 spent. The runbooks child settles having used 55: 4,890 remaining, 110 spent. A third request would fail as delegation_budget because 2 agents are already spawned.">
+          <rect class="box" x="16" y="20" width="868" height="244" rx="8"/>
+          <text class="small" x="30" y="44">event</text><text class="small" x="430" y="44">remaining</text><text class="small" x="580" y="44">spawned</text><text class="small" x="730" y="44">spent</text>
+          <path class="ink" d="M16 54 H884"/>
+          <text class="small" x="30" y="80">start</text><text class="small" x="430" y="80">5,000</text><text class="small" x="580" y="80">0</text><text class="small" x="730" y="80">0</text>
+          <rect class="today" x="20" y="92" width="860" height="30" rx="4"/>
+          <text class="small" x="30" y="112">logs child reserves 1,800</text><text class="small" x="430" y="112">3,200</text><text class="small" x="580" y="112">1</text><text class="small" x="730" y="112">0</text>
+          <rect class="today" x="20" y="126" width="860" height="30" rx="4"/>
+          <text class="small" x="30" y="146">runbooks child reserves 1,800</text><text class="small" x="430" y="146">1,400</text><text class="small" x="580" y="146">2</text><text class="small" x="730" y="146">0</text>
+          <text class="small" x="30" y="184">logs child settles: used 55</text><text class="small" x="430" y="184">3,145</text><text class="small" x="580" y="184">2</text><text class="small" x="730" y="184">55</text>
+          <text class="small" x="30" y="214">runbooks child settles: used 55</text><text class="small" x="430" y="214">4,890</text><text class="small" x="580" y="214">2</text><text class="small" x="730" y="214">110</text>
+          <text class="errlbl" x="30" y="248">a third child: max_agents is 2 → delegation_budget, before it starts</text>
+          <text class="small" x="16" y="296">Run in parallel, both reservations happen before either child settles: that is why reserve takes a lock.</text>
+          <text class="small" x="16" y="316">The supervisor's own 60 tokens are not in this ledger; Session 11 reserves them from the same budget.</text>
+        </svg>
+      </div>
+      <figcaption>The numbers are the lab's: two children of 55 fixture tokens each, 110 spent from the shared budget. With max_agents set to 1, the runbooks child is refused and the supervisor answers insufficient_evidence, keeping the log evidence it has.</figcaption>
+    </figure>
+    <div class="two">
+      <div class="excerpt">
+        <div class="src">one allowance, reserved and settled under a lock · agent_runtime/supervisor.py · lines 22–41 at lesson-06</div>
+<pre>@dataclass
+class SharedBudget:
+    remaining: int = 5000
+    max_agents: int = 2
+    max_depth: int = 1
+    spawned: int = 0
+    spent: int = 0
+    lock: asyncio.Lock = field(default_factory=asyncio.Lock)
+
+    async def reserve(self, tokens, depth):
+<span class="hl">        async with self.lock:</span>
+<span class="hl">            if depth &gt; self.max_depth or self.spawned &gt;= self.max_agents or tokens &gt; self.remaining:</span>
+<span class="hl">                raise ValueError("delegation_budget")</span>
+<span class="hl">            self.spawned += 1</span>
+<span class="hl">            self.remaining -= tokens</span>
+
+<span class="hl">    async def settle(self, reserved, used):</span>
+<span class="hl">        async with self.lock:</span>
+<span class="hl">            self.remaining = max(0, self.remaining + reserved - used)</span>
+<span class="hl">            self.spent += used</span></pre>
+      </div>
+      <div class="excerpt">
+        <div class="src">each child runs with its reservation as its limit; settle always runs · agent_runtime/supervisor.py · lines 96–108 at lesson-06</div>
+<pre>tools = ToolExecutor(read_handler=context_tools)
+run = None
+try:
+<span class="hl">    run = await run_agent(self.worker_factory(), tools.execute, tools.available(child),</span>
+<span class="hl">        args["objective"], child, Limits(tokens=reserved, steps=4))</span>
+    self.children.append(run)
+    result = {"ok": run.status == "completed", "data": run.answer,
+              "child_run_id": child.run_id, "task_id": identity,
+              "error": run.error, "status": run.status}
+    self.results[identity] = result
+    return result
+<span class="hl">finally:</span>
+<span class="hl">    await self.budget.settle(reserved, run.tokens if run else reserved)</span></pre>
+      </div>
+    </div>
+    <aside class="instructor" aria-label="Instructor notes">
+      <p><b>SAY</b> Inspect SharedBudget. The lock makes reservation atomic, which matters once children run concurrently. A child must fit the depth, agent-count and token limits before it starts. delegate reserves 1,800 fixture tokens, runs the child with its own limits of that allowance and four steps, and settles in a finally block from reported usage; a child that produced no run is charged the full reservation. Lower max_agents to one: the second delegation fails with delegation_budget, and the parent reports insufficient_evidence while keeping the log evidence. Name one honest gap: the parent's own calls sit outside this pool. Session 11 reserves them from the same budget.</p>
+      <p><b>Explain the choice</b> Reservation before launch prevents oversubscription under concurrency, and agent count bounds total child creation, not only simultaneous activity. Settlement cannot make an inaccurate usage report exact.</p>
+      <p><b>PAUSE</b> Have learners identify the boundary in their agent's change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.</p>
+    </aside>
+    <details class="askgroup"><summary><span class="self">Ask yourself</span><span class="room">Ask the room</span> · 1 question</summary><div class="askbody">
+      <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">Why reserve before spawning instead of checking usage afterward?</p>
+      <details><summary>Show the answer</summary><p>By then concurrent children may already have spent more than the allowance. Admission must happen before the work begins.</p></details></div>
+    </div></details>
+  </div>
+</section>
+
+<section class="ch" id="schedule">
+  <p class="eyebrow"><span>Scheduler</span></p>
+  <h2>Run independent work together, under one deadline</h2>
+  <div class="stack">
+    <p class="lede" style="margin-top:0">The scheduler takes work items with their dependencies. Before anything runs it rejects duplicate IDs, unknown dependencies and cycles. Then it launches ready items up to the concurrency limit; an item is ready when everything it depends on has completed, and blocked if any of it failed. At the deadline it keeps what finished, cancels the rest and waits for their clean-up, and reports <code>partial</code>. The runtime gets one small hook, <code>execute_batch</code>: when the supervisor runs in parallel, all its pending delegate calls go through the scheduler at once, each still through <code>delegate</code>'s checks, and the results come back by tool-call ID.</p>
+    <figure>
+      <div class="diagram">
+        <svg viewBox="0 0 900 360" role="img" aria-label="A timeline with concurrency 2 and a deadline. Items a and b start together. a completes early. b runs past the deadline and is cancelled with reason deadline. Item c depends on a and b: since b did not complete, c never starts and is reported as cancelled at the deadline; had b failed instead, c would be blocked with dependency_failed. The report keeps a&#x27;s result and says partial. Below, the supervisor&#x27;s parallel mode: its two pending delegate calls go to execute_batch, which runs them through the scheduler, and the results return by tool-call ID.">
+          <text class="small" x="16" y="40">item</text><text class="small" x="120" y="40">time →</text><text class="small" x="720" y="40">result</text>
+          <path class="ink" d="M16 50 H884"/>
+          <text class="lbl" x="16" y="82">a</text>
+          <rect class="today" x="120" y="64" width="160" height="28" rx="4"/>
+          <text class="small" x="720" y="82">completed, kept</text>
+          <text class="lbl" x="16" y="128">b</text>
+          <rect class="box" x="120" y="110" width="440" height="28" rx="4"/>
+          <path class="err" d="M480 110 V138"/>
+          <text class="errlbl" x="720" y="128">cancelled: deadline</text>
+          <text class="lbl" x="16" y="174">c (needs a, b)</text>
+          <text class="small" x="120" y="174">never starts: b has not completed</text>
+          <text class="errlbl" x="720" y="174">cancelled: deadline</text>
+          <path class="err" d="M480 56 V196"/><text class="errlbl" x="436" y="212">deadline</text>
+          <text class="small" x="120" y="212">concurrency 2: a and b start together</text>
+          <text class="small" x="16" y="240">report: partial · a cycle (a needs b, b needs a) is refused as dependency_cycle before anything runs</text>
+          <text class="small" x="16" y="260">if b had failed instead: c is blocked, dependency_failed</text>
+
+          <rect class="box" x="16" y="284" width="250" height="60" rx="8"/>
+          <text class="lbl" x="28" y="308">Supervisor run</text><text class="small" x="28" y="328">2 pending delegate calls</text>
+          <rect class="today" x="306" y="284" width="250" height="60" rx="8"/>
+          <text class="lbl" x="318" y="308">execute_batch</text><text class="small" x="318" y="328">schedule(…), via delegate</text>
+          <rect class="box" x="596" y="284" width="288" height="60" rx="8"/>
+          <text class="lbl" x="608" y="308">Results</text><text class="small" x="608" y="328">by tool-call ID, in call order</text>
+          <path class="ink" d="M266 314 H300"/><path class="arrowhead" d="M304 314 l-8 -5 v10z"/>
+          <path class="ink" d="M556 314 H590"/><path class="arrowhead" d="M594 314 l-8 -5 v10z"/>
+        </svg>
+      </div>
+      <figcaption>Finished work is never thrown away at the deadline, and unfinished work is cancelled and awaited, so nothing keeps running after the report says it stopped.</figcaption>
+    </figure>
+    <div class="two">
+      <div class="excerpt">
+        <div class="src">launch what is ready, wait for the first to finish or the deadline · agent_runtime/coordination.py · lines 48–72 at lesson-06</div>
+<pre>            if any(dep in results and results[dep]["status"] != "completed" for dep in deps):
+<span class="hl">                results[key] = {"status": "blocked", "error": "dependency_failed"}</span>
+<span class="hl">                pending.remove(key)</span>
+            elif all(dep in results for dep in deps) and len(active) &lt; concurrency:
+<span class="hl">                active[asyncio.create_task(wrapped(specs[key]))] = key</span>
+                pending.remove(key)
+<span class="hl">        remaining = expires-time.monotonic()</span>
+<span class="hl">        if remaining &lt;= 0:</span>
+            break
+        if active:
+<span class="hl">            done, _ = await asyncio.wait(active, timeout=remaining,</span>
+                                         return_when=asyncio.FIRST_COMPLETED)
+            if not done:
+                break
+            for task in done:
+                results[active.pop(task)] = task.result()
+        elif pending:
+<span class="hl">            continue</span>
+<span class="hl">    for key in pending | set(active.values()):</span>
+        results[key] = {"status": "cancelled", "error": "deadline"}
+finally:
+<span class="hl">    for task in active:</span>
+<span class="hl">        task.cancel()</span>
+<span class="hl">    if active:</span>
+<span class="hl">        await asyncio.gather(*active, return_exceptions=True)</span></pre>
+      </div>
+      <div class="excerpt">
+        <div class="src">the runtime's one new hook: pending calls as a batch · agent_runtime/core.py · lines 131–139 at lesson-06</div>
+<pre><span class="hl">if run.pending and execute_batch:</span>
+<span class="hl">    results = await execute_batch(run.pending, run.context)</span>
+    for call in run.pending:
+<span class="hl">        result = results[call["id"]]</span>
+        run.event("tool", name=call["name"], ok=result.get("ok", True))
+        run.messages.append({"role": "tool", "tool_call_id": call["id"],
+                             "content": json.dumps(result)})
+    run.pending = []
+    save()</pre>
+      </div>
+    </div>
+    <aside class="instructor" aria-label="Instructor notes">
+      <p><b>SAY</b> Open agent_runtime/coordination.py. schedule rejects duplicate IDs, unknown dependencies and cycles before any work starts. The loop launches ready tasks up to the concurrency limit, marks dependants of a failed task as blocked, and waits for the first completion or the deadline. Unfinished tasks are recorded as cancelled with reason deadline, then cancelled and awaited so their cleanup runs. The overall status is partial unless everything completed. Next show the execute_batch hook in core.run_agent and Supervisor.batch: pending delegate calls become WorkItems, each still passes through delegate, and results return by tool-call ID. Compare sequential and parallel runs with the same injected latency; judge the direction, not exact milliseconds.</p>
+      <p><b>Explain the choice</b> A generic runner keeps scheduling testable with small asynchronous fixtures. Parallelism is enabled only through the supervisor's batch adapter; the general tool executor does not become a concurrent write engine.</p>
+      <p><b>PAUSE</b> Have learners identify the boundary in their agent's change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.</p>
+    </aside>
+    <details class="askgroup"><summary><span class="self">Ask yourself</span><span class="room">Ask the room</span> · 1 question</summary><div class="askbody">
+      <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">Should a partial result carry the same success status as a complete result?</p>
+      <details><summary>Show the answer</summary><p>No. The consumer needs an explicit completeness state and the outcome of each required task, keyed by task ID rather than arrival order.</p></details></div>
+    </div></details>
+  </div>
+</section>
+
+<section class="ch" id="replies">
+  <p class="eyebrow"><span>Replies and review</span></p>
+  <h2>Accept only the reply you asked for; stop a review that never agrees</h2>
+  <div class="stack">
+    <p class="lede" style="margin-top:0">Once work runs at the same time, replies can arrive late, twice or for another request. Each request travels in an <b>envelope</b> with a correlation ID, a task ID, an artifact ID and a version; a reply is accepted only if the three IDs match and its version is exactly the next one. Review between a producer and a reviewer gets a <b>round limit</b>: if the reviewer has not accepted by then, the review is escalated with the artifact and every review kept, and the one component that owns the report saves it.</p>
+    <figure>
+      <div class="diagram">
+        <svg viewBox="0 0 900 340" role="img" aria-label="Above, three replies to one request with correlation c1, task logs, artifact report, version 1. A reply with the same IDs and version 2 is accepted. A reply with correlation c9 fails as mismatched_reply. A reply still at version 1 fails as stale_or_unexpected_artifact. Below, a bounded review with two rounds: the reviewer rejects in round 1, the producer revises, the reviewer rejects in round 2, and the review is escalated with the artifact and both reviews; the owner saves the report as version 1.">
+          <rect class="box" x="16" y="24" width="250" height="78" rx="8"/>
+          <text class="lbl" x="28" y="48">Request</text>
+          <text class="small" x="28" y="70">c1 · logs · report</text><text class="small" x="28" y="88">version 1</text>
+          <rect class="today" x="320" y="14" width="260" height="40" rx="6"/>
+          <text class="small" x="332" y="39">c1 · logs · report · v2</text>
+          <text class="lbl" x="600" y="39">accepted</text>
+          <rect class="fail" x="320" y="62" width="260" height="40" rx="6"/>
+          <text class="small" x="332" y="87">c9 · logs · report · v2</text>
+          <text class="errlbl" x="600" y="87">mismatched_reply</text>
+          <rect class="fail" x="320" y="110" width="260" height="40" rx="6"/>
+          <text class="small" x="332" y="135">c1 · logs · report · v1</text>
+          <text class="errlbl" x="600" y="135">stale_or_unexpected_artifact</text>
+          <path class="ink" d="M266 63 H290 V34 H314"/><path class="arrowhead" d="M318 34 l-8 -5 v10z"/>
+          <path class="ink" d="M290 63 V82 H314"/><path class="arrowhead" d="M318 82 l-8 -5 v10z"/>
+          <path class="ink" d="M290 82 V130 H314"/><path class="arrowhead" d="M318 130 l-8 -5 v10z"/>
+
+          <rect class="box" x="16" y="196" width="150" height="60" rx="8"/>
+          <text class="lbl" x="28" y="220">Round 1</text><text class="errlbl" x="28" y="240">reviewer: no</text>
+          <rect class="box" x="196" y="196" width="150" height="60" rx="8"/>
+          <text class="lbl" x="208" y="220">Producer</text><text class="small" x="208" y="240">revises</text>
+          <rect class="box" x="376" y="196" width="150" height="60" rx="8"/>
+          <text class="lbl" x="388" y="220">Round 2</text><text class="errlbl" x="388" y="240">reviewer: no</text>
+          <rect class="today" x="556" y="196" width="150" height="60" rx="8"/>
+          <text class="lbl" x="568" y="220">Escalated</text><text class="small" x="568" y="240">history kept</text>
+          <rect class="today" x="736" y="196" width="148" height="60" rx="8"/>
+          <text class="lbl" x="748" y="220">Owner saves</text><text class="small" x="748" y="240">report v1</text>
+          <path class="ink" d="M166 226 H190"/><path class="arrowhead" d="M194 226 l-8 -5 v10z"/>
+          <path class="ink" d="M346 226 H370"/><path class="arrowhead" d="M374 226 l-8 -5 v10z"/>
+          <path class="ink" d="M526 226 H550"/><path class="arrowhead" d="M554 226 l-8 -5 v10z"/>
+          <path class="ink" d="M706 226 H730"/><path class="arrowhead" d="M734 226 l-8 -5 v10z"/>
+          <text class="small" x="16" y="296">max_rounds = 2: after the last rejection there is no further revision, only escalation.</text>
+          <text class="small" x="16" y="316">One component owns the reviewed artifact and saves it; the reviewer and producer never write it.</text>
+        </svg>
+      </div>
+      <figcaption>The lab's reviewer always reports contradictory evidence, so its review escalates after two rounds and the owner saves the report as version 1. Typed envelopes and a round limit fix what no prompt change could.</figcaption>
+    </figure>
+    <div class="excerpt">
+        <div class="src">match the request, then a review that ends · agent_runtime/coordination.py · lines 86–104 at lesson-06</div>
+<pre>def accept_reply(request, reply):
+<span class="hl">    if (reply.correlation_id, reply.task_id, reply.artifact_id) != (</span>
+<span class="hl">        request.correlation_id, request.task_id, request.artifact_id):</span>
+        raise ValueError("mismatched_reply")
+<span class="hl">    if reply.version != request.version+1:</span>
+<span class="hl">        raise ValueError("stale_or_unexpected_artifact")</span>
+    return reply.body
+
+
+async def bounded_review(artifact, producer, reviewer, max_rounds=2):
+    history = []
+<span class="hl">    for number in range(max_rounds):</span>
+        decision = await reviewer(artifact)
+        history.append(decision)
+        if decision["accepted"]:
+            return {"status": "accepted", "artifact": artifact, "rounds": number+1, "reviews": history}
+        if number+1 &lt; max_rounds:
+<span class="hl">            artifact = await producer(artifact, decision)</span>
+<span class="hl">    return {"status": "escalated", "artifact": artifact, "rounds": max_rounds, "reviews": history}</span></pre>
+      </div>
+    <aside class="instructor" aria-label="Instructor notes">
+      <p><b>SAY</b> Read Envelope and accept_reply. Correlation, task and artifact IDs must match the request, and the reply must advance the version by exactly one, so a reply for another request or a stale version cannot overwrite newer evidence. Then read bounded_review: the reviewer decides, the producer revises, and after max_rounds without acceptance the status is escalated with the artifact and review history preserved. The lab's reviewer always reports contradictory evidence, the review escalates, and the single owning component saves the report as version 1. Ask how learners would tell a genuine evidence conflict from a reviewer whose criteria keep changing. Both need explicit acceptance rules; the corrective action differs.</p>
+      <p><b>Explain the choice</b> Typed envelopes and artifact versions fix coordination errors that prompt changes cannot. A finite review loop turns disagreement into an escalation with evidence.</p>
+      <p><b>PAUSE</b> Have learners identify the boundary in their agent's change and explain the expected failure behaviour. Compare it with the reference excerpt before accepting the change.</p>
+    </aside>
+    <details class="askgroup"><summary><span class="self">Ask yourself</span><span class="room">Ask the room</span> · 1 question</summary><div class="askbody">
+      <div class="ask"><span class="label"><span class="self">Ask yourself</span><span class="room">Ask the room</span></span><p class="q">When should a review loop stop even if the reviewer has not accepted?</p>
+      <details><summary>Show the answer</summary><p>When its round, time or cost allowance is exhausted, or when the conflict needs a human decision. Preserve the unresolved evidence and escalate.</p></details></div>
+    </div></details>
+  </div>
+</section>
+
+<section class="ch" id="build">
+  <p class="eyebrow"><span>Guided build</span></p>
+  <h2>How you build it: four bounded prompts</h2>
+  <div class="prose">
+    <p>The instructor shows each prompt and the change it produces; you run the same prompt in your own project, in the same order, and judge the result before moving on. Your coding agent writes the code and runs the checks.</p>
+    <p class="muted">Rule for the whole build: a coding agent saying "done" is not evidence. Look at the diff and at the check output.</p>
+  </div>
+  <div class="stack">
+    <nav class="route" id="route" aria-label="Build route">
+      <a href="#prepare">Prepare</a><span class="arr" aria-hidden="true">→</span><a href="#orient">Add the check pack</a><span class="arr" aria-hidden="true">→</span><a href="#step1">Build 1</a><span class="arr" aria-hidden="true">→</span><a href="#step2">Build 2</a><span class="arr" aria-hidden="true">→</span><a href="#step3">Build 3</a><span class="arr" aria-hidden="true">→</span><a href="#step4">Build 4</a><span class="arr" aria-hidden="true">→</span><a href="#exercise">Exercise</a><span class="arr" aria-hidden="true">→</span><a href="#verify">Verify</a><span class="arr" aria-hidden="true">→</span><a href="#review">Review</a>
+    </nav>
+  </div>
+
+  <div class="links">
+    <a href="https://github.com/maxvpavlov/ciklum-innovate-l3-2026/tree/main/learner-kit/lessons/06"><span class="q">Session 06 kit</span><span class="mono">learner-kit/lessons/06</span><span class="muted">check pack, given fixture and interfaces</span></a>
+    <a href="https://github.com/maxvpavlov/ciklum-innovate-l3-2026/blob/main/L3%202026%20Agentic%20Platform%20Instructor%20Materials/incident-platform/LEARNER_PROMPTS.md#06-supervisor-subagents-and-parallel-coordination"><span class="q">Every session's prompts</span><span class="mono">LEARNER_PROMPTS.md</span><span class="muted">the same prompts, in one file</span></a>
+    <a href="https://maxvpavlov.github.io/ciklum-innovate-l3-2026/lesson-05/"><span class="q">Session 05 page</span><span class="mono">maxvpavlov.github.io/…/lesson-05</span><span class="muted">runs, workers and recovery from last time</span></a>
+    <a href="https://maxvpavlov.github.io/ciklum-innovate-l3-2026/lesson-06-just-prompts/"><span class="q">Just the prompts</span><span class="mono">maxvpavlov.github.io/…/lesson-06-just-prompts</span><span class="muted">all nine in order, for after class</span></a>
+    <a href="https://maxvpavlov.github.io/ciklum-innovate-l3-2026/lesson-06/"><span class="q">This page</span><span class="mono">maxvpavlov.github.io/…/lesson-06</span><span class="muted">bookmark it for after class</span></a>
+  </div>
+
+  <div class="stack">
+    <h3>What you build today</h3>
+    <div class="stack" style="margin-top:0">
+      <div class="excerpt">
+        <div class="src">~/agentic-course/my-platform · after Session 06 (what you build today highlighted)</div>
+<pre><span class="hl">agent_runtime/supervisor.py          you build · DELEGATE_SCHEMA, SharedBudget, Supervisor (SupervisorProvider given)</span>
+<span class="hl">agent_runtime/coordination.py        you build · WorkItem, schedule, Envelope, accept_reply, bounded_review</span>
+<span class="hl">agent_runtime/core.py                you change · the optional execute_batch hook in run_agent</span>
+agent_runtime/tools.py               <span class="muted">Session 02, unchanged · children use it with their one tool</span>
+agent_runtime/durable.py             <span class="muted">Session 05, unchanged</span>
+agentic_platform/                    <span class="muted">given · the platform shell, unchanged</span>
+course/__init__.py                   <span class="muted">LESSON = 5, raised to 6 when verified</span>
+<span class="hl">course/labs/l06.py                   check pack · the Session 06 demonstration</span>
+<span class="hl">tests/test_lesson06.py               check pack · eight new checks</span></pre>
+      </div>
+      <div class="prose" style="margin-top:0">
+        <p><b>The children are ordinary runs.</b> Each one is the same <code>run_agent</code> loop you built in Session 01, with a narrowed <code>Context</code>; nothing in the loop knows it is a child. The kit gives one file, <code>given/SupervisorProvider.py</code>: the offline planning fixture you paste into <code>agent_runtime/supervisor.py</code> in build step 1.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="terminal" id="prepare">
+    <div class="bar"><span class="switch">Switch to terminal · Prepare the workspace</span><span class="file">confirms lesson-05 · updates the course copy</span></div>
+    <div class="body">
+      <p class="goal">Start your coding agent in <code>~/agentic-course</code>. It reads your <code>AGENTS.md</code>, confirms your Session 05 work still passes and refreshes your read-only copy of the course repository, which now holds the Session 06 kit.</p>
+      <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="pP"><span class="pfx">PROMPT ▸ </span>Prepare my learner project for Lesson 06. Open my project repository in my course GitLab group on gitlab.ciklum.net, cloning it into ~/agentic-course/my-platform if it is not there, read its AGENTS.md first if it has one and follow it, and confirm it holds my completed lesson-05 work with all its checks passing. Update my read-only copy of the course repository in ~/agentic-course/course, cloning it from https://github.com/maxvpavlov/ciklum-innovate-l3-2026 if it is missing, and tell me the commit it was at before and after the update and which files under learner-kit/lessons/06 changed; its learner-kit folder is the course kit. Use the pinned Python 3.12 environment and the offline mock provider. Do not add this lesson's work yet. Report the project location, its current checkpoint, the test results and any missing prerequisites. Do not ask me to run terminal commands.</div><div class="expect"><span class="pfx">EXPECT ▸ </span>your project at lesson-05 with <b>21 passed</b>, the course copy's commit before and after, and the files that changed under <code>learner-kit/lessons/06</code>. No code changes.</div></details>
+      <div><button class="copy" type="button" data-copy="pP">Copy prompt</button></div>
+    </div>
+  </div>
+
+  <div class="terminal" id="orient">
+    <div class="bar"><span class="switch">Switch to terminal · Add the check pack</span><span class="file">the checks · no implementation yet</span></div>
+    <div class="body">
+      <p class="goal">The agent copies the Session 06 checks into your project, shows which fail and why, and lists what they need from your code before writing any. The given planning fixture is pasted in build step 1.</p>
+      <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="pO"><span class="pfx">PROMPT ▸ </span>Read learner-kit/lessons/06 in the course repository: its README, the given files and the check pack. Copy the whole given files and the check pack into my project exactly as the README says, without changing them, and commit that; a given definition that must be pasted into a module is added in the build step that creates or changes that module. Then run the tests and report what fails and why: at first this lesson's test file may fail to import, because the modules it needs do not exist yet. List the interfaces my code must provide, with the exact names, signatures, fields and error codes the tests use, and the capability they verify. Explain the implementation sequence before we begin. Do not write the implementation yet, and do not look for or use a finished solution.</div><div class="expect"><span class="pfx">EXPECT ▸ </span>the check pack committed; <code>tests/test_lesson06.py</code> cannot import until <code>agent_runtime.coordination</code> and <code>agent_runtime.supervisor</code> exist, which stops the whole run, so the agent runs the earlier tests with <code>--ignore tests/test_lesson06.py</code>: 21 pass. A list of the interfaces, including the <code>execute_batch</code> hook in <code>run_agent</code>.</div></details>
+      <div><button class="copy" type="button" data-copy="pO">Copy prompt</button></div>
+    </div>
+  </div>
+
+  <div class="terminal" id="step1">
+    <div class="bar"><span class="switch">Switch to terminal · Build step 1 of 4</span><span class="file">new file · agent_runtime/supervisor.py · delegate</span></div>
+    <div class="body">
+      <p class="goal">Validate the supervisor's proposals and start each child with only its role's tool, a new run ID, the parent's ID and no approvals. <a href="#contract">The contract</a>.</p>
+      <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="p1"><span class="pfx">PROMPT ▸ </span>For Lesson 06, continue in my learner project. Implement the bounded delegate schema, the given offline planning fixture, SupervisorProvider, and the delegate method in agent_runtime/supervisor.py. Accept only known roles, stable task IDs and bounded objectives. Map each role to a fixed tool set, refuse capabilities the parent lacks, reuse identical contracts and reject a changed objective under the same task ID. Give each child a new run ID, the parent's ID, only its role's tools and no approvals. Label offline planning separately from live model planning. Build to the interfaces the Lesson 06 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div><div class="expect"><span class="pfx">EXPECT ▸ </span><code>DELEGATE_SCHEMA</code>, the given <code>SupervisorProvider</code> pasted unchanged, and <code>Supervisor.delegate</code>; shown on throwaway calls: a logs child with only <code>log_lookup</code> and its parent's ID, the same contract reused, a changed objective refused as <code>task_id_conflict</code>, a logs child for a runbook-only parent refused as <code>child_privilege_escalation</code>. The 21 earlier checks still pass.</div></details>
+      <div><button class="copy" type="button" data-copy="p1">Copy prompt</button></div>
+    </div>
+  </div>
+
+  <div class="ask readcode"><span class="label">Read your code · after build step 1</span>
+    <p class="q">delegate, in your agent_runtime/supervisor.py</p>
+    <p class="hint">Open the file in your editor and answer these from your own code before you run the next prompt.</p>
+    <ol><li>Where is the role turned into a tool, and where is that tool checked against the parent's tools?</li><li>Which fields of the child's Context are copied from the parent, and which are replaced? Is the parent's conversation passed to the child?</li><li>What happens when delegate is called a second time with the same task_id, first with the same objective, then with a different one?</li></ol>
+    <details><summary>Show likely answers</summary><p>The role maps to a fixed tuple (<code>logs</code> to <code>log_lookup</code>, <code>runbooks</code> to <code>runbook_search</code>), and the next line refuses it with <code>child_privilege_escalation</code> unless it is a subset of <code>parent.allowed</code>. <code>dataclasses.replace</code> keeps the tenant and replaces <code>run_id</code> (new), <code>parent_id</code> (the parent's run ID), <code>role</code>, <code>allowed</code> and <code>approved</code> (empty); the child gets only the objective as its task, not the parent's messages. The contract is stored as sorted JSON under the task ID: the same contract returns the stored result, a different one returns <code>task_id_conflict</code>.</p></details>
+    <p class="hint">Stuck? Ask your agent to point to the lines, not to explain them:</p>
+    <pre class="showme" id="rc1">Show me the lines in my project that answer these questions, with file names and line numbers. Point to the code only: do not change anything and do not explain it, I will.
+1. Where is the role turned into a tool, and where is that tool checked against the parent's tools?
+2. Which fields of the child's Context are copied from the parent, and which are replaced? Is the parent's conversation passed to the child?
+3. What happens when delegate is called a second time with the same task_id, first with the same objective, then with a different one?</pre>
+    <div><button class="copy" type="button" data-copy="rc1">Copy question</button></div>
+  </div>
+
+  <div class="terminal" id="step2">
+    <div class="bar"><span class="switch">Switch to terminal · Build step 2 of 4</span><span class="file">agent_runtime/supervisor.py · SharedBudget · investigate</span></div>
+    <div class="body">
+      <p class="goal">One allowance for all children: reserve before a child starts, settle after it ends, and refuse a plan that needs more agents than allowed. <a href="#budget">The budget</a>.</p>
+      <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="p2"><span class="pfx">PROMPT ▸ </span>For Lesson 06, continue in my learner project. Implement shared budget reservation and settlement with depth, agent-count and token limits. Reserve before starting a child, give it bounded limits, settle from reported usage and charge the full reservation when usage is missing. Demonstrate a plan that exceeds the agent-count allowance, preserving completed evidence and reporting the incomplete result honestly. Note that the parent's own usage is outside this pool. Build to the interfaces the Lesson 06 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div><div class="expect"><span class="pfx">EXPECT ▸ </span><code>SharedBudget</code> with <code>reserve</code> and <code>settle</code>; the INC-001 team spending 110 fixture tokens from it; with <code>max_agents=1</code> one child, the second refused as <code>delegation_budget</code> and the supervisor answering <code>insufficient_evidence</code> with the log evidence kept; a note that the supervisor's own usage is outside the pool.</div></details>
+      <div><button class="copy" type="button" data-copy="p2">Copy prompt</button></div>
+    </div>
+  </div>
+
+  <div class="ask readcode"><span class="label">Read your code · after build step 2</span>
+    <p class="q">SharedBudget and its use in delegate, in your agent_runtime/supervisor.py</p>
+    <p class="hint">Open the file in your editor and answer these from your own code before you run the next prompt.</p>
+    <ol><li>Where is the lock taken, and what could go wrong without it once children run at the same time?</li><li>When is settle called, and what is charged if the child never produced a run?</li><li>Which counter refuses the second child when max_agents is 1, and does that happen before or after the child starts?</li></ol>
+    <details><summary>Show likely answers</summary><p>Inside <code>reserve</code> and <code>settle</code>, around the checks and the arithmetic. Without it two concurrent children could both see the same remaining tokens and both start. <code>settle</code> runs in a <code>finally</code> after the child, with the child's reported tokens, or the full reservation when there is no run. <code>spawned</code> reaches <code>max_agents</code>, so <code>reserve</code> raises <code>delegation_budget</code> before the second child is created.</p></details>
+    <p class="hint">Stuck? Ask your agent to point to the lines, not to explain them:</p>
+    <pre class="showme" id="rc2">Show me the lines in my project that answer these questions, with file names and line numbers. Point to the code only: do not change anything and do not explain it, I will.
+1. Where is the lock taken, and what could go wrong without it once children run at the same time?
+2. When is settle called, and what is charged if the child never produced a run?
+3. Which counter refuses the second child when max_agents is 1, and does that happen before or after the child starts?</pre>
+    <div><button class="copy" type="button" data-copy="rc2">Copy question</button></div>
+  </div>
+
+  <div class="terminal" id="step3">
+    <div class="bar"><span class="switch">Switch to terminal · Build step 3 of 4</span><span class="file">new file · agent_runtime/coordination.py · schedule · and agent_runtime/core.py</span></div>
+    <div class="body">
+      <p class="goal">Schedule independent work with a concurrency limit and a deadline, and let the supervisor run its children in parallel through a small batch hook in the loop. <a href="#schedule">The scheduler</a>.</p>
+      <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="p3"><span class="pfx">PROMPT ▸ </span>For Lesson 06, continue in my learner project. Implement WorkItem and schedule in agent_runtime/coordination.py. Reject duplicate IDs, unknown dependencies and cycles before launching work, respect the concurrency limit, block dependants of failed work, and at the deadline keep completed results, cancel and await the rest and report partial status. Add an optional batch hook to the runtime and a supervisor adapter that sends pending delegate calls through the scheduler without bypassing delegate's checks. Compare sequential and parallel runs with the same injected latency. Build to the interfaces the Lesson 06 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div><div class="expect"><span class="pfx">EXPECT ▸ </span><code>WorkItem</code> and <code>schedule</code>; a cycle refused before anything runs; a failed predecessor blocking its dependant; a slow item cancelled at the deadline while the fast one is kept; the <code>execute_batch</code> hook in <code>agent_runtime/core.py</code> and <code>Supervisor.batch</code>; a parallel run faster than the sequential one with the same injected latency. The Lesson 06 test file now imports.</div></details>
+      <div><button class="copy" type="button" data-copy="p3">Copy prompt</button></div>
+    </div>
+  </div>
+
+  <div class="ask readcode"><span class="label">Read your code · after build step 3</span>
+    <p class="q">schedule, in your agent_runtime/coordination.py, and the hook in agent_runtime/core.py</p>
+    <p class="hint">Open the file in your editor and answer these from your own code before you run the next prompt.</p>
+    <ol><li>Where are cycles and unknown dependencies detected, and does that happen before any work starts?</li><li>What happens to an item whose predecessor failed, and to items still running at the deadline?</li><li>In run_agent, where are pending calls handed to execute_batch, and how is each result matched back to its call?</li></ol>
+    <details><summary>Show likely answers</summary><p>In a depth-first check over all items before the main loop, raising <code>dependency_cycle</code> or <code>unknown_dependency</code>. A dependant of a failed item is marked <code>blocked</code> with <code>dependency_failed</code>; at the deadline, unfinished items are recorded as <code>cancelled</code> with reason <code>deadline</code>, then cancelled and awaited. At the top of the step loop, when there are pending calls and a batch hook: the results come back as a dict keyed by tool-call ID, and each is appended as the tool message for that ID.</p></details>
+    <p class="hint">Stuck? Ask your agent to point to the lines, not to explain them:</p>
+    <pre class="showme" id="rc3">Show me the lines in my project that answer these questions, with file names and line numbers. Point to the code only: do not change anything and do not explain it, I will.
+1. Where are cycles and unknown dependencies detected, and does that happen before any work starts?
+2. What happens to an item whose predecessor failed, and to items still running at the deadline?
+3. In run_agent, where are pending calls handed to execute_batch, and how is each result matched back to its call?</pre>
+    <div><button class="copy" type="button" data-copy="rc3">Copy question</button></div>
+  </div>
+
+  <div class="terminal" id="step4">
+    <div class="bar"><span class="switch">Switch to terminal · Build step 4 of 4</span><span class="file">agent_runtime/coordination.py · Envelope · accept_reply · bounded_review</span></div>
+    <div class="body">
+      <p class="goal">Accept only the reply you asked for, at the next version, and stop a producer-reviewer loop at its round limit with the history kept. <a href="#replies">Replies and review</a>.</p>
+      <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="p4"><span class="pfx">PROMPT ▸ </span>For Lesson 06, continue in my learner project. Implement typed reply correlation and bounded producer-reviewer coordination in agent_runtime/coordination.py. Require matching correlation, task and artifact identity and the next version. Give one component ownership of saving the reviewed artifact and escalate review that does not converge within its round limit, keeping the history. Make the Session 06 check pack pass, including a deadline-cancelled worker, a stale reply and a reviewer that never accepts. Build to the interfaces the Lesson 06 check pack uses, and do not edit the check pack or the given files. Preserve earlier behaviour, run relevant checks and show the change and observed evidence. Stop at this step.</div><div class="expect"><span class="pfx">EXPECT ▸ </span><code>Envelope</code>, <code>accept_reply</code> and <code>bounded_review</code>; a mismatched and a stale reply refused; a reviewer that never accepts escalating after two rounds; the full suite at <b>29 passed</b>.</div></details>
+      <div><button class="copy" type="button" data-copy="p4">Copy prompt</button></div>
+    </div>
+  </div>
+
+  <div class="ask readcode"><span class="label">Read your code · after build step 4</span>
+    <p class="q">accept_reply and bounded_review, in your agent_runtime/coordination.py</p>
+    <p class="hint">Open the file in your editor and answer these from your own code before you run the next prompt.</p>
+    <ol><li>Which identifiers must match between request and reply, and which version must the reply carry?</li><li>After how many rounds does bounded_review stop without acceptance, and what does it return?</li><li>In your project, which component saves the reviewed report, and could the reviewer or producer write it too?</li></ol>
+    <details><summary>Show likely answers</summary><p>Correlation ID, task ID and artifact ID, and the version must be the request's plus one; anything else raises <code>mismatched_reply</code> or <code>stale_or_unexpected_artifact</code>. After <code>max_rounds</code> (2 by default) with no acceptance it returns <code>escalated</code> with the last artifact and every review. In the lab the code that called <code>bounded_review</code> saves the result with <code>save_artifact</code>; the reviewer and producer only return values, so they cannot write it.</p></details>
+    <p class="hint">Stuck? Ask your agent to point to the lines, not to explain them:</p>
+    <pre class="showme" id="rc4">Show me the lines in my project that answer these questions, with file names and line numbers. Point to the code only: do not change anything and do not explain it, I will.
+1. Which identifiers must match between request and reply, and which version must the reply carry?
+2. After how many rounds does bounded_review stop without acceptance, and what does it return?
+3. In your project, which component saves the reviewed report, and could the reviewer or producer write it too?</pre>
+    <div><button class="copy" type="button" data-copy="rc4">Copy question</button></div>
+  </div>
+
+</section>
+
+<section class="ch" id="exercise">
+  <p class="eyebrow"><span>Learner exercise</span></p>
+  <h2>Break the coordination on purpose: predict first, then run</h2>
+  <div class="stack">
+    <p class="lede">Write down the result you expect for each case, then run it in a throwaway script and compare.</p>
+    <div class="predict">
+      <div><span class="set">max_agents set to 1</span><span class="out">insufficient_evidence</span><span class="muted">One child, log evidence kept.</span></div>
+      <div><span class="set">logs worker for a runbook-only parent</span><span class="out">child_privilege_escalation</span><span class="muted">The parent's tools are the ceiling.</span></div>
+      <div><span class="set">same task ID, changed objective</span><span class="out">task_id_conflict</span><span class="muted">A task ID names one contract.</span></div>
+      <div><span class="set">slow worker past the deadline</span><span class="out">partial · cancelled</span><span class="muted">The finished result is kept.</span></div>
+      <div><span class="set">failed predecessor</span><span class="out">blocked</span><span class="muted">Dependants never start.</span></div>
+      <div><span class="set">stale reply</span><span class="out">ValueError</span><span class="muted">Only the next version is accepted.</span></div>
+    </div>
+    <div class="terminal" style="margin-top:0">
+      <div class="bar"><span class="switch">Switch to terminal · Exercise</span><span class="file">a throwaway script · restore afterwards</span></div>
+      <div class="body">
+        <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="p5"><span class="pfx">PROMPT ▸ </span>Help me carry out the Lesson 06 learner exercise in my existing project: Reduce max_agents to one, request a log worker from a parent with only runbook access, and reuse a task ID with a changed objective. Then schedule two independent tasks and one dependent task, inject a slow worker and a failed predecessor, and submit a stale reply. Explain each result and compare the two-worker run with the single-agent baseline. First state the expected outcomes, then run the experiment in a throwaway script outside tests/, or from a clean Git state you can restore. Show the observed results and explain any discrepancy. Keep the original acceptance criteria and restore temporary experiments when finished.</div><div class="expect"><span class="pfx">EXPECT ▸ </span>your predictions first; then each case above with its observed result, and the two-worker run compared with the single-agent baseline: 170 fixture tokens and 6 model calls against 75 and 3, and the parallel run faster than the sequential one. Nothing left behind in <code>tests/</code>.</div></details>
+      <div><button class="copy" type="button" data-copy="p5">Copy prompt</button></div>
+      </div>
+    </div>
+    <div class="cards pairs">
+      <div><span class="q">More practice: a third worker</span><p>Design a third worker on paper, with objective, inputs, tools and acceptance criteria, and decide which tasks may run in parallel with it.</p></div>
+      <div><span class="q">More practice: limits and conflicts</span><p>Compare two concurrency limits on the same fixtures, and add a contradictory-evidence review case with an explicit acceptance rule.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="ch" id="verify">
+  <p class="eyebrow"><span>Verification</span></p>
+  <h2>Evidence, not claims</h2>
+  <div class="stack">
+    <div class="two">
+      <div class="prose" style="margin-top:0">
+        <p class="big">29 passed</p>
+        <p>Twenty-one from Sessions 01 to 05, still passing, plus eight new checks: the delegated parallel demonstration; child isolation and the agent-count budget; no privilege escalation; contract reuse and conflict; dependencies and the concurrency limit; the deadline; cycles, failed dependencies and the review bound; and reply correlation.</p>
+        <p class="muted">Unrun or skipped checks are not passes. Look at the actual output, not the agent's summary. The timings vary; the statuses, children, tools and tokens must not.</p>
+      </div>
+      <figure>
+<pre class="result">{
+  "parent": &lt;varies&gt;,
+  "answer": {
+    "status": "complete",
+    "cause": "connection_pool_exhaustion",
+    "summary": "Combined bounded worker evidence",
+    "evidence": ["log-astro-001", "rb-pool-v1"]
+  },
+  "children": [
+    {"role": "logs", "tools": ["log_lookup"], "tokens": 55},
+    {"role": "runbooks", "tools": ["runbook_search"], "tokens": 55}
+  ],
+  "shared_tokens_spent": 110,
+  "timings_ms": {"sequential": &lt;about 86&gt;, "parallel": &lt;about 45&gt;},
+  "partial": {
+    "status": "partial",
+    "results": {
+      "fast": {"status": "completed", "data": {"ok": true, "source": "fast"}},
+      "slow": {"status": "cancelled", "error": "deadline"}
+    }
+  },
+  "review": "escalated",
+  "artifact_version": 1
+}</pre>
+        <figcaption>The Session 06 lab output, shortened. The parent's run ID and the timings change with every run; everything else must match.</figcaption>
+      </figure>
+    </div>
+    <div class="terminal" style="margin-top:0">
+      <div class="bar"><span class="switch">Switch to terminal · Verify and push</span><span class="file">check pack · full suite · push to GitLab</span></div>
+      <div class="body">
+        <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="p6"><span class="pfx">PROMPT ▸ </span>Verify my Lesson 06 implementation against its completion criteria. Update the checkpoint indicator in course/__init__.py to 6 only when the required capability is present. Run the full test suite, which includes the Lesson 06 check pack and every earlier lesson's tests, and then the Session 06 demonstration with python -m course.lab 6, all unchanged and using the offline provider (MODEL_PROVIDER unset or set to mock). Confirm that the passing count matches the one in the Lesson 06 check pack README. Keep the expected outcomes unchanged. Report checks actually executed, failures, relevant output and any untested integration. Explain the result. When the checks pass, add this lesson's entry to the progress log in AGENTS.md: the checkpoint, the test result you observed and what the lesson added, named as in the Lesson 06 check pack README, and nothing you did not see. Then commit my work and push it to my repository on gitlab.ciklum.net; if glab is also signed in to other GitLab hosts, make sure the push goes to gitlab.ciklum.net. Do not equate an unrun or skipped check with a pass.</div><div class="expect"><span class="pfx">EXPECT ▸ </span><b>29 passed</b>, the lab output above, <code>LESSON = 6</code>, a Lesson 06 entry in <code>AGENTS.md</code> and a push to your repository on gitlab.ciklum.net.</div></details>
+      <div><button class="copy" type="button" data-copy="p6">Copy prompt</button></div>
+        <div id="review"><details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="p7"><span class="pfx">PROMPT ▸ </span>Review my completed Lesson 06 work against the Lesson 06 check pack and completion criteria. Show the files I changed and the interfaces I provide, and explain how each completion criterion is met with code or test evidence. Point out the design choices I made that the check pack does not force, and what each one costs or gains. Preserve deliberate improvements and earlier capabilities.</div><div class="expect"><span class="pfx">EXPECT ▸ </span>the files you changed (<code>agent_runtime/supervisor.py</code>, <code>agent_runtime/coordination.py</code>, <code>agent_runtime/core.py</code>, <code>course/__init__.py</code>, <code>AGENTS.md</code>), each completion criterion tied to a check, and the design choices the checks do not force, such as the reservation size or the concurrency limit.</div></details>
+      <div><button class="copy" type="button" data-copy="p7">Copy prompt</button></div></div>
+      </div>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Completion criterion</th><th>Shown by</th></tr></thead>
+        <tbody>
+          <tr><td>Children have distinct run IDs, the correct parent ID, only their role's tools and no inherited approvals.</td><td>the isolation check; the lab's <code>children</code></td></tr>
+          <tr><td>A child cannot exceed its parent's capabilities; identical contracts are reused and changed ones rejected.</td><td>the escalation and contract checks</td></tr>
+          <tr><td>The shared budget enforces agent-count, depth and token limits before launch.</td><td>the budget check with <code>max_agents=1</code></td></tr>
+          <tr><td>Concurrency never exceeds its limit and dependent work waits for successful predecessors.</td><td>the dependency and concurrency check</td></tr>
+          <tr><td>A deadline preserves completed results and cancels unfinished work; cycles are rejected.</td><td>the deadline and cycle checks; the lab's <code>partial</code></td></tr>
+          <tr><td>Mismatched or stale replies fail validation, and non-converging review escalates.</td><td>the correlation and review checks; the lab's <code>review</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted">The criteria are quoted word for word from the "Completion criteria" in <a href="https://github.com/maxvpavlov/ciklum-innovate-l3-2026/blob/main/learner-kit/lessons/06/README.md"><code>learner-kit/lessons/06/README.md</code></a>, which is the authority: the Verify prompt checks your work against it.</p>
+    <p class="muted"><b>Not tested in this session:</b> a real model planning the delegation. The given <code>SupervisorProvider</code> is a fixed plan; a live model can propose calls with the same <code>delegate</code> schema, and the same checks would apply to them.</p>
+  </div>
+</section>
+
+<section class="ch" id="recover">
+  <p class="eyebrow"><span>When something breaks</span></p>
+  <h2>Recovery prompts for the usual failures</h2>
+  <div class="stack">
+    <p class="lede" style="margin-top:0">Paste the matching prompt; it asks your agent to reproduce, fix the smallest thing and rerun the checks.</p>
+    <aside class="instructor" aria-label="Instructor notes">
+      <div class="tablewrap"><table>
+        <thead><tr><th>Symptom</th><th>Diagnostic focus</th><th>Recovery</th></tr></thead>
+        <tbody>
+          <tr><td>Delegation fails before a child starts</td><td>invalid_delegation, task_id_conflict, child_privilege_escalation or delegation_budget each name a different check.</td><td>Use a bounded objective, a fresh task ID for new work and an allowance that fits the plan. Keep the permission check intact.</td></tr>
+          <tr><td>The parent declares success with one failed child</td><td>The aggregation may ignore failed or missing observations.</td><td>Keep partial evidence but report insufficient_evidence unless every delegated outcome succeeded.</td></tr>
+          <tr><td>The scheduler appears to hang</td><td>Check for a cycle, an unknown dependency or a runner that ignores cancellation.</td><td>Validate the graph first and reproduce with a small asynchronous fixture. Keep the deadline and the await after cancellation.</td></tr>
+          <tr><td>Parallel execution is not faster</td><td>The batch hook may be disabled, the work CPU-bound, or the fixture short of independent waiting time.</td><td>Confirm both runs use the same injected latency and that parallel mode uses the batch adapter. A slower multi-agent run is a valid finding.</td></tr>
+        </tbody>
+      </table></div>
+    </aside>
+    <div class="terminal" style="margin-top:0">
+      <div class="bar"><span class="switch">Switch to terminal · Recover</span><span class="file">only when you hit the symptom</span></div>
+      <div class="body">
+        <p class="rlabel"><b>Delegation fails before a child starts.</b> The error code names the check: schema, task ID, permissions or budget.</p>
+        <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="r1"><span class="pfx">PROMPT ▸ </span>I am working on Lesson 06. The symptom is: Delegation fails before a child starts. Diagnostic focus: Read the code: invalid_delegation, task_id_conflict, child_privilege_escalation or delegation_budget each name a different check. Recovery guidance: Use a bounded objective, a fresh task ID for new work and an allowance that fits the plan. Keep the permission check intact. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.</div></details>
+      <div><button class="copy" type="button" data-copy="r1">Copy prompt</button></div>
+        <p class="rlabel"><b>The parent declares success with one failed child.</b> Missing evidence must lower the answer to insufficient_evidence.</p>
+        <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="r2"><span class="pfx">PROMPT ▸ </span>I am working on Lesson 06. The symptom is: The parent declares success with one failed child. Diagnostic focus: The aggregation may ignore failed or missing observations. Recovery guidance: Keep partial evidence but report insufficient_evidence unless every delegated outcome succeeded. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.</div></details>
+      <div><button class="copy" type="button" data-copy="r2">Copy prompt</button></div>
+        <p class="rlabel"><b>The scheduler appears to hang.</b> Usually a cycle, an unknown dependency or a worker that ignores cancellation.</p>
+        <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="r3"><span class="pfx">PROMPT ▸ </span>I am working on Lesson 06. The symptom is: The scheduler appears to hang. Diagnostic focus: Check for a cycle, an unknown dependency or a runner that ignores cancellation. Recovery guidance: Validate the graph first and reproduce with a small asynchronous fixture. Keep the deadline and the await after cancellation. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.</div></details>
+      <div><button class="copy" type="button" data-copy="r3">Copy prompt</button></div>
+        <p class="rlabel"><b>Parallel execution is not faster.</b> Check that both runs inject the same latency; a slower team is a valid finding.</p>
+        <details class="fold"><summary><span class="show">Show prompt</span><span class="hide">Hide prompt</span></summary><div class="prompt" id="r4"><span class="pfx">PROMPT ▸ </span>I am working on Lesson 06. The symptom is: Parallel execution is not faster. Diagnostic focus: The batch hook may be disabled, the work CPU-bound, or the fixture short of independent waiting time. Recovery guidance: Confirm both runs use the same injected latency and that parallel mode uses the batch adapter. Record the result honestly; a slower multi-agent run is a valid finding. Reproduce the issue, make the smallest necessary correction and rerun affected checks. Report the cause, changed files and observed outcome. Preserve security controls and acceptance criteria.</div></details>
+      <div><button class="copy" type="button" data-copy="r4">Copy prompt</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="ch" id="summary">
+  <p class="eyebrow"><span>Summary</span></p>
+  <h2>How your platform changed, and what to try in the console</h2>
+  <div class="stack">
+    <p class="lede" style="margin-top:0">Everything below appears somewhere in the steps above; this is the whole lesson in one place, to check your project against before you close the session.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>In your project</th><th>What changed</th><th>Who wrote it</th></tr></thead>
+        <tbody>
+          <tr><td><code>agent_runtime/supervisor.py</code> (new)</td><td><code>DELEGATE_SCHEMA</code>, <code>SharedBudget</code> (<code>reserve</code>, <code>settle</code>), <code>Supervisor</code> (<code>delegate</code>, <code>batch</code>, <code>investigate</code>) and the given <code>SupervisorProvider</code></td><td>you, through build steps 1 to 3 (<code>SupervisorProvider</code> given)</td></tr>
+          <tr><td><code>agent_runtime/coordination.py</code> (new)</td><td><code>WorkItem</code>, <code>schedule</code>, <code>Envelope</code>, <code>accept_reply</code>, <code>bounded_review</code></td><td>you, in build steps 3 and 4</td></tr>
+          <tr><td><code>agent_runtime/core.py</code></td><td>the optional <code>execute_batch</code> hook in <code>run_agent</code>; without it the loop behaves as before</td><td>you, in build step 3</td></tr>
+          <tr><td><code>tests/test_lesson06.py</code>, <code>course/labs/l06.py</code></td><td>the Lesson 06 checks and demonstration</td><td>given, with the check pack</td></tr>
+          <tr><td><code>course/__init__.py</code>, <code>AGENTS.md</code></td><td><code>LESSON = 6</code> and the Lesson 06 progress entry</td><td>the Verify prompt</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The tool boundary, retrieval, the harness and the durable store did not change: each child uses them as any run would. The console shell did not change either. <b>The checks:</b> 29 passed, all on the mock.</p>
+    <div class="criteria">
+      <div><b>1 · Restart the platform</b>Sign in as <code>demo-astro</code>. Once Verify has raised <code>LESSON</code>, the Overview says checkpoint lesson-06 and its map marks "Supervisor and subagents" as built and "Remote agents over A2A" as planned.</div>
+      <div><b>2 · Run INC-001 in Runs</b>Expect complete with <code>connection_pool_exhaustion</code>, 75 fixture tokens and no children: the console still runs the single agent.</div>
+      <div><b>3 · Ask for the team</b>Have your coding agent submit INC-001 to the run API with <code>agent</code> set to <code>team</code>: it answers 400 <code>unknown_agent</code>. The shell knows only the single agent; the platform core registers the team in Session 08.</div>
+      <div><b>4 · See the children where they are today</b>In your terminal, the Session 06 demonstration lists two children with their roles, tools and 55 tokens each, all with the supervisor's run ID as their parent. That is the record the console will show.</div>
+    </div>
+    <p class="muted">Not in the console yet: the team agent, child runs and the shared budget. Session 08 lists each child in Runs with a link to its parent, and Session 11 turns the parent and child IDs into one trace.</p>
+  </div>
+</section>
+
+<section class="ch" id="close">
+  <p class="eyebrow"><span>Close</span></p>
+  <h2>A team the application keeps in bounds</h2>
+  <div class="stack">
+    <div class="criteria">
+      <div><b>Contracts, not prompts</b>the model proposes a task ID, a role and an objective; the application decides the rest.</div>
+      <div><b>Scoped children</b>a new run ID, the parent's ID, one tool, no approvals, no delegate.</div>
+      <div><b>One budget</b>reserved before a child starts, settled after it ends.</div>
+      <div><b>Bounded coordination</b>a deadline that keeps finished work, replies matched to requests, review that escalates.</div>
+    </div>
+    <div class="ask"><span class="label">After class</span><p class="q">Finish in your own project, in this order (<a href="#route">the route</a>)</p>
+      <ol class="steps"><li><a href="#prepare">Prepare the workspace</a> and <a href="#orient">add the check pack</a></li><li><a href="#step1">Build steps 1 to 4</a>, one at a time, reading each change</li><li><a href="#exercise">The exercise</a>, predicting each result first</li><li><a href="#verify">Verify and push</a>, then review the result</li></ol></div>
+    <aside class="instructor" aria-label="Instructor notes">
+      <p><b>SAY</b> Your platform now has bounded delegation and concurrent coordination. Next, one of these specialists runs as an independent service and is called through a standard remote-agent protocol.</p>
+      <p><b>Discussion prompt</b> Which decision would change for a larger or more sensitive workload, and what additional evidence would you require before changing it? Tie the answer to the code, the task requirements and the acceptance checks.</p>
+    </aside>
+    <p class="say">The model may propose the work; the application decides who does it, with what, for how long and how much.</p>
+    <div class="ask"><span class="label">Next session</span><p class="q">A2A across independent agent services</p><p>Today's runbook child runs in your process. Next it becomes an independent service that the supervisor finds, authenticates to, streams from and cancels over the A2A protocol: the second design from Session 05, where the remote side owns its own tasks.</p></div>
+  </div>
+</section>
+
+<footer>
+  <p>Course repository: <a href="https://github.com/maxvpavlov/ciklum-innovate-l3-2026">github.com/maxvpavlov/ciklum-innovate-l3-2026</a> · kit: <code>learner-kit/lessons/06</code> · all incident data are synthetic.</p>
+  <p>Further reading: <a href="https://www.anthropic.com/engineering/multi-agent-research-system">Multi-agent research system</a> · <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents">Context isolation and subagents</a> · <a href="https://www.anthropic.com/engineering/building-effective-agents">Parallel and evaluator-optimizer patterns</a> · <a href="https://docs.python.org/3/library/asyncio-task.html">Async tasks, timeouts and cancellation</a></p>
+</footer>
+</main>
+
+<script>
+(() => {
+  // Theme toggle (top left), added here so every page built from this one gets it. Until the viewer
+  // toggles it the page follows the system theme; a toggle sets data-theme on the root, which the colour
+  // tokens above honour, and is remembered for all the course pages on this site.
+  const themeRoot = document.documentElement;
+  const systemDark = window.matchMedia("(prefers-color-scheme: dark)");
+  const SVG_NS = "http://www.w3.org/2000/svg";
+  const THEME_ICONS = {  // the icon shows the theme a click switches to
+    dark: ["M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"],
+    light: ["M12 8a4 4 0 1 0 0 8a4 4 0 1 0 0-8z", "M12 2v2", "M12 20v2", "M4.9 4.9l1.4 1.4", "M17.7 17.7l1.4 1.4",
+            "M2 12h2", "M20 12h2", "M4.9 19.1l1.4-1.4", "M17.7 6.3l1.4-1.4"],
+  };
+  const themeToggle = document.createElement("button");
+  themeToggle.type = "button"; themeToggle.className = "theme";
+  const shownTheme = () => themeRoot.dataset.theme || (systemDark.matches ? "dark" : "light");
+  const drawThemeToggle = () => {
+    const next = shownTheme() === "dark" ? "light" : "dark";
+    const svg = document.createElementNS(SVG_NS, "svg");
+    svg.setAttribute("viewBox", "0 0 24 24"); svg.setAttribute("aria-hidden", "true");
+    THEME_ICONS[next].forEach((d) => { const path = document.createElementNS(SVG_NS, "path"); path.setAttribute("d", d); svg.append(path); });
+    themeToggle.replaceChildren(svg);
+    themeToggle.title = `Switch to the ${next} theme`; themeToggle.setAttribute("aria-label", themeToggle.title);
+  };
+  themeToggle.addEventListener("click", () => {
+    const next = shownTheme() === "dark" ? "light" : "dark";
+    themeRoot.dataset.theme = next;
+    try { localStorage.setItem("lesson-theme", next); } catch (e) { /* storage unavailable */ }
+    drawThemeToggle();
+  });
+  systemDark.addEventListener("change", drawThemeToggle);
+  try {
+    const saved = localStorage.getItem("lesson-theme");
+    if (saved === "light" || saved === "dark") themeRoot.dataset.theme = saved;
+  } catch (e) { /* follow the system theme */ }
+  document.body.prepend(themeToggle);
+  drawThemeToggle();
+
+  // Copy buttons: copy the prompt text without the "PROMPT ▸" prefix.
+  document.querySelectorAll(".copy").forEach((button) => {
+    button.addEventListener("click", () => {
+      const block = document.getElementById(button.dataset.copy);
+      const text = [...block.childNodes].filter((n) => !(n.classList && n.classList.contains("pfx")))
+        .map((n) => n.textContent).join("").trim();
+      const label = button.textContent;
+      const done = () => { button.textContent = "Copied"; setTimeout(() => { button.textContent = label; }, 1600); };
+      const select = () => {
+        const fold = block.closest("details"); if (fold) fold.open = true;
+        const range = document.createRange(); range.selectNodeContents(block);
+        const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+        button.textContent = "Selected · press Ctrl+C";
+      };
+      try { navigator.clipboard.writeText(text).then(done, select); } catch (e) { select(); }
+    });
+  });
+
+  // N / P jump between sections; V switches between Present and Read (or Instructor).
+  const stops = [...document.querySelectorAll("#start, section.ch, .terminal[id]")];
+  const current = () => {
+    const y = window.scrollY + window.innerHeight * 0.25;
+    let index = 0;
+    stops.forEach((el, i) => { if (el.getBoundingClientRect().top + window.scrollY <= y) index = i; });
+    return index;
+  };
+  document.addEventListener("keydown", (event) => {
+    if (event.target.closest("input, textarea, [contenteditable]") || event.metaKey || event.ctrlKey || event.altKey) return;
+    const key = event.key.toLowerCase();
+    if (key === "v") { setView(document.body.classList.contains("present") ? (instructorAllowed ? "instructor" : "read") : "present"); event.preventDefault(); return; }
+    if (key !== "n" && key !== "p") return;
+    const next = Math.max(0, Math.min(stops.length - 1, current() + (key === "n" ? 1 : -1)));
+    stops[next].scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+    event.preventDefault();
+  });
+
+  // Read / Present toggle, plus Instructor when the page is opened with ?instructor. The parameter is not a
+  // secret, since the repository is public: it only keeps the facilitator's notes (.instructor) out of the
+  // learners' views. Without it no Instructor button exists and Instructor is never selected.
+  const instructorAllowed = new URLSearchParams(location.search).has("instructor");
+  if (instructorAllowed) {
+    const b = document.createElement("button");
+    b.type = "button"; b.dataset.view = "instructor"; b.setAttribute("aria-pressed", "false"); b.textContent = "Instructor";
+    document.querySelector(".view").append(b);
+  }
+  const buttons = [...document.querySelectorAll(".view button")];
+  const viewKey = instructorAllowed ? "lesson-view-instructor" : "lesson-view";
+  const setView = (view, keepPlace = true) => {
+    if (view === "instructor" && !instructorAllowed) view = "read";
+    const anchor = stops[current()];
+    document.body.classList.toggle("present", view === "present");
+    document.body.classList.toggle("instructor-view", view === "instructor");
+    buttons.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.view === view)));
+    // In Instructor view every "Ask the room" answer is already open; leaving it folds them again.
+    document.querySelectorAll(".ask details, details.askgroup").forEach((d) => { d.open = view === "instructor"; });
+    if (keepPlace) anchor.scrollIntoView({ block: "start" });
+    try { localStorage.setItem(viewKey, view); } catch (e) { /* storage unavailable */ }
+  };
+  buttons.forEach((b) => b.addEventListener("click", () => setView(b.dataset.view)));
+  let startView = instructorAllowed ? "instructor" : "read";
+  try {
+    const saved = localStorage.getItem(viewKey);
+    if (saved === "read" || saved === "present" || (saved === "instructor" && instructorAllowed)) startView = saved;
+  } catch (e) { /* default view */ }
+  if (startView !== "read") setView(startView, false);
+})();
+</script>
+</body>
+</html>
