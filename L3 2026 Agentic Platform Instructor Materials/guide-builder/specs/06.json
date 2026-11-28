@@ -14,7 +14,7 @@
       "title": "Define the delegation contract and scoped child",
       "say": "The model may propose a task ID, a role and a bounded objective. It cannot invent a role or attach permissions. Read DELEGATE_SCHEMA and name the two allowed roles, then follow delegate. The contract is serialised with sorted keys: an identical contract reuses its result, while a changed objective under the same task ID is rejected as task_id_conflict. The application maps the role to a fixed tool set and refuses a child that would hold a tool its parent lacks. The child Context gets a new run ID, the parent's run ID as parent_id, the role's tools and no approvals. The parent's conversation is not copied. Ask why the objective is capped at 500 characters.",
       "file": "agent_runtime/supervisor.py",
-      "prompt": "Implement the bounded delegate schema, the given offline planning fixture, SupervisorProvider, and the delegate method in agent_runtime/supervisor.py. Accept only known roles, stable task IDs and bounded objectives. Map each role to a fixed tool set, refuse capabilities the parent lacks, reuse identical contracts and reject a changed objective under the same task ID. Give each child a new run ID, the parent's ID, only its role's tools and no approvals. Label offline planning separately from live model planning.",
+      "prompt": "Implement the bounded delegate schema, the given offline planning fixture, SupervisorProvider, the delegate method and Supervisor.investigate in agent_runtime/supervisor.py, keeping the child runs in children and counting each started child in budget.spawned (build step 2 makes that the shared budget). Accept only known roles, stable task IDs and bounded objectives. Map each role to a fixed tool set, refuse capabilities the parent lacks, reuse identical contracts and reject a changed objective under the same task ID. Give each child a new run ID, the parent's ID, only its role's tools and no approvals. Label offline planning separately from live model planning. The Lesson 06 test file cannot import until build step 4: prove this step with a throwaway script outside tests/ and keep the earlier 21 checks passing.",
       "excerpt": {
         "start": 79,
         "end": 95
@@ -27,7 +27,7 @@
       "title": "Reserve shared capacity and bound each child",
       "say": "Inspect SharedBudget. The lock makes reservation atomic, which matters once children run concurrently. A child must fit the depth, agent-count and token limits before it starts. delegate reserves 1,800 fixture tokens, runs the child with its own limits of that allowance and four steps, and settles in a finally block from reported usage; a child that produced no run is charged the full reservation. Lower max_agents to one: the second delegation fails with delegation_budget, and the parent reports insufficient_evidence while keeping the log evidence. Name one honest gap: the parent's own calls sit outside this pool. Session 11 reserves them from the same budget.",
       "file": "agent_runtime/supervisor.py",
-      "prompt": "Implement shared budget reservation and settlement with depth, agent-count and token limits. Reserve before starting a child, give it bounded limits, settle from reported usage and charge the full reservation when usage is missing. Demonstrate a plan that exceeds the agent-count allowance, preserving completed evidence and reporting the incomplete result honestly. Note that the parent's own usage is outside this pool.",
+      "prompt": "Implement shared budget reservation and settlement with depth, agent-count and token limits. Reserve before starting a child, give it bounded limits, settle from reported usage and charge the full reservation when usage is missing. Demonstrate a plan that exceeds the agent-count allowance, preserving completed evidence and reporting the incomplete result honestly. Note that the parent's own usage is outside this pool. Reserve enough for a child's whole run, since the loop's token guard counts each request plus its maximum output before every model call. The Lesson 06 test file cannot import until build step 4: prove this step with a throwaway script outside tests/ and keep the earlier 21 checks passing.",
       "excerpt": {
         "start": 22,
         "end": 41
@@ -40,7 +40,7 @@
       "title": "Schedule independent work with a deadline",
       "say": "Open coordination.py. schedule rejects duplicate IDs, unknown dependencies and cycles before any work starts. The loop launches ready tasks up to the concurrency limit, marks dependants of a failed task as blocked, and waits for the first completion or the deadline. Unfinished tasks are recorded as cancelled with reason deadline, then cancelled and awaited so their cleanup runs. The overall status is partial unless everything completed. Next show the execute_batch hook in core.run_agent and Supervisor.batch: pending delegate calls become WorkItems, each still passes through delegate, and results return by tool-call ID. Compare sequential and parallel runs with the same injected latency; judge the direction, not exact milliseconds.",
       "file": "agent_runtime/coordination.py",
-      "prompt": "Implement WorkItem and schedule in agent_runtime/coordination.py. Reject duplicate IDs, unknown dependencies and cycles before launching work, respect the concurrency limit, block dependants of failed work, and at the deadline keep completed results, cancel and await the rest and report partial status. Add an optional batch hook to the runtime and a supervisor adapter that sends pending delegate calls through the scheduler without bypassing delegate's checks. Compare sequential and parallel runs with the same injected latency.",
+      "prompt": "Implement WorkItem and schedule in agent_runtime/coordination.py. Reject duplicate IDs, unknown dependencies and cycles before launching work, respect the concurrency limit, block dependants of failed work, and at the deadline keep completed results, cancel and await the rest and report partial status. Add an optional batch hook to the runtime and a supervisor adapter, used by investigate(parallel=True), that sends pending delegate calls through the scheduler without bypassing delegate's checks. Compare sequential and parallel runs with the same injected latency. The Lesson 06 test file cannot import until build step 4: prove this step with a throwaway script outside tests/ and keep the earlier 21 checks passing.",
       "excerpt": {
         "start": 48,
         "end": 72
@@ -70,17 +70,24 @@
       "status": "complete",
       "cause": "connection_pool_exhaustion",
       "summary": "Combined bounded worker evidence",
-      "evidence": ["log-astro-001", "rb-pool-v1"]
+      "evidence": [
+        "log-astro-001",
+        "rb-pool-v1"
+      ]
     },
     "children": [
       {
         "role": "logs",
-        "tools": ["log_lookup"],
+        "tools": [
+          "log_lookup"
+        ],
         "tokens": 55
       },
       {
         "role": "runbooks",
-        "tools": ["runbook_search"],
+        "tools": [
+          "runbook_search"
+        ],
         "tokens": 55
       }
     ],
@@ -146,7 +153,11 @@
     "Design a third worker on paper, with objective, inputs, tools and acceptance criteria, and decide which tasks may run in parallel with it.",
     "Compare two concurrency limits on the same fixtures, and add a contradictory-evidence review case with an explicit acceptance rule."
   ],
-  "verification_scope": ["@tested", "@not_tested", "@local_effects"],
+  "verification_scope": [
+    "@tested",
+    "@not_tested",
+    "@local_effects"
+  ],
   "close_say": "You have added scoped delegation and bounded concurrency while keeping the runtime's control boundaries. Keep the single-agent baseline and the contract and scheduling tests. Next session a specialist moves behind its own service boundary and we reach it over A2A.",
   "references": [
     {

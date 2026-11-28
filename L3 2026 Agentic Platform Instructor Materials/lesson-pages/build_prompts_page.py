@@ -409,8 +409,8 @@ SESSIONS = {
             ("Add the check pack", "Add the check pack", "the checks · no code yet",
              "Copies the Session 06 checks into your project and lists the interfaces they expect, including a small "
              "batch hook in the loop. The given planning fixture is pasted later, in build step 1.",
-             "<code>test_lesson06.py</code> failing to import until <code>agent_runtime.coordination</code> exists, which "
-             "stops the whole run; with it ignored, <b>21 passed</b>."),
+             "<code>test_lesson06.py</code> failing to import until build step 4 completes <code>agent_runtime/coordination.py</code>, "
+             "which stops the whole run; with it ignored, <b>21 passed</b>."),
             ("Build step 1", "A contract and a scoped child", "new · agent_runtime/supervisor.py · delegate",
              "Validates the supervisor's proposals and starts each child with only its role's tool, a new run ID, the "
              "parent's ID and no approvals; reuses an identical contract and refuses a changed one.",
@@ -425,11 +425,11 @@ SESSIONS = {
              "Schedules independent work with a concurrency limit and a deadline, and lets the supervisor run its "
              "children in parallel through a small batch hook in the loop.",
              "a cycle refused, a dependant blocked, a slow item cancelled at the deadline, and the parallel run faster "
-             "than the sequential one."),
+             "than the sequential one, in a throwaway script; <b>21 passed</b>."),
             ("Build step 4", "Replies and review", "agent_runtime/coordination.py · accept_reply · bounded_review",
              "Accepts only the reply that matches its request at the next version, and stops a review that never "
              "converges at its round limit.",
-             "a mismatched and a stale reply refused, the review escalated; <b>29 passed</b>."),
+             "a mismatched and a stale reply refused, the review escalated; the Lesson 06 tests import at last: <b>29 passed</b>."),
             ("Learner exercise", "Break the coordination on purpose", "a throwaway script",
              "Predicts, then runs: one agent allowed, a child above its parent's tools, a reused task ID, a slow worker, "
              "a failed predecessor and a stale reply, and compares the team with the single agent.",

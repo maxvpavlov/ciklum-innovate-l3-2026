@@ -2,9 +2,8 @@
 
 ## Given files
 
-Copy these into your project unchanged. They are data, test doubles and the platform
-shell (run API and console) that everyone shares, so results are comparable; they are
-not what this lesson teaches.
+Copy these into your project as described. They are data and test doubles that everyone
+shares, so results are comparable; they are not what this lesson teaches.
 
 - `given/course/local_service.py`: copy to `course/local_service.py`.
 
